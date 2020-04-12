@@ -1,14 +1,14 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { Jumbotron, Carousel, Button } from 'react-bootstrap'
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Jumbotron, Button } from 'react-bootstrap';
 
-import "./HomePage.css"
+import './HomePage.css';
 
 interface HomePageProps {
 
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ }) => {
+export const HomePage: React.FC<HomePageProps> = () => {
     return (
         <>
             {/* <Carousel>
@@ -37,6 +37,6 @@ export const HomePage: React.FC<HomePageProps> = ({ }) => {
             </Link>
         </>
     );
-}
+};
 
 export default HomePage;
