@@ -1,21 +1,39 @@
 import React from 'react';
-import { Form } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
+import { useForm } from 'react-hook-form';
 
-interface loginFormProps {
+interface LoginFormProps {
 
 }
 
-export const loginForm: React.FC<loginFormProps> = () => (
-    <Form>
-        <Form.Group controlId="institutionalEmail">
-            <Form.Label>Institutional Email Address</Form.Label>
-            <Form.Control type="email" placeholder="cxavier@xavierinstitute.edu"></Form.Control>
-        </Form.Group>
-        <Form.Group controlId="password">
-            <Form.Label>Password</Form.Label>
-            <Form.Control type="password" placeholder="******"></Form.Control>
-        </Form.Group>
-    </Form>
-);
+type LoginFormData = {
+    email: string;
+    password: string;
+}
 
-export default loginForm;
+export const LoginForm: React.FC<LoginFormProps> = () => {
+    const { register, handleSubmit, watch, errors } = useForm();
+
+    const onSubmit = (data: any) => (console.log(data));
+
+    console.log(watch('email'));
+
+    return (
+        <Form onSubmit={handleSubmit(onSubmit)}>
+            <Form.Group controlId="institutionalEmail">
+                <Form.Label>Institutional Email Address</Form.Label>
+                <Form.Control name="email" autoComplete="username" type="email" placeholder="cxavier@xavierinstitute.edu" ref={register} />
+            </Form.Group>
+            <Form.Group controlId="password">
+                <Form.Label>Password</Form.Label>
+                <Form.Control name="password" autoComplete="current-password" type="password" placeholder="******" ref={register} />
+            </Form.Group>
+            {errors.password && <span>A password is required.</span>}
+            <Form.Group>
+                <Button type="submit">Submit</Button>
+            </Form.Group>
+        </Form>
+    );
+}
+
+export default LoginForm;

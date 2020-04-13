@@ -7,6 +7,18 @@ interface RouterProps {
 
 }
 
+// const PrivateRoute = ({ component: Component, ...rest }) => (
+//     <Route {...rest} render={(props) => (
+//       isAuthenticated === true
+//         ? <Component {...props} />
+//         : <Redirect to={{
+//             pathname: '/login',
+//             state: { from: props.location }
+//           }} />
+//     )} />
+//   );
+  
+
 export const Router: React.FC<RouterProps> = () => {
     return (
         <BrowserRouter>
