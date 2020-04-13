@@ -1,3 +1,11 @@
 #HomePageJumbo {
     background-image: url("roman-mager-5mZ_M06Fc9g-unsplash.jpg");
 }
+
+#JumboText {
+    text-align: center;
+}
+
+.button-margin {
+    margin: 0px 10px 0px 10px;
+}
