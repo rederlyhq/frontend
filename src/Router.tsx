@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
-import Login from './Login/login';
 import HomePage from './Home/HomePage';
 
 interface RouterProps {
@@ -26,9 +25,9 @@ export const Router: React.FC<RouterProps> = () => {
                 <Route exact path="/">
                     <HomePage/>
                 </Route>
-                <Route path="/login">
+                {/* <Route path="/login">
                     <Login/>
-                </Route>
+                </Route> */}
                 <Route path="/user">
                     <User/>
                 </Route>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Jumbotron, Button, Container, Row, Col } from 'react-bootstrap';
+import LoginButtonAndModal from '../Login/LoginButtonAndModal';
 
 import './HomePage.css';
 
@@ -20,9 +21,7 @@ export const HomePage: React.FC<HomePageProps> = () => {
                     <Col md={{span: 4, offset: 4}} className="text-center">
                         <h3>Rederly Coursework</h3>
                         <Row className="justify-content-sm-center">
-                            <Link to="/login">
-                                <Button className="button-margin">Log In</Button>
-                            </Link>
+                            <LoginButtonAndModal />
                             <Link to="/register">
                                 <Button className="button-margin">Sign Up</Button>
                             </Link>
