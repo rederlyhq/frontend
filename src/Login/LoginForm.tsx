@@ -57,7 +57,6 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                     autoComplete="username" 
                     type="email" 
                     placeholder="cxavier@xavierinstitute.edu"
-                    isValid={false}
                 />
                 <Form.Control.Feedback type="invalid">{<span>An Institutional is required.</span>}</Form.Control.Feedback>
             </Form.Group>
