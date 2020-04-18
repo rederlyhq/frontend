@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Jumbotron, Button, Container, Row, Col } from 'react-bootstrap';
-import LoginButtonAndModal from '../Login/LoginButtonAndModal';
+import { Jumbotron, Container, Row, Col } from 'react-bootstrap';
+import LoginForm from '../Login/LoginForm';
+import RegisterForm from '../Login/RegisterForm';
+import ButtonAndModal from '../Components/ButtonAndModal';
 
 import './HomePage.css';
 
@@ -21,10 +22,12 @@ export const HomePage: React.FC<HomePageProps> = () => {
                     <Col md={{span: 4, offset: 4}} className="text-center">
                         <h3>Rederly Coursework</h3>
                         <Row className="justify-content-sm-center">
-                            <LoginButtonAndModal />
-                            <Link to="/register">
-                                <Button className="button-margin">Sign Up</Button>
-                            </Link>
+                            <ButtonAndModal header="Log In">
+                                <LoginForm/>
+                            </ButtonAndModal>
+                            <ButtonAndModal header="Register">
+                                <RegisterForm/>
+                            </ButtonAndModal>
                         </Row>
                     </Col>
                 </Row>
