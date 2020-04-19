@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Alert } from 'react-bootstrap';
+import { Form, Button, Alert, AlertProps } from 'react-bootstrap';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import SimpleFormRow from '../Components/SimpleFormRow';
 
@@ -15,12 +15,17 @@ type RegisterFormData = {
     registerPasswordConf: string;
 }
 
+interface IAlertModalState {
+    message: string;
+    variant: AlertProps['variant'];
+}
+
 /**
  * This component renders the Render form.
  */
 export const RegisterForm: React.FC<RegisterFormProps> = () => {
     const [validated, setValidated] = useState(false);
-    const [loginError, setLoginError] = useState('');
+    const [{message: registrationAlertMsg, variant: registrationAlertType}, setRegistrationAlert] = useState<IAlertModalState>({message: '', variant: 'danger'});
     const [formState, setFormState] = useState<RegisterFormData>({
         registerEmail: '', 
         registerPassword: '', 
@@ -54,13 +59,18 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
                 });
             console.log(resp);
 
-            if (resp.status !== 200) {
-                setLoginError(resp.data);
+            if (resp.status === 200) {
+                setRegistrationAlert({message: 'Registration succeeded! Please check your email to continue.', variant: 'success'});
+            } else {
+                setRegistrationAlert({message: 'Registration failed.', variant: 'danger'});
             }
 
             // setLoginError(resp.data.msg);
+            
+            // TODO: Needs some indication that the operation was successful. Is an alert sufficient, or 
+            //       should we redirect to a new page?
         } catch (err) {
-            setLoginError('A network error occurred. Please try again later.');
+            setRegistrationAlert({message: 'A network error occurred. Please try again later.', variant: 'danger'});
         }
     };
 
@@ -79,7 +89,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
 
     return (
         <Form noValidate validated={validated} onSubmit={handleSubmit} action='#'>
-            {(loginError !== '') && <Alert variant="danger">{loginError}</Alert>}
+            {(registrationAlertMsg !== '') && <Alert variant={registrationAlertType}>{registrationAlertMsg}</Alert>}
             <SimpleFormRow
                 required
                 id='registerFirstName'
