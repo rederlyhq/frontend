@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import HomePage from './Home/HomePage';
+import VerificationLandingPage from './Login/VerificationLandingPage';
 
 interface RouterProps {
 
@@ -25,11 +26,11 @@ export const Router: React.FC<RouterProps> = () => {
                 <Route exact path="/">
                     <HomePage/>
                 </Route>
-                {/* <Route path="/login">
-                    <Login/>
-                </Route> */}
                 <Route path="/user">
                     <User/>
+                </Route>
+                <Route path="/verify/:uid">
+                    <VerificationLandingPage />
                 </Route>
                 <Route path="/">
                     <NoPage/>
