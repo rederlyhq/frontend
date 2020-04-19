@@ -19,26 +19,41 @@ type LoginFormData = {
 export const LoginForm: React.FC<LoginFormProps> = () => {
     const [validated, setValidated] = useState(false);
     const [loginError, setLoginError] = useState('');
+    const [formState, setFormState] = useState<LoginFormData>({email: '', password: ''});
+
+    const handleNamedChange = (name: keyof LoginFormData) => {
+        return (event: any) => {
+            if (name !== event.target.name) { 
+                console.error(`Mismatched event, ${name} is on ${event.target.name}`);
+            }
+            const val = event.target.value;
+            setFormState({...formState, [name]: val});
+        };
+    };
 
     const handleLogin = async () => {
         try {
-            const resp = await AxiosRequest.post('/users/login', {});
+            const resp = await AxiosRequest.post('/users/login', {email: formState.email, password: formState.password});
             console.log(resp.data);
 
             setLoginError(resp.data.msg);
             // TODO: Redirect to Course List page.
         } catch (err) {
-            setLoginError('A network error occurred. Please try again later.');
+            console.log(err);
+            setLoginError(err.message);
+            // setLoginError('A network error occurred. Please try again later.');
         }
     };
 
     const handleSubmit = (event: any) => {
+        console.log(event);
         const form = event.currentTarget;
         event.preventDefault();
 
         if (form.checkValidity() === false) {
             event.stopPropagation();
         } else {
+            console.log(form);
             handleLogin();
         }
   
@@ -57,6 +72,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                     autoComplete="username" 
                     type="email" 
                     placeholder="cxavier@xavierinstitute.edu"
+                    onChange={handleNamedChange('email')}
                 />
                 <Form.Control.Feedback type="invalid">{<span>An Institutional is required.</span>}</Form.Control.Feedback>
             </Form.Group>
@@ -69,6 +85,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                     autoComplete="current-password" 
                     type="password" 
                     placeholder="******" 
+                    onChange={handleNamedChange('password')}
                 />
                 <Form.Control.Feedback type="invalid">{<span>A password is required.</span>}</Form.Control.Feedback>
             </Form.Group>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import SimpleFormRow from '../Components/SimpleFormRow';
@@ -8,8 +8,11 @@ interface RegisterFormProps {
 }
 
 type RegisterFormData = {
-    email: string;
-    password: string;
+    registerEmail: string;
+    registerFirstName: string;
+    registerLastName: string;
+    registerPassword: string;
+    registerPasswordConf: string;
 }
 
 /**
@@ -18,11 +21,42 @@ type RegisterFormData = {
 export const RegisterForm: React.FC<RegisterFormProps> = () => {
     const [validated, setValidated] = useState(false);
     const [loginError, setLoginError] = useState('');
+    const [formState, setFormState] = useState<RegisterFormData>({
+        registerEmail: '', 
+        registerPassword: '', 
+        registerFirstName: '', 
+        registerLastName: '',
+        registerPasswordConf: '',
+    });
+    const [doPasswordsMatch, setDoPasswordsMatch] = useState(false);
+
+    useEffect(() => {
+        setDoPasswordsMatch(formState.registerPassword === formState.registerPasswordConf);
+    }, [formState.registerPassword, formState.registerPasswordConf]);
+    
+    const handleNamedChange = (name: keyof RegisterFormData) => {
+        return (event: any) => {
+            if (name !== event.target.name) { 
+                console.error(`Mismatched event, ${name} is on ${event.target.name}`);
+            }
+            const val = event.target.value;
+            setFormState({...formState, [name]: val});
+        };
+    };
 
     const handleRegister = async () => {
         try {
-            const resp = await AxiosRequest.post('/users/register', {});
-            console.log(resp.data);
+            const resp = await AxiosRequest.post('/users/register', 
+                {
+                    email: formState.registerEmail,
+                    password: formState.registerPassword,
+                    username: formState.registerFirstName + formState.registerLastName,
+                });
+            console.log(resp);
+
+            if (resp.status !== 200) {
+                setLoginError(resp.data);
+            }
 
             // setLoginError(resp.data.msg);
         } catch (err) {
@@ -48,49 +82,61 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
             {(loginError !== '') && <Alert variant="danger">{loginError}</Alert>}
             <SimpleFormRow
                 required
-                id='given-name'
+                id='registerFirstName'
                 label='First Name'
                 defaultValue='' 
-                name="given-name" 
+                name="registerFirstName" 
                 autoComplete="given-name"
                 placeholder="Charles"
+                errmsg="Your last name is required."
+                onChange={handleNamedChange('registerFirstName')}
             />
             <SimpleFormRow
-                required
-                id='family-name'
+                id='registerLastName'
                 label='Last Name'
+                errmsg="Your last name is required."
+                required
                 defaultValue='' 
-                name="family-name" 
+                name="registerLastName" 
                 autoComplete="family-name"
                 placeholder="Xavier"
+                onChange={handleNamedChange('registerLastName')}
             />
-            <Form.Group controlId="institutionalEmail">
-                <Form.Label>Institutional Email Address</Form.Label>
-                <Form.Control
-                    required
-                    defaultValue='' 
-                    name="email" 
-                    autoComplete="email" 
-                    type="email" 
-                    placeholder="cxavier@xavierinstitute.edu"
-                />
-                <Form.Control.Feedback type="invalid">{<span>An Institutional is required.</span>}</Form.Control.Feedback>
-            </Form.Group>
-            <Form.Group controlId="password">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                    required
-                    defaultValue='' 
-                    name="password" 
-                    autoComplete="current-password" 
-                    type="password" 
-                    placeholder="******"
-                    // TODO: Minimum password requirements
-                    minLength={4}
-                    maxLength={26}
-                />
-                <Form.Control.Feedback type="invalid">{<span>A password is required.</span>}</Form.Control.Feedback>
-            </Form.Group>
+            <SimpleFormRow
+                id="registerEmail"
+                label="Institutional Email Address"
+                errmsg="An Institutional email address is required."
+                required
+                defaultValue='' 
+                name="registerEmail" 
+                autoComplete="email" 
+                type="email" 
+                placeholder="cxavier@xavierinstitute.edu"
+                onChange={handleNamedChange('registerEmail')}
+            />
+            <SimpleFormRow 
+                id="password"
+                label="Password"
+                errmsg="Your password must be at least 4 characters long."
+                required
+                defaultValue=''
+                name="registerPassword" 
+                autoComplete="none" 
+                type="password" 
+                onChange={handleNamedChange('registerPassword')}
+                placeholder="******"
+                // TODO: Minimum password requirements
+                minLength={4}
+                maxLength={26}
+            />
+            <SimpleFormRow
+                id="registerPasswordConf"
+                label="Confirm Password"
+                errmsg="Passwords must match."
+                type="password"
+                isValid={doPasswordsMatch}
+                onChange={handleNamedChange('registerPasswordConf')}
+            />
             <Form.Group>
                 <Button type="submit">Submit</Button>
             </Form.Group>
