@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Alert, AlertProps } from 'react-bootstrap';
+import { Form, Button, Alert } from 'react-bootstrap';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import SimpleFormRow from '../Components/SimpleFormRow';
+import useAlertState from '../Hooks/useAlertState';
 
 interface RegisterFormProps {
 
@@ -15,17 +16,12 @@ type RegisterFormData = {
     registerPasswordConf: string;
 }
 
-interface IAlertModalState {
-    message: string;
-    variant: AlertProps['variant'];
-}
-
 /**
  * This component renders the Render form.
  */
 export const RegisterForm: React.FC<RegisterFormProps> = () => {
     const [validated, setValidated] = useState(false);
-    const [{message: registrationAlertMsg, variant: registrationAlertType}, setRegistrationAlert] = useState<IAlertModalState>({message: '', variant: 'danger'});
+    const [{message: registrationAlertMsg, variant: registrationAlertType}, setRegistrationAlert] = useAlertState();
     const [formState, setFormState] = useState<RegisterFormData>({
         registerEmail: '', 
         registerPassword: '', 
@@ -68,7 +64,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
             // setLoginError(resp.data.msg);
             
             // TODO: Needs some indication that the operation was successful. Is an alert sufficient, or 
-            //       should we redirect to a new page?
+            //       should we redirect to a new page? Or should we get a session token back and proceed as logged in?
         } catch (err) {
             setRegistrationAlert({message: 'A network error occurred. Please try again later.', variant: 'danger'});
         }

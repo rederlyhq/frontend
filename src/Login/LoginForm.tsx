@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import AxiosRequest from '../Hooks/AxiosRequest';
+import useAlertState from '../Hooks/useAlertState';
 
 interface LoginFormProps {
 
@@ -18,7 +19,7 @@ type LoginFormData = {
  */
 export const LoginForm: React.FC<LoginFormProps> = () => {
     const [validated, setValidated] = useState(false);
-    const [loginError, setLoginError] = useState('');
+    const [{message: loginAlertMsg, variant: registrationAlertType}, setLoginAlertMsg] = useAlertState();
     const [formState, setFormState] = useState<LoginFormData>({email: '', password: ''});
 
     const handleNamedChange = (name: keyof LoginFormData) => {
@@ -36,12 +37,11 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
             const resp = await AxiosRequest.post('/users/login', {email: formState.email, password: formState.password});
             console.log(resp.data);
 
-            setLoginError(resp.data.msg);
+            setLoginAlertMsg({message: resp.data.msg, variant: 'success'});
             // TODO: Redirect to Course List page.
         } catch (err) {
             console.log(err);
-            setLoginError(err.message);
-            // setLoginError('A network error occurred. Please try again later.');
+            setLoginAlertMsg({message: err.message, variant: 'danger'});
         }
     };
 
@@ -63,7 +63,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
     return (
         <Form noValidate validated={validated} onSubmit={handleSubmit} action='#'>
             <Form.Group controlId="institutionalEmail">
-                {(loginError !== '') && <Alert variant="danger">{loginError}</Alert>}
+                {(loginAlertMsg !== '') && <Alert variant={registrationAlertType}>{loginAlertMsg}</Alert>}
                 <Form.Label>Institutional Email Address</Form.Label>
                 <Form.Control
                     required
