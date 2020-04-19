@@ -28,7 +28,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
         registerLastName: '',
         registerPasswordConf: '',
     });
-    const [doPasswordsMatch, setDoPasswordsMatch] = useState(false);
+    const [doPasswordsMatch, setDoPasswordsMatch] = useState<Boolean>(false);
 
     useEffect(() => {
         setDoPasswordsMatch(formState.registerPassword === formState.registerPasswordConf);
@@ -121,7 +121,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
                 required
                 defaultValue=''
                 name="registerPassword" 
-                autoComplete="none" 
+                autoComplete="new-password" 
                 type="password" 
                 onChange={handleNamedChange('registerPassword')}
                 placeholder="******"
@@ -134,7 +134,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
                 label="Confirm Password"
                 errmsg="Passwords must match."
                 type="password"
-                isValid={doPasswordsMatch}
+                autocomplete="new-password"
+                isValid={formState.registerPassword?.length > 3 && doPasswordsMatch}
                 onChange={handleNamedChange('registerPasswordConf')}
             />
             <Form.Group>
