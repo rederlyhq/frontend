@@ -37,7 +37,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
             const resp = await AxiosRequest.post('/users/login', {email: formState.email, password: formState.password});
             console.log(resp.data);
 
-            setLoginAlertMsg({message: resp.data.msg, variant: 'success'});
+            setLoginAlertMsg({message: resp.data.msg || 'Logged in!', variant: 'success'});
             // TODO: Redirect to Course List page.
         } catch (err) {
             console.log(err);
