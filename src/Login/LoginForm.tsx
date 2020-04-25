@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import useAlertState from '../Hooks/useAlertState';
+import { useHistory } from 'react-router-dom';
 
 interface LoginFormProps {
 
@@ -21,6 +22,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
     const [validated, setValidated] = useState(false);
     const [{message: loginAlertMsg, variant: registrationAlertType}, setLoginAlertMsg] = useAlertState();
     const [formState, setFormState] = useState<LoginFormData>({email: '', password: ''});
+    const history = useHistory();
 
     const handleNamedChange = (name: keyof LoginFormData) => {
         return (event: any) => {
@@ -37,8 +39,10 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
             const resp = await AxiosRequest.post('/users/login', {email: formState.email, password: formState.password});
             console.log(resp.data);
 
-            setLoginAlertMsg({message: resp.data.msg || 'Logged in!', variant: 'success'});
-            // TODO: Redirect to Course List page.
+            if (resp.status === 200) {
+                setLoginAlertMsg({message: resp.data?.msg || 'Logged in!', variant: 'success'});
+                history.push('/common/courses');
+            }
         } catch (err) {
             console.log(err);
             setLoginAlertMsg({message: err.message, variant: 'danger'});
