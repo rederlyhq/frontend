@@ -1,11 +1,23 @@
 import React from 'react';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
-import Login from './Login/login';
 import HomePage from './Home/HomePage';
+import VerificationLandingPage from './Login/VerificationLandingPage';
 
 interface RouterProps {
 
 }
+
+// const PrivateRoute = ({ component: Component, ...rest }) => (
+//     <Route {...rest} render={(props) => (
+//       isAuthenticated === true
+//         ? <Component {...props} />
+//         : <Redirect to={{
+//             pathname: '/login',
+//             state: { from: props.location }
+//           }} />
+//     )} />
+//   );
+  
 
 export const Router: React.FC<RouterProps> = () => {
     return (
@@ -14,11 +26,11 @@ export const Router: React.FC<RouterProps> = () => {
                 <Route exact path="/">
                     <HomePage/>
                 </Route>
-                <Route path="/login">
-                    <Login/>
-                </Route>
                 <Route path="/user">
                     <User/>
+                </Route>
+                <Route path="/verify/:uid">
+                    <VerificationLandingPage />
                 </Route>
                 <Route path="/">
                     <NoPage/>
