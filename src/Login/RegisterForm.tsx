@@ -145,7 +145,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
                 onChange={handleNamedChange('registerPasswordConf')}
             />
             <Form.Group>
-                <Button type="submit">Submit</Button>
+                <Button type="submit" disabled={registrationAlertType === 'success'}>Submit</Button>
             </Form.Group>
         </Form>
     );

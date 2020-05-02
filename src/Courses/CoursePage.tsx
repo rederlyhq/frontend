@@ -10,7 +10,7 @@ export const CoursePage: React.FC<CoursePageProps> = () => {
 
     // Get the list of courses to render.
     useEffect(() => {
-        setCourses(["Course 1", "Course 2", "Crouse 3"]);
+        setCourses(['Course 1', 'Course 2', 'Course 3']);
     }, []);
 
     return (
