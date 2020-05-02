@@ -4,6 +4,10 @@ import CoursePage from '../Courses/CoursePage';
 import Cookies from 'js-cookie';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import AxiosRequest from '../Hooks/AxiosRequest';
+import CourseDetailsPage from '../Courses/CourseDetailsPage';
+import { BsChevronLeft } from 'react-icons/bs';
+
+import './NavWrapper.css';
 
 interface NavWrapperProps {
 
@@ -37,16 +41,30 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     return (
         <Container>
             {/* Header bar */}
-            <Row>
-                <Col>
-                    <Button style={{'float': 'right'}} onClick={logout}>
+            <Row className="toolbar">
+                <Col md={2}>
+                    {history.length > 1 && (
+                        <Button className="toolbar" onClick={() => history.goBack()}>
+                            <BsChevronLeft/>
+                        </Button>)
+                    }
+                </Col>
+                <Col className="text-center" md={8}>
+                    <span id="welcome-header">Welcome, {"ToDo: Get Name"}</span>
+                </Col>
+                <Col md={2}>
+                    <Button className="toolbar float-right" onClick={logout}>
                         Log Out
                     </Button>
                 </Col>
             </Row>
+            {/* So the  */}
             <Switch>
-                <Route path={`${path}/courses`}>
+                <Route exact path={`${path}/courses`}>
                     <CoursePage/>
+                </Route>
+                <Route path={`${path}/courses/:courseid`}>
+                    <CourseDetailsPage/>
                 </Route>
             </Switch>
         </Container>

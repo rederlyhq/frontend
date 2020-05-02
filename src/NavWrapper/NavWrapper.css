@@ -1,0 +1,14 @@
+.row.toolbar {
+    background-color: black;
+    margin-bottom: 3px;
+}
+
+.toolbar > * {
+    margin: 5px 0px 5px 0px;
+}
+
+.toolbar #welcome-header {
+    color: white;
+    font-size: 2em;
+    margin: auto;
+}

@@ -42,7 +42,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
 
             if (resp.status === 200) {
                 setLoginAlertMsg({message: resp.data?.msg || 'Logged in!', variant: 'success'});
-                history.push('/common/courses');
+                history.replace('/common/courses');
             }
         } catch (err) {
             if (err.response?.status === 401) {

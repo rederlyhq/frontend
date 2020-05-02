@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import CourseList from './CourseList';
+import AxiosRequest from '../Hooks/AxiosRequest';
 
 interface CoursePageProps {
 
@@ -10,7 +11,16 @@ export const CoursePage: React.FC<CoursePageProps> = () => {
 
     // Get the list of courses to render.
     useEffect(() => {
-        setCourses(['Course 1', 'Course 2', 'Course 3']);
+        (async () => {
+            try {
+                let res = await AxiosRequest.get('/courses');
+                console.log(res.data.data);
+                setCourses(res.data?.data.map((a: any) => a.course_name));
+            } catch (e) {
+                console.log(e.response);
+                setCourses([]);
+            }
+        })();
     }, []);
 
     return (
