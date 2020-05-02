@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import useAlertState from '../Hooks/useAlertState';
 import { useHistory } from 'react-router-dom';
+import Cookie from 'js-cookie';
 
 interface LoginFormProps {
 
@@ -44,8 +45,11 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                 history.push('/common/courses');
             }
         } catch (err) {
-            console.log(err);
-            setLoginAlertMsg({message: err.message, variant: 'danger'});
+            if (err.response?.status === 401) {
+                setLoginAlertMsg({message: 'Login Failed. Incorrect email and/or password', variant: 'danger'});
+            } else {
+                setLoginAlertMsg({message: err.message, variant: 'danger'});
+            }
         }
     };
 
@@ -63,6 +67,15 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
   
         setValidated(true);
     };
+
+    useEffect(() => {
+        const token = Cookie.get('sessionToken');
+        if (token) {
+            console.info('Already logged in, pushing to Courses.');
+            // TODO: Check user type
+            history.push('/common/courses');
+        }
+    });
 
     return (
         <Form noValidate validated={validated} onSubmit={handleSubmit} action='#'>
