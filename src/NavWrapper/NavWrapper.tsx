@@ -50,7 +50,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     }
                 </Col>
                 <Col className="text-center" md={8}>
-                    <span id="welcome-header">Welcome, {"ToDo: Get Name"}</span>
+                    <span id="welcome-header">Welcome, {'ToDo: Get Name'}</span>
                 </Col>
                 <Col md={2}>
                     <Button className="toolbar float-right" onClick={logout}>
