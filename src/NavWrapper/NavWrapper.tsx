@@ -13,6 +13,7 @@ interface NavWrapperProps {
 
 }
 
+export const userContext = React.createContext({userType: 'Professor'});
 
 /**
  * The NavWrapper is intended to allow for providing toolbars and menus for navigation.
@@ -22,6 +23,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     const { path } = useRouteMatch();
     const history = useHistory();
     const sessionCookie = Cookies.get('sessionToken');
+    const { Provider } = userContext;
 
     // TODO: Check if the user has been deauthenticated (ex: expired) and display a message.
     if (!sessionCookie) {
@@ -58,15 +60,16 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     </Button>
                 </Col>
             </Row>
-            {/* So the  */}
-            <Switch>
-                <Route exact path={`${path}/courses`}>
-                    <CoursePage/>
-                </Route>
-                <Route path={`${path}/courses/:courseid`}>
-                    <CourseDetailsPage/>
-                </Route>
-            </Switch>
+            <Provider value={{userType: 'Professor'}}>
+                <Switch>
+                    <Route exact path={`${path}/courses`}>
+                        <CoursePage/>
+                    </Route>
+                    <Route path={`${path}/courses/:courseid`}>
+                        <CourseDetailsPage/>
+                    </Route>
+                </Switch>
+            </Provider>
         </Container>
     );
 };

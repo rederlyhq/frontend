@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import CourseList from './CourseList';
 import AxiosRequest from '../Hooks/AxiosRequest';
-import { chain, map, pick } from 'lodash';
+import { map } from 'lodash';
 import { CourseObject } from './CourseInterfaces';
 import { Container, Row, Button, Col } from 'react-bootstrap';
 import { BsPlusSquare } from 'react-icons/bs';

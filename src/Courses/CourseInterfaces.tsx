@@ -1,17 +1,19 @@
-export interface ICourseObject {
-    course_name?: string;
-    course_start?: Date;
-    course_end?: Date;
-    course_code?: string;
+export class CourseObject {
+    course_name: string = 'undefined';
+    course_start?: Date = undefined;
+    course_end?: Date = undefined;
+    course_code: string = 'undefined';
+    
+    public constructor(init?:Partial<CourseObject>) {
+        Object.assign(this, init);
+    }
 }
 
-export class CourseObject implements ICourseObject {
-    course_name = undefined;
-    course_start = undefined;
-    course_end = undefined;
-    course_code = undefined;
-    
-    public constructor(init?:Partial<ICourseObject>) {
+export class UserObject {
+    first_name?: string;
+    last_name?: string;
+
+    public constructor(init?:Partial<UserObject>) {
         Object.assign(this, init);
     }
 }
