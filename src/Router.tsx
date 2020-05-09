@@ -1,23 +1,13 @@
 import React from 'react';
-import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import HomePage from './Home/HomePage';
 import VerificationLandingPage from './Login/VerificationLandingPage';
+import NavWrapper from './NavWrapper/NavWrapper';
+import Cookies from 'js-cookie';
 
 interface RouterProps {
 
 }
-
-// const PrivateRoute = ({ component: Component, ...rest }) => (
-//     <Route {...rest} render={(props) => (
-//       isAuthenticated === true
-//         ? <Component {...props} />
-//         : <Redirect to={{
-//             pathname: '/login',
-//             state: { from: props.location }
-//           }} />
-//     )} />
-//   );
-  
 
 export const Router: React.FC<RouterProps> = () => {
     return (
@@ -26,8 +16,10 @@ export const Router: React.FC<RouterProps> = () => {
                 <Route exact path="/">
                     <HomePage/>
                 </Route>
-                <Route path="/user">
-                    <User/>
+                <Route path="/common">
+                    <NavWrapper>
+                        {/* All authenticated routing happens in this component. */}
+                    </NavWrapper>
                 </Route>
                 <Route path="/verify/:uid">
                     <VerificationLandingPage />
@@ -39,10 +31,6 @@ export const Router: React.FC<RouterProps> = () => {
         </BrowserRouter>
     );
 };
-
-function User() {
-    return <h2>User</h2>;
-}
 
 function NoPage() {
     return (
