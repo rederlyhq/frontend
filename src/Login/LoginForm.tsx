@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import useAlertState from '../Hooks/useAlertState';
+import { useHistory } from 'react-router-dom';
+import Cookie from 'js-cookie';
 
 interface LoginFormProps {
 
@@ -21,6 +23,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
     const [validated, setValidated] = useState(false);
     const [{message: loginAlertMsg, variant: registrationAlertType}, setLoginAlertMsg] = useAlertState();
     const [formState, setFormState] = useState<LoginFormData>({email: '', password: ''});
+    const history = useHistory();
 
     const handleNamedChange = (name: keyof LoginFormData) => {
         return (event: any) => {
@@ -37,11 +40,16 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
             const resp = await AxiosRequest.post('/users/login', {email: formState.email, password: formState.password});
             console.log(resp.data);
 
-            setLoginAlertMsg({message: resp.data.msg || 'Logged in!', variant: 'success'});
-            // TODO: Redirect to Course List page.
+            if (resp.status === 200) {
+                setLoginAlertMsg({message: resp.data?.msg || 'Logged in!', variant: 'success'});
+                history.push('/common/courses');
+            }
         } catch (err) {
-            console.log(err);
-            setLoginAlertMsg({message: err.message, variant: 'danger'});
+            if (err.response?.status === 401) {
+                setLoginAlertMsg({message: 'Login Failed. Incorrect email and/or password', variant: 'danger'});
+            } else {
+                setLoginAlertMsg({message: err.message, variant: 'danger'});
+            }
         }
     };
 
@@ -59,6 +67,15 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
   
         setValidated(true);
     };
+
+    useEffect(() => {
+        const token = Cookie.get('sessionToken');
+        if (token) {
+            console.info('Already logged in, pushing to Courses.');
+            // TODO: Check user type
+            history.push('/common/courses');
+        }
+    });
 
     return (
         <Form noValidate validated={validated} onSubmit={handleSubmit} action='#'>
