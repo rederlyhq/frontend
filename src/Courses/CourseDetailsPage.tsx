@@ -1,17 +1,16 @@
-import React, { useContext } from 'react';
-import { Container, Tabs, Tab, Button, Row, Col } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
-import TopicsList from './TopicsList';
-import CourseUsersList from './CourseUsersList';
-import { UserObject } from './CourseInterfaces';
-import { userContext } from '../NavWrapper/NavWrapper';
+import React from 'react';
+import { Container, Tabs, Tab } from 'react-bootstrap';
+import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
+import TopicsTab from './CourseDetailsTabs/TopicsTab';
 
 interface CourseDetailsPageProps {
 
 }
 
 enum CourseDetailsTabs {
+    // eslint-disable-next-line no-unused-vars
     TOPICS = 'topics',
+    // eslint-disable-next-line no-unused-vars
     ENROLLMENTS = 'enrollments'
 }
 
@@ -20,38 +19,15 @@ enum CourseDetailsTabs {
  * to view enrolled students and send emails.
  * @param param0 
  */
-export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = ({}) => {
-    const { id } = useParams();
-    const { userType } = useContext(userContext);
-
-    const mock_topics = ["addition", "subtraction", "multiplication", "english"];
-    const mock_users = [
-        new UserObject({first_name: 'Scott', last_name: 'Summers'}),
-        new UserObject({first_name: 'Henry', last_name: 'McCoy'}),
-        new UserObject({first_name: 'Jean', last_name: 'Grey'}),
-        new UserObject({first_name: 'Anne', last_name: 'LeBeau'}),
-    ];
-
+export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     return (
         <Container>
             <Tabs defaultActiveKey={CourseDetailsTabs.TOPICS} id="course-details-tabs">
                 <Tab eventKey={CourseDetailsTabs.TOPICS} title="Topics">
-                    <h2>Unit 1</h2>
-                    <TopicsList listOfTopics={mock_topics} />
-                    <br/>
-                    <h2>Unit 2</h2>
-                    <TopicsList listOfTopics={mock_topics} />
+                    <TopicsTab />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
-                    <Row>
-                        <Col md={10}>
-                            <h2>Current Enrollments</h2>
-                        </Col>
-                        <Col md={2}>
-                            {userType === 'Professor' && <Button className="email float-right">Email Students</Button>}
-                        </Col>
-                    </Row>
-                    <CourseUsersList users={mock_users} />
+                    <EnrollmentsTab />
                 </Tab>
             </Tabs>
         </Container>
