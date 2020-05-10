@@ -12,6 +12,7 @@ export class CourseObject {
 export class UserObject {
     first_name?: string;
     last_name?: string;
+    id: number = -1;
 
     public constructor(init?:Partial<UserObject>) {
         Object.assign(this, init);
