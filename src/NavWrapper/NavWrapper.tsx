@@ -1,13 +1,14 @@
 import React from 'react';
-import { Switch, Route, useRouteMatch, Redirect, useHistory } from 'react-router-dom';
+import { Switch, Route, useRouteMatch, Redirect, useHistory, Link } from 'react-router-dom';
 import CoursePage from '../Courses/CoursePage';
 import Cookies from 'js-cookie';
-import { Container, Row, Col, Button } from 'react-bootstrap';
+import { Container, Row, Col, Button, Navbar, NavbarBrand, Nav, NavDropdown } from 'react-bootstrap';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import CourseDetailsPage from '../Courses/CourseDetailsPage';
 import { BsChevronLeft } from 'react-icons/bs';
 
 import './NavWrapper.css';
+import NavbarCollapse from 'react-bootstrap/NavbarCollapse';
 
 interface NavWrapperProps {
 
@@ -23,6 +24,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     const { path } = useRouteMatch();
     const history = useHistory();
     const sessionCookie = Cookies.get('sessionToken');
+    const userName = Cookies.get('userName');
     const { Provider } = userContext;
 
     // TODO: Check if the user has been deauthenticated (ex: expired) and display a message.
@@ -41,25 +43,28 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     };
 
     return (
-        <Container>
+        <Container fluid>
             {/* Header bar */}
-            <Row className="toolbar">
-                <Col md={2}>
-                    {history.length > 1 && (
-                        <Button className="toolbar" onClick={() => history.goBack()}>
-                            <BsChevronLeft/>
-                        </Button>)
-                    }
-                </Col>
-                <Col className="text-center" md={8}>
-                    <span id="welcome-header">Welcome, {'ToDo: Get Name'}</span>
-                </Col>
-                <Col md={2}>
-                    <Button className="toolbar float-right" onClick={logout}>
-                        Log Out
-                    </Button>
-                </Col>
-            </Row>
+            <Navbar variant='dark' bg='dark' className="toolbar mr-auto">
+                <NavbarBrand as={Link} to="/common/courses">
+                    <img 
+                        src="/logo-rederly+RGB-original.png"
+                        className='d-inline-block align-top'
+                        alt='Rederly logo'
+                        height={50}
+                    />
+                </NavbarBrand>
+                <NavbarCollapse>
+                    <Nav className="text-center mr-auto">
+                        {/* <Link to='/common/courses'>Courses</Link> */}
+                    </Nav>
+                    <Nav className="float-right">
+                        <NavDropdown title={`Welcome, ${userName}`} id='account-dropdown'>
+                            <NavDropdown.Item onClick={logout}>Log out</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                </NavbarCollapse>
+            </Navbar>
             <Provider value={{userType: 'Professor'}}>
                 <Switch>
                     <Route exact path={`${path}/courses`}>
