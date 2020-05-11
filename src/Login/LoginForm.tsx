@@ -48,6 +48,8 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                     Cookie.set('userType', 'Professor');
                 }
 
+                Cookie.set('userName', resp.data.data.name);
+
                 history.replace('/common/courses');
             }
         } catch (err) {
