@@ -8,6 +8,7 @@ import CourseDetailsPage from '../Courses/CourseDetailsPage';
 import { BsChevronLeft } from 'react-icons/bs';
 
 import './NavWrapper.css';
+import { UserRole } from '../Enums/UserRole';
 
 interface NavWrapperProps {
 
@@ -60,7 +61,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     </Button>
                 </Col>
             </Row>
-            <Provider value={{userType: 'Professor'}}>
+            <Provider value={{userType: UserRole.PROFESSOR}}>
                 <Switch>
                     <Route exact path={`${path}/courses`}>
                         <CoursePage/>
