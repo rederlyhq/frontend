@@ -6,6 +6,7 @@ import { CourseObject } from './CourseInterfaces';
 import { Container, Row, Button, Col } from 'react-bootstrap';
 import { BsPlusSquare } from 'react-icons/bs';
 import Cookies from 'js-cookie';
+import { UserRole, getUserRole } from '../Enums/UserRole';
 
 interface CoursePageProps {
 
@@ -13,7 +14,7 @@ interface CoursePageProps {
 
 export const CoursePage: React.FC<CoursePageProps> = () => {
     const [courses, setCourses] = useState<Array<CourseObject>>([]);
-    const userType = Cookies.get('userType');
+    const userType: UserRole = getUserRole(Cookies.get('userType'));
 
     // Get the list of courses to render.
     useEffect(() => {
@@ -39,7 +40,7 @@ export const CoursePage: React.FC<CoursePageProps> = () => {
                         <h1>My Courses</h1>
                     </Col>
                     <Col md={2}>
-                        {userType === 'Professor' && (
+                        {userType === UserRole.PROFESSOR && (
                             <Button className="float-right" style={{height: '100%'}}><BsPlusSquare /> Create Course</Button>
                         )}
                     </Col>
