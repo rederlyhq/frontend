@@ -48,8 +48,13 @@ export const CourseUsersList: React.FC<CourseUsersListProps> = ({users, activeUs
                 </Row>
             </Form.Group>
             <ListGroup>
-                {users.map((user, i) => (
-                    <ListGroupItem key={i} active={activeUsers[0].has(user.id)} onClick={() => onClickStudent(user.id)}>
+                {users.map(user => (
+                    <ListGroupItem
+                        key={user.id} 
+                        active={activeUsers[0].has(user.id)} 
+                        onClick={() => onClickStudent(user.id)}
+                        style={{cursor: 'pointer'}}
+                    >
                         {user.last_name}, {user.first_name}
                     </ListGroupItem>
                 ))}
