@@ -42,7 +42,13 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
 
             if (resp.status === 200) {
                 setLoginAlertMsg({message: resp.data?.msg || 'Logged in!', variant: 'success'});
-                history.push('/common/courses');
+
+                // TODO: Set user type from login.
+                if (resp.data.data.role_id === 1) {
+                    Cookie.set('userType', 'Professor');
+                }
+
+                history.replace('/common/courses');
             }
         } catch (err) {
             if (err.response?.status === 401) {
