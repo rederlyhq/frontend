@@ -10,6 +10,7 @@ import { BsChevronLeft } from 'react-icons/bs';
 import './NavWrapper.css';
 import NavbarCollapse from 'react-bootstrap/NavbarCollapse';
 import { UserRole } from '../Enums/UserRole';
+import CourseCreationPage from '../Courses/CourseCreation/CourseCreationPage';
 
 interface NavWrapperProps {
 
@@ -66,10 +67,14 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     </Nav>
                 </NavbarCollapse>
             </Navbar>
+            {/* Routing for the page content */}
             <Provider value={{userType: UserRole.PROFESSOR}}>
                 <Switch>
                     <Route exact path={`${path}/courses`}>
                         <CoursePage/>
+                    </Route>
+                    <Route exact path={`${path}/courses/new`}>
+                        <CourseCreationPage/>
                     </Route>
                     <Route path={`${path}/courses/:courseid`}>
                         <CourseDetailsPage/>
