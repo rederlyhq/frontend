@@ -15,7 +15,7 @@ enum CourseDetailsTabs {
 /**
  * This page renders a tabbed view of course details. If a user is a professor, this will have an additional tab
  * to view enrolled students and send emails.
- * @param param0 
+ *
  */
 export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     return (
