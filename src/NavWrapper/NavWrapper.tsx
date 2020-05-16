@@ -6,7 +6,7 @@ import { Container, Row, Col, Button, Navbar, NavbarBrand, Nav, NavDropdown } fr
 import AxiosRequest from '../Hooks/AxiosRequest';
 import CourseDetailsPage from '../Courses/CourseDetailsPage';
 import { BsChevronLeft } from 'react-icons/bs';
-
+import { AnimatePresence } from 'framer-motion';
 import './NavWrapper.css';
 import NavbarCollapse from 'react-bootstrap/NavbarCollapse';
 import { UserRole } from '../Enums/UserRole';
@@ -68,18 +68,20 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                 </NavbarCollapse>
             </Navbar>
             {/* Routing for the page content */}
-            <Provider value={{userType: UserRole.PROFESSOR}}>
-                <Switch>
-                    <Route exact path={`${path}/courses`}>
-                        <CoursePage/>
-                    </Route>
-                    <Route exact path={`${path}/courses/new`}>
-                        <CourseCreationPage/>
-                    </Route>
-                    <Route path={`${path}/courses/:courseid`}>
-                        <CourseDetailsPage/>
-                    </Route>
-                </Switch>
+            <Provider value={{userType: UserRole.PROFESSOR}}>    
+                <AnimatePresence exitBeforeEnter initial={false}>
+                    <Switch>
+                        <Route exact path={`${path}/courses`}>
+                            <CoursePage/>
+                        </Route>
+                        <Route exact path={`${path}/courses/new`}>
+                            <CourseCreationPage/>
+                        </Route>
+                        <Route path={`${path}/courses/:courseid`}>
+                            <CourseDetailsPage/>
+                        </Route>
+                    </Switch>
+                </AnimatePresence>
             </Provider>
         </Container>
     );
