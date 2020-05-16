@@ -13,7 +13,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics}) => {
         <ListGroup>
             {listOfTopics.map(topic => (
                 <ListGroupItem key={topic.topic_id}>
-                    {topic}
+                    {topic.topic_name}
                 </ListGroupItem>
             ))}
         </ListGroup>
