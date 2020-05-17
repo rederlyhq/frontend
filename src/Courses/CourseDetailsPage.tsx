@@ -8,9 +8,7 @@ interface CourseDetailsPageProps {
 }
 
 enum CourseDetailsTabs {
-    // eslint-disable-next-line no-unused-vars
     TOPICS = 'topics',
-    // eslint-disable-next-line no-unused-vars
     ENROLLMENTS = 'enrollments'
 }
 

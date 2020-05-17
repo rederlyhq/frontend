@@ -4,6 +4,7 @@ import { UserObject } from '../CourseInterfaces';
 import { Row, Col, Button } from 'react-bootstrap';
 import { userContext } from '../../NavWrapper/NavWrapper';
 import EmailModal from './EmailModal';
+import { UserRole } from '../../Enums/UserRole';
 
 interface EmailComponentWrapperProps {
     users: Array<UserObject>;
@@ -24,7 +25,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({use
                     <h2>Current Enrollments</h2>
                 </Col>
                 <Col md={2}>
-                    {userType === 'Professor' && <Button className="email float-right" onClick={() => setShowModal(true)}>Email Students</Button>}
+                    {userType === UserRole.PROFESSOR && <Button className="email float-right" onClick={() => setShowModal(true)}>Email Students</Button>}
                     <EmailModal show={showModal} setClose={() => setShowModal(false)} users={selectedStudents[0]} />
                 </Col>
             </Row>
