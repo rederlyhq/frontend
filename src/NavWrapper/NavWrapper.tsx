@@ -11,6 +11,7 @@ import './NavWrapper.css';
 import NavbarCollapse from 'react-bootstrap/NavbarCollapse';
 import { UserRole } from '../Enums/UserRole';
 import CourseCreationPage from '../Courses/CourseCreation/CourseCreationPage';
+import CourseEditPage from '../Courses/CourseCreation/CourseEditPage';
 
 interface NavWrapperProps {
 
@@ -76,6 +77,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                         </Route>
                         <Route exact path={`${path}/courses/new`}>
                             <CourseCreationPage/>
+                        </Route>
+                        <Route path={`${path}/courses/edit`}>
+                            <CourseEditPage/>
                         </Route>
                         <Route path={`${path}/courses/:courseid`}>
                             <CourseDetailsPage/>
