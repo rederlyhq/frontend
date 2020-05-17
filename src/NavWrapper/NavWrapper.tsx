@@ -9,6 +9,7 @@ import { BsChevronLeft } from 'react-icons/bs';
 
 import './NavWrapper.css';
 import NavbarCollapse from 'react-bootstrap/NavbarCollapse';
+import { UserRole } from '../Enums/UserRole';
 
 interface NavWrapperProps {
 
@@ -65,7 +66,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     </Nav>
                 </NavbarCollapse>
             </Navbar>
-            <Provider value={{userType: 'Professor'}}>
+            <Provider value={{userType: UserRole.PROFESSOR}}>
                 <Switch>
                     <Route exact path={`${path}/courses`}>
                         <CoursePage/>
