@@ -14,7 +14,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush}) => 
         <ListGroup variant={flush ? 'flush' : undefined}>
             {listOfTopics.map(topic => (
                 <ListGroupItem key={topic.topic_id}>
-                    {topic}
+                    {topic.name}
                 </ListGroupItem>
             ))}
         </ListGroup>
