@@ -1,7 +1,7 @@
 import React from 'react';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import TopicsList from '../TopicsList';
-import { Button, Col, Row } from 'react-bootstrap';
+import { Button, Col, Row, Accordion, Card } from 'react-bootstrap';
 
 interface CourseEditPageProps {
 
@@ -28,24 +28,34 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = ({}) => {
 
     return (
         <EnterRightAnimWrapper>
-            <h1>Edit your course:</h1>
-            <h1>Textbooks:</h1>
+            <h1>Edit your copy of $course.name</h1>
+            <Button className="float-right">Add a new Unit</Button>
+            <h2>Textbooks:</h2>
             <ul>
                 <li>Introduction to Math</li>
                 <li>Math for Dummies</li>
             </ul>
-            <Button className="float-right">Add a new Unit</Button>
             {mock_units.map(unit => (
                 <div key={unit.unit_id}>
-                    <Row>
-                        <Col>
-                            <h2>{unit.name}</h2>
-                        </Col>
-                        <Col>
-                            <Button className="float-right">Add a new Topic</Button>
-                        </Col>
-                    </Row>
-                    <TopicsList listOfTopics={unit.topics} />
+                    <Accordion defaultActiveKey="0">
+                        <Card>
+                            <Accordion.Toggle as={Card.Header} eventKey="0">
+                                <Row>
+                                    <Col>
+                                        <h2>{unit.name}</h2>
+                                    </Col>
+                                    <Col>
+                                        <Button className="float-right">Add a new Topic</Button>
+                                    </Col>
+                                </Row>
+                            </Accordion.Toggle>
+                            <Accordion.Collapse eventKey="0">
+                                <Card.Body>
+                                    <TopicsList listOfTopics={unit.topics} flush/>
+                                </Card.Body>
+                            </Accordion.Collapse>
+                        </Card>
+                    </Accordion>
                 </div>
             )
             )}
