@@ -4,6 +4,8 @@ export enum UserRole {
 }
 
 export const getUserRole = (roleFromCookie: string | undefined): UserRole => {
+    // I want this to be a soft compare, cause that's probably not a Cookie.
+    // eslint-disable-next-line eqeqeq
     if (roleFromCookie == undefined) {
         window.location.assign('/');
         throw Error('Cookie is missing. Please return to Login.');

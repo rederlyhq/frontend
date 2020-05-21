@@ -24,7 +24,7 @@ const mock_units = [
  * This page requires an ICourseTemplate ID.
  * 
  */
-export const CourseEditPage: React.FC<CourseEditPageProps> = ({}) => {
+export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
     return (
         <EnterRightAnimWrapper>

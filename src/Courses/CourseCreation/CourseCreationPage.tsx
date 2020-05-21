@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { ICourseTemplate } from '../CourseInterfaces';
 import CourseTemplateList from './CourseTemplateList';
 import { FormControl } from 'react-bootstrap';
-import { motion } from 'framer-motion';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 
 interface CourseCreationPageProps {
@@ -14,7 +13,7 @@ interface CourseCreationPageProps {
  * It renders a list of possible templates and a create button.
  * 
  */
-export const CourseCreationPage: React.FC<CourseCreationPageProps> = ({}) => {
+export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
     const [courseTemplates, setCourseTemplates] = useState<Array<ICourseTemplate>>([]);
     const [filteredCourseTemplates, setFilteredCourseTemplates] = useState<Array<ICourseTemplate>>([]);
 
