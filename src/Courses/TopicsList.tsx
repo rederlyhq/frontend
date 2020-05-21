@@ -19,5 +19,5 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush}) => 
             ))}
         </ListGroup>
     );
-}
+};
 export default TopicsList;

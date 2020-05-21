@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ICourseTemplate } from '../CourseInterfaces';
 import CourseTemplateList from './CourseTemplateList';
-import { FormControl } from 'react-bootstrap';
+import { FormControl, Button } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
+import {useDropzone} from 'react-dropzone';
 
 interface CourseCreationPageProps {
-
+    
 }
 
 /**
@@ -17,6 +18,11 @@ interface CourseCreationPageProps {
 export const CourseCreationPage: React.FC<CourseCreationPageProps> = ({}) => {
     const [courseTemplates, setCourseTemplates] = useState<Array<ICourseTemplate>>([]);
     const [filteredCourseTemplates, setFilteredCourseTemplates] = useState<Array<ICourseTemplate>>([]);
+    const onDrop = useCallback(acceptedFiles => {
+        // TODO: Here, we should upload the DEF file to the server, and then move to the next page.
+        console.log(acceptedFiles);
+    }, []);
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop});
 
     useEffect(() => {
         const mock_templates: Array<ICourseTemplate> = [
@@ -36,9 +42,19 @@ export const CourseCreationPage: React.FC<CourseCreationPageProps> = ({}) => {
     
     return (
         <EnterRightAnimWrapper>
-            <h1>Select a course template:</h1>
-            <FormControl type="search" placeholder="Search by Course or Curriculum Name" onChange={filterCourseTemplates} />
-            <CourseTemplateList courseTemplates={filteredCourseTemplates} />
+            <div {...getRootProps()}>
+                <input type="file" {...getInputProps()} />
+                { isDragActive ? (
+                    <div>Upload that file!</div>
+                ) : (
+                    <>
+                        <h1>Select a course template, or upload an existing course.</h1><Button className="float-right">Upload DEF</Button>
+                        <FormControl type="search" placeholder="Search by Course or Curriculum Name" onChange={filterCourseTemplates} />
+                        <CourseTemplateList courseTemplates={filteredCourseTemplates} />
+                    </>
+                )
+                }
+            </div>
         </EnterRightAnimWrapper>
     );
 };
