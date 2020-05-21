@@ -1,5 +1,5 @@
 import React from 'react';
-import { ListGroupItem, Row } from 'react-bootstrap';
+import { Row } from 'react-bootstrap';
 import { CourseObject } from './CourseInterfaces';
 import moment from 'moment';
 

@@ -1,9 +1,8 @@
 import React from 'react';
-import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import HomePage from './Home/HomePage';
 import VerificationLandingPage from './Login/VerificationLandingPage';
 import NavWrapper from './NavWrapper/NavWrapper';
-import Cookies from 'js-cookie';
 
 interface RouterProps {
 
