@@ -5,6 +5,7 @@ import { FormControl, Button, Container } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import {useDropzone} from 'react-dropzone';
+import AxiosRequest from '../../Hooks/AxiosRequest';
 
 interface CourseCreationPageProps {
     
@@ -25,13 +26,12 @@ export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
     const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop});
 
     useEffect(() => {
-        const mock_templates: Array<ICourseTemplate> = [
-            {name: 'Curriculum 1', id: 1}, 
-            {name: 'Course 1', id: 2},
-            {name: 'Rederly Default Curriculum', id: 3}
-        ];
-        setCourseTemplates(mock_templates);
-        setFilteredCourseTemplates(mock_templates);
+        (async () => {
+            let templatesResponse = await AxiosRequest.get('/curriculum');
+            let templates = templatesResponse.data.data;
+            setCourseTemplates(templates);
+            setFilteredCourseTemplates(templates);
+        })();
     }, []);
 
     const filterCourseTemplates = (e: any) => {
