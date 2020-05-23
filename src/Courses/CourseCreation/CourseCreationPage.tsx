@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ICourseTemplate } from '../CourseInterfaces';
 import CourseTemplateList from './CourseTemplateList';
-import { FormControl, Button } from 'react-bootstrap';
+import { FormControl, Button, Container } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import {useDropzone} from 'react-dropzone';
@@ -42,19 +42,16 @@ export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
     
     return (
         <EnterRightAnimWrapper>
-            <div {...getRootProps()}>
-                <input type="file" {...getInputProps()} />
-                { isDragActive ? (
-                    <div>Upload that file!</div>
-                ) : (
+            <Container style={isDragActive ? {backgroundColor: 'red'} : {}} >
+                <div {...getRootProps()}>
+                    <input type="file" {...getInputProps()} />
                     <>
                         <h1>Select a course template, or upload an existing course.</h1><Button className="float-right">Upload DEF</Button>
                         <FormControl type="search" placeholder="Search by Course or Curriculum Name" onChange={filterCourseTemplates} />
                         <CourseTemplateList courseTemplates={filteredCourseTemplates} />
                     </>
-                )
-                }
-            </div>
+                </div>
+            </Container>
         </EnterRightAnimWrapper>
     );
 };
