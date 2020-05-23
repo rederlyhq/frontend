@@ -18,7 +18,7 @@ export const VerificationLandingPage: React.FC<VerificationLandingPageProps> = (
         if (!uid) return;
         (async () => {
             try {
-                const res = await Axios.get(`/users/verify?verify_token=${uid}`);
+                const res = await Axios.get(`/users/verify?verifyToken=${uid}`);
                 if (res.status === 200) {
                     console.log(res.data);
                     setVerifyState({verifyData: 'Success', verifyError: ''});
