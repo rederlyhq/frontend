@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ICourseTemplate } from '../CourseInterfaces';
 import CourseTemplateList from './CourseTemplateList';
-import { FormControl, Button, Container } from 'react-bootstrap';
+import { FormControl, Button, Container, Row, Col } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import {useDropzone} from 'react-dropzone';
 import AxiosRequest from '../../Hooks/AxiosRequest';
+
+import './Course.css';
 
 interface CourseCreationPageProps {
     
@@ -42,15 +44,18 @@ export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
     
     return (
         <EnterRightAnimWrapper>
-            <Container style={isDragActive ? {backgroundColor: 'red'} : {}} >
-                <div {...getRootProps()}>
-                    <input type="file" {...getInputProps()} />
-                    <>
-                        <h1>Select a course template, or upload an existing course.</h1><Button className="float-right">Upload DEF</Button>
-                        <FormControl type="search" placeholder="Search by Course or Curriculum Name" onChange={filterCourseTemplates} />
-                        <CourseTemplateList courseTemplates={filteredCourseTemplates} />
-                    </>
-                </div>
+            <Container>
+                <>
+                    <Row style={isDragActive ? {backgroundColor: 'red'} : {}} {...getRootProps()} className='defUploadBox'>
+                        <input type="file" {...getInputProps()} />
+                        <Col md={12}>
+                            <h1>Select a course template, or upload an existing course.</h1>
+                            <Button>Drag and Drop a DEF File here, or click to upload.</Button>
+                        </Col>
+                    </Row>
+                    <FormControl type="search" placeholder="Search by Course or Curriculum Name" onChange={filterCourseTemplates} />
+                    <CourseTemplateList courseTemplates={filteredCourseTemplates} />
+                </>
             </Container>
         </EnterRightAnimWrapper>
     );
