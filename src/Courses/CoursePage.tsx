@@ -7,6 +7,7 @@ import { Container, Row, Button, Col } from 'react-bootstrap';
 import { BsPlusSquare } from 'react-icons/bs';
 import Cookies from 'js-cookie';
 import { UserRole, getUserRole } from '../Enums/UserRole';
+import { Link } from 'react-router-dom';
 
 interface CoursePageProps {
 
@@ -41,7 +42,11 @@ export const CoursePage: React.FC<CoursePageProps> = () => {
                     </Col>
                     <Col md={2}>
                         {userType === UserRole.PROFESSOR && (
-                            <Button className="float-right" style={{height: '100%'}}><BsPlusSquare /> Create Course</Button>
+                            <Link to={loc => `${loc.pathname}/new`}>
+                                <Button className="float-right" style={{height: '100%'}}>
+                                    <BsPlusSquare /> Create Course
+                                </Button>
+                            </Link>
                         )}
                     </Col>
                 </Row>

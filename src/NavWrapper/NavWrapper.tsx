@@ -6,10 +6,12 @@ import { Container, Row, Col, Button, Navbar, NavbarBrand, Nav, NavDropdown } fr
 import AxiosRequest from '../Hooks/AxiosRequest';
 import CourseDetailsPage from '../Courses/CourseDetailsPage';
 import { BsChevronLeft } from 'react-icons/bs';
-
+import { AnimatePresence } from 'framer-motion';
 import './NavWrapper.css';
 import NavbarCollapse from 'react-bootstrap/NavbarCollapse';
 import { UserRole } from '../Enums/UserRole';
+import CourseCreationPage from '../Courses/CourseCreation/CourseCreationPage';
+import CourseEditPage from '../Courses/CourseCreation/CourseEditPage';
 
 interface NavWrapperProps {
 
@@ -66,15 +68,24 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     </Nav>
                 </NavbarCollapse>
             </Navbar>
-            <Provider value={{userType: UserRole.PROFESSOR}}>
-                <Switch>
-                    <Route exact path={`${path}/courses`}>
-                        <CoursePage/>
-                    </Route>
-                    <Route path={`${path}/courses/:courseid`}>
-                        <CourseDetailsPage/>
-                    </Route>
-                </Switch>
+            {/* Routing for the page content */}
+            <Provider value={{userType: UserRole.PROFESSOR}}>    
+                <AnimatePresence exitBeforeEnter initial={false}>
+                    <Switch>
+                        <Route exact path={`${path}/courses`}>
+                            <CoursePage/>
+                        </Route>
+                        <Route exact path={`${path}/courses/new`}>
+                            <CourseCreationPage/>
+                        </Route>
+                        <Route path={`${path}/courses/edit`}>
+                            <CourseEditPage/>
+                        </Route>
+                        <Route path={`${path}/courses/:courseid`}>
+                            <CourseDetailsPage/>
+                        </Route>
+                    </Switch>
+                </AnimatePresence>
             </Provider>
         </Container>
     );
