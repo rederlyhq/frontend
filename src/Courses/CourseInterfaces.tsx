@@ -18,3 +18,11 @@ export class UserObject {
         Object.assign(this, init);
     }
 }
+
+/**
+ * Course templates are previous courses or curriculum.
+ */
+export interface ICourseTemplate {
+    name: string;
+    id: number;
+}
