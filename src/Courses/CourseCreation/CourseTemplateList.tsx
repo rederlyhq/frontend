@@ -3,6 +3,7 @@ import { ListGroup, ListGroupItem, Col, Button, Row } from 'react-bootstrap';
 import { ICourseTemplate } from '../CourseInterfaces';
 import { BsChevronCompactRight } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
+import CurriculumDetailsModal from './CurriculumDetailsModal';
 
 interface CourseTemplateListProps {
     courseTemplates: Array<ICourseTemplate>
@@ -22,19 +23,21 @@ export const CourseTemplateList: React.FC<CourseTemplateListProps> = ({courseTem
                     style={{cursor: 'pointer'}}
                     onClick={() => {}}
                 >
-                    <Link key={template.id} to={`/common/courses/edit/${template.id}`}>
-                        <Row>
+                    <Row>
+                        <Link key={template.id} to={`/common/courses/edit/${template.id}`}>
                             <Col>
                                 {template.name}
                             </Col>
-                            <Col>
-                                <Button className="float-right">Details</Button>
-                            </Col>
-                            <Col md={1}>
+                        </Link>
+                        <Col>
+                            <CurriculumDetailsModal title={template.name} desc={'TODO: Get description.'} className='float-right'/>
+                        </Col>
+                        <Link key={template.id} to={`/common/courses/edit/${template.id}`}>
+                            <Col md={1} style={{height: '100%'}}>
                                 <BsChevronCompactRight className="float-right" style={{height: '100%'}}/>
                             </Col>
-                        </Row>
-                    </Link>
+                        </Link>
+                    </Row>
                 </ListGroupItem>
             ))}
         </ListGroup>

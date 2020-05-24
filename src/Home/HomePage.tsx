@@ -22,10 +22,10 @@ export const HomePage: React.FC<HomePageProps> = () => {
                     <Col md={{span: 4, offset: 4}} className="text-center">
                         <h3>Rederly Coursework</h3>
                         <Row className="justify-content-sm-center">
-                            <ButtonAndModal header="Log In">
+                            <ButtonAndModal header="Log In" buttonText="Log In">
                                 <LoginForm/>
                             </ButtonAndModal>
-                            <ButtonAndModal header="Register">
+                            <ButtonAndModal header="Register" buttonText="Register">
                                 <RegisterForm/>
                             </ButtonAndModal>
                         </Row>

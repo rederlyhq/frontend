@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import TopicsList from '../TopicsList';
 import { Button, Col, Row, Accordion, Card } from 'react-bootstrap';
+import AxiosRequest from '../../Hooks/AxiosRequest';
+import { useParams } from 'react-router-dom';
 
 interface CourseEditPageProps {
 
@@ -22,9 +24,19 @@ const mock_units = [
 
 /**
  * This page requires an ICourseTemplate ID.
- * 
+ * Editing a Template Course means getting all details from that template, but saving
+ * to a new row.
  */
 export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
+    const { courseId } = useParams();
+
+    useEffect(() => {
+        (async ()=>{
+            let course = await AxiosRequest.get(`/curriculum/${courseId}`);
+
+            console.log(course);
+        })();
+    }, []);
 
     return (
         <EnterRightAnimWrapper>
