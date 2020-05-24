@@ -1,7 +1,4 @@
-import React, { useContext } from 'react';
-import { Row, Col, Button } from 'react-bootstrap';
-import { userContext } from '../../NavWrapper/NavWrapper';
-import CourseUsersList from './CourseUsersList';
+import React from 'react';
 import { UserObject } from '../CourseInterfaces';
 import EmailComponentWrapper from './EmailComponentWrapper';
 

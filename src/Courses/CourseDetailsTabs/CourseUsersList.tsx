@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ListGroup, ListGroupItem, Row, Col, Form, FormControl, Button } from 'react-bootstrap';
 import { UserObject } from '../CourseInterfaces';
-import _ from 'lodash';
 
 interface CourseUsersListProps {
     users: Array<UserObject>;
