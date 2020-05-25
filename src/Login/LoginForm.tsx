@@ -79,6 +79,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
 
     useEffect(() => {
         const token = Cookie.get('sessionToken');
+        console.log(token);
         if (token) {
             console.info('Already logged in, pushing to Courses.');
             // TODO: Check user type

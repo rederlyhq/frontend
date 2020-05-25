@@ -1,21 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { UserObject } from '../CourseInterfaces';
 import EmailComponentWrapper from './EmailComponentWrapper';
+import AxiosRequest from '../../Hooks/AxiosRequest';
 
 interface EnrollmentsTabProps {
-
+    courseId: number
 }
 
-const mock_users = [
-    new UserObject({first_name: 'Scott', last_name: 'Summers', id: 1}),
-    new UserObject({first_name: 'Henry', last_name: 'McCoy', id: 2}),
-    new UserObject({first_name: 'Jean', last_name: 'Grey', id: 3}),
-    new UserObject({first_name: 'Anne', last_name: 'LeBeau', id: 4}),
-];
+export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = ({courseId}) => {
+    const [users, setUsers] = useState([]);
 
-export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = () => {
+    useEffect(() => {
+        (async () => {
+            const usersResp = await AxiosRequest.get(`users?courseId=${courseId}`);
+            console.log(usersResp.data);
+            setUsers(usersResp.data.data);
+        })();
+    });
+
     return (
-        <EmailComponentWrapper users={mock_users} />
+        <EmailComponentWrapper users={users} />
     );
 };
 

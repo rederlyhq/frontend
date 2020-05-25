@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import TopicsList from '../TopicsList';
 import { Button, Col, Row, Accordion, Card } from 'react-bootstrap';
@@ -29,25 +29,27 @@ const mock_units = [
  */
 export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     const { courseId } = useParams();
+    const [course, setCourse] = useState<any>(null);
 
     useEffect(() => {
         (async ()=>{
             let course = await AxiosRequest.get(`/curriculum/${courseId}`);
 
-            console.log(course);
+            console.log(course.data.data);
+            setCourse(course.data.data);
         })();
     }, []);
 
     return (
         <EnterRightAnimWrapper>
-            <h1>Edit your copy of $course.name</h1>
+            <h1>Edit your copy of {course?.name}</h1>
             <Button className="float-right">Add a new Unit</Button>
             <h2>Textbooks:</h2>
             <ul>
                 <li>Introduction to Math</li>
                 <li>Math for Dummies</li>
             </ul>
-            {mock_units.map(unit => (
+            {course?.units?.map((unit: any) => (
                 <div key={unit.unit_id}>
                     <Accordion defaultActiveKey="0">
                         <Card>
