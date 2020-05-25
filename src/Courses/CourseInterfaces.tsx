@@ -1,8 +1,9 @@
 export class CourseObject {
-    course_name: string = 'undefined';
-    course_start?: Date = undefined;
-    course_end?: Date = undefined;
-    course_code: string = 'undefined';
+    name: string = 'undefined';
+    start?: Date = undefined;
+    end?: Date = undefined;
+    code: string = 'undefined';
+    id: number = 0;
     
     public constructor(init?:Partial<CourseObject>) {
         Object.assign(this, init);

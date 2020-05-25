@@ -1,5 +1,5 @@
 import React from 'react';
-import { ListGroup, ListGroupItem, Col, Button, Row } from 'react-bootstrap';
+import { ListGroup, ListGroupItem, Col, Row } from 'react-bootstrap';
 import { ICourseTemplate } from '../CourseInterfaces';
 import { BsChevronCompactRight } from 'react-icons/bs';
 import { Link } from 'react-router-dom';

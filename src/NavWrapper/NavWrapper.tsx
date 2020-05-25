@@ -80,7 +80,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                         <Route path={`${path}/courses/edit/:courseId`}>
                             <CourseEditPage/>
                         </Route>
-                        <Route path={`${path}/courses/:courseid`}>
+                        <Route path={`${path}/courses/:courseId`}>
                             <CourseDetailsPage/>
                         </Route>
                     </Switch>
