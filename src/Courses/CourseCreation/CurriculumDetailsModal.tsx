@@ -1,5 +1,5 @@
 import React from 'react';
-import LoginButtonAndModal from '../../Components/ButtonAndModal';
+import ButtonAndModal from '../../Components/ButtonAndModal';
 
 interface CurriculumDetailsModalProps {
     title: string;
@@ -9,9 +9,9 @@ interface CurriculumDetailsModalProps {
 
 export const CurriculumDetailsModal: React.FC<CurriculumDetailsModalProps> = ({title, desc, ...props}) => {
     return (
-        <LoginButtonAndModal header={title} buttonText='See Details' {...props}>
+        <ButtonAndModal header={title} buttonText='See Details' {...props}>
             {desc}
-        </LoginButtonAndModal>
+        </ButtonAndModal>
     );
 };
 

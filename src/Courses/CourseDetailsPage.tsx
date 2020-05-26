@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Container, Tabs, Tab } from 'react-bootstrap';
 import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
 import TopicsTab from './CourseDetailsTabs/TopicsTab';
-import { useParams, useRouteMatch, useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
 
 interface CourseDetailsPageProps {
