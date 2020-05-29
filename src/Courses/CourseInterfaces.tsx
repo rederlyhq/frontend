@@ -27,3 +27,17 @@ export interface ICourseTemplate {
     name: string;
     id: number;
 }
+
+export interface IProblemObject {
+    path: string;
+    weight: number;
+}
+
+export class TopicObject {
+    name: string = '';
+    questions: Array<IProblemObject> = [];
+    
+    public constructor(init?:Partial<TopicObject>) {
+        Object.assign(this, init);
+    }
+}
