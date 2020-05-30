@@ -28,6 +28,7 @@ export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
 
     useEffect(() => {
         (async () => {
+            // TODO: Get courses as well.
             let templatesResponse = await AxiosRequest.get('/curriculum');
             let templates = templatesResponse.data.data;
             setCourseTemplates(templates);
