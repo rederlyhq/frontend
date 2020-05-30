@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import TopicsList from '../TopicsList';
-import { Button, Col, Row, Accordion, Card, Modal, FormControl, FormLabel, Form, FormGroup } from 'react-bootstrap';
+import { Button, Col, Row, Accordion, Card, Modal, FormControl, FormLabel, FormGroup, Spinner } from 'react-bootstrap';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useParams } from 'react-router-dom';
 import TopicCreationModal from './TopicCreationModal';
 import _ from 'lodash';
-import { TopicObject } from '../CourseInterfaces';
-import { BsChevronRight } from 'react-icons/bs';
+import { TopicObject, CourseObject, UnitObject, IProblemObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
 
 interface CourseEditPageProps {
 
@@ -20,8 +19,9 @@ interface CourseEditPageProps {
  */
 export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     const { courseId } = useParams();
-    const [course, setCourse] = useState<any>(null);
+    const [course, setCourse] = useState<CourseObject>(new CourseObject({}));
     const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unit: number}>({show: false, unit: -1});
+    const [showLoadingSpinner, setShowLoadingSpinner] = useState<boolean>(false);
 
     useEffect(() => {
         (async ()=>{
@@ -30,7 +30,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             console.log(course.data.data);
             setCourse(course.data.data);
         })();
-    }, []);
+    }, [courseId]);
 
 
     const callShowTopicCreation = (unit: number, e: any = null) => {
@@ -44,12 +44,12 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
     // Adds a topic to the selected unit.
     const addTopic = (unit_id: number, topic: TopicObject) => {
-        let newCourse = {...course};
+        let newCourse: CourseObject = {...course};
         console.log(newCourse);
         let unit = _.find(newCourse.units, {id: unit_id});
         console.log(newCourse.units);
         console.log(unit);
-        if (!unit) {
+        if (!unit || !(unit instanceof UnitObject)) {
             console.error(`Could not find a unit with id ${unit_id}`);
             return;
         }
@@ -58,32 +58,129 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         setCourse(newCourse);
         setShowTopicCreation({show: false, unit: -1});
     };
-
+    
     // Save a course by recurisvely saving all sub-objects.
-    const saveCourse = (course: any) => {
-        // AxiosRequest.
-        course?.units?.forEach((unit: any) => {
+    const saveCourse = async (course: any) => {
+        setShowLoadingSpinner(true);
+        // Course ID is generated from the CreateCourse call right before this.
+        const createUnit = async (unit: NewCourseUnitObj, newCourseId: number) => {
+            console.log(`creating unit for course number ${newCourseId}`, unit);
             // Create the unit first.
-        });
-    }
+            const newUnitFields = ['name', 'courseId'];
+            let unitPostObject = _.pick(unit, newUnitFields);
+            unitPostObject.courseId = newCourseId;
+            console.log('Creating a new unit', unitPostObject);
+            let unitRes = await AxiosRequest.post('/courses/unit', unitPostObject);
+            console.log(unitRes);
+
+            if (res?.status !== 201) {
+                console.error('Post unit failed.');
+                return;
+            }
+    
+            const newUnitId = res?.data.data.id;
+            
+            console.log(`Currying createUnit with ${newUnitId}`);
+            const createTopicForUnit = _.curry(createTopic)(_, newUnitId);
+            // WARNING: Why does this need to be cast as any, when this pattern works below?
+            await Promise.all(unit.topics.map((createTopicForUnit as any)));
+        };
+        
+        const createTopic = async (topic: NewCourseTopicObj, courseUnitContentId: number) => {
+            let newTopic = new NewCourseTopicObj(topic);
+            newTopic.courseUnitContentId = courseUnitContentId;
+            const newTopicFields = [ 
+                'courseUnitContentId', 'topicTypeId', 'name', 'startDate', 'endDate', 'deadDate', 'partialExtend',
+            ];
+            let postObject = _.pick(newTopic, newTopicFields);
+            console.log('Creating topic', postObject);
+            let res = await AxiosRequest.post('/courses/topic', postObject);
+            console.log(res);
+            let topicId = res.data?.data?.id;
+            
+            const createProblemForTopic = _.curry(createProblem)(_, topicId);
+            await Promise.all(newTopic.questions.map(createProblemForTopic));
+        };
+        
+        const createProblem = async (problem: ProblemObject, courseTopicContentId: number) => {
+            let newProblem = new ProblemObject(problem);
+            const newProblemFields = [
+                'problemNumber', 'webworkQuestionPath', 'courseTopicContentId', 'weight', 'maxAttempts', 'hidden', 'optional'
+            ];
+            let postObject: any = _.pick(newProblem, newProblemFields);
+            postObject.courseTopicContentId = courseTopicContentId;
+            console.log('Creating problem', postObject, ' from ', problem);
+            const res = await AxiosRequest.post('/courses/question', postObject);
+            console.log(res);
+        };
+
+        const createCourse = async (course: CourseObject) => {
+            // Not every field belongs in the request.
+            const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode'];
+            let postObject = _.pick(course, newCourseFields);
+            postObject.code = 'TODO';
+            // TODO: Fix naming for route, should be 'templateId'.
+
+            if (!courseId || courseId == undefined) {
+                // TODO: Move this to the useEffect, navigate away if it fails?
+                return;
+            }
+
+            postObject.curriculumId = parseInt(courseId, 10);
+            console.log('Creating a new course', postObject);
+            return await AxiosRequest.post('/courses', postObject);
+        };
+
+        let res = await createCourse(course);
+        console.log(res);
+        if (res?.status !== 201) {
+            console.error('Post failed.');
+            return;
+        }
+
+        const newCourseId = res.data.data.id;
+        console.log(`Currying createUnit with ${newCourseId}`);
+        const createUnitForCourse = _.curry(createUnit)(_, newCourseId);
+        try {
+            let unitRes = await Promise.all(course?.units?.map(createUnitForCourse));
+            console.log(unitRes);
+        } catch (e) {
+            console.error('An error occurred when creating this course', e);
+            console.log(e.response?.data.message);
+        }
+        setShowLoadingSpinner(false);
+    };
+
+    const updateCourseValue = (field: keyof CourseObject, e: any) => {
+        const value = e.target.value;
+        setCourse({...course, [field]: value});
+    };
 
     return (
         <EnterRightAnimWrapper>
-            <Row>
-                <FormLabel column sm={2}>
-                    <h3>Course Name: </h3>
-                </FormLabel>
-                <Col>
-                    <FormControl size='lg' defaultValue={course?.name || ''} />
-                </Col>
-            </Row>
+            <FormGroup controlId='course-name'>
+                <Row>
+                    <FormLabel column sm={2}>
+                        <h3>Course Name: </h3>
+                    </FormLabel>
+                    <Col>
+                        <FormControl 
+                            size='lg' 
+                            defaultValue={course?.name || ''}
+                            onChange={(e: any) => updateCourseValue('name', e)}
+                        />
+                    </Col>
+                </Row>
+            </FormGroup>
             <Row>
                 <Col>
                     <FormGroup controlId='start-date'>
                         <FormLabel>
                             <h4>Start Date:</h4>
                         </FormLabel>
-                        <FormControl type='date'/>
+                        <FormControl 
+                            type='date' 
+                            onChange={(e: any) => updateCourseValue('start', e)}/>
                     </FormGroup>
                 </Col>
                 <Col>
@@ -91,7 +188,9 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                         <FormLabel>
                             <h4>End Date:</h4>
                         </FormLabel>
-                        <FormControl type='date'/>
+                        <FormControl 
+                            type='date' 
+                            onChange={(e: any) => updateCourseValue('end', e)}/>
                     </FormGroup>
                 </Col>
             </Row>
@@ -101,7 +200,8 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                         <FormLabel>
                             <h4>Section Code:</h4>
                         </FormLabel>
-                        <FormControl type='text' placeholder='MAT120'/>
+                        <FormControl type='text' placeholder='MAT120' 
+                            onChange={(e: any) => updateCourseValue('sectionCode', e)}/>
                     </FormGroup>
                 </Col>
                 <Col>
@@ -109,7 +209,8 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                         <FormLabel>
                             <h4>Semester Code:</h4>
                         </FormLabel>
-                        <FormControl type='text' placeholder='SUM20'/>
+                        <FormControl type='text' placeholder='SUM20'
+                            onChange={(e: any) => updateCourseValue('semesterCode', e)}/>
                     </FormGroup>
                 </Col>
             </Row>
@@ -121,8 +222,8 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             </ul>
             <h4>Units</h4>
             {course?.units?.map((unit: any) => (
-                <div key={unit.unit_id}>
-                    <Accordion defaultActiveKey="0">
+                <div key={unit.id}>
+                    <Accordion defaultActiveKey="1">
                         <Card>
                             <Accordion.Toggle as={Card.Header} eventKey="0">
                                 <Row>
@@ -146,13 +247,19 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 </div>
             )
             )}
-            <Button className="float-right">Save Course</Button>
+            <Button className="float-right" onClick={() => saveCourse(course)}>Save Course</Button>
             <Modal 
                 show={showTopicCreation.show} 
                 onHide={() => setShowTopicCreation({show: false, unit: -1})}
                 dialogClassName="topicCreationModal"    
             >
                 <TopicCreationModal unit={showTopicCreation.unit} addTopic={addTopic} />
+            </Modal>
+            <Modal show={showLoadingSpinner} className='text-center'>
+                <h4>Creating course, please wait.</h4>
+                <Spinner animation='grow' role='status' style={{width: '10rem', height: '10rem', margin: '0 auto'}}>
+                    <span className='sr-only'>Creating course, please wait...</span>
+                </Spinner>
             </Modal>
         </EnterRightAnimWrapper>
     );
