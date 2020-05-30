@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import TopicsList from '../TopicsList';
-import { Button, Col, Row, Accordion, Card, Modal } from 'react-bootstrap';
+import { Button, Col, Row, Accordion, Card, Modal, FormControl, FormLabel, Form, FormGroup } from 'react-bootstrap';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useParams } from 'react-router-dom';
 import TopicCreationModal from './TopicCreationModal';
 import _ from 'lodash';
 import { TopicObject } from '../CourseInterfaces';
+import { BsChevronRight } from 'react-icons/bs';
 
 interface CourseEditPageProps {
 
@@ -58,15 +59,67 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         setShowTopicCreation({show: false, unit: -1});
     };
 
+    // Save a course by recurisvely saving all sub-objects.
+    const saveCourse = (course: any) => {
+        // AxiosRequest.
+        course?.units?.forEach((unit: any) => {
+            // Create the unit first.
+        });
+    }
+
     return (
         <EnterRightAnimWrapper>
-            <h1>Edit your copy of {course?.name}</h1>
+            <Row>
+                <FormLabel column sm={2}>
+                    <h3>Course Name: </h3>
+                </FormLabel>
+                <Col>
+                    <FormControl size='lg' defaultValue={course?.name || ''} />
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <FormGroup controlId='start-date'>
+                        <FormLabel>
+                            <h4>Start Date:</h4>
+                        </FormLabel>
+                        <FormControl type='date'/>
+                    </FormGroup>
+                </Col>
+                <Col>
+                    <FormGroup controlId='end-date'>
+                        <FormLabel>
+                            <h4>End Date:</h4>
+                        </FormLabel>
+                        <FormControl type='date'/>
+                    </FormGroup>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <FormGroup controlId='section-code'>
+                        <FormLabel>
+                            <h4>Section Code:</h4>
+                        </FormLabel>
+                        <FormControl type='text' placeholder='MAT120'/>
+                    </FormGroup>
+                </Col>
+                <Col>
+                    <FormGroup controlId='semester-code'>
+                        <FormLabel>
+                            <h4>Semester Code:</h4>
+                        </FormLabel>
+                        <FormControl type='text' placeholder='SUM20'/>
+                    </FormGroup>
+                </Col>
+            </Row>
             <Button className="float-right">Add a new Unit</Button>
-            <h2>Textbooks:</h2>
+            <h5>Textbooks:</h5>
             <ul>
                 <li>Introduction to Math</li>
                 <li>Math for Dummies</li>
             </ul>
+            <h4>Units</h4>
             {course?.units?.map((unit: any) => (
                 <div key={unit.unit_id}>
                     <Accordion defaultActiveKey="0">
@@ -74,7 +127,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                             <Accordion.Toggle as={Card.Header} eventKey="0">
                                 <Row>
                                     <Col>
-                                        <h2>{unit.name}</h2>
+                                        <h4>{unit.name}</h4>
                                     </Col>
                                     <Col>
                                         <Button className='float-right' onClick={(e: any) => callShowTopicCreation(unit.id, e)}>
@@ -93,7 +146,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 </div>
             )
             )}
-            
+            <Button className="float-right">Save Course</Button>
             <Modal 
                 show={showTopicCreation.show} 
                 onHide={() => setShowTopicCreation({show: false, unit: -1})}
