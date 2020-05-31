@@ -149,7 +149,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             postObject.code = 'TODO';
             // TODO: Fix naming for route, should be 'templateId'.
 
-            if (!courseId || courseId == undefined) {
+            if (!courseId) {
                 // TODO: Move this to the useEffect, navigate away if it fails?
                 return;
             }
@@ -201,7 +201,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         }
 
         const topic = _.find(unit.topics, ['id', topicId]);
-        if (topic == undefined) {
+        if (!topic) {
             console.error(`Cannot find topic with id ${topicId} in unit with id ${unitId}`);
             return;
         }

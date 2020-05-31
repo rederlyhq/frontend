@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FormControl, FormLabel, Form, FormGroup, Modal, FormText, Button, InputGroup, Col, Row, FormCheck } from 'react-bootstrap';
+import { FormControl, FormLabel, Form, FormGroup, Modal, Button, InputGroup, Col, Row, FormCheck } from 'react-bootstrap';
 import _ from 'lodash';
 import { TopicObject, ProblemObject, NewCourseTopicObj } from '../CourseInterfaces';
 import moment from 'moment';
