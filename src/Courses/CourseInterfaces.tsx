@@ -79,8 +79,8 @@ export class NewCourseUnitObj extends UnitObject {
 export class ProblemObject implements IProblemObject {
     webworkQuestionPath: string = ''; // This is the same as path, currently.
     path: string = '';
-    weight: number = 0;
-    maxAttempts: number = 0;
+    weight: number = 1;
+    maxAttempts: number = 3;
     hidden: boolean = false;
     optional: boolean = false;
 
