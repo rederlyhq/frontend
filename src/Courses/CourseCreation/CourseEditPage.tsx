@@ -8,6 +8,7 @@ import TopicCreationModal from './TopicCreationModal';
 import _ from 'lodash';
 import { TopicObject, CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
 import moment from 'moment';
+import { useHistory } from 'react-router-dom';
 
 interface CourseEditPageProps {
 
@@ -21,6 +22,7 @@ interface CourseEditPageProps {
 export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<CourseObject>(new CourseObject({}));
+    const history = useHistory();
     const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unit: number, existingTopic?: TopicObject | undefined}>({show: false, unit: -1});
     const [showLoadingSpinner, setShowLoadingSpinner] = useState<boolean>(false);
 
@@ -172,6 +174,8 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         try {
             let unitRes = await Promise.all(course?.units?.map(createUnitForCourse));
             console.log(unitRes);
+            // TODO: Need to handle extra validation to make sure everything succeeded.
+            history.replace('/common/courses');
         } catch (e) {
             console.error('An error occurred when creating this course', e);
             console.log(e.response?.data.message);
@@ -210,7 +214,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
     return (
         <EnterRightAnimWrapper>
-            <Form onSubmit={() => saveCourse(course)}>
+            <Form action='#' onSubmit={() => saveCourse(course)}>
                 <FormGroup controlId='course-name'>
                     <Row>
                         <FormLabel column sm={2}>
