@@ -6,7 +6,7 @@ import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useParams } from 'react-router-dom';
 import TopicCreationModal from './TopicCreationModal';
 import _ from 'lodash';
-import { TopicObject, CourseObject, UnitObject, IProblemObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
+import { TopicObject, CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
 
 interface CourseEditPageProps {
 
@@ -20,13 +20,14 @@ interface CourseEditPageProps {
 export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<CourseObject>(new CourseObject({}));
-    const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unit: number}>({show: false, unit: -1});
+    const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unit: number, existingTopic?: TopicObject | undefined}>({show: false, unit: -1});
     const [showLoadingSpinner, setShowLoadingSpinner] = useState<boolean>(false);
 
+    // Load the curriculum that populates the template.
     useEffect(() => {
         (async ()=>{
             let course = await AxiosRequest.get(`/curriculum/${courseId}`);
-
+            // TODO: Error handling for bad template id.
             console.log(course.data.data);
             setCourse(course.data.data);
         })();
@@ -43,18 +44,29 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     };
 
     // Adds a topic to the selected unit.
-    const addTopic = (unit_id: number, topic: TopicObject) => {
+    const addTopic = (unitId: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
         let newCourse: CourseObject = {...course};
-        console.log(newCourse);
-        let unit = _.find(newCourse.units, {id: unit_id});
-        console.log(newCourse.units);
-        console.log(unit);
-        if (!unit || !(unit instanceof UnitObject)) {
-            console.error(`Could not find a unit with id ${unit_id}`);
+        let unit = _.find(newCourse.units, ['id', unitId]);
+
+        if (!unit) {
+            console.error(`Could not find a unit with id ${unitId}`);
             return;
         }
-        // TODO FIXME: A topic needs to fit the object, it is not just an array.
-        unit.topics = _.concat(unit.topics, topic);
+
+        // If a topic already exists, update and overwrite it in the course object.
+        if (existingTopic) {
+            let oldTopic = _.find(unit.topics, ['id', existingTopic.id]);
+
+            if (!oldTopic) {
+                console.error(`Could not update topic ${existingTopic.id} in unit ${unitId}`);
+            }
+
+            _.assign(oldTopic, topic);
+        } else {
+            // Otherwise, concatenate this object onto the existing array.
+            unit.topics = _.concat(unit.topics, topic);
+        }
+
         setCourse(newCourse);
         setShowTopicCreation({show: false, unit: -1});
     };
@@ -156,6 +168,23 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         setCourse({...course, [field]: value});
     };
 
+    const showEditTopic = (e: any, unitId: number, topicId: number) => {
+        console.log(`Editing topic ${topicId} in unit ${unitId}`);
+        let unit: UnitObject | undefined = _.find(course.units, ['id', unitId]);
+        console.log(unit);
+        if (!unit) {
+            console.error(`Cannot find unit with id ${unitId}`);
+            return;
+        }
+
+        const topic = _.find(unit.topics, ['id', topicId]);
+        if (topic == undefined) {
+            console.error(`Cannot find topic with id ${topicId} in unit with id ${unitId}`);
+            return;
+        }
+        setShowTopicCreation({show: true, unit: unitId, existingTopic: topic});
+    };
+
     return (
         <EnterRightAnimWrapper>
             <FormGroup controlId='course-name'>
@@ -221,31 +250,38 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 <li>Math for Dummies</li>
             </ul>
             <h4>Units</h4>
-            {course?.units?.map((unit: any) => (
-                <div key={unit.id}>
-                    <Accordion defaultActiveKey="1">
-                        <Card>
-                            <Accordion.Toggle as={Card.Header} eventKey="0">
-                                <Row>
-                                    <Col>
-                                        <h4>{unit.name}</h4>
-                                    </Col>
-                                    <Col>
-                                        <Button className='float-right' onClick={(e: any) => callShowTopicCreation(unit.id, e)}>
-                                            Add a Topic
-                                        </Button>
-                                    </Col>
-                                </Row>
-                            </Accordion.Toggle>
-                            <Accordion.Collapse eventKey="0">
-                                <Card.Body>
-                                    <TopicsList listOfTopics={unit.topics} flush/>
-                                </Card.Body>
-                            </Accordion.Collapse>
-                        </Card>
-                    </Accordion>
-                </div>
-            )
+            {course?.units?.map((unit: any) => {
+                const showEditWithUnitId = _.curry(showEditTopic)(_, unit.id);
+                return (
+                    <div key={unit.id}>
+                        <Accordion defaultActiveKey="1">
+                            <Card>
+                                <Accordion.Toggle as={Card.Header} eventKey="0">
+                                    <Row>
+                                        <Col>
+                                            <h4>{unit.name}</h4>
+                                        </Col>
+                                        <Col>
+                                            <Button className='float-right' onClick={(e: any) => callShowTopicCreation(unit.id, e)}>
+                                                Add a Topic
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                </Accordion.Toggle>
+                                <Accordion.Collapse eventKey="0">
+                                    <Card.Body>
+                                        <TopicsList 
+                                            flush
+                                            listOfTopics={unit.topics} 
+                                            showEditTopic={showEditWithUnitId}
+                                        />
+                                    </Card.Body>
+                                </Accordion.Collapse>
+                            </Card>
+                        </Accordion>
+                    </div>
+                );
+            }
             )}
             <Button className="float-right" onClick={() => saveCourse(course)}>Save Course</Button>
             <Modal 
@@ -253,7 +289,11 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 onHide={() => setShowTopicCreation({show: false, unit: -1})}
                 dialogClassName="topicCreationModal"    
             >
-                <TopicCreationModal unit={showTopicCreation.unit} addTopic={addTopic} />
+                <TopicCreationModal 
+                    unit={showTopicCreation.unit}
+                    addTopic={addTopic}
+                    existingTopic={showTopicCreation.existingTopic}
+                />
             </Modal>
             <Modal show={showLoadingSpinner} className='text-center'>
                 <h4>Creating course, please wait.</h4>
