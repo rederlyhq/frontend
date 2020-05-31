@@ -37,6 +37,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
             break;
         case 'weight':
         case 'maxAttempts':
+        case 'problemNumber':
             probs[index][name] = parseInt(val, 10);
             break;
         default:

@@ -101,12 +101,12 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             let unitRes = await AxiosRequest.post('/courses/unit', unitPostObject);
             console.log(unitRes);
 
-            if (res?.status !== 201) {
+            if (unitRes?.status !== 201) {
                 console.error('Post unit failed.');
                 return;
             }
     
-            const newUnitId = res?.data.data.id;
+            const newUnitId = unitRes?.data.data.id;
             
             console.log(`Currying createUnit with ${newUnitId}`);
             const createTopicForUnit = _.curry(createTopic)(_, newUnitId);
