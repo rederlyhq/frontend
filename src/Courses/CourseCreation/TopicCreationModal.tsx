@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { FormControl, FormLabel, Form, FormGroup, Modal, FormText, Button, InputGroup, Col, Row, FormCheck } from 'react-bootstrap';
 import _ from 'lodash';
-import { TopicObject, ProblemObject } from '../CourseInterfaces';
+import { TopicObject, ProblemObject, NewCourseTopicObj } from '../CourseInterfaces';
+import moment from 'moment';
 
 interface TopicCreationModalProps {
     unit: number;
@@ -14,7 +15,7 @@ interface TopicCreationModalProps {
  * 
  */
 export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  addTopic, existingTopic}) => {
-    const [title, setTitle] = useState<string>(existingTopic ? existingTopic.name : '');
+    const [topicMetadata, setTopicMetadata] = useState<Partial<NewCourseTopicObj>>({...existingTopic});
     const [problems, setProblems] = useState<Array<ProblemObject>>(existingTopic ? existingTopic.questions : []);
     const webworkBasePath = 'webwork-open-problem-library/OpenProblemLibrary/';
 
@@ -78,6 +79,22 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
         );
     };
 
+    const onTopicMetadataChange = (e: any, name: keyof NewCourseTopicObj) => {
+        const val = e.target.value;
+        console.log(`updating ${name} to ${val}`);
+        switch (name) {
+        case 'startDate':
+        case 'endDate': {
+            let date = moment(val);
+            setTopicMetadata({...topicMetadata, [name]: date.toDate()});
+            break;
+        }
+        default:
+            setTopicMetadata({...topicMetadata, [name]: val});
+        }
+        console.log(topicMetadata);
+    };
+
     return (
         <>
             <Modal.Header closeButton>
@@ -89,9 +106,27 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
                     <FormGroup as={Row} controlId='topicTitle'>
                         <Form.Label column sm="2">Topic Title:</Form.Label>
                         <Col sm="10">
-                            <FormControl onChange={(e: any) => setTitle(e?.target?.value)} defaultValue={existingTopic?.name}/>
+                            <FormControl onChange={(e: any) => onTopicMetadataChange(e, 'name')} defaultValue={topicMetadata?.name}/>
                         </Col>
                     </FormGroup>
+                    <Row>
+                        <FormGroup as={Col} controlId='start'>
+                            <FormLabel>
+                                <h4>Start Date:</h4>
+                            </FormLabel>
+                            <FormControl 
+                                type='date' 
+                                onChange={(e: any) => onTopicMetadataChange(e, 'startDate')} defaultValue={moment(topicMetadata?.startDate).format('YYYY-MM-DD')}/>
+                        </FormGroup>
+                        <FormGroup as={Col} controlId='end'>
+                            <FormLabel>
+                                <h4>End Date:</h4>
+                            </FormLabel>
+                            <FormControl 
+                                type='date' 
+                                onChange={(e: any) => onTopicMetadataChange(e, 'endDate')} defaultValue={moment(topicMetadata?.endDate).format('YYYY-MM-DD')}/>
+                        </FormGroup>
+                    </Row>
                     { problems.map(addProblemRows) }
                 </Form>
             </Modal.Body>
@@ -101,7 +136,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
                 <Button variant="secondary" onClick={() => setProblems([...problems, new ProblemObject()])}>Add Another Question</Button>
                 <Button 
                     variant="primary" 
-                    onClick={() => addTopic(unit, existingTopic, new TopicObject({name: title, questions: problems}))}
+                    onClick={() => addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problems}))}
                 >Finish</Button>
             </Modal.Footer>
         </>

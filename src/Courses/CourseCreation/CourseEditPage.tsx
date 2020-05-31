@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom';
 import TopicCreationModal from './TopicCreationModal';
 import _ from 'lodash';
 import { TopicObject, CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
+import moment from 'moment';
 
 interface CourseEditPageProps {
 
@@ -165,7 +166,14 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
     const updateCourseValue = (field: keyof CourseObject, e: any) => {
         const value = e.target.value;
+        switch (field) {
+        case 'start':
+        case 'end':
+            setCourse({...course, [field]: moment(value).toDate()});
+            break;
+        default:
         setCourse({...course, [field]: value});
+        }
     };
 
     const showEditTopic = (e: any, unitId: number, topicId: number) => {
