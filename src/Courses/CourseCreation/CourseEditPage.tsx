@@ -71,6 +71,21 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         setCourse(newCourse);
         setShowTopicCreation({show: false, unit: -1});
     };
+
+    const removeTopic = (e: any, unitId: number, topicId: number) => {
+        let newCourse: CourseObject = {...course};
+        let unit = _.find(newCourse.units, ['id', unitId]);
+
+        if (!unit) {
+            console.error(`Could not find a unit with id ${unitId}`);
+            return;
+        }
+
+        // TODO: Do we need a confirmation workflow?
+
+        unit.topics = _.reject(unit.topics, ['id', topicId]);
+        setCourse(newCourse);
+    };
     
     // Save a course by recurisvely saving all sub-objects.
     const saveCourse = async (course: any) => {
@@ -172,7 +187,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             setCourse({...course, [field]: moment(value).toDate()});
             break;
         default:
-        setCourse({...course, [field]: value});
+            setCourse({...course, [field]: value});
         }
     };
 
@@ -260,6 +275,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             <h4>Units</h4>
             {course?.units?.map((unit: any) => {
                 const showEditWithUnitId = _.curry(showEditTopic)(_, unit.id);
+                const removeTopicWithUnitId = _.curry(removeTopic)(_, unit.id);
                 return (
                     <div key={unit.id}>
                         <Accordion defaultActiveKey="1">
@@ -282,6 +298,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                                             flush
                                             listOfTopics={unit.topics} 
                                             showEditTopic={showEditWithUnitId}
+                                            removeTopic={removeTopicWithUnitId}
                                         />
                                     </Card.Body>
                                 </Accordion.Collapse>

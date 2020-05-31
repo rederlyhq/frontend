@@ -15,7 +15,7 @@ interface TopicCreationModalProps {
  * 
  */
 export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  addTopic, existingTopic}) => {
-    const [topicMetadata, setTopicMetadata] = useState<Partial<NewCourseTopicObj>>({...existingTopic});
+    const [topicMetadata, setTopicMetadata] = useState<NewCourseTopicObj>(new NewCourseTopicObj(existingTopic));
     const [problems, setProblems] = useState<Array<ProblemObject>>(existingTopic ? existingTopic.questions : []);
     const webworkBasePath = 'webwork-open-problem-library/OpenProblemLibrary/';
 
