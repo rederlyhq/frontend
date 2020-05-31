@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import TopicsList from '../TopicsList';
-import { Accordion, Card, Row, Col, Button } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
-import AxiosRequest from '../../Hooks/AxiosRequest';
+import { Accordion, Card, Row, Col } from 'react-bootstrap';
 import { CourseObject } from '../CourseInterfaces';
 
 interface TopicsTabProps {
