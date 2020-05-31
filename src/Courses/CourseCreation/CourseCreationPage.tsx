@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ICourseTemplate } from '../CourseInterfaces';
 import CourseTemplateList from './CourseTemplateList';
-import { FormControl } from 'react-bootstrap';
+import { FormControl, Button, Container, Row, Col } from 'react-bootstrap';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
+import {useDropzone} from 'react-dropzone';
+import AxiosRequest from '../../Hooks/AxiosRequest';
+
+import './Course.css';
 
 interface CourseCreationPageProps {
-
+    
 }
 
 /**
@@ -16,15 +20,19 @@ interface CourseCreationPageProps {
 export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
     const [courseTemplates, setCourseTemplates] = useState<Array<ICourseTemplate>>([]);
     const [filteredCourseTemplates, setFilteredCourseTemplates] = useState<Array<ICourseTemplate>>([]);
+    const onDrop = useCallback(acceptedFiles => {
+        // TODO: Here, we should upload the DEF file to the server, and then move to the next page.
+        console.log(acceptedFiles);
+    }, []);
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop});
 
     useEffect(() => {
-        const mock_templates: Array<ICourseTemplate> = [
-            {name: 'Curriculum 1', id: 1}, 
-            {name: 'Course 1', id: 2},
-            {name: 'Rederly Default Curriculum', id: 3}
-        ];
-        setCourseTemplates(mock_templates);
-        setFilteredCourseTemplates(mock_templates);
+        (async () => {
+            let templatesResponse = await AxiosRequest.get('/curriculum');
+            let templates = templatesResponse.data.data;
+            setCourseTemplates(templates);
+            setFilteredCourseTemplates(templates);
+        })();
     }, []);
 
     const filterCourseTemplates = (e: any) => {
@@ -35,9 +43,19 @@ export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
     
     return (
         <EnterRightAnimWrapper>
-            <h1>Select a course template:</h1>
-            <FormControl type="search" placeholder="Search by Course or Curriculum Name" onChange={filterCourseTemplates} />
-            <CourseTemplateList courseTemplates={filteredCourseTemplates} />
+            <Container>
+                <>
+                    <Row style={isDragActive ? {backgroundColor: 'red'} : {}} {...getRootProps()} className='defUploadBox'>
+                        <input type="file" {...getInputProps()} />
+                        <Col md={12}>
+                            <h1>Select a course template, or upload an existing course.</h1>
+                            <Button>Drag and Drop a DEF File here, or click to upload.</Button>
+                        </Col>
+                    </Row>
+                    <FormControl type="search" placeholder="Search by Course or Curriculum Name" onChange={filterCourseTemplates} />
+                    <CourseTemplateList courseTemplates={filteredCourseTemplates} />
+                </>
+            </Container>
         </EnterRightAnimWrapper>
     );
 };
