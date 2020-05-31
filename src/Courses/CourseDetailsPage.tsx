@@ -1,7 +1,9 @@
-import React from 'react';
-import { Container, Tabs, Tab } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Button, Container, Tabs, Tab } from 'react-bootstrap';
 import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
 import TopicsTab from './CourseDetailsTabs/TopicsTab';
+import { useParams, useRouteMatch, useLocation } from 'react-router-dom';
+import AxiosRequest from '../Hooks/AxiosRequest';
 
 interface CourseDetailsPageProps {
 
@@ -9,7 +11,8 @@ interface CourseDetailsPageProps {
 
 enum CourseDetailsTabs {
     TOPICS = 'topics',
-    ENROLLMENTS = 'enrollments'
+    ENROLLMENTS = 'enrollments',
+    DETAILS = 'details'
 }
 
 /**
@@ -18,14 +21,62 @@ enum CourseDetailsTabs {
  *
  */
 export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
+    const { courseId } = useParams();
+    const [course, setCourse] = useState<any>({});
+    const enrollUrl: string = `${window.location.host}/courses/enroll/${course?.code}`;
+    let enrollLinkRef: HTMLAnchorElement | null = null;
+    
+    useEffect(() => {
+        (async ()=>{
+            if (!courseId) return;
+
+            const courseResp = await AxiosRequest.get(`/courses/${courseId}`);
+            console.log(courseResp.data);
+            setCourse(courseResp.data.data);
+        })();
+    }, [courseId]);
+
+    if (courseId === undefined) return <div>Please return to login.</div>;
+
+    const copyToClipboard = () => {
+        if (!enrollLinkRef) {
+            console.error('enrollLinkRef not logged properly.');
+            return;
+        }
+        var range = document.createRange();
+        range.selectNodeContents(enrollLinkRef);
+        window.getSelection()?.addRange(range);
+
+        try {
+            const res = document.execCommand('copy');
+            console.log(`Copy operation ${res ? 'was successful' : 'failed'}`);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            window.getSelection()?.removeRange(range);
+        }
+        
+    };
+    
     return (
         <Container>
-            <Tabs defaultActiveKey={CourseDetailsTabs.TOPICS} id="course-details-tabs">
+            <Tabs defaultActiveKey={CourseDetailsTabs.DETAILS} id="course-details-tabs">
+                <Tab eventKey={CourseDetailsTabs.DETAILS} title="Details">
+                    {course && (
+                        <>
+                            <h1>{course.name}</h1>
+                            <p>Course description content goes here.</p>
+                            <Button onClick={() => copyToClipboard()}>Copy Student Enrollment Link</Button>
+                            <a ref={a => enrollLinkRef = a} id='enrollUrlLink' href={enrollUrl}>https://{enrollUrl}</a>
+                        </>
+                    )
+                    }
+                </Tab>
                 <Tab eventKey={CourseDetailsTabs.TOPICS} title="Topics">
                     <TopicsTab />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
-                    <EnrollmentsTab />
+                    <EnrollmentsTab courseId={parseInt(courseId, 10)}/>
                 </Tab>
             </Tabs>
         </Container>

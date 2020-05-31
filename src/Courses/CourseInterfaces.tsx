@@ -1,8 +1,9 @@
 export class CourseObject {
-    course_name: string = 'undefined';
-    course_start?: Date = undefined;
-    course_end?: Date = undefined;
-    course_code: string = 'undefined';
+    name: string = 'undefined';
+    start?: Date = undefined;
+    end?: Date = undefined;
+    code: string = 'undefined';
+    id: number = 0;
     
     public constructor(init?:Partial<CourseObject>) {
         Object.assign(this, init);
@@ -25,4 +26,18 @@ export class UserObject {
 export interface ICourseTemplate {
     name: string;
     id: number;
+}
+
+export interface IProblemObject {
+    path: string;
+    weight: number;
+}
+
+export class TopicObject {
+    name: string = '';
+    questions: Array<IProblemObject> = [];
+    
+    public constructor(init?:Partial<TopicObject>) {
+        Object.assign(this, init);
+    }
 }

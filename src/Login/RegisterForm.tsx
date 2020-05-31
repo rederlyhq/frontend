@@ -51,7 +51,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
                 {
                     email: formState.registerEmail,
                     password: formState.registerPassword,
-                    username: formState.registerFirstName + formState.registerLastName,
+                    firstName: formState.registerFirstName,
+                    lastName: formState.registerLastName,
                 });
             console.log(resp);
 
