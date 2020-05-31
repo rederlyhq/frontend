@@ -73,7 +73,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                     }
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.TOPICS} title="Topics">
-                    <TopicsTab />
+                    <TopicsTab course={course} />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
                     <EnrollmentsTab courseId={parseInt(courseId, 10)}/>
