@@ -17,7 +17,7 @@ interface TopicCreationModalProps {
 export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  addTopic, existingTopic}) => {
     const [topicMetadata, setTopicMetadata] = useState<NewCourseTopicObj>(new NewCourseTopicObj(existingTopic));
     const [problems, setProblems] = useState<Array<ProblemObject>>(existingTopic ? existingTopic.questions : []);
-    const webworkBasePath = 'webwork-open-problem-library/OpenProblemLibrary/';
+    const webworkBasePath = 'webwork-open-problem-library/';
 
     /**
      * Handles state for input for each problem.
@@ -58,7 +58,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
                         <InputGroup.Prepend>
                             <InputGroup.Text>{webworkBasePath}</InputGroup.Text>
                         </InputGroup.Prepend>
-                        <FormControl value={problem.webworkQuestionPath} onChange={onFormChangeProblemIndex('webworkQuestionPath')}/>
+                        <FormControl required value={problem.webworkQuestionPath} onChange={onFormChangeProblemIndex('webworkQuestionPath')}/>
                     </InputGroup>
                 </FormGroup>
                 <Row>
@@ -97,39 +97,49 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
     };
 
     return (
-        <>
+        <Form 
+            action='#'
+            onSubmit={() => addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problems}))}>
             <Modal.Header closeButton>
                 <h3>{existingTopic ? `Editing: ${existingTopic.name}` : 'Add a Topic'}</h3>
             </Modal.Header>
             <Modal.Body>
-                <Form>
-                    <h6>Add questions to your topic, or import a question list from a DEF file.</h6>
-                    <FormGroup as={Row} controlId='topicTitle'>
-                        <Form.Label column sm="2">Topic Title:</Form.Label>
-                        <Col sm="10">
-                            <FormControl onChange={(e: any) => onTopicMetadataChange(e, 'name')} defaultValue={topicMetadata?.name}/>
-                        </Col>
+                <h6>Add questions to your topic, or import a question list from a DEF file.</h6>
+                <FormGroup as={Row} controlId='topicTitle'>
+                    <Form.Label column sm="2">Topic Title:</Form.Label>
+                    <Col sm="10">
+                        <FormControl
+                            required
+                            onChange={(e: any) => onTopicMetadataChange(e, 'name')} 
+                            defaultValue={topicMetadata?.name}
+                        />
+                    </Col>
+                </FormGroup>
+                <Row>
+                    <FormGroup as={Col} controlId='start'>
+                        <FormLabel>
+                            <h4>Start Date:</h4>
+                        </FormLabel>
+                        <FormControl 
+                            required
+                            type='date' 
+                            onChange={(e: any) => onTopicMetadataChange(e, 'startDate')}
+                            defaultValue={moment(topicMetadata?.startDate).format('YYYY-MM-DD')}
+                        />
                     </FormGroup>
-                    <Row>
-                        <FormGroup as={Col} controlId='start'>
-                            <FormLabel>
-                                <h4>Start Date:</h4>
-                            </FormLabel>
-                            <FormControl 
-                                type='date' 
-                                onChange={(e: any) => onTopicMetadataChange(e, 'startDate')} defaultValue={moment(topicMetadata?.startDate).format('YYYY-MM-DD')}/>
-                        </FormGroup>
-                        <FormGroup as={Col} controlId='end'>
-                            <FormLabel>
-                                <h4>End Date:</h4>
-                            </FormLabel>
-                            <FormControl 
-                                type='date' 
-                                onChange={(e: any) => onTopicMetadataChange(e, 'endDate')} defaultValue={moment(topicMetadata?.endDate).format('YYYY-MM-DD')}/>
-                        </FormGroup>
-                    </Row>
-                    { problems.map(addProblemRows) }
-                </Form>
+                    <FormGroup as={Col} controlId='end'>
+                        <FormLabel>
+                            <h4>End Date:</h4>
+                        </FormLabel>
+                        <FormControl 
+                            required
+                            type='date' 
+                            onChange={(e: any) => onTopicMetadataChange(e, 'endDate')}
+                            defaultValue={moment(topicMetadata?.endDate).format('YYYY-MM-DD')}
+                        />
+                    </FormGroup>
+                </Row>
+                { problems.map(addProblemRows) }
             </Modal.Body>
             <Modal.Footer>
                 {/* Do we need a cancel button in the Modal? You can click out and click the X. */}
@@ -137,10 +147,10 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
                 <Button variant="secondary" onClick={() => setProblems([...problems, new ProblemObject()])}>Add Another Question</Button>
                 <Button 
                     variant="primary" 
-                    onClick={() => addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problems}))}
+                    type='submit'
                 >Finish</Button>
             </Modal.Footer>
-        </>
+        </Form>
     );
 };
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Container, Tabs, Tab } from 'react-bootstrap';
+import { Button, Container, Tabs, Tab, InputGroup, FormControl, FormLabel } from 'react-bootstrap';
 import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
 import TopicsTab from './CourseDetailsTabs/TopicsTab';
 import { useParams } from 'react-router-dom';
@@ -66,8 +66,19 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                         <>
                             <h1>{course.name}</h1>
                             <p>Course description content goes here.</p>
-                            <Button onClick={() => copyToClipboard()}>Copy Student Enrollment Link</Button>
-                            <a ref={a => enrollLinkRef = a} id='enrollUrlLink' href={enrollUrl}>https://{enrollUrl}</a>
+
+                            <FormLabel>Enrollment Link:</FormLabel>
+                            <InputGroup className="mb-3">
+                                <FormControl
+                                    disabled
+                                    aria-label="Enrollment link"
+                                    aria-describedby="basic-addon2"
+                                    value={`https://${enrollUrl}`}
+                                />
+                                <InputGroup.Append>
+                                    <Button variant="outline-secondary" onClick={() => copyToClipboard()}>Copy to Clipboard</Button>
+                                </InputGroup.Append>
+                            </InputGroup>
                         </>
                     )
                     }
