@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Container, Tabs, Tab } from 'react-bootstrap';
+import React, { useEffect, useState, useRef } from 'react';
+import { Button, Container, Tabs, Tab, InputGroup, FormControl, FormLabel } from 'react-bootstrap';
 import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
 import TopicsTab from './CourseDetailsTabs/TopicsTab';
 import { useParams } from 'react-router-dom';
@@ -23,8 +23,8 @@ enum CourseDetailsTabs {
 export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<any>({});
+    const textAreaRef = useRef(null);
     const enrollUrl: string = `${window.location.host}/courses/enroll/${course?.code}`;
-    let enrollLinkRef: HTMLAnchorElement | null = null;
     
     useEffect(() => {
         (async ()=>{
@@ -36,16 +36,15 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
         })();
     }, [courseId]);
 
-    if (courseId === undefined) return <div>Please return to login.</div>;
+    if (!courseId) return <div>Please return to login.</div>;
 
-    const copyToClipboard = () => {
-        if (!enrollLinkRef) {
+    const copyToClipboard = (e: any) => {
+        if (!textAreaRef) {
             console.error('enrollLinkRef not logged properly.');
             return;
         }
-        var range = document.createRange();
-        range.selectNodeContents(enrollLinkRef);
-        window.getSelection()?.addRange(range);
+        console.log(textAreaRef);
+        (textAreaRef?.current as any).select();
 
         try {
             const res = document.execCommand('copy');
@@ -53,7 +52,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
         } catch (err) {
             console.error(err);
         } finally {
-            window.getSelection()?.removeRange(range);
+            e.target.focus();
         }
         
     };
@@ -66,14 +65,26 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                         <>
                             <h1>{course.name}</h1>
                             <p>Course description content goes here.</p>
-                            <Button onClick={() => copyToClipboard()}>Copy Student Enrollment Link</Button>
-                            <a ref={a => enrollLinkRef = a} id='enrollUrlLink' href={enrollUrl}>https://{enrollUrl}</a>
+
+                            <FormLabel>Enrollment Link:</FormLabel>
+                            <InputGroup className="mb-3">
+                                <FormControl
+                                    readOnly
+                                    aria-label="Enrollment link"
+                                    aria-describedby="basic-addon2"
+                                    ref={textAreaRef}
+                                    value={`https://${enrollUrl}`}
+                                />
+                                <InputGroup.Append>
+                                    <Button variant="outline-secondary" onClick={copyToClipboard}>Copy to Clipboard</Button>
+                                </InputGroup.Append>
+                            </InputGroup>
                         </>
                     )
                     }
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.TOPICS} title="Topics">
-                    <TopicsTab />
+                    <TopicsTab course={course} />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
                     <EnrollmentsTab courseId={parseInt(courseId, 10)}/>

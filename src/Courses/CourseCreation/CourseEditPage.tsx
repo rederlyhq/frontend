@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import TopicsList from '../TopicsList';
-import { Button, Col, Row, Accordion, Card, Modal, FormControl, FormLabel, FormGroup, Spinner } from 'react-bootstrap';
+import { Button, Col, Row, Accordion, Card, Modal, FormControl, FormLabel, FormGroup, Spinner, Form } from 'react-bootstrap';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useParams } from 'react-router-dom';
 import TopicCreationModal from './TopicCreationModal';
 import _ from 'lodash';
-import { TopicObject, CourseObject, UnitObject, IProblemObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
+import { TopicObject, CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
+import moment from 'moment';
+import { useHistory } from 'react-router-dom';
 
 interface CourseEditPageProps {
 
@@ -20,13 +22,15 @@ interface CourseEditPageProps {
 export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<CourseObject>(new CourseObject({}));
-    const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unit: number}>({show: false, unit: -1});
+    const history = useHistory();
+    const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unit: number, existingTopic?: TopicObject | undefined}>({show: false, unit: -1});
     const [showLoadingSpinner, setShowLoadingSpinner] = useState<boolean>(false);
 
+    // Load the curriculum that populates the template.
     useEffect(() => {
         (async ()=>{
             let course = await AxiosRequest.get(`/curriculum/${courseId}`);
-
+            // TODO: Error handling for bad template id.
             console.log(course.data.data);
             setCourse(course.data.data);
         })();
@@ -43,20 +47,46 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     };
 
     // Adds a topic to the selected unit.
-    const addTopic = (unit_id: number, topic: TopicObject) => {
+    const addTopic = (unitId: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
         let newCourse: CourseObject = {...course};
-        console.log(newCourse);
-        let unit = _.find(newCourse.units, {id: unit_id});
-        console.log(newCourse.units);
-        console.log(unit);
-        if (!unit || !(unit instanceof UnitObject)) {
-            console.error(`Could not find a unit with id ${unit_id}`);
+        let unit = _.find(newCourse.units, ['id', unitId]);
+
+        if (!unit) {
+            console.error(`Could not find a unit with id ${unitId}`);
             return;
         }
-        // TODO FIXME: A topic needs to fit the object, it is not just an array.
-        unit.topics = _.concat(unit.topics, topic);
+
+        // If a topic already exists, update and overwrite it in the course object.
+        if (existingTopic) {
+            let oldTopic = _.find(unit.topics, ['id', existingTopic.id]);
+
+            if (!oldTopic) {
+                console.error(`Could not update topic ${existingTopic.id} in unit ${unitId}`);
+            }
+
+            _.assign(oldTopic, topic);
+        } else {
+            // Otherwise, concatenate this object onto the existing array.
+            unit.topics = _.concat(unit.topics, topic);
+        }
+
         setCourse(newCourse);
         setShowTopicCreation({show: false, unit: -1});
+    };
+
+    const removeTopic = (e: any, unitId: number, topicId: number) => {
+        let newCourse: CourseObject = {...course};
+        let unit = _.find(newCourse.units, ['id', unitId]);
+
+        if (!unit) {
+            console.error(`Could not find a unit with id ${unitId}`);
+            return;
+        }
+
+        // TODO: Do we need a confirmation workflow?
+
+        unit.topics = _.reject(unit.topics, ['id', topicId]);
+        setCourse(newCourse);
     };
     
     // Save a course by recurisvely saving all sub-objects.
@@ -73,12 +103,12 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             let unitRes = await AxiosRequest.post('/courses/unit', unitPostObject);
             console.log(unitRes);
 
-            if (res?.status !== 201) {
+            if (unitRes?.status !== 201) {
                 console.error('Post unit failed.');
                 return;
             }
     
-            const newUnitId = res?.data.data.id;
+            const newUnitId = unitRes?.data.data.id;
             
             console.log(`Currying createUnit with ${newUnitId}`);
             const createTopicForUnit = _.curry(createTopic)(_, newUnitId);
@@ -121,7 +151,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             postObject.code = 'TODO';
             // TODO: Fix naming for route, should be 'templateId'.
 
-            if (!courseId || courseId == undefined) {
+            if (!courseId) {
                 // TODO: Move this to the useEffect, navigate away if it fails?
                 return;
             }
@@ -144,6 +174,8 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         try {
             let unitRes = await Promise.all(course?.units?.map(createUnitForCourse));
             console.log(unitRes);
+            // TODO: Need to handle extra validation to make sure everything succeeded.
+            history.replace('/common/courses');
         } catch (e) {
             console.error('An error occurred when creating this course', e);
             console.log(e.response?.data.message);
@@ -153,107 +185,151 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
     const updateCourseValue = (field: keyof CourseObject, e: any) => {
         const value = e.target.value;
-        setCourse({...course, [field]: value});
+        switch (field) {
+        case 'start':
+        case 'end':
+            setCourse({...course, [field]: moment(value).toDate()});
+            break;
+        default:
+            setCourse({...course, [field]: value});
+        }
+    };
+
+    const showEditTopic = (e: any, unitId: number, topicId: number) => {
+        console.log(`Editing topic ${topicId} in unit ${unitId}`);
+        let unit: UnitObject | undefined = _.find(course.units, ['id', unitId]);
+        console.log(unit);
+        if (!unit) {
+            console.error(`Cannot find unit with id ${unitId}`);
+            return;
+        }
+
+        const topic = _.find(unit.topics, ['id', topicId]);
+        if (!topic) {
+            console.error(`Cannot find topic with id ${topicId} in unit with id ${unitId}`);
+            return;
+        }
+        setShowTopicCreation({show: true, unit: unitId, existingTopic: topic});
     };
 
     return (
         <EnterRightAnimWrapper>
-            <FormGroup controlId='course-name'>
+            <Form action='#' onSubmit={() => saveCourse(course)}>
+                <FormGroup controlId='course-name'>
+                    <Row>
+                        <FormLabel column sm={2}>
+                            <h3>Course Name: </h3>
+                        </FormLabel>
+                        <Col>
+                            <FormControl 
+                                required
+                                size='lg' 
+                                defaultValue={course?.name || ''}
+                                onChange={(e: any) => updateCourseValue('name', e)}
+                            />
+                        </Col>
+                    </Row>
+                </FormGroup>
                 <Row>
-                    <FormLabel column sm={2}>
-                        <h3>Course Name: </h3>
-                    </FormLabel>
                     <Col>
-                        <FormControl 
-                            size='lg' 
-                            defaultValue={course?.name || ''}
-                            onChange={(e: any) => updateCourseValue('name', e)}
-                        />
+                        <FormGroup controlId='start-date'>
+                            <FormLabel>
+                                <h4>Start Date:</h4>
+                            </FormLabel>
+                            <FormControl 
+                                required
+                                type='date' 
+                                onChange={(e: any) => updateCourseValue('start', e)}/>
+                        </FormGroup>
+                    </Col>
+                    <Col>
+                        <FormGroup controlId='end-date'>
+                            <FormLabel>
+                                <h4>End Date:</h4>
+                            </FormLabel>
+                            <FormControl 
+                                required
+                                type='date' 
+                                onChange={(e: any) => updateCourseValue('end', e)}/>
+                        </FormGroup>
                     </Col>
                 </Row>
-            </FormGroup>
-            <Row>
-                <Col>
-                    <FormGroup controlId='start-date'>
-                        <FormLabel>
-                            <h4>Start Date:</h4>
-                        </FormLabel>
-                        <FormControl 
-                            type='date' 
-                            onChange={(e: any) => updateCourseValue('start', e)}/>
-                    </FormGroup>
-                </Col>
-                <Col>
-                    <FormGroup controlId='end-date'>
-                        <FormLabel>
-                            <h4>End Date:</h4>
-                        </FormLabel>
-                        <FormControl 
-                            type='date' 
-                            onChange={(e: any) => updateCourseValue('end', e)}/>
-                    </FormGroup>
-                </Col>
-            </Row>
-            <Row>
-                <Col>
-                    <FormGroup controlId='section-code'>
-                        <FormLabel>
-                            <h4>Section Code:</h4>
-                        </FormLabel>
-                        <FormControl type='text' placeholder='MAT120' 
-                            onChange={(e: any) => updateCourseValue('sectionCode', e)}/>
-                    </FormGroup>
-                </Col>
-                <Col>
-                    <FormGroup controlId='semester-code'>
-                        <FormLabel>
-                            <h4>Semester Code:</h4>
-                        </FormLabel>
-                        <FormControl type='text' placeholder='SUM20'
-                            onChange={(e: any) => updateCourseValue('semesterCode', e)}/>
-                    </FormGroup>
-                </Col>
-            </Row>
-            <Button className="float-right">Add a new Unit</Button>
-            <h5>Textbooks:</h5>
-            <ul>
-                <li>Introduction to Math</li>
-                <li>Math for Dummies</li>
-            </ul>
-            <h4>Units</h4>
-            {course?.units?.map((unit: any) => (
-                <div key={unit.id}>
-                    <Accordion defaultActiveKey="1">
-                        <Card>
-                            <Accordion.Toggle as={Card.Header} eventKey="0">
-                                <Row>
-                                    <Col>
-                                        <h4>{unit.name}</h4>
-                                    </Col>
-                                    <Col>
-                                        <Button className='float-right' onClick={(e: any) => callShowTopicCreation(unit.id, e)}>
-                                            Add a Topic
-                                        </Button>
-                                    </Col>
-                                </Row>
-                            </Accordion.Toggle>
-                            <Accordion.Collapse eventKey="0">
-                                <Card.Body>
-                                    <TopicsList listOfTopics={unit.topics} flush/>
-                                </Card.Body>
-                            </Accordion.Collapse>
-                        </Card>
-                    </Accordion>
-                </div>
-            )
-            )}
-            <Button className="float-right" onClick={() => saveCourse(course)}>Save Course</Button>
+                <Row>
+                    <Col>
+                        <FormGroup controlId='section-code'>
+                            <FormLabel>
+                                <h4>Section Code:</h4>
+                            </FormLabel>
+                            <FormControl type='text' placeholder='MAT120' 
+                                required
+                                onChange={(e: any) => updateCourseValue('sectionCode', e)}/>
+                        </FormGroup>
+                    </Col>
+                    <Col>
+                        <FormGroup controlId='semester-code'>
+                            <FormLabel>
+                                <h4>Semester Code:</h4>
+                            </FormLabel>
+                            <FormControl type='text' placeholder='SUM20'
+                                required
+                                onChange={(e: any) => updateCourseValue('semesterCode', e)}/>
+                        </FormGroup>
+                    </Col>
+                </Row>
+                <Button className="float-right">Add a new Unit</Button>
+                <h5>Textbooks:</h5>
+                <ul>
+                    <li>Introduction to Math</li>
+                    <li>Math for Dummies</li>
+                </ul>
+                <h4>Units</h4>
+                {course?.units?.map((unit: any) => {
+                    const showEditWithUnitId = _.curry(showEditTopic)(_, unit.id);
+                    const removeTopicWithUnitId = _.curry(removeTopic)(_, unit.id);
+                    return (
+                        <div key={unit.id}>
+                            <Accordion defaultActiveKey="1">
+                                <Card>
+                                    <Accordion.Toggle as={Card.Header} eventKey="0">
+                                        <Row>
+                                            <Col>
+                                                <h4>{unit.name}</h4>
+                                            </Col>
+                                            <Col>
+                                                <Button className='float-right' onClick={(e: any) => callShowTopicCreation(unit.id, e)}>
+                                                    Add a Topic
+                                                </Button>
+                                            </Col>
+                                        </Row>
+                                    </Accordion.Toggle>
+                                    <Accordion.Collapse eventKey="0">
+                                        <Card.Body>
+                                            <TopicsList 
+                                                flush
+                                                listOfTopics={unit.topics} 
+                                                showEditTopic={showEditWithUnitId}
+                                                removeTopic={removeTopicWithUnitId}
+                                            />
+                                        </Card.Body>
+                                    </Accordion.Collapse>
+                                </Card>
+                            </Accordion>
+                        </div>
+                    );
+                }
+                )}
+                <Button block size='lg' type='submit'>Save Course</Button>
+            </Form>
             <Modal 
                 show={showTopicCreation.show} 
                 onHide={() => setShowTopicCreation({show: false, unit: -1})}
                 dialogClassName="topicCreationModal"    
             >
-                <TopicCreationModal unit={showTopicCreation.unit} addTopic={addTopic} />
+                <TopicCreationModal 
+                    unit={showTopicCreation.unit}
+                    addTopic={addTopic}
+                    existingTopic={showTopicCreation.existingTopic}
+                />
             </Modal>
             <Modal show={showLoadingSpinner} className='text-center'>
                 <h4>Creating course, please wait.</h4>
