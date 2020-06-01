@@ -1,8 +1,9 @@
 import React from 'react'
 import { ListGroup, ListGroupItem } from 'react-bootstrap';
+import { TopicObject } from './CourseInterfaces';
 
 interface TopicsListProps {
-    listOfTopics: Array<any>;
+    listOfTopics: Array<TopicObject>;
     flush?: boolean;
 }
 
@@ -13,7 +14,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush}) => 
     return (
         <ListGroup variant={flush ? 'flush' : undefined}>
             {listOfTopics.map(topic => (
-                <ListGroupItem key={topic.topic_id}>
+                <ListGroupItem key={topic.id}>
                     {topic.name}
                 </ListGroupItem>
             ))}

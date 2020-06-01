@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ButtonAndModal from '../../Components/ButtonAndModal';
 import { FormControl, FormLabel, Form, FormGroup, Modal, FormText, Button, InputGroup, Col, Row } from 'react-bootstrap';
 import _ from 'lodash';
-import { IProblemObject, TopicObject } from '../CourseInterfaces';
+import { IProblemObject, TopicObject, ProblemObject } from '../CourseInterfaces';
 
 interface TopicCreationModalProps {
     unit: number;
@@ -15,7 +15,7 @@ interface TopicCreationModalProps {
  */
 export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  addTopic}) => {
     const [title, setTitle] = useState<string>('');
-    const [problems, setProblems] = useState<Array<IProblemObject>>([{path: '', weight: 0}]);
+    const [problems, setProblems] = useState<Array<ProblemObject>>([]);
     const webworkBasePath = 'webwork-open-problem-library/OpenProblemLibrary/';
 
     /**
@@ -31,7 +31,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
 
         // TODO: Handle validation.
         if (isPath) {
-            probs[index].path = _.trimStart(val, webworkBasePath);
+            probs[index].webworkQuestionPath = _.trimStart(val, webworkBasePath);
         } else {
             probs[index].weight = parseInt(val, 10);
         }
@@ -39,7 +39,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
         setProblems(probs);
     };
 
-    const addProblemRows = (problem: IProblemObject, count: number) => {
+    const addProblemRows = (problem: ProblemObject, count: number) => {
         return (
             <div key={`problem-row-${count}`}>
                 <FormGroup controlId={`problem${count}`}>
@@ -49,7 +49,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
                         <InputGroup.Prepend>
                             <InputGroup.Text>{webworkBasePath}</InputGroup.Text>
                         </InputGroup.Prepend>
-                        <FormControl value={problem.path} onChange={(e: any) => onFormChange(true, count, e)}/>
+                        <FormControl value={problem.webworkQuestionPath} onChange={(e: any) => onFormChange(true, count, e)}/>
                     </InputGroup>
                 </FormGroup>
                 <FormGroup controlId={`weight${count}`}>
@@ -80,7 +80,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="danger" className="float-left">Cancel</Button>
-                <Button variant="secondary" onClick={() => setProblems([...problems, {path: '', weight: 0}])}>Add Another Question</Button>
+                <Button variant="secondary" onClick={() => setProblems([...problems, new ProblemObject()])}>Add Another Question</Button>
                 <Button variant="primary" onClick={() => addTopic(unit, new TopicObject({name: title, questions: problems}))}>Finish</Button>
             </Modal.Footer>
         </>
