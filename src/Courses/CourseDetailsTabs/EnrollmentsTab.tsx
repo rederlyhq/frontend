@@ -8,7 +8,7 @@ interface EnrollmentsTabProps {
 }
 
 export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = ({courseId}) => {
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState<Array<UserObject>>([]);
 
     useEffect(() => {
         (async () => {
