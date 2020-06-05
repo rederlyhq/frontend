@@ -1,8 +1,9 @@
-import React from 'react'
+import React from 'react';
 import { ListGroup, ListGroupItem, Row, Col, Button } from 'react-bootstrap';
 import { TopicObject } from './CourseInterfaces';
 import { BsPencilSquare } from 'react-icons/bs';
 import _ from 'lodash';
+import { Link } from 'react-router-dom';
 
 interface TopicsListProps {
     listOfTopics: Array<TopicObject>;
@@ -20,7 +21,10 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
             {listOfTopics.map(topic => (
                 <ListGroupItem key={topic.id}>
                     <Row>
-                        <Col>{topic.name}</Col>
+                        {/* TODO: Hide for Professor? */}
+                        <Link to={loc =>({pathname: `${loc.pathname}/${topic.id}`, state: {problems: topic.questions}})}>
+                            <Col>{topic.name}</Col>
+                        </Link>
                         {showEditTopic && removeTopic && (
                             <>
                                 <Col md={1}>
