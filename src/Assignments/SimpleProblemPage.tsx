@@ -27,7 +27,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             // console.log(res.data.data.rendererData.renderedHTML);
             setIframeContent(res.data.data.rendererData.renderedHTML);
 
-
             if (!iframeRef) return;
             const current: any = iframeRef.current;
             console.log(current);
