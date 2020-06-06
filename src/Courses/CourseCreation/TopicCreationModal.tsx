@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { FormControl, FormLabel, Form, FormGroup, Modal, Button, InputGroup, Col, Row, FormCheck } from 'react-bootstrap';
 import _ from 'lodash';
 import { TopicObject, ProblemObject, NewCourseTopicObj } from '../CourseInterfaces';
 import moment from 'moment';
+import { useDropzone } from 'react-dropzone';
 
 interface TopicCreationModalProps {
     unit: number;
@@ -97,6 +98,12 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
         console.log(topicMetadata);
     };
 
+    const onDrop = useCallback(acceptedFiles => {
+        // TODO: Here, we should upload the DEF file to the server, and then move to the next page.
+        console.log(acceptedFiles);
+    }, []);
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop});
+
     return (
         <Form 
             action='#'
@@ -105,6 +112,13 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
                 <h3>{existingTopic ? `Editing: ${existingTopic.name}` : 'Add a Topic'}</h3>
             </Modal.Header>
             <Modal.Body>
+                <Row style={isDragActive ? {backgroundColor: 'red'} : {}} {...getRootProps()} className='defUploadBox'>
+                    <input type="file" {...getInputProps()} />
+                    <Col md={12}>
+                        <h4>Select a course template, or upload an existing course.</h4>
+                        <Button>Drag and Drop a DEF File here, or click to upload.</Button>
+                    </Col>
+                </Row>
                 <h6>Add questions to your topic, or import a question list from a DEF file.</h6>
                 <FormGroup as={Row} controlId='topicTitle'>
                     <Form.Label column sm="2">Topic Title:</Form.Label>
