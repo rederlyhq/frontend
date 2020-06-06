@@ -139,6 +139,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             ];
             let postObject: any = _.pick(newProblem, newProblemFields);
             postObject.courseTopicContentId = courseTopicContentId;
+            postObject.webworkQuestionPath = `webwork-open-problem-library/${postObject.webworkQuestionPath}`;
             console.log('Creating problem', postObject, ' from ', problem);
             const res = await AxiosRequest.post('/courses/question', postObject);
             console.log(res);
