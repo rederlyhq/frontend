@@ -139,6 +139,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             ];
             let postObject: any = _.pick(newProblem, newProblemFields);
             postObject.courseTopicContentId = courseTopicContentId;
+            postObject.webworkQuestionPath = `webwork-open-problem-library/${postObject.webworkQuestionPath}`;
             console.log('Creating problem', postObject, ' from ', problem);
             const res = await AxiosRequest.post('/courses/question', postObject);
             console.log(res);
@@ -157,12 +158,19 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             }
 
             postObject.curriculumId = parseInt(courseId, 10);
-            console.log('Creating a new course', postObject);
+            console.log('Creating a new course');
+            console.log(JSON.stringify(postObject));
             return await AxiosRequest.post('/courses', postObject);
         };
 
-        let res = await createCourse(course);
-        console.log(res);
+        let res;
+        try {
+            res = await createCourse(course);
+            console.log(res);
+        } catch (e) {
+            console.error('Error creating course:', e);
+        }
+
         if (res?.status !== 201) {
             console.error('Post failed.');
             return;
@@ -175,12 +183,15 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             let unitRes = await Promise.all(course?.units?.map(createUnitForCourse));
             console.log(unitRes);
             // TODO: Need to handle extra validation to make sure everything succeeded.
+            console.log('The course was successfully created (based on the log above)');
             history.replace('/common/courses');
         } catch (e) {
             console.error('An error occurred when creating this course', e);
             console.log(e.response?.data.message);
         }
+        console.log('What\'s going on');
         setShowLoadingSpinner(false);
+        return false;
     };
 
     const updateCourseValue = (field: keyof CourseObject, e: any) => {
@@ -214,7 +225,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
     return (
         <EnterRightAnimWrapper>
-            <Form action='#' onSubmit={() => saveCourse(course)}>
+            <Form action="javascript:void(0);" onSubmit={() => saveCourse(course)}>
                 <FormGroup controlId='course-name'>
                     <Row>
                         <FormLabel column sm={2}>

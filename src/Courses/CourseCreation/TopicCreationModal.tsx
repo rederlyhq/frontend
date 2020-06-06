@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { FormControl, FormLabel, Form, FormGroup, Modal, Button, InputGroup, Col, Row, FormCheck } from 'react-bootstrap';
 import _ from 'lodash';
 import { TopicObject, ProblemObject, NewCourseTopicObj } from '../CourseInterfaces';
 import moment from 'moment';
+import { useDropzone } from 'react-dropzone';
+import AxiosRequest from '../../Hooks/AxiosRequest';
 
 interface TopicCreationModalProps {
     unit: number;
@@ -38,6 +40,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
         case 'weight':
         case 'maxAttempts':
         case 'problemNumber':
+        case 'id':
             probs[index][name] = parseInt(val, 10);
             break;
         default:
@@ -96,16 +99,54 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
         console.log(topicMetadata);
     };
 
+    const onDrop = useCallback(acceptedFiles => {
+        // TODO: Here, we should upload the DEF file to the server, and then move to the next page.
+        console.log(acceptedFiles);
+        (async () => {
+            const data = new FormData();
+            data.append('def-file', acceptedFiles[0]);
+            const res = await AxiosRequest.post('/courses/def', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            const topicData = res?.data;
+            console.log(topicData);
+            if (!topicData) {
+                console.error('Invalid DEF file.');
+                // TODO: Display error.
+                return false;
+            }
+            console.log(topicData.problems);
+            // We have to massage the old DEF format into a new ProblemObject.
+            // When we import the DEF parser to the frontend, we'll move this logic there.
+            const problems = topicData.problems.map((prob: any) => {
+                const newProb = new ProblemObject(prob);
+                newProb.webworkQuestionPath = prob.source_file;
+                newProb.weight = prob.value;
+                // TODO: is counts_parent_grade the same as optional?
+                return newProb;
+            });
+            console.log(problems);
+            setProblems(problems);
+        })();
+    }, []);
+    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop});
+
     return (
         <Form 
-            action='#'
-            onSubmit={() => addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problems}))}>
+            action='javascript:void(0);'
+            onSubmit={() => addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problems}))}
+            {...getRootProps()}
+            onClick={()=>{}}
+            style={isDragActive ? {backgroundColor: 'red'} : {}}>
             <Modal.Header closeButton>
                 <h3>{existingTopic ? `Editing: ${existingTopic.name}` : 'Add a Topic'}</h3>
             </Modal.Header>
             <Modal.Body>
-                <h6>Add questions to your topic, or import a question list from a DEF file.</h6>
-                <FormGroup as={Row} controlId='topicTitle'>
+                <input type="file" {...getInputProps()} />
+                <h6>Add questions to your topic, or import a question list by dragging in a DEF file.</h6>
+                <FormGroup as={Row} controlId='topicTitle' onClick={(e : any) => {e.preventDefault(); e.stopPropagation();}}>
                     <Form.Label column sm="2">Topic Title:</Form.Label>
                     <Col sm="10">
                         <FormControl
@@ -144,6 +185,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
             <Modal.Footer>
                 {/* Do we need a cancel button in the Modal? You can click out and click the X. */}
                 {/* <Button variant="danger" className="float-left">Cancel</Button> */}
+                <Button variant="secondary" onClick={getRootProps().onClick}>Upload a DEF file</Button>
                 <Button variant="secondary" onClick={() => setProblems([...problems, new ProblemObject()])}>Add Another Question</Button>
                 <Button 
                     variant="primary" 
