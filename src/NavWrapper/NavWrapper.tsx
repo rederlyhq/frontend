@@ -8,7 +8,7 @@ import CourseDetailsPage from '../Courses/CourseDetailsPage';
 import { AnimatePresence } from 'framer-motion';
 import './NavWrapper.css';
 import NavbarCollapse from 'react-bootstrap/NavbarCollapse';
-import { UserRole } from '../Enums/UserRole';
+import { UserRole, getUserRole } from '../Enums/UserRole';
 import CourseCreationPage from '../Courses/CourseCreation/CourseCreationPage';
 import CourseEditPage from '../Courses/CourseCreation/CourseEditPage';
 import SimpleProblemPage from '../Assignments/SimpleProblemPage';
@@ -69,7 +69,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                 </NavbarCollapse>
             </Navbar>
             {/* Routing for the page content */}
-            <Provider value={{userType: UserRole.PROFESSOR}}>    
+            <Provider value={{userType: getUserRole(sessionCookie)}}>    
                 <AnimatePresence exitBeforeEnter initial={false}>
                     <Switch>
                         <Route exact path={`${path}/courses`}>
