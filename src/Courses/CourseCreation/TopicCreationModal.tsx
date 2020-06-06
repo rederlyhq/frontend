@@ -106,21 +106,18 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
 
     return (
         <Form 
-            action='#'
-            onSubmit={() => addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problems}))}>
+            action='javascript:void(0);'
+            onSubmit={() => addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problems}))}
+            {...getRootProps()}
+            onClick={()=>{}}
+            style={isDragActive ? {backgroundColor: 'red'} : {}}>
             <Modal.Header closeButton>
                 <h3>{existingTopic ? `Editing: ${existingTopic.name}` : 'Add a Topic'}</h3>
             </Modal.Header>
             <Modal.Body>
-                <Row style={isDragActive ? {backgroundColor: 'red'} : {}} {...getRootProps()} className='defUploadBox'>
-                    <input type="file" {...getInputProps()} />
-                    <Col md={12}>
-                        <h4>Select a course template, or upload an existing course.</h4>
-                        <Button>Drag and Drop a DEF File here, or click to upload.</Button>
-                    </Col>
-                </Row>
-                <h6>Add questions to your topic, or import a question list from a DEF file.</h6>
-                <FormGroup as={Row} controlId='topicTitle'>
+                <input type="file" {...getInputProps()} />
+                <h6>Add questions to your topic, or import a question list by dragging in a DEF file.</h6>
+                <FormGroup as={Row} controlId='topicTitle' onClick={(e : any) => {e.preventDefault(); e.stopPropagation();}}>
                     <Form.Label column sm="2">Topic Title:</Form.Label>
                     <Col sm="10">
                         <FormControl
@@ -159,6 +156,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
             <Modal.Footer>
                 {/* Do we need a cancel button in the Modal? You can click out and click the X. */}
                 {/* <Button variant="danger" className="float-left">Cancel</Button> */}
+                <Button variant="secondary" onClick={getRootProps().onClick}>Upload a DEF file</Button>
                 <Button variant="secondary" onClick={() => setProblems([...problems, new ProblemObject()])}>Add Another Question</Button>
                 <Button 
                     variant="primary" 
