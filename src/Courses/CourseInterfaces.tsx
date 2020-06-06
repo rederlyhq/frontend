@@ -77,7 +77,7 @@ export class NewCourseUnitObj extends UnitObject {
 }
 
 export class ProblemObject implements IProblemObject {
-    // id: number = 0;
+    id: number = 0;
     problemNumber: number = 1;
     webworkQuestionPath: string = ''; // This is the same as path, currently.
     path: string = '';
