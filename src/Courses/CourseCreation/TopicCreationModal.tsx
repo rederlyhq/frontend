@@ -4,6 +4,7 @@ import _ from 'lodash';
 import { TopicObject, ProblemObject, NewCourseTopicObj } from '../CourseInterfaces';
 import moment from 'moment';
 import { useDropzone } from 'react-dropzone';
+import AxiosRequest from '../../Hooks/AxiosRequest';
 
 interface TopicCreationModalProps {
     unit: number;
@@ -101,6 +102,34 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
     const onDrop = useCallback(acceptedFiles => {
         // TODO: Here, we should upload the DEF file to the server, and then move to the next page.
         console.log(acceptedFiles);
+        (async () => {
+            const data = new FormData();
+            data.append('def-file', acceptedFiles[0]);
+            const res = await AxiosRequest.post('/courses/def', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            const topicData = res?.data;
+            console.log(topicData);
+            if (!topicData) {
+                console.error('Invalid DEF file.');
+                // TODO: Display error.
+                return false;
+            }
+            console.log(topicData.problems);
+            // We have to massage the old DEF format into a new ProblemObject.
+            // When we import the DEF parser to the frontend, we'll move this logic there.
+            const problems = topicData.problems.map((prob: any) => {
+                const newProb = new ProblemObject(prob);
+                newProb.webworkQuestionPath = prob.source_file;
+                newProb.weight = prob.value;
+                // TODO: is counts_parent_grade the same as optional?
+                return newProb;
+            });
+            console.log(problems);
+            setProblems(problems);
+        })();
     }, []);
     const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop});
 
