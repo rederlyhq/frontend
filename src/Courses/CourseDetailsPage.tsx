@@ -23,7 +23,7 @@ enum CourseDetailsTabs {
 export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<any>({});
-    const textAreaRef = useRef(null);
+    const textAreaRef = useRef<FormControl<'input'> & HTMLInputElement>(null);
     const enrollUrl: string = `${window.location.host}/courses/enroll/${course?.code}`;
     
     useEffect(() => {
@@ -39,12 +39,12 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     if (!courseId) return <div>Please return to login.</div>;
 
     const copyToClipboard = (e: any) => {
-        if (!textAreaRef) {
+        if (textAreaRef?.current === null) {
             console.error('enrollLinkRef not logged properly.');
             return;
         }
         console.log(textAreaRef);
-        (textAreaRef?.current as any).select();
+        textAreaRef?.current.select();
 
         try {
             const res = document.execCommand('copy');

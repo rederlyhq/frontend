@@ -133,10 +133,14 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
     }, []);
     const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop});
 
+    const handleSubmit = (e: any) => {
+        e.preventDefault();
+        addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problems}));
+    }
+
     return (
-        <Form 
-            action='javascript:void(0);'
-            onSubmit={() => addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problems}))}
+        <Form
+            onSubmit={handleSubmit}
             {...getRootProps()}
             onClick={()=>{}}
             style={isDragActive ? {backgroundColor: 'red'} : {}}>

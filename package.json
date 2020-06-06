@@ -39,7 +39,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "server": "npm run start:watch --prefix ../backend/"
+    "server": "npm run start:watch --prefix ../backend/",
+    "renderer": "(cd ../renderer-docker && ./start_docker.sh)"
   },
   "eslintConfig": {
     "extends": "react-app"

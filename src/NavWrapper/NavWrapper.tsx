@@ -8,7 +8,7 @@ import CourseDetailsPage from '../Courses/CourseDetailsPage';
 import { AnimatePresence } from 'framer-motion';
 import './NavWrapper.css';
 import NavbarCollapse from 'react-bootstrap/NavbarCollapse';
-import { UserRole, getUserRole } from '../Enums/UserRole';
+import { getUserRole } from '../Enums/UserRole';
 import CourseCreationPage from '../Courses/CourseCreation/CourseCreationPage';
 import CourseEditPage from '../Courses/CourseCreation/CourseEditPage';
 import SimpleProblemPage from '../Assignments/SimpleProblemPage';
