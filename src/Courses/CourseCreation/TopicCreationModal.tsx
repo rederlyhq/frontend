@@ -14,7 +14,8 @@ interface TopicCreationModalProps {
 
 /**
  * Topics are either a list of problems/weights, or a DEF file.
- * 
+ * NOTE: The ProblemObject.problemNumber doesn't mean anything on this page, because it's going
+ * to be set based on its position in the `problems` array.
  */
 export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  addTopic, existingTopic}) => {
     const [topicMetadata, setTopicMetadata] = useState<NewCourseTopicObj>(new NewCourseTopicObj(existingTopic));
@@ -135,7 +136,20 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problems}));
+        const problemsWithOrdering = problems.map((problem, index) => {
+            // Problems should always render in the order that the professor sets them.
+            problem.problemNumber = index+1;
+
+            // If we don't recognize the prefix, assume they're using Contrib.
+            if (!_.startsWith(problem.webworkQuestionPath, 'Contrib') || !_.startsWith(problem.webworkQuestionPath, 'OpenProblemLibrary')) {
+                problem.webworkQuestionPath = `webwork-open-problem-library/Contrib/${problem.webworkQuestionPath}`;
+            } else {
+                problem.webworkQuestionPath = `webwork-open-problem-library/${problem.webworkQuestionPath}`;
+            }
+
+            return problem;
+        });
+        addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problemsWithOrdering}));
     };
 
     return (
