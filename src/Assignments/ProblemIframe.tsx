@@ -39,11 +39,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem}) => {
 
     return (
         <>
-            { loading ? <div>Loading...</div> :
-                ( error ? <div>{error}</div> :
-                    <iframe ref={iframeRef} style={{width: '100%', height: '100vh', border: 'none'}} />
-                )
-            }
+            { loading && <div>Loading...</div> }
+            { error && <div>{error}</div>}
+            <iframe ref={iframeRef} style={{width: '100%', height: '100vh', border: 'none', display: loading ? 'none' : 'block'}} />
         </>
     );
 };
