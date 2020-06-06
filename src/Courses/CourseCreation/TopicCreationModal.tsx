@@ -136,7 +136,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
     const handleSubmit = (e: any) => {
         e.preventDefault();
         addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problems}));
-    }
+    };
 
     return (
         <Form
