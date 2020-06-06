@@ -20,11 +20,6 @@ interface CourseCreationPageProps {
 export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
     const [courseTemplates, setCourseTemplates] = useState<Array<ICourseTemplate>>([]);
     const [filteredCourseTemplates, setFilteredCourseTemplates] = useState<Array<ICourseTemplate>>([]);
-    const onDrop = useCallback(acceptedFiles => {
-        // TODO: Here, we should upload the DEF file to the server, and then move to the next page.
-        console.log(acceptedFiles);
-    }, []);
-    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop});
 
     useEffect(() => {
         (async () => {
@@ -46,13 +41,6 @@ export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
         <EnterRightAnimWrapper>
             <Container>
                 <>
-                    <Row style={isDragActive ? {backgroundColor: 'red'} : {}} {...getRootProps()} className='defUploadBox'>
-                        <input type="file" {...getInputProps()} />
-                        <Col md={12}>
-                            <h1>Select a course template, or upload an existing course.</h1>
-                            <Button>Drag and Drop a DEF File here, or click to upload.</Button>
-                        </Col>
-                    </Row>
                     <FormControl type="search" placeholder="Search by Course or Curriculum Name" onChange={filterCourseTemplates} />
                     <CourseTemplateList courseTemplates={filteredCourseTemplates} />
                 </>
