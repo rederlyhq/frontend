@@ -223,9 +223,14 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         setShowTopicCreation({show: true, unit: unitId, existingTopic: topic});
     };
 
+    const handleSubmit = (e: any) => {
+        e.preventDefault();
+        saveCourse(course);
+    };
+
     return (
         <EnterRightAnimWrapper>
-            <Form action="javascript:void(0);" onSubmit={() => saveCourse(course)}>
+            <Form onSubmit={handleSubmit}>
                 <FormGroup controlId='course-name'>
                     <Row>
                         <FormLabel column sm={2}>
