@@ -35,7 +35,19 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem}) => {
         })();
     }, [problem.id]);
 
-    const setScrollHeight = () => {
+    const recalculateHeight = () => {
+        console.log('onresize was called from the iframe');
+        const iframeDoc = iframeRef.current?.contentDocument;
+        const scrollHeight = iframeDoc?.body.scrollHeight;
+        if (!scrollHeight) {
+            console.log('Problem iframe did not return a valid height on load.');
+            return;
+        }
+        console.log(`Setting Height to ${scrollHeight}`);
+        setHeight(`${scrollHeight}px`);
+    };
+
+    const onLoadHandlers = () => {
         const iframeDoc = iframeRef.current?.contentDocument;
 
         const body = iframeDoc?.body;
@@ -44,14 +56,20 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem}) => {
             return;
         }
 
-        body.onresize = () => {
-            const scrollHeight = iframeDoc?.body.scrollHeight;
-            if (!scrollHeight) {
-                console.log('Problem iframe did not return a valid height on load.');
-                return;
-            }
-            setHeight(`${scrollHeight}px`);
-        };
+        body.onresize = recalculateHeight;
+
+        console.log('Checking MathJax...');
+        const MathJax = (iframeRef.current?.contentWindow as any)?.MathJax;
+        if (MathJax !== undefined) {
+            console.log('Found MathJax!');
+            MathJax.Hub.Register.StartupHook('End', function () {
+                console.log('Recalculating because MathJax has finished computing.');
+                recalculateHeight();
+            });
+        } else {
+            console.log('Couldn\'t find MathJax!');
+        }
+
         setLoading(false);
     };
 
@@ -65,7 +83,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem}) => {
                     style={{width: '100%', height: height, border: 'none', visibility: loading ? 'hidden' : 'visible'}}
                     sandbox='allow-same-origin allow-forms allow-scripts allow-popups'
                     srcDoc={renderedHTML}
-                    onLoad={setScrollHeight}
+                    onLoad={onLoadHandlers}
                 />
             }
         </>
