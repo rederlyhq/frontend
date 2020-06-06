@@ -46,7 +46,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     };
 
     return (
-        <Container fluid>
+        <Container fluid id='navbarParent'>
             {/* Header bar */}
             <Navbar variant='dark' bg='dark' className="toolbar mr-auto">
                 <NavbarBrand as={Link} to="/common/courses">
@@ -69,27 +69,29 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                 </NavbarCollapse>
             </Navbar>
             {/* Routing for the page content */}
-            <Provider value={{userType: getUserRole(sessionCookie)}}>    
-                <AnimatePresence exitBeforeEnter initial={false}>
-                    <Switch>
-                        <Route exact path={`${path}/courses`}>
-                            <CoursePage/>
-                        </Route>
-                        <Route exact path={`${path}/courses/new`}>
-                            <CourseCreationPage/>
-                        </Route>
-                        <Route path={`${path}/courses/edit/:courseId`}>
-                            <CourseEditPage/>
-                        </Route>
-                        <Route path={`${path}/courses/:courseId/:topicId`}>
-                            <SimpleProblemPage/>
-                        </Route>
-                        <Route path={`${path}/courses/:courseId`}>
-                            <CourseDetailsPage/>
-                        </Route>
-                    </Switch>
-                </AnimatePresence>
-            </Provider>
+            <Container fluid>
+                <Provider value={{userType: getUserRole(sessionCookie)}}>    
+                    <AnimatePresence exitBeforeEnter initial={false}>
+                        <Switch>
+                            <Route exact path={`${path}/courses`}>
+                                <CoursePage/>
+                            </Route>
+                            <Route exact path={`${path}/courses/new`}>
+                                <CourseCreationPage/>
+                            </Route>
+                            <Route path={`${path}/courses/edit/:courseId`}>
+                                <CourseEditPage/>
+                            </Route>
+                            <Route path={`${path}/courses/:courseId/:topicId`}>
+                                <SimpleProblemPage/>
+                            </Route>
+                            <Route path={`${path}/courses/:courseId`}>
+                                <CourseDetailsPage/>
+                            </Route>
+                        </Switch>
+                    </AnimatePresence>
+                </Provider>
+            </Container>
         </Container>
     );
 };
