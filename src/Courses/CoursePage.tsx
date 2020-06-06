@@ -8,6 +8,7 @@ import { BsPlusSquare } from 'react-icons/bs';
 import Cookies from 'js-cookie';
 import { UserRole, getUserRole } from '../Enums/UserRole';
 import { Link } from 'react-router-dom';
+import { CookieEnum } from '../Enums/CookieEnum';
 
 interface CoursePageProps {
 
@@ -15,7 +16,7 @@ interface CoursePageProps {
 
 export const CoursePage: React.FC<CoursePageProps> = () => {
     const [courses, setCourses] = useState<Array<CourseObject>>([]);
-    const userType: UserRole = getUserRole(Cookies.get('userType'));
+    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
 
     // Get the list of courses to render.
     useEffect(() => {
