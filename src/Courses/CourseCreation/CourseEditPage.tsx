@@ -144,11 +144,14 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             console.log(res);
         };
 
+        // via 1loc.dev (consider moving to a utilities folder)
+        const generateString = (length: number): string => Array(length).fill('').map(() => Math.random().toString(36).charAt(2)).join('');
+
         const createCourse = async (course: CourseObject) => {
             // Not every field belongs in the request.
             const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode'];
             let postObject = _.pick(course, newCourseFields);
-            postObject.code = 'TODO';
+            postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
             // TODO: Fix naming for route, should be 'templateId'.
 
             if (!courseId) {
@@ -227,6 +230,9 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         saveCourse(course);
     };
 
+    // TODO FIXME: Currently, we use id to insert topics. However, new units that haven't
+    // been confirmed don't have an id field yet. We may need to swap this with array index or some
+    // other field to get inserts on unconfirmed units working.
     const addUnit = () => {
         let newCourse = new CourseObject(course);
         newCourse.units.push(new UnitObject({name: 'New Unit'}));

@@ -4,7 +4,9 @@ import { UserObject } from '../CourseInterfaces';
 import { Row, Col, Button } from 'react-bootstrap';
 import { userContext } from '../../NavWrapper/NavWrapper';
 import EmailModal from './EmailModal';
-import { UserRole } from '../../Enums/UserRole';
+import { UserRole, getUserRole } from '../../Enums/UserRole';
+import Cookies from 'js-cookie';
+import { CookieEnum } from '../../Enums/CookieEnum';
 
 interface EmailComponentWrapperProps {
     users: Array<UserObject>;
@@ -16,7 +18,7 @@ interface EmailComponentWrapperProps {
 export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({users}) => {
     const [selectedStudents, setSelectedStudents] = useState<Array<Set<number>>>([new Set()]);
     const [showModal, setShowModal] = useState(false);
-    const { userType } = useContext(userContext);
+    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
 
     return (
         <>
