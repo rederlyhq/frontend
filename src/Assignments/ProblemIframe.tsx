@@ -80,7 +80,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem}) => {
                 <iframe 
                     title='Problem Frame'
                     ref={iframeRef} 
-                    style={{width: '100%', height: height, border: 'none', visibility: loading ? 'hidden' : 'visible'}}
+                    style={{width: '100%', height: height, border: 'none', minHeight: '350px', visibility: loading ? 'hidden' : 'visible'}}
                     sandbox='allow-same-origin allow-forms allow-scripts allow-popups'
                     srcDoc={renderedHTML}
                     onLoad={onLoadHandlers}
