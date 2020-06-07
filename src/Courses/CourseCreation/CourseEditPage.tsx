@@ -227,6 +227,12 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         saveCourse(course);
     };
 
+    const addUnit = () => {
+        let newCourse = new CourseObject(course);
+        newCourse.units.push(new UnitObject({name: 'New Unit'}));
+        setCourse(newCourse);
+    };
+
     return (
         <EnterRightAnimWrapper>
             <Form onSubmit={handleSubmit}>
@@ -291,7 +297,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                         </FormGroup>
                     </Col>
                 </Row>
-                <Button className="float-right">Add a new Unit</Button>
+                <Button className="float-right" onClick={addUnit}>Add a new Unit</Button>
                 <h5>Textbooks:</h5>
                 <ul>
                     <li>Introduction to Math</li>
