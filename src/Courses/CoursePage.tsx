@@ -23,7 +23,7 @@ export const CoursePage: React.FC<CoursePageProps> = () => {
     // Get the list of courses to render.
     useEffect(() => {
         console.log(`is nil, ${userId}`);
-        if (_.isNil(userId)) {
+        if (_.isNil(userId) || userId === 'undefined') {
             console.error('Missing userId cookie.');
             return;
         }
@@ -42,7 +42,7 @@ export const CoursePage: React.FC<CoursePageProps> = () => {
                 setCourses([]);
             }
         })();
-    }, []);
+    }, [userType, userId]);
 
     const getCourseIdParamFromRole = (role: UserRole, id: number) => {
         switch(role) {
@@ -52,7 +52,7 @@ export const CoursePage: React.FC<CoursePageProps> = () => {
         default:
             return `instructorId=${id}`;
         }
-    }
+    };
 
     return (
         <div>

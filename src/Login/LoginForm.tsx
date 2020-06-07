@@ -44,9 +44,9 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
 
             if (resp.status === 200) {
                 setLoginAlertMsg({message: resp.data?.msg || 'Logged in!', variant: 'success'});
-
+                // TODO: Create a User class to massage and error-handle these fields.
                 Cookie.set(CookieEnum.USERTYPE, getUserRoleFromServer(resp.data.data.roleId));
-                Cookie.set(CookieEnum.USERID, resp.data.data.id);
+                Cookie.set(CookieEnum.USERID, resp.data.data.userId);
                 Cookie.set(CookieEnum.USERNAME, `${resp.data.data.firstName} ${resp.data.data.lastName}`);
 
                 history.replace('/common/courses');
