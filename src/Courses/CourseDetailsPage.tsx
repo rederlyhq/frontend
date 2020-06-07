@@ -26,7 +26,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<any>({});
     const textAreaRef = useRef<FormControl<'input'> & HTMLInputElement>(null);
-    const enrollUrl: string = `${window.location.host}/courses/enroll/${course?.code}`;
+    const enrollUrl: string = `${window.location.host}/common/courses/enroll/${course?.code}`;
     
     useEffect(() => {
         (async ()=>{
@@ -75,7 +75,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                                     aria-label="Enrollment link"
                                     aria-describedby="basic-addon2"
                                     ref={textAreaRef}
-                                    value={`https://${enrollUrl}`}
+                                    value={`http://${enrollUrl}`}
                                 />
                                 <InputGroup.Append>
                                     <Button variant="outline-secondary" onClick={copyToClipboard}>Copy to Clipboard</Button>
