@@ -46,6 +46,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                 setLoginAlertMsg({message: resp.data?.msg || 'Logged in!', variant: 'success'});
 
                 Cookie.set(CookieEnum.USERTYPE, getUserRoleFromServer(resp.data.data.roleId));
+                Cookie.set(CookieEnum.USERID, resp.data.data.id);
                 Cookie.set(CookieEnum.USERNAME, `${resp.data.data.firstName} ${resp.data.data.lastName}`);
 
                 history.replace('/common/courses');
