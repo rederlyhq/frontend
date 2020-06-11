@@ -140,9 +140,9 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
             // Problems should always render in the order that the professor sets them.
             problem.problemNumber = index+1;
 
-            problem.webworkQuestionPath.replace(/^Library/,'OpenProblemLibrary');
+            problem.webworkQuestionPath = problem.webworkQuestionPath.replace(/^Library/,'OpenProblemLibrary');
             // If we don't recognize the prefix, assume they're using Contrib.
-            if !(_.startsWith(problem.webworkQuestionPath, 'Contrib') || _.startsWith(problem.webworkQuestionPath, 'OpenProblemLibrary')) {
+            if (! (_.startsWith(problem.webworkQuestionPath, 'Contrib') || _.startsWith(problem.webworkQuestionPath, 'OpenProblemLibrary'))) {
                 problem.webworkQuestionPath = `webwork-open-problem-library/Contrib/${problem.webworkQuestionPath}`;
             } else {
                 problem.webworkQuestionPath = `webwork-open-problem-library/${problem.webworkQuestionPath}`;
