@@ -139,7 +139,6 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             ];
             let postObject: any = _.pick(newProblem, newProblemFields);
             postObject.courseTopicContentId = courseTopicContentId;
-            postObject.webworkQuestionPath = `webwork-open-problem-library/${postObject.webworkQuestionPath}`;
             console.log('Creating problem', postObject, ' from ', problem);
             const res = await AxiosRequest.post('/courses/question', postObject);
             console.log(res);
@@ -223,9 +222,14 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         setShowTopicCreation({show: true, unit: unitId, existingTopic: topic});
     };
 
+    const handleSubmit = (e: any) => {
+        e.preventDefault();
+        saveCourse(course);
+    };
+
     return (
         <EnterRightAnimWrapper>
-            <Form action="javascript:void(0);" onSubmit={() => saveCourse(course)}>
+            <Form onSubmit={handleSubmit}>
                 <FormGroup controlId='course-name'>
                     <Row>
                         <FormLabel column sm={2}>

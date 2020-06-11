@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ICourseTemplate } from '../CourseInterfaces';
 import CourseTemplateList from './CourseTemplateList';
-import { FormControl, Button, Container, Row, Col } from 'react-bootstrap';
+import { FormControl, Container } from 'react-bootstrap';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
-import {useDropzone} from 'react-dropzone';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 
 import './Course.css';
