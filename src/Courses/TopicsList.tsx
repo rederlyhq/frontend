@@ -22,11 +22,9 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                 <ListGroupItem key={topic.id}>
                     <Row>
                         {/* TODO: Hide for Professor? */}
-                        <Link to={loc =>({pathname: `${loc.pathname}/${topic.id}`, state: {problems: topic.questions}})}>
-                            <Col>{topic.name}</Col>
-                        </Link>
-                        {showEditTopic && removeTopic && (
+                        {(showEditTopic && removeTopic) ? (
                             <>
+                                <Col md={10}>{topic.name}</Col>
                                 <Col md={1}>
                                     <Button onClick={(e: any) => showEditTopic(e, topic.id)}>
                                         <BsPencilSquare/> Edit
@@ -38,6 +36,10 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                     </Button>
                                 </Col>
                             </>
+                        ) : (
+                            <Link to={loc =>({pathname: `${loc.pathname}/${topic.id}`, state: {problems: topic.questions}})}>
+                                <Col>{topic.name}</Col>
+                            </Link>
                         )}
                     </Row>
                 </ListGroupItem>

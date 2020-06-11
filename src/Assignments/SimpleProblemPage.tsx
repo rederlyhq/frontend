@@ -1,46 +1,45 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
-import { Accordion, Card, Row, Col, Button, useAccordionToggle } from 'react-bootstrap';
-import { useParams, useLocation } from 'react-router-dom';
-import AxiosRequest from '../Hooks/AxiosRequest';
+import { Row, Col, Container, Nav, NavLink } from 'react-bootstrap';
+import { useLocation } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
 
 interface SimpleProblemPageProps {
 }
 
-// This simple page renders one problem at a time. Demo usage.
+// This page has two panes. The left pane renders a list of questions, and the right pane renders the currently selected question.
 export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     let location = useLocation();
     // TODO: We should keep problems in state so we can modify them after completion.
     // const [problems, setProblems] = useState<Array<ProblemObject>>([location.state?.problems]);
-    const topicId = useParams();
     const problems: Array<ProblemObject> = (location.state as any)?.problems;
+    // TODO: Handle empty array case.
+    const [selectedProblem, setSelectedProblem] = useState<ProblemObject>(problems[0]);
 
     return (
         <>
             <h3>Homework</h3>
-            {problems.map(problem => (
-                <Accordion key={problem.id} defaultActiveKey="1">
-                    <Card>
-                        <Accordion.Toggle as={Card.Header} eventKey="0">
-                            <Row>
-                                <Col>
-                                    <h4>{problem.webworkQuestionPath}</h4>
-                                </Col>
-                                <Col>
-                                    {/* TODO: Status? */}
-                                </Col>
-                            </Row>
-                        </Accordion.Toggle>
-                        <Accordion.Collapse eventKey="0">
-                            <Card.Body>
-                                <ProblemIframe problem={problem} />
-                            </Card.Body>
-                        </Accordion.Collapse>
-                    </Card>
-                </Accordion>
-            ))
-            }
+            <Container fluid>
+                <Row>
+                    <Col md={3}>
+                        <Nav variant='pills' className='flex-column' defaultActiveKey={problems[0].id}>
+                            {problems.map(prob => (
+                                <NavLink 
+                                    eventKey={prob.id} 
+                                    key={prob.id} 
+                                    onSelect={() => {setSelectedProblem(prob); console.log(`selecting ${prob.id}`);}}
+                                    role={`Link to Problem ${prob.problemNumber}`}
+                                >
+                                    {`Problem ${prob.problemNumber}`}
+                                </NavLink>
+                            ))}
+                        </Nav>
+                    </Col>
+                    <Col md={9}>
+                        <ProblemIframe problem={selectedProblem} />
+                    </Col>
+                </Row>
+            </Container>
         </>
     );
 };
