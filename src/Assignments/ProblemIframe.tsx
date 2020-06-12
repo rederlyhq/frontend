@@ -1,6 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
 import AxiosRequest from '../Hooks/AxiosRequest';
+import axios from 'axios';
+import { fromEvent } from 'from-form-submit';
+import _ from 'lodash';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
@@ -47,8 +50,34 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem}) => {
         setHeight(`${scrollHeight}px`);
     };
 
+    const hijackFormSubmit = async (e: any) => {
+        e.preventDefault();
+        setLoading(true);
+        const obj = fromEvent(e);
+        console.log('Hijacking the form!');
+        console.log(obj);
+        const formData = new URLSearchParams();
+        // Yes, appending in a different order is intentional.
+        _.each(obj, (key, val) => formData.append(val, key));
+
+        try {
+            const res = await AxiosRequest.post(`/courses/question/${problem.id}`, 
+                formData, {headers: {'Content-Type': 'application/x-www-form-urlencoded'}});
+            console.log(res);
+            setRenderedHTML(res.data.data.rendererData.renderedHTML);
+        } catch (e) {
+            console.log(e);
+            setRenderedHTML(e);
+        } finally {
+            setLoading(false);
+        }
+        return true;
+    };
+
     const onLoadHandlers = () => {
         const iframeDoc = iframeRef.current?.contentDocument;
+
+        if (!iframeDoc) return;
 
         const body = iframeDoc?.body;
         if (body === undefined) {
@@ -57,6 +86,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem}) => {
         }
 
         body.onresize = recalculateHeight;
+
+        // HTMLCollectionOf is not iterable by default in Typescript.
+        const forms = iframeDoc.getElementsByTagName('form');
+        _.forEach(forms, form => form.onsubmit = hijackFormSubmit);
 
         console.log('Checking MathJax...');
         const MathJax = (iframeRef.current?.contentWindow as any)?.MathJax;

@@ -18,6 +18,7 @@
     "axios-hooks": "^1.10.0",
     "bootstrap": "^4.4.1",
     "framer-motion": "^1.10.3",
+    "from-form-submit": "^0.4.0",
     "jquery": "^3.4.0",
     "js-cookie": "^2.2.1",
     "lodash": "^4.17.15",
