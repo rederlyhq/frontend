@@ -1,12 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
 import AxiosRequest from '../Hooks/AxiosRequest';
-import axios from 'axios';
 import { fromEvent } from 'from-form-submit';
 import _ from 'lodash';
+import { Spinner } from 'react-bootstrap';
+import { ProblemDoneState } from '../Enums/AssignmentEnums';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
+    setProblemDoneStateIcon: (val: ProblemDoneState) => void;
 }
 
 /**
@@ -16,7 +18,7 @@ interface ProblemIframeProps {
  * with further work on the JSON data.
  * Important reference: https://medium.com/the-thinkmill/how-to-safely-inject-html-in-react-using-an-iframe-adc775d458bc
  */
-export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem}) => {
+export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblemDoneStateIcon}) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
@@ -64,13 +66,22 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem}) => {
             const res = await AxiosRequest.post(`/courses/question/${problem.id}`, 
                 formData, {headers: {'Content-Type': 'application/x-www-form-urlencoded'}});
             console.log(res);
+            const grade = res.data.data.rendererData.problem_result.score;
+            console.log(`You scored a ${grade} on this problem!`);
+            if (grade === 1) {
+                setProblemDoneStateIcon(ProblemDoneState.CORRECT);
+            } else if (grade < 1 && grade > 0) {
+                setProblemDoneStateIcon(ProblemDoneState.PARTIAL);
+            } else {
+                setProblemDoneStateIcon(ProblemDoneState.INCORRECT);
+            }
             setRenderedHTML(res.data.data.rendererData.renderedHTML);
+            // When HTML rerenders, setLoading will be reset to false after resizing.
         } catch (e) {
             console.log(e);
             setRenderedHTML(e);
-        } finally {
-            setLoading(false);
         }
+        setLoading(false);
         return true;
     };
 
@@ -108,17 +119,16 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem}) => {
 
     return (
         <>
-            { loading && <div>Loading...</div>}
-            {error ? <div>{error}</div> :
-                <iframe 
-                    title='Problem Frame'
-                    ref={iframeRef} 
-                    style={{width: '100%', height: height, border: 'none', minHeight: '350px', visibility: loading ? 'hidden' : 'visible'}}
-                    sandbox='allow-same-origin allow-forms allow-scripts allow-popups'
-                    srcDoc={renderedHTML}
-                    onLoad={onLoadHandlers}
-                />
-            }
+            { loading && <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>}
+            {error && <div>{error}</div>}
+            <iframe 
+                title='Problem Frame'
+                ref={iframeRef} 
+                style={{width: '100%', height: height, border: 'none', minHeight: '350px', visibility: (loading || error) ? 'hidden' : 'visible'}}
+                sandbox='allow-same-origin allow-forms allow-scripts allow-popups'
+                srcDoc={renderedHTML}
+                onLoad={onLoadHandlers}
+            />
         </>
     );
 };
