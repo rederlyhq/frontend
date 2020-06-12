@@ -44,6 +44,9 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
         case 'id':
             probs[index][name] = parseInt(val, 10);
             break;
+        case 'optional':
+            probs[index][name] = !probs[index][name];
+            break;
         default:
             probs[index][name] = val;
         }
