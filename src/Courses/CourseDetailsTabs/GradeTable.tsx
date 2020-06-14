@@ -4,7 +4,7 @@ import _ from 'lodash';
 
 interface GradeTableProps {
     grades: Array<any>;
-    onRowClick: (id: number) => void;
+    onRowClick?: (id: number) => void;
 }
 
 export const GradeTable: React.FC<GradeTableProps> = ({grades, onRowClick}) => {
@@ -18,7 +18,7 @@ export const GradeTable: React.FC<GradeTableProps> = ({grades, onRowClick}) => {
             </thead>
             <tbody>
                 { _.map(grades, gradeRow => (
-                    <tr key={gradeRow.id} onClick={() => onRowClick(gradeRow.id)}>
+                    <tr key={gradeRow.id} onClick={() => onRowClick && onRowClick(gradeRow.id)}>
                         {_.map(_.values(gradeRow), val => (
                             <td>{val}</td>
                         ))}
