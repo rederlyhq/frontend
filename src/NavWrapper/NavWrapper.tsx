@@ -12,6 +12,7 @@ import { getUserRole } from '../Enums/UserRole';
 import CourseCreationPage from '../Courses/CourseCreation/CourseCreationPage';
 import CourseEditPage from '../Courses/CourseCreation/CourseEditPage';
 import SimpleProblemPage from '../Assignments/SimpleProblemPage';
+import AdviserPage from '../Adviser/AdviserPage';
 import EnrollUserPage from '../Courses/EnrollUserPage';
 
 interface NavWrapperProps {
@@ -74,6 +75,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                 <Provider value={{userType: getUserRole(sessionCookie)}}>    
                     <AnimatePresence exitBeforeEnter initial={false}>
                         <Switch>
+                            <Route exact path={`${path}/adviser`}>
+                                <AdviserPage/>
+                            </Route>
                             <Route exact path={`${path}/courses`}>
                                 <CoursePage/>
                             </Route>
@@ -91,6 +95,10 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             </Route>
                             <Route path={`${path}/courses/:courseId`}>
                                 <CourseDetailsPage/>
+                            </Route>
+                            <Route path="/">
+                                {/* <NoPage/> */}
+                                <h1>Page not found.</h1>
                             </Route>
                         </Switch>
                     </AnimatePresence>
