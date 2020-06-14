@@ -5,12 +5,12 @@ import MaterialTable from 'material-table';
 // import { MdSearch, MdFirstPage, MdLastPage, MdClear, MdFilterList, MdChevronRight, MdChevronLeft, MdArrowDownward, MdFileDownload} from 'react-icons/md';
 import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from "@material-ui/icons";
 import * as data from '../../Mocks/mockStatistics.json';
-import { ProblemObject } from '../CourseInterfaces';
+import { ProblemObject, CourseObject } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import _ from 'lodash';
 
 interface StatisticsTabProps {
-
+    course: CourseObject;
 }
 
 enum StatisticsView {
@@ -41,7 +41,7 @@ const icons = {
 
 
 
-export const StatisticsTab: React.FC<StatisticsTabProps> = () => {
+export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
     const [view, setView] = useState<string>(StatisticsView.UNITS);
     let rowData: any = data.units;
     // This must be set for the demo.
@@ -106,7 +106,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = () => {
             <div style={{maxWidth: '100%'}}>
                 <MaterialTable
                     icons={icons}
-                    title='Statistics'
+                    title={course.name}
                     columns={[
                         {title: 'Name', field: 'Name'},
                         {title: 'Average number of attempts', field: 'Average number of attempts'},
