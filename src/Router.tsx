@@ -3,6 +3,7 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import HomePage from './Home/HomePage';
 import VerificationLandingPage from './Login/VerificationLandingPage';
 import NavWrapper from './NavWrapper/NavWrapper';
+import AdviserPage from './Adviser/AdviserPage';
 
 interface RouterProps {
 
