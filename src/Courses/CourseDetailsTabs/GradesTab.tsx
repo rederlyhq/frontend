@@ -32,14 +32,14 @@ interface IDropdownCascade {
  */
 export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
     const [selfGrades, setSelfGrades] = useState([]);
-    const [view, setView] = useState<string>('Units');
+    const [view, setView] = useState<string>(GradesView.OVERVIEW);
     const [selectedObjects, setSelectedObjects] = useState<IDropdownCascade>({});
 
     const mockUnitsData = [
-        {name: 'Tom', average: '10%', lowest: '0%', id: 1},
-        {name: 'Tom', average: '10%', lowest: '0%', id: 2},
-        {name: 'Tom', average: '10%', lowest: '0%', id: 3},
-        {name: 'Tom', average: '10%', lowest: '0%', id: 4}
+        {name: 'Tom', average: '10%', unattempted: '0%', partial: '7%', mastered: '93%', id: 1},
+        {name: 'Tom', average: '10%', unattempted: '0%', partial: '7%', mastered: '93%', id: 2},
+        {name: 'Tom', average: '10%', unattempted: '0%', partial: '7%', mastered: '93%', id: 3},
+        {name: 'Tom', average: '10%', unattempted: '0%', partial: '7%', mastered: '93%', id: 4}
     ];
 
     console.log(course);
