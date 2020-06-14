@@ -10,10 +10,10 @@ interface AdviserPageProps {
 }
 
 const mock_users = [
-    new UserObject({first_name: 'Mary', last_name: 'Jane', id: 1}),
-    new UserObject({first_name: 'Peter', last_name: 'Parker', id: 4}),
-    new UserObject({first_name: 'Carnage', last_name: '', id: 2}),
-    new UserObject({first_name: 'Dr.', last_name: 'X', id: 3}),
+    new UserObject({firstName: 'Mary', lastName: 'Jane', id: 1}),
+    new UserObject({firstName: 'Peter', lastName: 'Parker', id: 4}),
+    new UserObject({firstName: 'Carnage', lastName: '', id: 2}),
+    new UserObject({firstName: 'Dr.', lastName: 'X', id: 3}),
 ];
 
 const mock_advisees_passing = {
