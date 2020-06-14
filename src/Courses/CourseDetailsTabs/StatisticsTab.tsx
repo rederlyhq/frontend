@@ -5,6 +5,9 @@ import MaterialTable from 'material-table';
 // import { MdSearch, MdFirstPage, MdLastPage, MdClear, MdFilterList, MdChevronRight, MdChevronLeft, MdArrowDownward, MdFileDownload} from 'react-icons/md';
 import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from "@material-ui/icons";
 import * as data from '../../Mocks/mockStatistics.json';
+import { ProblemObject } from '../CourseInterfaces';
+import ProblemIframe from '../../Assignments/ProblemIframe';
+import _ from 'lodash';
 
 interface StatisticsTabProps {
 
@@ -34,11 +37,15 @@ const icons = {
     SortArrow: forwardRef<any>((props, ref) => <ArrowDownward {...props} ref={ref} />),
     // ThirdStateCheck: forwardRef((props, ref) => <Remove {...props} ref={ref} />),
     // ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
-}
+};
+
+
 
 export const StatisticsTab: React.FC<StatisticsTabProps> = () => {
     const [view, setView] = useState<string>(StatisticsView.UNITS);
     let rowData: any = data.units;
+    // This must be set for the demo.
+    let mockProblem: ProblemObject =  new ProblemObject({id: 109, problemNumber: 1, webworkQuestionPath: 'webwork-open-problem-library/Contrib/CUNY/CityTech/CollegeAlgebra_Trig/QuadraticFormula/two-real-NS.pg'});
 
     switch (view) {
     case StatisticsView.TOPICS:
@@ -51,7 +58,11 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = () => {
         break;
     }
 
-    const nextView = () => {
+    const renderProblemPreview = (rowData: any) => {
+        return <ProblemIframe problem={mockProblem} setProblemDoneStateIcon={() => {}} />;
+    };
+
+    const nextView = (event: any, rowData: any, togglePanel: any) => {
         switch (view) {
         case StatisticsView.UNITS:
             setView(StatisticsView.TOPICS);
@@ -60,13 +71,19 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = () => {
             setView(StatisticsView.PROBLEMS);
             break;
         case StatisticsView.PROBLEMS:
-            // TODO: Navigate to a renderer view?
+            togglePanel();
             break;
         default:
             break;
         }   
-    }
+    };
 
+    let seeMoreActions: Array<any> | undefined = view === StatisticsView.PROBLEMS ? undefined : [{
+        icon: () => <ChevronRight/>,
+        tooltip: 'See More',
+        onClick: _.curryRight(nextView)(()=>{}),
+    }];
+    
     return (
         <>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => setView(selectedKey)}>
@@ -97,15 +114,15 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = () => {
                         {title: '% Completed', field: '% Completed'},
                     ]}
                     data={rowData}
-                    actions={[{
-                        icon: () => <ChevronRight/>,
-                        tooltip: 'See More',
-                        onClick: nextView,
-                    }]}
+                    actions={seeMoreActions}
                     onRowClick={nextView}
                     options={{
                         exportButton: true
                     }}
+                    detailPanel={view === StatisticsView.PROBLEMS ? [{
+                        icon: () => <ChevronRight/>,
+                        render: renderProblemPreview
+                    }] : undefined}
                 />
             </div>
         </>
