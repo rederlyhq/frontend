@@ -13,6 +13,7 @@ import CourseCreationPage from '../Courses/CourseCreation/CourseCreationPage';
 import CourseEditPage from '../Courses/CourseCreation/CourseEditPage';
 import SimpleProblemPage from '../Assignments/SimpleProblemPage';
 import AdviserPage from '../Adviser/AdviserPage';
+import EnrollUserPage from '../Courses/EnrollUserPage';
 
 interface NavWrapperProps {
 
@@ -85,6 +86,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             </Route>
                             <Route path={`${path}/courses/edit/:courseId`}>
                                 <CourseEditPage/>
+                            </Route>
+                            <Route path={`${path}/courses/enroll/:enrollCode`}>
+                                <EnrollUserPage/>
                             </Route>
                             <Route path={`${path}/courses/:courseId/:topicId`}>
                                 <SimpleProblemPage/>

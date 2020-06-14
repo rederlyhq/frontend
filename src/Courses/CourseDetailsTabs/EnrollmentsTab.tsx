@@ -12,11 +12,11 @@ export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = ({courseId}) => {
 
     useEffect(() => {
         (async () => {
-            const usersResp = await AxiosRequest.get(`users?courseId=${courseId}`);
+            const usersResp = await AxiosRequest.get(`/users?courseId=${courseId}`);
             console.log(usersResp.data);
             setUsers(usersResp.data.data);
         })();
-    });
+    }, [courseId]);
 
     return (
         <EmailComponentWrapper users={users} />
