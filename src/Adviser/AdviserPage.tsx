@@ -73,11 +73,11 @@ export const AdviserPage: React.FC<AdviserPageProps> = () => {
         <div className='text-center'>
             <h1>Adviser View</h1>
             <Container>
-                <Row>
-                    <Col><EmailComponentWrapper users={mock_users}/></Col>
+                <Row style={{border: '1px solid black', padding: '5px'}}>
+                    <Col style={{borderRight: '1px solid black'}}><EmailComponentWrapper users={mock_users}/></Col>
                     <Col><AdviseesPassRate data={mock_advisees_passing} options={mock_advisees_passing.options}/></Col>
                 </Row>
-                <Row>
+                <Row style={{border: '1px solid black', padding: '5px'}}>
                     <Col>
                         <AdviseesStackedBar data={mock_advisees_grades} options={mock_advisees_grades.options} />
                     </Col>
