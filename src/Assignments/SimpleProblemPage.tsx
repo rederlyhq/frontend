@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
-import { Row, Col, Container, Nav, NavLink } from 'react-bootstrap';
+import { Row, Col, Container, Nav, NavLink, Button } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
 import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
@@ -67,6 +67,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         </Nav>
                     </Col>
                     <Col md={9}>
+                        <a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
+                            <Button className='float-right'>Ask for help</Button>
+                        </a>
                         <ProblemIframe problem={selectedProblem} setProblemDoneStateIcon={setProblemDoneStateIcon}/>
                     </Col>
                 </Row>
