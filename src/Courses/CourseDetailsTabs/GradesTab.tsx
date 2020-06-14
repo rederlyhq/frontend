@@ -82,9 +82,9 @@ export const GradesTab: React.FC<GradesTabProps> = ({courseId}) => {
                         Overview
                     </Nav.Link>
                 </Nav.Item>
-                <SubObjectDropdown title={GradesView.UNITS} eventKeyState={view} subObjArray={[{name: 'Unit 1', id: 1}]}/>
-                <SubObjectDropdown title={GradesView.TOPICS} eventKeyState={view} subObjArray={[{name: 'Topic 1', id: 1}]} style={{visibility: selectedObjects.unit ? 'visible' : 'hidden'}}/>
-                <SubObjectDropdown title={GradesView.PROBLEMS} eventKeyState={view} subObjArray={[{name: 'Problem 1', id: 1}]} style={{visibility: selectedObjects.topic ? 'visible' : 'hidden'}}/>
+                <SubObjectDropdown title={selectedObjects.unit?.name || GradesView.UNITS} eventKey={GradesView.UNITS} eventKeyState={view} subObjArray={[{name: 'Unit 1', id: 1}]}/>
+                <SubObjectDropdown title={selectedObjects.topic?.name || GradesView.TOPICS} eventKey={GradesView.TOPICS} eventKeyState={view} subObjArray={[{name: 'Topic 1', id: 1}]} style={{visibility: selectedObjects.unit ? 'visible' : 'hidden'}}/>
+                <SubObjectDropdown title={selectedObjects.problem ? `Problem ${selectedObjects.problem.problemNumber}` : GradesView.PROBLEMS} eventKey={GradesView.PROBLEMS} eventKeyState={view} subObjArray={[{name: 'Problem 1', id: 1}]} style={{visibility: selectedObjects.topic ? 'visible' : 'hidden'}}/>
             </Nav>
             <GradeTable grades={mockUnitsData}/>
         </>
