@@ -5,6 +5,7 @@ import TopicsTab from './CourseDetailsTabs/TopicsTab';
 import { useParams } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import GradesTab from './CourseDetailsTabs/GradesTab';
+import { Bar } from 'react-chartjs-2';
 
 interface CourseDetailsPageProps {
 
@@ -28,9 +29,9 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     const [activeTab, setActiveTab] = useState<CourseDetailsTabs>(CourseDetailsTabs.DETAILS);
     const textAreaRef = useRef<FormControl<'input'> & HTMLInputElement>(null);
     const enrollUrl: string = `${window.location.host}/common/courses/enroll/${course?.code}`;
-    
+
     useEffect(() => {
-        (async ()=>{
+        (async () => {
             if (!courseId) return;
 
             const courseResp = await AxiosRequest.get(`/courses/${courseId}`);
@@ -57,9 +58,9 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
         } finally {
             e.target.focus();
         }
-        
+
     };
-    
+
     return (
         <Container>
             <Tabs activeKey={activeTab} defaultActiveKey={CourseDetailsTabs.DETAILS} id="course-details-tabs" onSelect={(activeTab: any) => setActiveTab(activeTab)}>
@@ -68,6 +69,34 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                         <>
                             <h1>{course.name}</h1>
                             <p>Course description content goes here.</p>
+
+                            <Bar data={{
+                                labels: ['Mary Jane', 'Peter Parker', 'Carnage', 'Dr. X'],
+                                datasets: [{
+                                    label: 'Math 120',
+                                    stack: 'Math 120',
+                                    data: [2, 2, 100, 100],
+                                    backgroundColor: 'rgba(255,99,132,0.2)',
+                                    borderColor: 'rgba(255,99,132,1)',
+                                },
+                                {
+                                    label: 'Math 131',
+                                    stack: 'Math 131',
+                                    data: [20, 10, 80, 80],
+                                    backgroundColor: 'rgba(25,99,132,0.2)',
+                                    borderColor: 'rgba(25,99,132,1)',
+                                },
+                                ],
+                            }} options={{
+                                scales: {
+                                    xAxes: [{
+                                        stacked: true
+                                    }],
+                                    yAxes: [{
+                                        stacked: true
+                                    }]
+                                }
+                            }} />
 
                             <FormLabel>Enrollment Link:</FormLabel>
                             <InputGroup className="mb-3">
@@ -90,7 +119,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                     <TopicsTab course={course} />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
-                    <EnrollmentsTab courseId={parseInt(courseId, 10)}/>
+                    <EnrollmentsTab courseId={parseInt(courseId, 10)} />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.GRADES} title="Grades">
                     <GradesTab course={course} />
