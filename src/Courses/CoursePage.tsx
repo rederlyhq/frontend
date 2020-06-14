@@ -8,6 +8,8 @@ import { BsPlusSquare } from 'react-icons/bs';
 import Cookies from 'js-cookie';
 import { UserRole, getUserRole } from '../Enums/UserRole';
 import { Link } from 'react-router-dom';
+import { CookieEnum } from '../Enums/CookieEnum';
+import _ from 'lodash';
 
 interface CoursePageProps {
 
@@ -15,13 +17,22 @@ interface CoursePageProps {
 
 export const CoursePage: React.FC<CoursePageProps> = () => {
     const [courses, setCourses] = useState<Array<CourseObject>>([]);
-    const userType: UserRole = getUserRole(Cookies.get('userType'));
+    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
+    const userId: string | undefined = Cookies.get(CookieEnum.USERID);
 
     // Get the list of courses to render.
     useEffect(() => {
+        console.log(`is nil, ${userId}`);
+        if (_.isNil(userId) || userId === 'undefined') {
+            console.error('Missing userId cookie.');
+            return;
+        }
+
         (async () => {
             try {
-                let res = await AxiosRequest.get('/courses');
+                const idParams = getCourseIdParamFromRole(userType, parseInt(userId, 10));
+                console.log(`converted ${userId} to ${idParams}`);
+                let res = await AxiosRequest.get(`/courses?${idParams}`);
                 console.log(res.data.data);
                 const courses: Array<CourseObject> = map(res.data?.data, obj => new CourseObject(obj));
 
@@ -31,7 +42,17 @@ export const CoursePage: React.FC<CoursePageProps> = () => {
                 setCourses([]);
             }
         })();
-    }, []);
+    }, [userType, userId]);
+
+    const getCourseIdParamFromRole = (role: UserRole, id: number) => {
+        switch(role) {
+        case UserRole.STUDENT:
+            return `enrolledUserId=${id}`;
+        case UserRole.PROFESSOR:
+        default:
+            return `instructorId=${id}`;
+        }
+    };
 
     return (
         <div>
