@@ -5,10 +5,10 @@ import { Nav, Table, DropdownButton, NavDropdown } from 'react-bootstrap';
 import GradeTable from './GradeTable';
 import _ from 'lodash';
 import SubObjectDropdown from '../../Components/SubObjectDropdown';
-import { UnitObject, TopicObject, ProblemObject } from '../CourseInterfaces';
+import { UnitObject, TopicObject, ProblemObject, CourseObject } from '../CourseInterfaces';
 
 interface GradesTabProps {
-    courseId: number
+    course: CourseObject;
 }
 
 enum GradesView {
@@ -30,7 +30,7 @@ interface IDropdownCascade {
  *  2. A professor, showing summary grades for each student.
  * 
  */
-export const GradesTab: React.FC<GradesTabProps> = ({courseId}) => {
+export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
     const [selfGrades, setSelfGrades] = useState([]);
     const [view, setView] = useState<string>('Units');
     const [selectedObjects, setSelectedObjects] = useState<IDropdownCascade>({});
@@ -42,20 +42,28 @@ export const GradesTab: React.FC<GradesTabProps> = ({courseId}) => {
         {name: 'Tom', average: '10%', lowest: '0%', id: 4}
     ];
 
+    console.log(course);
+
+    let mockUnit = new UnitObject({name: 'Mock Unit'});
+    let mockTopic = new TopicObject({name: 'Mock Topic'});
+    let mockProblem = new ProblemObject({problemNumber: 1});
+
     const handleChangedView = (selectedView: string) => {
         console.log('handling changing view', selectedView);
         setView(selectedView);
         if (selectedView === GradesView.OVERVIEW) {
             setSelectedObjects({});
         } else if (_.startsWith(selectedView, GradesView.UNITS)) {
-            let mockUnit = new UnitObject({name: 'Mock Unit'});
-            setSelectedObjects({unit: mockUnit});
+            const selectedUnitId = parseInt(_.trimStart(selectedView, `${GradesView.UNITS}-`), 10);
+            setSelectedObjects({unit: _.find(course.units, ['id', selectedUnitId])});
         } else if (_.startsWith(selectedView, GradesView.TOPICS)) {
-            let mockTopic = new TopicObject({name: 'Mock Topic'});
-            setSelectedObjects({unit: selectedObjects.unit, topic: mockTopic});
+            const selectedTopicId = parseInt(_.trimStart(selectedView, `${GradesView.TOPICS}-`), 10);
+            const selectedTopic = _.find(selectedObjects.unit?.topics, ['id', selectedTopicId]);
+            setSelectedObjects({unit: selectedObjects.unit, topic: selectedTopic});
         } else if (_.startsWith(selectedView, GradesView.PROBLEMS)) {
-            let mockProblem = new ProblemObject({problemNumber: 1});
-            setSelectedObjects({...selectedObjects, problem: mockProblem});
+            const selectedQuestionId = parseInt(_.trimStart(selectedView, `${GradesView.PROBLEMS}-`), 10);
+            const selectedQuestion = _.find(selectedObjects.topic?.questions, ['id', selectedQuestionId]);
+            setSelectedObjects({...selectedObjects, problem: selectedQuestion});
         }
     };
 
@@ -73,6 +81,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({courseId}) => {
     }, []);
 
     console.log(selectedObjects);
+    if (!course) return null;
 
     return (
         <>
@@ -82,9 +91,23 @@ export const GradesTab: React.FC<GradesTabProps> = ({courseId}) => {
                         Overview
                     </Nav.Link>
                 </Nav.Item>
-                <SubObjectDropdown title={selectedObjects.unit?.name || GradesView.UNITS} eventKey={GradesView.UNITS} eventKeyState={view} subObjArray={[{name: 'Unit 1', id: 1}]}/>
-                <SubObjectDropdown title={selectedObjects.topic?.name || GradesView.TOPICS} eventKey={GradesView.TOPICS} eventKeyState={view} subObjArray={[{name: 'Topic 1', id: 1}]} style={{visibility: selectedObjects.unit ? 'visible' : 'hidden'}}/>
-                <SubObjectDropdown title={selectedObjects.problem ? `Problem ${selectedObjects.problem.problemNumber}` : GradesView.PROBLEMS} eventKey={GradesView.PROBLEMS} eventKeyState={view} subObjArray={[{name: 'Problem 1', id: 1}]} style={{visibility: selectedObjects.topic ? 'visible' : 'hidden'}}/>
+                <SubObjectDropdown 
+                    title={selectedObjects.unit?.name || GradesView.UNITS} 
+                    eventKey={GradesView.UNITS} 
+                    eventKeyState={view} 
+                    subObjArray={course.units} />
+                <SubObjectDropdown 
+                    title={selectedObjects.topic?.name || GradesView.TOPICS} 
+                    eventKey={GradesView.TOPICS} 
+                    eventKeyState={view} 
+                    subObjArray={selectedObjects.unit?.topics || []} 
+                    style={{visibility: selectedObjects.unit ? 'visible' : 'hidden'}} />
+                <SubObjectDropdown 
+                    title={selectedObjects.problem ? `Problem ${selectedObjects.problem.problemNumber}` : GradesView.PROBLEMS} 
+                    eventKey={GradesView.PROBLEMS} 
+                    eventKeyState={view} 
+                    subObjArray={selectedObjects.topic?.questions || []} 
+                    style={{visibility: selectedObjects.topic ? 'visible' : 'hidden'}} />
             </Nav>
             <GradeTable grades={mockUnitsData}/>
         </>

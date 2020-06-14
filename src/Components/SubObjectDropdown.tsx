@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavDropdown } from 'react-bootstrap';
 import _ from 'lodash';
+import { ProblemObject } from '../Courses/CourseInterfaces';
 
 interface SubObjectDropdownProps {
     eventKeyState: string;
@@ -17,9 +18,9 @@ interface SubObjectDropdownProps {
 export const SubObjectDropdown: React.FC<SubObjectDropdownProps> = ({eventKeyState, title, eventKey, subObjArray, style}) => {
     return (
         <NavDropdown title={title} id={`${eventKey}-dropdown`} active={_.startsWith(eventKeyState, eventKey)} style={style} drop='right'>
-            {subObjArray.map(obj => (
-                <NavDropdown.Item key={obj.id} eventKey={`${eventKey}-${obj.id}`}>{obj.name}</NavDropdown.Item>
-            ))}
+            {subObjArray && subObjArray.map(obj => {
+                return <NavDropdown.Item key={obj.id} eventKey={`${eventKey}-${obj.id}`}>{obj.problemNumber ? `Problem ${obj.problemNumber}` : obj.name}</NavDropdown.Item>;
+            })}
         </NavDropdown>
     );
 };
