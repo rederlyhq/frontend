@@ -25,6 +25,7 @@ enum CourseDetailsTabs {
 export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<any>({});
+    const [activeTab, setActiveTab] = useState<CourseDetailsTabs>(CourseDetailsTabs.DETAILS);
     const textAreaRef = useRef<FormControl<'input'> & HTMLInputElement>(null);
     const enrollUrl: string = `${window.location.host}/common/courses/enroll/${course?.code}`;
     
@@ -61,7 +62,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     
     return (
         <Container>
-            <Tabs defaultActiveKey={CourseDetailsTabs.DETAILS} id="course-details-tabs">
+            <Tabs activeKey={activeTab} defaultActiveKey={CourseDetailsTabs.DETAILS} id="course-details-tabs" onSelect={(activeTab: any) => setActiveTab(activeTab)}>
                 <Tab eventKey={CourseDetailsTabs.DETAILS} title="Details">
                     {course && (
                         <>
