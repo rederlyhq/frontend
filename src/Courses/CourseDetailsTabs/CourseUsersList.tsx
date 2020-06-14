@@ -54,7 +54,7 @@ export const CourseUsersList: React.FC<CourseUsersListProps> = ({users, activeUs
                         onClick={() => onClickStudent(user.id)}
                         style={{cursor: 'pointer'}}
                     >
-                        {user.last_name}, {user.first_name}
+                        {user.lastName}, {user.firstName}
                     </ListGroupItem>
                 ))}
             </ListGroup>
