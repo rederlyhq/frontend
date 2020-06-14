@@ -123,6 +123,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
                         icon: () => <ChevronRight/>,
                         render: renderProblemPreview
                     }] : undefined}
+                    localization={{header: { actions: '' }}}
                 />
             </div>
         </>
