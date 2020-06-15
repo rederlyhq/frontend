@@ -50,19 +50,12 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                             <p>Course description content goes here.</p>
 
                             <Bar data={{
-                                labels: ['Mary Jane', 'Peter Parker', 'Carnage', 'Dr. X'],
+                                labels: ['Problem 1', 'Problem 2', 'Problem 3', 'Problem 4', 'Problem 5', 'Problem 6', 'Problem 7', 'Problem 8', 'Problem 9', 'Problem 10'],
                                 datasets: [{
-                                    label: 'Math 120',
-                                    stack: 'Math 120',
-                                    data: [2, 2, 100, 100],
-                                    backgroundColor: 'rgba(255,99,132,0.2)',
-                                    borderColor: 'rgba(255,99,132,1)',
-                                },
-                                {
-                                    label: 'Math 131',
-                                    stack: 'Math 131',
-                                    data: [20, 10, 80, 80],
-                                    backgroundColor: 'rgba(25,99,132,0.2)',
+                                    label: 'Average attempts',
+                                    stack: 'Average attempts',
+                                    data: [3, 5, 1, 3, 5, 7, 10, 8, 3, 0],
+                                    backgroundColor: 'rgba(25,99,132,1)',
                                     borderColor: 'rgba(25,99,132,1)',
                                 },
                                 ],
