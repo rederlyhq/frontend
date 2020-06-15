@@ -39,6 +39,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         }
     };
 
+    if (problems.length <= 0) return <div>There was an error loading this assignment.</div>;
+
     return (
         <>
             <h3>Homework</h3>
@@ -47,7 +49,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     <Col md={3}>
                         <Nav variant='pills' className='flex-column' defaultActiveKey={problems[0].id}>
                             {problems.map((prob, id) => {
-                                if (prob.problemNumber == id) {
+                                if (prob.problemNumber === id) {
                                     console.error(`Problem number ${prob.problemNumber} and position in array ${id} do not match!`);
                                     // TODO: Should we throw an error and prevent these problems from being rendered?
                                     return (<div>There is an error with this problem set. Please contact your professor.</div>);
