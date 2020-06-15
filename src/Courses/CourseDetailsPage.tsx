@@ -5,6 +5,7 @@ import TopicsTab from './CourseDetailsTabs/TopicsTab';
 import { useParams } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import GradesTab from './CourseDetailsTabs/GradesTab';
+import { Bar, Line } from 'react-chartjs-2';
 import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
 
 interface CourseDetailsPageProps {
@@ -28,11 +29,9 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<any>({});
     const [activeTab, setActiveTab] = useState<CourseDetailsTabs>(CourseDetailsTabs.DETAILS);
-    const textAreaRef = useRef<FormControl<'input'> & HTMLInputElement>(null);
-    const enrollUrl: string = `${window.location.host}/common/courses/enroll/${course?.code}`;
-    
+
     useEffect(() => {
-        (async ()=>{
+        (async () => {
             if (!courseId) return;
 
             const courseResp = await AxiosRequest.get(`/courses/${courseId}`);
@@ -43,25 +42,6 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
 
     if (!courseId) return <div>Please return to login.</div>;
 
-    const copyToClipboard = (e: any) => {
-        if (textAreaRef?.current === null) {
-            console.error('enrollLinkRef not logged properly.');
-            return;
-        }
-        console.log(textAreaRef);
-        textAreaRef?.current.select();
-
-        try {
-            const res = document.execCommand('copy');
-            console.log(`Copy operation ${res ? 'was successful' : 'failed'}`);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            e.target.focus();
-        }
-        
-    };
-    
     return (
         <Container>
             <Tabs activeKey={activeTab} defaultActiveKey={CourseDetailsTabs.DETAILS} id="course-details-tabs" onSelect={(activeTab: any) => setActiveTab(activeTab)}>
@@ -71,19 +51,36 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                             <h1>{course.name}</h1>
                             <p>Course description content goes here.</p>
 
-                            <FormLabel>Enrollment Link:</FormLabel>
-                            <InputGroup className="mb-3">
-                                <FormControl
-                                    readOnly
-                                    aria-label="Enrollment link"
-                                    aria-describedby="basic-addon2"
-                                    ref={textAreaRef}
-                                    value={`http://${enrollUrl}`}
-                                />
-                                <InputGroup.Append>
-                                    <Button variant="outline-secondary" onClick={copyToClipboard}>Copy to Clipboard</Button>
-                                </InputGroup.Append>
-                            </InputGroup>
+                            <Line data={{
+                                labels: ['10','20','30','40','50','60','70','80','90','100',],
+                                datasets: [{
+                                    label: 'Student completion rate',
+                                    data: [85, 80, 75, 60, 45, 40, 40, 20, 5, 0],
+                                    backgroundColor: 'rgba(25,132,99,.5)',
+                                }]
+                            }} options={{
+                            }} />
+
+                            <Bar data={{
+                                labels: ['Problem 1', 'Problem 2', 'Problem 3', 'Problem 4', 'Problem 5', 'Problem 6', 'Problem 7', 'Problem 8', 'Problem 9', 'Problem 10'],
+                                datasets: [{
+                                    label: 'Average attempts',
+                                    stack: 'Average attempts',
+                                    data: [3, 5, 1, 3, 5, 7, 10, 8, 3, 0],
+                                    backgroundColor: 'rgba(25,99,132,.5)',
+                                    borderColor: 'rgba(25,99,132,1)',
+                                },
+                                ],
+                            }} options={{
+                                scales: {
+                                    xAxes: [{
+                                        stacked: true
+                                    }],
+                                    yAxes: [{
+                                        stacked: true
+                                    }]
+                                }
+                            }} />
                         </>
                     )
                     }
@@ -91,8 +88,8 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                 <Tab eventKey={CourseDetailsTabs.TOPICS} title={CourseDetailsTabs.TOPICS}>
                     <TopicsTab course={course} />
                 </Tab>
-                <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title={CourseDetailsTabs.ENROLLMENTS}>
-                    <EnrollmentsTab courseId={parseInt(courseId, 10)}/>
+                <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
+                    <EnrollmentsTab courseId={parseInt(courseId, 10)} courseCode={course.code} />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.GRADES} title={CourseDetailsTabs.GRADES}>
                     <GradesTab course={course} />
