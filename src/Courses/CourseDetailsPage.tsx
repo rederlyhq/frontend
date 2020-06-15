@@ -6,16 +6,18 @@ import { useParams } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import GradesTab from './CourseDetailsTabs/GradesTab';
 import { Bar, Line } from 'react-chartjs-2';
+import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
 
 interface CourseDetailsPageProps {
 
 }
 
 enum CourseDetailsTabs {
-    TOPICS = 'topics',
-    ENROLLMENTS = 'enrollments',
-    DETAILS = 'details',
-    GRADES = 'grades',
+    TOPICS = 'Topics',
+    ENROLLMENTS = 'Enrollments',
+    DETAILS = 'Details',
+    GRADES = 'Grades',
+    STATISTICS = 'Statistics'
 }
 
 /**
@@ -43,7 +45,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     return (
         <Container>
             <Tabs activeKey={activeTab} defaultActiveKey={CourseDetailsTabs.DETAILS} id="course-details-tabs" onSelect={(activeTab: any) => setActiveTab(activeTab)}>
-                <Tab eventKey={CourseDetailsTabs.DETAILS} title="Details">
+                <Tab eventKey={CourseDetailsTabs.DETAILS} title={CourseDetailsTabs.DETAILS}>
                     {course && (
                         <>
                             <h1>{course.name}</h1>
@@ -83,14 +85,17 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                     )
                     }
                 </Tab>
-                <Tab eventKey={CourseDetailsTabs.TOPICS} title="Topics">
+                <Tab eventKey={CourseDetailsTabs.TOPICS} title={CourseDetailsTabs.TOPICS}>
                     <TopicsTab course={course} />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
                     <EnrollmentsTab courseId={parseInt(courseId, 10)} courseCode={course.code} />
                 </Tab>
-                <Tab eventKey={CourseDetailsTabs.GRADES} title="Grades">
+                <Tab eventKey={CourseDetailsTabs.GRADES} title={CourseDetailsTabs.GRADES}>
                     <GradesTab course={course} />
+                </Tab>
+                <Tab eventKey={CourseDetailsTabs.STATISTICS} title={CourseDetailsTabs.STATISTICS}>
+                    <StatisticsTab course={course} />
                 </Tab>
             </Tabs>
         </Container>
