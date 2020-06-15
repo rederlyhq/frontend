@@ -5,7 +5,7 @@ import TopicsTab from './CourseDetailsTabs/TopicsTab';
 import { useParams } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import GradesTab from './CourseDetailsTabs/GradesTab';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Line } from 'react-chartjs-2';
 
 interface CourseDetailsPageProps {
 
@@ -49,13 +49,23 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                             <h1>{course.name}</h1>
                             <p>Course description content goes here.</p>
 
+                            <Line data={{
+                                labels: ['10','20','30','40','50','60','70','80','90','100',],
+                                datasets: [{
+                                    label: 'Student completion rate',
+                                    data: [85, 80, 75, 60, 45, 40, 40, 20, 5, 0],
+                                    backgroundColor: 'rgba(25,132,99,.5)',
+                                }]
+                            }} options={{
+                            }} />
+
                             <Bar data={{
                                 labels: ['Problem 1', 'Problem 2', 'Problem 3', 'Problem 4', 'Problem 5', 'Problem 6', 'Problem 7', 'Problem 8', 'Problem 9', 'Problem 10'],
                                 datasets: [{
                                     label: 'Average attempts',
                                     stack: 'Average attempts',
                                     data: [3, 5, 1, 3, 5, 7, 10, 8, 3, 0],
-                                    backgroundColor: 'rgba(25,99,132,1)',
+                                    backgroundColor: 'rgba(25,99,132,.5)',
                                     borderColor: 'rgba(25,99,132,1)',
                                 },
                                 ],
