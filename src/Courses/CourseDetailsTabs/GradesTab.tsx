@@ -6,6 +6,7 @@ import GradeTable from './GradeTable';
 import _ from 'lodash';
 import SubObjectDropdown from '../../Components/SubObjectDropdown';
 import { UnitObject, TopicObject, ProblemObject, CourseObject } from '../CourseInterfaces';
+import * as data from '../../Mocks/mockGrades.json';
 
 interface GradesTabProps {
     course: CourseObject;
@@ -67,6 +68,18 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
         }
     };
 
+    const mockData = (): any => {
+        if (view === GradesView.OVERVIEW) {
+            return data.courseUsers
+        } else if (_.startsWith(view, GradesView.UNITS)) {
+            return data.unitUsers
+        } else if (_.startsWith(view, GradesView.TOPICS)) {
+            return data.topicUsers
+        } else if (_.startsWith(view, GradesView.PROBLEMS)) {
+            return data.questionUsers
+        }
+    }
+
     useEffect(()=>{
         (async () => {
             const res = await AxiosRequest.get('/users/3?courseId=73&includeGrades=JUST_GRADE');
@@ -109,7 +122,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
                     subObjArray={selectedObjects.topic?.questions || []} 
                     style={{visibility: selectedObjects.topic ? 'visible' : 'hidden'}} />
             </Nav>
-            <GradeTable grades={mockUnitsData}/>
+            <GradeTable grades={mockData()}/>
         </>
     );
 };
