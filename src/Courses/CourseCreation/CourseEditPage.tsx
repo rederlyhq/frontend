@@ -306,8 +306,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 <Button className="float-right" onClick={addUnit}>Add a new Unit</Button>
                 <h5>Textbooks:</h5>
                 <ul>
-                    <li>Introduction to Math</li>
-                    <li>Math for Dummies</li>
+                    <li>OpenStax Precalculus (Jay Abramson)</li>
                 </ul>
                 <h4>Units</h4>
                 {course?.units?.map((unit: any) => {
