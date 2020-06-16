@@ -23,7 +23,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({course}) => {
                                             <h4>{unit.name}</h4>
                                         </Col>
                                         <Col>
-                                            <div>TODO: Mark unit completed?</div>
+                                            <div></div>
                                         </Col>
                                     </Row>
                                 </Accordion.Toggle>
