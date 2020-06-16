@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
 import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
 import { ProblemDoneState } from '../Enums/AssignmentEnums';
+import _ from 'lodash';
 
 interface SimpleProblemPageProps {
 }
@@ -14,7 +15,8 @@ interface SimpleProblemPageProps {
 export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     let location = useLocation();
     // TODO: We should keep problems in state so we can modify them after completion.
-    const problems: Array<ProblemObject> = (location.state as any)?.problems;
+    let problemsFromState: Array<ProblemObject> = (location.state as any)?.problems || [];
+    const problems: Array<ProblemObject> = problemsFromState ? _.sortBy(problemsFromState, ['problemNumber']) : [];
     const [problemsDoneState, setProblemsDoneState] = useState<Array<ProblemDoneState>>(new Array(problems.length).fill(ProblemDoneState.UNTOUCHED));
     // TODO: Handle empty array case.
     const [selectedProblem, setSelectedProblem] = useState<ProblemObject>(problems[0]);
@@ -49,7 +51,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     <Col md={3}>
                         <Nav variant='pills' className='flex-column' defaultActiveKey={problems[0].id}>
                             {problems.map((prob, id) => {
-                                if (prob.problemNumber === id) {
+                                if (prob.problemNumber !== id+1) {
                                     console.error(`Problem number ${prob.problemNumber} and position in array ${id} do not match!`);
                                     // TODO: Should we throw an error and prevent these problems from being rendered?
                                     return (<div>There is an error with this problem set. Please contact your professor.</div>);
