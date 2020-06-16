@@ -119,7 +119,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
                     title={selectedObjects.problem ? `Problem ${selectedObjects.problem.problemNumber}` : GradesView.PROBLEMS} 
                     eventKey={GradesView.PROBLEMS} 
                     eventKeyState={view} 
-                    subObjArray={selectedObjects.topic?.questions || []} 
+                    subObjArray={selectedObjects.topic?.questions.sort((a, b) => a.problemNumber < b.problemNumber ? -1 : 1) || []} 
                     style={{visibility: selectedObjects.topic ? 'visible' : 'hidden'}} />
             </Nav>
             <GradeTable grades={mockData()}/>
