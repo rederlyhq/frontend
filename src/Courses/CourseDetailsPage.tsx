@@ -59,6 +59,22 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                                     backgroundColor: 'rgba(25,132,99,.5)',
                                 }]
                             }} options={{
+                                scales: {
+                                    xAxes: [{
+                                        display: true,
+                                        scaleLabel: {
+                                            display: true,
+                                            labelString: 'Completion of topic'
+                                        }
+                                    }],
+                                    yAxes: [{
+                                        display: true,
+                                        scaleLabel: {
+                                            display: true,
+                                            labelString: 'Percentage of students'
+                                        }
+                                    }]
+                                }
                             }} />
 
                             <Bar data={{
