@@ -100,7 +100,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
 
         // HTMLCollectionOf is not iterable by default in Typescript.
         const forms = iframeDoc.getElementsByTagName('form');
-        _.forEach(forms, form => form.onsubmit = hijackFormSubmit);
+        _.forEach(forms, form => form.addEventListener('submit', hijackFormSubmit));
 
         console.log('Checking MathJax...');
         const MathJax = (iframeRef.current?.contentWindow as any)?.MathJax;
