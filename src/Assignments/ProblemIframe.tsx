@@ -60,7 +60,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
         console.log(obj);
         const formData = new URLSearchParams();
         // Yes, appending in a different order is intentional.
-        _.each(obj, (key, val) => formData.append(val, key));
+        _.each(obj, (key, val) => formData.append(encodeURIComponent(val), encodeURIComponent(key)));
 
         try {
             const res = await AxiosRequest.post(`/courses/question/${problem.id}`, 
