@@ -208,9 +208,9 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         } catch (e) {
             console.error('An error occurred when creating this course', e);
             console.log(e.response?.data.message);
+            setShowLoadingSpinner(false);
         }
-        console.log('What\'s going on');
-        setShowLoadingSpinner(false);
+
         return false;
     };
 
