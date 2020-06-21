@@ -52,12 +52,23 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
         setHeight(`${scrollHeight}px`);
     };
 
+    // The Renderer has different `name`s on the submit buttons, which means
+    // the hijacker picks up all of them, rather than just the submitted one.
+    const stripOtherSubmitButtons = (formObject: any, submitter: any) => {
+        const submitButtonKeys = ['WWcorrectAns', 'WWsubmit', 'preview' ];
+        console.log(`Removing everything but ${submitter.name}`);
+        // Mutates.
+        _.pull(submitButtonKeys, submitter.name);
+        return _.omit(formObject, submitButtonKeys);
+    };
+
     const hijackFormSubmit = async (e: any) => {
         e.preventDefault();
         setLoading(true);
-        const obj = fromEvent(e);
+        let obj = fromEvent(e);
         console.log('Hijacking the form!');
         console.log(obj);
+        obj = stripOtherSubmitButtons(obj, e.submitter);
         const formData = new URLSearchParams();
         // Yes, appending in a different order is intentional.
         _.each(obj, (key, val) => formData.append(encodeURIComponent(val), encodeURIComponent(key)));
