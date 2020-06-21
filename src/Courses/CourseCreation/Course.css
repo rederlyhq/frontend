@@ -2,3 +2,18 @@
     width: 50%;
     max-width: none;
 }
+
+.active-editable:focus {
+    border: 1px black solid;
+    padding: 1px;
+}
+
+.add-new-unit {
+    background-color: rgba(20, 20, 20, 0.4);
+    cursor: pointer;
+}
+
+.add-new-unit:hover {
+    background-color: rgba(20, 20, 20, 0.7);
+    cursor: pointer;
+}
