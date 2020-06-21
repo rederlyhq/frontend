@@ -63,6 +63,7 @@ export class NewCourseTopicObj extends TopicObject {
 }
 
 export class UnitObject {
+    id: number = 0;
     name: string = '';
     curriculumId: number = 0;
     topics: Array<TopicObject> = [];
