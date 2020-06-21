@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import TopicsList from '../TopicsList';
+import UnitAccordion from '../../Components/UnitAccordion';
 import { Button, Col, Row, Accordion, Card, Modal, FormControl, FormLabel, FormGroup, Spinner, Form } from 'react-bootstrap';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useParams } from 'react-router-dom';
@@ -23,7 +24,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<CourseObject>(new CourseObject({}));
     const history = useHistory();
-    const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unit: number, existingTopic?: TopicObject | undefined}>({show: false, unit: -1});
+    const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined}>({show: false, unitIndex: -1});
     const [showLoadingSpinner, setShowLoadingSpinner] = useState<boolean>(false);
 
     // Load the curriculum that populates the template.
@@ -37,22 +38,23 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     }, [courseId]);
 
 
-    const callShowTopicCreation = (unit: number, e: any = null) => {
+    const callShowTopicCreation = (unitIndex: number, e: any = null) => {
         if (e != null) {
             e.stopPropagation();
             e.preventDefault();
         }
-        console.log(`showing ${unit}`);
-        setShowTopicCreation({show: true, unit});
+        console.log(`Showing Topic Add for unit in index ${unitIndex}`);
+        setShowTopicCreation({show: true, unitIndex: unitIndex});
     };
 
     // Adds a topic to the selected unit.
-    const addTopic = (unitId: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
+    // unitIndex is the index of the unit in the current course.
+    const addTopic = (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
         let newCourse: CourseObject = {...course};
-        let unit = _.find(newCourse.units, ['id', unitId]);
+        let unit = _.find(newCourse.units, ['id', unitIndex]);
 
         if (!unit) {
-            console.error(`Could not find a unit with id ${unitId}`);
+            console.error(`Could not find a unit with id ${unitIndex}`);
             return;
         }
 
@@ -61,7 +63,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             let oldTopic = _.find(unit.topics, ['id', existingTopic.id]);
 
             if (!oldTopic) {
-                console.error(`Could not update topic ${existingTopic.id} in unit ${unitId}`);
+                console.error(`Could not update topic ${existingTopic.id} in unit ${unitIndex}`);
             }
 
             _.assign(oldTopic, topic);
@@ -71,7 +73,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         }
 
         setCourse(newCourse);
-        setShowTopicCreation({show: false, unit: -1});
+        setShowTopicCreation({show: false, unitIndex: -1});
     };
 
     const removeTopic = (e: any, unitId: number, topicId: number) => {
@@ -208,21 +210,21 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         }
     };
 
-    const showEditTopic = (e: any, unitId: number, topicId: number) => {
-        console.log(`Editing topic ${topicId} in unit ${unitId}`);
-        let unit: UnitObject | undefined = _.find(course.units, ['id', unitId]);
+    const showEditTopic = (e: any, unitIndex: number, topicId: number) => {
+        console.log(`Editing topic ${topicId} in unit ${unitIndex}`);
+        let unit: UnitObject | undefined = course.units[unitIndex];
         console.log(unit);
         if (!unit) {
-            console.error(`Cannot find unit with id ${unitId}`);
+            console.error(`Cannot find unit with id ${unitIndex}`);
             return;
         }
 
         const topic = _.find(unit.topics, ['id', topicId]);
         if (!topic) {
-            console.error(`Cannot find topic with id ${topicId} in unit with id ${unitId}`);
+            console.error(`Cannot find topic with id ${topicId} in unit with id ${unitIndex}`);
             return;
         }
-        setShowTopicCreation({show: true, unit: unitId, existingTopic: topic});
+        setShowTopicCreation({show: true, unitIndex: unitIndex, existingTopic: topic});
     };
 
     const handleSubmit = (e: any) => {
@@ -348,11 +350,11 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             </Form>
             <Modal 
                 show={showTopicCreation.show} 
-                onHide={() => setShowTopicCreation({show: false, unit: -1})}
+                onHide={() => setShowTopicCreation({show: false, unitIndex: -1})}
                 dialogClassName="topicCreationModal"    
             >
                 <TopicCreationModal 
-                    unit={showTopicCreation.unit}
+                    unitIndex={showTopicCreation.unitIndex}
                     addTopic={addTopic}
                     existingTopic={showTopicCreation.existingTopic}
                 />

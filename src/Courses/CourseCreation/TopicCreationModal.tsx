@@ -7,8 +7,8 @@ import { useDropzone } from 'react-dropzone';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 
 interface TopicCreationModalProps {
-    unit: number;
-    addTopic: (unit: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => void;
+    unitIndex: number;
+    addTopic: (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => void;
     existingTopic?: TopicObject;
 }
 
@@ -17,7 +17,7 @@ interface TopicCreationModalProps {
  * NOTE: The ProblemObject.problemNumber doesn't mean anything on this page, because it's going
  * to be set based on its position in the `problems` array.
  */
-export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  addTopic, existingTopic}) => {
+export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex,  addTopic, existingTopic}) => {
     const [topicMetadata, setTopicMetadata] = useState<NewCourseTopicObj>(new NewCourseTopicObj(existingTopic));
     const [problems, setProblems] = useState<Array<ProblemObject>>(existingTopic ? existingTopic.questions : []);
     const webworkBasePath = 'webwork-open-problem-library/';
@@ -153,7 +153,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unit,  ad
 
             return problem;
         });
-        addTopic(unit, existingTopic, new TopicObject({...topicMetadata, questions: problemsWithOrdering}));
+        addTopic(unitIndex, existingTopic, new TopicObject({...topicMetadata, questions: problemsWithOrdering}));
     };
 
     return (
