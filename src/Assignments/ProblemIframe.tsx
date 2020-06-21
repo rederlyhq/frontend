@@ -106,7 +106,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
         const MathJax = (iframeRef.current?.contentWindow as any)?.MathJax;
         if (MathJax !== undefined) {
             console.log('Found MathJax!');
-            MathJax.Hub.Register.StartupHook('End', function () {
+            MathJax.Hub?.Register?.StartupHook('End', function () {
                 console.log('Recalculating because MathJax has finished computing.');
                 recalculateHeight();
             });
