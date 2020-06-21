@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import TopicsList from '../TopicsList';
+import UnitAccordion from '../../Components/UnitAccordion';
 import { Button, Col, Row, Accordion, Card, Modal, FormControl, FormLabel, FormGroup, Spinner, Form } from 'react-bootstrap';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useParams } from 'react-router-dom';
@@ -9,6 +10,10 @@ import _ from 'lodash';
 import { TopicObject, CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
 import moment from 'moment';
 import { useHistory } from 'react-router-dom';
+
+import './Course.css';
+import { Fab } from '@material-ui/core';
+import { BsPlusCircleFill } from 'react-icons/bs';
 
 interface CourseEditPageProps {
 
@@ -23,8 +28,10 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<CourseObject>(new CourseObject({}));
     const history = useHistory();
-    const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unit: number, existingTopic?: TopicObject | undefined}>({show: false, unit: -1});
+    const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined}>({show: false, unitIndex: -1});
     const [showLoadingSpinner, setShowLoadingSpinner] = useState<boolean>(false);
+    const [shouldFocusNewUnit, setShouldFocusNewUnit] = useState<boolean>(false);
+    const newestUnitRef = useRef<HTMLHeadingElement>(null);
 
     // Load the curriculum that populates the template.
     useEffect(() => {
@@ -36,23 +43,34 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         })();
     }, [courseId]);
 
+    useEffect(() => {
+        if (shouldFocusNewUnit && newestUnitRef?.current) {
+            newestUnitRef.current.focus();
+            const range = document.createRange();
+            range.selectNodeContents(newestUnitRef.current);
+            window.getSelection()?.removeAllRanges();
+            window.getSelection()?.addRange(range);
+            setShouldFocusNewUnit(false);
+        }
+    }, [shouldFocusNewUnit]);
 
-    const callShowTopicCreation = (unit: number, e: any = null) => {
+    const callShowTopicCreation = (unitIndex: number, e: any = null) => {
         if (e != null) {
             e.stopPropagation();
             e.preventDefault();
         }
-        console.log(`showing ${unit}`);
-        setShowTopicCreation({show: true, unit});
+        console.log(`Showing Topic Add for unit in index ${unitIndex}`);
+        setShowTopicCreation({show: true, unitIndex: unitIndex});
     };
 
     // Adds a topic to the selected unit.
-    const addTopic = (unitId: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
+    // unitIndex is the index of the unit in the current course.
+    const addTopic = (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
         let newCourse: CourseObject = {...course};
-        let unit = _.find(newCourse.units, ['id', unitId]);
+        let unit = _.find(newCourse.units, ['id', unitIndex]);
 
         if (!unit) {
-            console.error(`Could not find a unit with id ${unitId}`);
+            console.error(`Could not find a unit with id ${unitIndex}`);
             return;
         }
 
@@ -61,7 +79,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             let oldTopic = _.find(unit.topics, ['id', existingTopic.id]);
 
             if (!oldTopic) {
-                console.error(`Could not update topic ${existingTopic.id} in unit ${unitId}`);
+                console.error(`Could not update topic ${existingTopic.id} in unit ${unitIndex}`);
             }
 
             _.assign(oldTopic, topic);
@@ -71,7 +89,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         }
 
         setCourse(newCourse);
-        setShowTopicCreation({show: false, unit: -1});
+        setShowTopicCreation({show: false, unitIndex: -1});
     };
 
     const removeTopic = (e: any, unitId: number, topicId: number) => {
@@ -190,9 +208,9 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         } catch (e) {
             console.error('An error occurred when creating this course', e);
             console.log(e.response?.data.message);
+            setShowLoadingSpinner(false);
         }
-        console.log('What\'s going on');
-        setShowLoadingSpinner(false);
+
         return false;
     };
 
@@ -208,21 +226,21 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         }
     };
 
-    const showEditTopic = (e: any, unitId: number, topicId: number) => {
-        console.log(`Editing topic ${topicId} in unit ${unitId}`);
-        let unit: UnitObject | undefined = _.find(course.units, ['id', unitId]);
+    const showEditTopic = (e: any, unitIndex: number, topicId: number) => {
+        console.log(`Editing topic ${topicId} in unit ${unitIndex}`);
+        let unit: UnitObject | undefined = course.units[unitIndex];
         console.log(unit);
         if (!unit) {
-            console.error(`Cannot find unit with id ${unitId}`);
+            console.error(`Cannot find unit with id ${unitIndex}`);
             return;
         }
 
         const topic = _.find(unit.topics, ['id', topicId]);
         if (!topic) {
-            console.error(`Cannot find topic with id ${topicId} in unit with id ${unitId}`);
+            console.error(`Cannot find topic with id ${topicId} in unit with id ${unitIndex}`);
             return;
         }
-        setShowTopicCreation({show: true, unit: unitId, existingTopic: topic});
+        setShowTopicCreation({show: true, unitIndex: unitIndex, existingTopic: topic});
     };
 
     const handleSubmit = (e: any) => {
@@ -230,15 +248,26 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         saveCourse(course);
     };
 
-    // TODO FIXME: Currently, we use id to insert topics. However, new units that haven't
-    // been confirmed don't have an id field yet. We may need to swap this with array index or some
-    // other field to get inserts on unconfirmed units working.
     const addUnit = () => {
         let newCourse = new CourseObject(course);
         newCourse.units.push(new UnitObject({name: 'New Unit'}));
         setCourse(newCourse);
+        setShouldFocusNewUnit(true);
     };
 
+    const handleRenameUnit = (e: any, unitIndex: number) => {
+        if (unitIndex >= course.units.length) {
+            console.error('Tried renaming a unit that exceeds the bounds of this courses units array.');
+            return false;
+        }
+        let newCourse = new CourseObject(course);
+        let updatingUnit = newCourse.units[unitIndex];
+        console.log(e.target);
+        console.log(e.target.innerText);
+        updatingUnit.name = e.target.innerText;
+        setCourse(newCourse);
+    };
+    
     return (
         <EnterRightAnimWrapper>
             <Form onSubmit={handleSubmit}>
@@ -303,15 +332,15 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                         </FormGroup>
                     </Col>
                 </Row>
-                <Button className="float-right" onClick={addUnit}>Add a new Unit</Button>
                 <h5>Textbooks:</h5>
                 <ul>
                     <li>OpenStax Precalculus (Jay Abramson)</li>
                 </ul>
                 <h4>Units</h4>
-                {course?.units?.map((unit: any) => {
-                    const showEditWithUnitId = _.curry(showEditTopic)(_, unit.id);
-                    const removeTopicWithUnitId = _.curry(removeTopic)(_, unit.id);
+                {course?.units?.map((unit: any, index) => {
+                    const showEditWithUnitId = _.curry(showEditTopic)(_, index);
+                    const removeTopicWithUnitId = _.curry(removeTopic)(_, index);
+                    const renameUnit = _.curry(handleRenameUnit)(_, index);
                     return (
                         <div key={unit.id}>
                             <Accordion defaultActiveKey="1">
@@ -319,7 +348,18 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                                     <Accordion.Toggle as={Card.Header} eventKey="0">
                                         <Row>
                                             <Col>
-                                                <h4>{unit.name}</h4>
+                                                <h4 
+                                                    ref={index === course.units.length - 1 ? newestUnitRef : null}
+                                                    contentEditable='true' 
+                                                    className='active-editable'
+                                                    onBlur={renameUnit}
+                                                    onKeyDown={(e: any) => {
+                                                        if (e.keyCode === 13) {
+                                                            e.preventDefault();
+                                                            e.target.blur();
+                                                        }
+                                                    }}
+                                                >{unit.name}</h4>
                                             </Col>
                                             <Col>
                                                 <Button className='float-right' onClick={(e: any) => callShowTopicCreation(unit.id, e)}>
@@ -344,15 +384,21 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                     );
                 }
                 )}
+                <div
+                    className='accordion card card-header add-new-unit text-center'
+                    onClick={addUnit} 
+                >
+                    <h4><BsPlusCircleFill/> Add Unit</h4>
+                </div>
                 <Button block size='lg' type='submit'>Save Course</Button>
             </Form>
             <Modal 
                 show={showTopicCreation.show} 
-                onHide={() => setShowTopicCreation({show: false, unit: -1})}
+                onHide={() => setShowTopicCreation({show: false, unitIndex: -1})}
                 dialogClassName="topicCreationModal"    
             >
                 <TopicCreationModal 
-                    unit={showTopicCreation.unit}
+                    unitIndex={showTopicCreation.unitIndex}
                     addTopic={addTopic}
                     existingTopic={showTopicCreation.existingTopic}
                 />
