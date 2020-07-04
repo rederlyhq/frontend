@@ -58,7 +58,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
 
     // This hook gets the grades for all users, filtered by the type of view selected.
     useEffect(()=>{
-        if (_.isNil(course)) return;
+        if (_.isNil(course) || !course.id) return;
         (async () => {
             let urlArg = `courseId=${course.id}`;
             if (selectedObjects.problem) {
@@ -69,12 +69,13 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
                 urlArg = `unitId=${selectedObjects.unit?.id}`;
             }
             const res = await AxiosRequest(`/courses/grades?${urlArg}`);
-            const gradesArr: Array<any> = res.data.data;
+
+            const gradesArr: Array<any> = res.data.data || [];
 
             const flatGradesArr = _.map(gradesArr, grade => {
-                delete grade.user.id;
-                const mergedGrade = _.merge(grade.user, grade);
+                const mergedGrade = {...grade.user, ...grade};
                 delete mergedGrade.user;
+                delete mergedGrade.id;
                 return mergedGrade;
             });
 
@@ -83,18 +84,18 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
     }, [course, selectedObjects]);
 
     // This hook is intended to get the grades for the user that is currently signed in.
-    useEffect(()=>{
-        (async () => {
-            const res = await AxiosRequest.get('/users/3?courseId=73&includeGrades=JUST_GRADE');
-            if (res.status !== 200) {
-                console.error('Bad status code');
-                return;
-            }
-            const grades = res.data?.data?.grades;
-            console.log(grades);
-            setSelfGrades(grades);
-        })();
-    }, []);
+    // useEffect(()=>{
+    //     (async () => {
+    //         const res = await AxiosRequest.get('/users/3?courseId=73&includeGrades=JUST_GRADE');
+    //         if (res.status !== 200) {
+    //             console.error('Bad status code');
+    //             return;
+    //         }
+    //         const grades = res.data?.data?.grades;
+    //         console.log(grades);
+    //         setSelfGrades(grades);
+    //     })();
+    // }, []);
 
     if (!course) return null;
 
@@ -124,7 +125,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
                     subObjArray={selectedObjects.topic?.questions.sort((a, b) => a.problemNumber < b.problemNumber ? -1 : 1) || []} 
                     style={{visibility: selectedObjects.topic ? 'visible' : 'hidden'}} />
             </Nav>
-            <GradeTable grades={viewData}/>
+            {viewData ? <GradeTable courseName={course.name} grades={viewData}/> : <div>No data!</div>}
         </>
     );
 };
