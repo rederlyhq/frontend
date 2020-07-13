@@ -67,7 +67,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     // unitIndex is the index of the unit in the current course.
     const addTopic = (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
         let newCourse: CourseObject = {...course};
-        let unit = _.find(newCourse.units, ['id', unitIndex]);
+        let unit = newCourse.units[unitIndex];
 
         if (!unit) {
             console.error(`Could not find a unit with id ${unitIndex}`);

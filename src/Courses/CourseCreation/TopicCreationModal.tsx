@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { FormControl, FormLabel, Form, FormGroup, Modal, Button, InputGroup, Col, Row, FormCheck } from 'react-bootstrap';
 import _ from 'lodash';
 import { TopicObject, ProblemObject, NewCourseTopicObj } from '../CourseInterfaces';
 import moment from 'moment';
 import { useDropzone } from 'react-dropzone';
 import AxiosRequest from '../../Hooks/AxiosRequest';
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 interface TopicCreationModalProps {
     unitIndex: number;
@@ -21,6 +22,14 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
     const [topicMetadata, setTopicMetadata] = useState<NewCourseTopicObj>(new NewCourseTopicObj(existingTopic));
     const [problems, setProblems] = useState<Array<ProblemObject>>(existingTopic ? existingTopic.questions : []);
     const webworkBasePath = 'webwork-open-problem-library/';
+
+    useEffect(() => {
+        const isSorted = problems.slice(1).every((prob, i) => problems[i].problemNumber <= prob.problemNumber);
+
+        if (!isSorted) {
+            setProblems(_.sortBy(problems, ['problemNumber']));
+        }
+    }, [problems]);
 
     /**
      * Handles state for input for each problem.
@@ -47,6 +56,8 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         case 'optional':
             probs[index][name] = !probs[index][name];
             break;
+        case 'unique':
+            break;
         default:
             probs[index][name] = val;
         }
@@ -54,36 +65,40 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         setProblems(probs);
     };
 
-    const addProblemRows = (problem: ProblemObject, count: number) => {
+    const addProblemRows = (problem: ProblemObject, count: number) : any => {
         const onFormChangeProblemIndex = _.curry(onFormChange)(count);
         return (
-            <div key={`problem-row-${count}`}>
-                <FormGroup controlId={`problem${count}`}>
-                    <FormLabel>Problem Path:</FormLabel>
-                    {/* This might be a nice UI addition, but might be annoying if we don't autoremove a duplicate. */}
-                    <InputGroup>
-                        <InputGroup.Prepend>
-                            <InputGroup.Text>{webworkBasePath}</InputGroup.Text>
-                        </InputGroup.Prepend>
-                        <FormControl required value={problem.webworkQuestionPath} onChange={onFormChangeProblemIndex('webworkQuestionPath')}/>
-                    </InputGroup>
-                </FormGroup>
-                <Row>
-                    <FormGroup as={Col} controlId={`weight${count}`}>
-                        <FormLabel>Problem Weight:</FormLabel>
-                        {/* Should this be a range? */}
-                        <FormControl value={problem.weight} type='number' min={0} onChange={onFormChangeProblemIndex('weight')}/>
-                    </FormGroup>
-                    <FormGroup as={Col} controlId={`attempts${count}`}>
-                        <FormLabel>Maximum Attempts:</FormLabel>
-                        {/* Should this be a range? */}
-                        <FormControl value={problem.maxAttempts} type='number' min={0} onChange={onFormChangeProblemIndex('maxAttempts')}/>
-                    </FormGroup>
-                    <FormGroup as={Col} controlId={`optional${count}`}>
-                        <FormCheck label='Optional?' checked={problem.optional} type='checkbox' onChange={onFormChangeProblemIndex('optional')}/>
-                    </FormGroup>
-                </Row>
-            </div>
+            <Draggable draggableId={`problemRow${problem.unique}`} index={problem.problemNumber} key={`problem-row-${problem.unique}`}>
+                {(provided) => (
+                    <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                        <FormGroup controlId={`problem${count}`}>
+                            <FormLabel>Problem Path:</FormLabel>
+                            {/* This might be a nice UI addition, but might be annoying if we don't autoremove a duplicate. */}
+                            <InputGroup>
+                                <InputGroup.Prepend>
+                                    <InputGroup.Text>{webworkBasePath}</InputGroup.Text>
+                                </InputGroup.Prepend>
+                                <FormControl required value={problem.webworkQuestionPath} onChange={onFormChangeProblemIndex('webworkQuestionPath')}/>
+                            </InputGroup>
+                        </FormGroup>
+                        <Row>
+                            <FormGroup as={Col} controlId={`weight${count}`}>
+                                <FormLabel>Problem Weight:</FormLabel>
+                                {/* Should this be a range? */}
+                                <FormControl value={problem.weight} type='number' min={0} onChange={onFormChangeProblemIndex('weight')}/>
+                            </FormGroup>
+                            <FormGroup as={Col} controlId={`attempts${count}`}>
+                                <FormLabel>Maximum Attempts:</FormLabel>
+                                {/* Should this be a range? */}
+                                <FormControl value={problem.maxAttempts} type='number' min={0} onChange={onFormChangeProblemIndex('maxAttempts')}/>
+                            </FormGroup>
+                            <FormGroup as={Col} controlId={`optional${count}`}>
+                                <FormCheck label='Optional?' checked={problem.optional} type='checkbox' onChange={onFormChangeProblemIndex('optional')}/>
+                            </FormGroup>
+                        </Row>    
+                    </div>
+                )}
+            </Draggable>
         );
     };
 
@@ -141,7 +156,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         e.preventDefault();
         const problemsWithOrdering = problems.map((problem, index) => {
             // Problems should always render in the order that the professor sets them.
-            problem.problemNumber = index+1;
+            problem.problemNumber = index;
 
             problem.webworkQuestionPath = problem.webworkQuestionPath.replace(/^Library/,'OpenProblemLibrary');
             // If we don't recognize the prefix, assume they're using Contrib.
@@ -156,6 +171,31 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         addTopic(unitIndex, existingTopic, new TopicObject({...topicMetadata, questions: problemsWithOrdering}));
     };
 
+    const onDragEnd = (result: any) => {
+        if (!result.destination) {
+            return;
+        }
+    
+        if (result.destination.index === result.source.index) {
+            return;
+        }
+
+        const reorder = (list: Array<any>, startIndex: number, endIndex: number) => {
+            const result = Array.from(list);
+            const [removed] = result.splice(startIndex, 1);
+            result.splice(endIndex, 0, removed);
+          
+            return result;
+        };
+        let newProbs = reorder(problems, result.source.index, result.destination.index);
+        newProbs = newProbs.map((prob, i) => {
+            prob.problemNumber = i;
+            return prob;
+        });
+        console.log(newProbs);
+        setProblems(newProbs);
+    };
+
     return (
         <Form
             onSubmit={handleSubmit}
@@ -165,7 +205,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
             <Modal.Header closeButton>
                 <h3>{existingTopic ? `Editing: ${existingTopic.name}` : 'Add a Topic'}</h3>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body style={{minHeight: `${24 + (problems.length * 19)}vh`}}>
                 <input type="file" {...getInputProps()} />
                 <h6>Add questions to your topic, or import a question list by dragging in a DEF file.</h6>
                 <FormGroup as={Row} controlId='topicTitle' onClick={(e : any) => {e.preventDefault(); e.stopPropagation();}}>
@@ -202,13 +242,27 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                         />
                     </FormGroup>
                 </Row>
-                { problems.map(addProblemRows) }
+                <DragDropContext onDragEnd={onDragEnd}>
+                    <Droppable droppableId='problemsList'>
+                        {
+                            (provided) => (
+                                <div ref={provided.innerRef} style={{backgroundColor: 'white'}} {...provided.droppableProps}>
+                                    {problems.map(addProblemRows)}
+                                    {provided.placeholder}
+                                </div>
+                            )
+                        }
+                    </Droppable>
+                </DragDropContext>
             </Modal.Body>
             <Modal.Footer>
                 {/* Do we need a cancel button in the Modal? You can click out and click the X. */}
                 {/* <Button variant="danger" className="float-left">Cancel</Button> */}
                 <Button variant="secondary" onClick={getRootProps().onClick}>Upload a DEF file</Button>
-                <Button variant="secondary" onClick={() => setProblems([...problems, new ProblemObject()])}>Add Another Question</Button>
+                <Button variant="secondary" onClick={
+                    // FIXME: We're using random IDs to get this working right now because problems aren't created with real ids.
+                    () => setProblems([...problems, new ProblemObject({problemNumber: problems.length, id: -Math.floor(Math.random() * (10000 - 1000 + 1) + 1000)})])
+                }>Add Another Question</Button>
                 <Button 
                     variant="primary" 
                     type='submit'
