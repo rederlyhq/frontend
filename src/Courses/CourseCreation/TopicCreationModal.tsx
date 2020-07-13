@@ -46,6 +46,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         case 'webworkQuestionPath':
         case 'path':
             probs[index].webworkQuestionPath = _.trimStart(val, webworkBasePath);
+            console.log('Removed the webwork base prefix');
             break;
         case 'weight':
         case 'maxAttempts':
@@ -78,7 +79,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                                 <InputGroup.Prepend>
                                     <InputGroup.Text>{webworkBasePath}</InputGroup.Text>
                                 </InputGroup.Prepend>
-                                <FormControl required value={problem.webworkQuestionPath} onChange={onFormChangeProblemIndex('webworkQuestionPath')}/>
+                                <FormControl required value={_.trimStart(problem.webworkQuestionPath, webworkBasePath)} onChange={onFormChangeProblemIndex('webworkQuestionPath')}/>
                             </InputGroup>
                         </FormGroup>
                         <Row>
@@ -158,16 +159,22 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
             // Problems should always render in the order that the professor sets them.
             problem.problemNumber = index;
 
+            // If the base path is present, this is already a full path and should escape further processing.
+            if (_.startsWith(problem.webworkQuestionPath, webworkBasePath)) {
+                return problem;
+            }
+
             problem.webworkQuestionPath = problem.webworkQuestionPath.replace(/^Library/,'OpenProblemLibrary');
             // If we don't recognize the prefix, assume they're using Contrib.
-            if (! (_.startsWith(problem.webworkQuestionPath, 'Contrib') || _.startsWith(problem.webworkQuestionPath, 'OpenProblemLibrary'))) {
-                problem.webworkQuestionPath = `webwork-open-problem-library/Contrib/${problem.webworkQuestionPath}`;
+            if (_.startsWith(problem.webworkQuestionPath, 'Contrib') || _.startsWith(problem.webworkQuestionPath, 'OpenProblemLibrary')) {
+                problem.webworkQuestionPath = `${webworkBasePath}${problem.webworkQuestionPath}`;
             } else {
-                problem.webworkQuestionPath = `webwork-open-problem-library/${problem.webworkQuestionPath}`;
+                problem.webworkQuestionPath = `${webworkBasePath}Contrib/${problem.webworkQuestionPath}`;
             }
 
             return problem;
         });
+        console.log(problemsWithOrdering);
         addTopic(unitIndex, existingTopic, new TopicObject({...topicMetadata, questions: problemsWithOrdering}));
     };
 
