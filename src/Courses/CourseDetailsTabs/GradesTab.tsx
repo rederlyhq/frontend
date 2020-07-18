@@ -32,22 +32,10 @@ interface IDropdownCascade {
  * 
  */
 export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
-    const [selfGrades, setSelfGrades] = useState([]);
     const [view, setView] = useState<string>(GradesView.OVERVIEW);
     const [selectedObjects, setSelectedObjects] = useState<IDropdownCascade>({});
-
-    const mockUnitsData = [
-        {name: 'Tom', average: '10%', unattempted: '0%', partial: '7%', mastered: '93%', id: 1},
-        {name: 'Tom', average: '10%', unattempted: '0%', partial: '7%', mastered: '93%', id: 2},
-        {name: 'Tom', average: '10%', unattempted: '0%', partial: '7%', mastered: '93%', id: 3},
-        {name: 'Tom', average: '10%', unattempted: '0%', partial: '7%', mastered: '93%', id: 4}
-    ];
-
-    console.log(course);
-
-    let mockUnit = new UnitObject({name: 'Mock Unit'});
-    let mockTopic = new TopicObject({name: 'Mock Topic'});
-    let mockProblem = new ProblemObject({problemNumber: 1});
+    const [viewData, setViewData] = useState<Array<any>>([]);
+    const [selfGrades, setSelfGrades] = useState([]);
 
     const handleChangedView = (selectedView: string) => {
         console.log('handling changing view', selectedView);
@@ -68,32 +56,47 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
         }
     };
 
-    const mockData = (): any => {
-        if (view === GradesView.OVERVIEW) {
-            return data.courseUsers
-        } else if (_.startsWith(view, GradesView.UNITS)) {
-            return data.unitUsers
-        } else if (_.startsWith(view, GradesView.TOPICS)) {
-            return data.topicUsers
-        } else if (_.startsWith(view, GradesView.PROBLEMS)) {
-            return data.questionUsers
-        }
-    }
-
+    // This hook gets the grades for all users, filtered by the type of view selected.
     useEffect(()=>{
+        if (_.isNil(course) || !course.id) return;
         (async () => {
-            const res = await AxiosRequest.get('/users/3?courseId=73&includeGrades=JUST_GRADE');
-            if (res.status !== 200) {
-                console.error('Bad status code');
-                return;
+            let urlArg = `courseId=${course.id}`;
+            if (selectedObjects.problem) {
+                urlArg = `questionId=${selectedObjects.problem?.id}`;
+            } else if (selectedObjects.topic) {
+                urlArg = `topicId=${selectedObjects.topic?.id}`;
+            } else if (selectedObjects.unit) {
+                urlArg = `unitId=${selectedObjects.unit?.id}`;
             }
-            const grades = res.data?.data?.grades;
-            console.log(grades);
-            setSelfGrades(grades);
-        })();
-    }, []);
+            const res = await AxiosRequest(`/courses/grades?${urlArg}`);
 
-    console.log(selectedObjects);
+            const gradesArr: Array<any> = res.data.data || [];
+
+            const flatGradesArr = _.map(gradesArr, grade => {
+                const mergedGrade = {...grade.user, ...grade};
+                delete mergedGrade.user;
+                delete mergedGrade.id;
+                return mergedGrade;
+            });
+
+            setViewData(flatGradesArr);
+        })();
+    }, [course, selectedObjects]);
+
+    // This hook is intended to get the grades for the user that is currently signed in.
+    // useEffect(()=>{
+    //     (async () => {
+    //         const res = await AxiosRequest.get('/users/3?courseId=73&includeGrades=JUST_GRADE');
+    //         if (res.status !== 200) {
+    //             console.error('Bad status code');
+    //             return;
+    //         }
+    //         const grades = res.data?.data?.grades;
+    //         console.log(grades);
+    //         setSelfGrades(grades);
+    //     })();
+    // }, []);
+
     if (!course) return null;
 
     return (
@@ -122,7 +125,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
                     subObjArray={selectedObjects.topic?.questions.sort((a, b) => a.problemNumber < b.problemNumber ? -1 : 1) || []} 
                     style={{visibility: selectedObjects.topic ? 'visible' : 'hidden'}} />
             </Nav>
-            <GradeTable grades={mockData()}/>
+            {viewData ? <GradeTable courseName={course.name} grades={viewData}/> : <div>No data!</div>}
         </>
     );
 };
