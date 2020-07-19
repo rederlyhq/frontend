@@ -1,4 +1,4 @@
-function* uniqueGen() {
+export function* uniqueGen() {
     let index: number = 0;
 
     while (true) {
@@ -79,6 +79,7 @@ export class UnitObject {
     curriculumId: number = 0;
     topics: Array<TopicObject> = [];
     unique: number = newUnitUniqueGen.next().value || 0;
+    contentOrder: number = 0;
     
     public constructor(init?:Partial<UnitObject>) {
         Object.assign(this, init);

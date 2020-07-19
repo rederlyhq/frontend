@@ -5,7 +5,7 @@ import { TopicObject, ProblemObject, NewCourseTopicObj } from '../CourseInterfac
 import moment from 'moment';
 import { useDropzone } from 'react-dropzone';
 import AxiosRequest from '../../Hooks/AxiosRequest';
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 interface TopicCreationModalProps {
     unitIndex: number;
@@ -140,10 +140,11 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
             console.log(topicData.problems);
             // We have to massage the old DEF format into a new ProblemObject.
             // When we import the DEF parser to the frontend, we'll move this logic there.
-            const problems = topicData.problems.map((prob: any) => {
+            const problems = topicData.problems.map((prob: any, index: number) => {
                 const newProb = new ProblemObject(prob);
                 newProb.webworkQuestionPath = prob.source_file;
                 newProb.weight = prob.value;
+                newProb.problemNumber = index;
                 // TODO: is counts_parent_grade the same as optional?
                 return newProb;
             });

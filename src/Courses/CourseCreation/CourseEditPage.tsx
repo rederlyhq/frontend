@@ -7,13 +7,13 @@ import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useParams } from 'react-router-dom';
 import TopicCreationModal from './TopicCreationModal';
 import _ from 'lodash';
-import { TopicObject, CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
+import { TopicObject, CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject, uniqueGen } from '../CourseInterfaces';
 import moment from 'moment';
 import { useHistory } from 'react-router-dom';
 
 import './Course.css';
-import { Fab } from '@material-ui/core';
 import { BsPlusCircleFill } from 'react-icons/bs';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 interface CourseEditPageProps {
 
@@ -36,10 +36,18 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     // Load the curriculum that populates the template.
     useEffect(() => {
         (async ()=>{
-            let course = await AxiosRequest.get(`/curriculum/${courseId}`);
-            // TODO: Error handling for bad template id.
-            console.log(course.data.data);
-            setCourse(course.data.data);
+            try {
+                let course = await AxiosRequest.get(`/curriculum/${courseId}`);
+                // TODO: Error handling for bad template id.
+                console.log(course.data.data);
+                const courseData = course.data.data;
+                courseData.units = courseData.units.map((unit: any) => {
+                    return new UnitObject(unit);
+                });
+                setCourse(courseData);
+            } catch (e) {
+                console.error('A bad Curriculum ID was used.', e);
+            }
         })();
     }, [courseId]);
 
@@ -114,7 +122,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         const createUnit = async (unit: NewCourseUnitObj, newCourseId: number) => {
             console.log(`creating unit for course number ${newCourseId}`, unit);
             // Create the unit first.
-            const newUnitFields = ['name', 'courseId'];
+            const newUnitFields = ['name', 'courseId', 'contentOrder'];
             let unitPostObject = _.pick(unit, newUnitFields);
             unitPostObject.courseId = newCourseId;
             console.log('Creating a new unit', unitPostObject);
@@ -250,8 +258,8 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
     const addUnit = () => {
         let newCourse = new CourseObject(course);
-        newCourse.units.push(new UnitObject({name: 'New Unit'}));
-        setCourse(newCourse);
+        newCourse.units.push(new UnitObject({name: 'New Unit' }));
+        setCourse({...newCourse});
         setShouldFocusNewUnit(true);
     };
 
@@ -266,6 +274,34 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         console.log(e.target.innerText);
         updatingUnit.name = e.target.innerText;
         setCourse(newCourse);
+    };
+
+    const onDragEnd = (result: any) => {
+        console.log(`trying to move from ${result.source.index} to ${result.destination.index}`);
+        if (!result.destination) {
+            return;
+        }
+    
+        if (result.destination.index === result.source.index) {
+            return;
+        }
+
+        const reorder = (list: Array<any>, startIndex: number, endIndex: number) => {
+            const result = Array.from(list);
+            const [removed] = result.splice(startIndex, 1);
+            result.splice(endIndex, 0, removed);
+
+            return result;
+        };
+
+        let newUnits = reorder(course?.units, result.source.index, result.destination.index);
+        newUnits = newUnits.map((prob, i) => {
+            prob.contentOrder = i;
+            return prob;
+        });
+    
+        course.units = newUnits;
+        setCourse({...course});
     };
     
     return (
@@ -337,53 +373,72 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                     <li>OpenStax Precalculus (Jay Abramson)</li>
                 </ul>
                 <h4>Units</h4>
-                {course?.units?.map((unit: any, index) => {
-                    const showEditWithUnitId = _.curry(showEditTopic)(_, index);
-                    const removeTopicWithUnitId = _.curry(removeTopic)(_, index);
-                    const renameUnit = _.curry(handleRenameUnit)(_, index);
-                    return (
-                        <div key={unit.id}>
-                            <Accordion defaultActiveKey="1">
-                                <Card>
-                                    <Accordion.Toggle as={Card.Header} eventKey="0">
-                                        <Row>
-                                            <Col>
-                                                <h4 
-                                                    ref={index === course.units.length - 1 ? newestUnitRef : null}
-                                                    contentEditable='true' 
-                                                    className='active-editable'
-                                                    onBlur={renameUnit}
-                                                    onKeyDown={(e: any) => {
-                                                        if (e.keyCode === 13) {
-                                                            e.preventDefault();
-                                                            e.target.blur();
-                                                        }
-                                                    }}
-                                                >{unit.name}</h4>
-                                            </Col>
-                                            <Col>
-                                                <Button className='float-right' onClick={(e: any) => callShowTopicCreation(unit.id, e)}>
-                                                    Add a Topic
-                                                </Button>
-                                            </Col>
-                                        </Row>
-                                    </Accordion.Toggle>
-                                    <Accordion.Collapse eventKey="0">
-                                        <Card.Body>
-                                            <TopicsList 
-                                                flush
-                                                listOfTopics={unit.topics} 
-                                                showEditTopic={showEditWithUnitId}
-                                                removeTopic={removeTopicWithUnitId}
-                                            />
-                                        </Card.Body>
-                                    </Accordion.Collapse>
-                                </Card>
-                            </Accordion>
-                        </div>
-                    );
-                }
-                )}
+                <DragDropContext onDragEnd={onDragEnd}>
+                    <Droppable droppableId='unitsList'>
+                        {
+                            (provided: any) => (
+                                <>
+                                    <div ref={provided.innerRef} style={{backgroundColor: 'white'}} {...provided.droppableProps}>
+                                        {course?.units?.map((unit: any, index) => {
+                                            const showEditWithUnitId = _.curry(showEditTopic)(_, index);
+                                            const removeTopicWithUnitId = _.curry(removeTopic)(_, index);
+                                            const renameUnit = _.curry(handleRenameUnit)(_, index);
+
+                                            unit.contentOrder = index;
+
+                                            return (
+                                                <Draggable draggableId={`unitRow${unit.unique}`} index={index} key={`problem-row-${unit.unique}`}>
+                                                    {(provided) => (
+                                                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} key={unit.unique}>
+                                                            <Accordion defaultActiveKey="1">
+                                                                <Card>
+                                                                    <Accordion.Toggle as={Card.Header} eventKey="0">
+                                                                        <Row>
+                                                                            <Col>
+                                                                                <h4 
+                                                                                    ref={index === course.units.length - 1 ? newestUnitRef : null}
+                                                                                    contentEditable='true' 
+                                                                                    className='active-editable'
+                                                                                    onBlur={renameUnit}
+                                                                                    onKeyDown={(e: any) => {
+                                                                                        if (e.keyCode === 13) {
+                                                                                            e.preventDefault();
+                                                                                            e.target.blur();
+                                                                                        }
+                                                                                    }}
+                                                                                >{unit.name}</h4>
+                                                                            </Col>
+                                                                            <Col>
+                                                                                <Button className='float-right' onClick={(e: any) => callShowTopicCreation(unit.id, e)}>
+                                                                                Add a Topic
+                                                                                </Button>
+                                                                            </Col>
+                                                                        </Row>
+                                                                    </Accordion.Toggle>
+                                                                    <Accordion.Collapse eventKey="0">
+                                                                        <Card.Body>
+                                                                            <TopicsList 
+                                                                                flush
+                                                                                listOfTopics={unit.topics} 
+                                                                                showEditTopic={showEditWithUnitId}
+                                                                                removeTopic={removeTopicWithUnitId}
+                                                                            />
+                                                                        </Card.Body>
+                                                                    </Accordion.Collapse>
+                                                                </Card>
+                                                            </Accordion>
+                                                        </div>
+                                                    )}
+                                                </Draggable>
+                                            );
+                                        })}
+                                    </div>
+                                    {provided.placeholder}
+                                </>
+                            )
+                        }
+                    </Droppable>
+                </DragDropContext>
                 <div
                     className='accordion card card-header add-new-unit text-center'
                     onClick={addUnit} 
