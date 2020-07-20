@@ -275,8 +275,29 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         updatingUnit.name = e.target.innerText;
         setCourse(newCourse);
     };
+ 
+    const reorder = (list: Array<any>, startIndex: number, endIndex: number) => {
+        const result = Array.from(list);
+        const [removed] = result.splice(startIndex, 1);
+        result.splice(endIndex, 0, removed);
+
+        return result;
+    };
 
     const onDragEnd = (result: any) => {
+        console.log('onDragEnd!', result);
+        if (result.type === 'UNIT') {
+            onUnitDrop(result);
+        } else if (result.type === 'TOPIC') {
+            // For topics, we have to handle cross-droppable reordering.
+            if (result.source.droppableId === result.destination.droppableId) {
+                const unitIndex = result.source.droppableId.substring('topicList-'.length);
+                console.log(`Source unit index: ${unitIndex}`);
+            }
+        }
+    };
+
+    const onUnitDrop = (result: any) => {
         console.log(`trying to move from ${result.source.index} to ${result.destination.index}`);
         if (!result.destination) {
             return;
@@ -285,14 +306,6 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         if (result.destination.index === result.source.index) {
             return;
         }
-
-        const reorder = (list: Array<any>, startIndex: number, endIndex: number) => {
-            const result = Array.from(list);
-            const [removed] = result.splice(startIndex, 1);
-            result.splice(endIndex, 0, removed);
-
-            return result;
-        };
 
         let newUnits = reorder(course?.units, result.source.index, result.destination.index);
         newUnits = newUnits.map((prob, i) => {
@@ -374,7 +387,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 </ul>
                 <h4>Units</h4>
                 <DragDropContext onDragEnd={onDragEnd}>
-                    <Droppable droppableId='unitsList'>
+                    <Droppable droppableId='unitsList' type='UNIT'>
                         {
                             (provided: any) => (
                                 <>
@@ -422,6 +435,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                                                                                 listOfTopics={unit.topics} 
                                                                                 showEditTopic={showEditWithUnitId}
                                                                                 removeTopic={removeTopicWithUnitId}
+                                                                                unitUnique={unit.unique}
                                                                             />
                                                                         </Card.Body>
                                                                     </Accordion.Collapse>
