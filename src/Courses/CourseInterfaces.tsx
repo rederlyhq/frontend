@@ -77,7 +77,7 @@ export class UnitObject {
     id: number = 0;
     name: string = '';
     curriculumId: number = 0;
-    topics: Array<TopicObject> = [];
+    topics: Array<NewCourseTopicObj> = [];
     unique: number = newUnitUniqueGen.next().value || 0;
     contentOrder: number = 0;
     

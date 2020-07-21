@@ -145,10 +145,9 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                     >
-                        {listOfTopics.map((topicObj, index) => {
-                            const topic = new NewCourseTopicObj(topicObj);
+                        {listOfTopics.map((topic, index) => {
                             return (
-                                <Draggable draggableId={`topic-${topic.unique}`} index={index} key={`topic-${topic.unique}`}>
+                                <Draggable draggableId={`topic-${topic.unique}`} index={index} key={`topic-${topic.unique}`} isDragDisabled={!showEditTopic}>
                                     {getDraggableTopic}
                                 </Draggable>
                             );

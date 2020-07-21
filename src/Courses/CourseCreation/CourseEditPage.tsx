@@ -42,6 +42,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 console.log(course.data.data);
                 const courseData = course.data.data;
                 courseData.units = courseData.units.map((unit: any) => {
+                    unit.topics = unit.topics.map((t: any) => new NewCourseTopicObj(t));
                     return new UnitObject(unit);
                 });
                 setCourse(courseData);
@@ -93,7 +94,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             _.assign(oldTopic, topic);
         } else {
             // Otherwise, concatenate this object onto the existing array.
-            unit.topics = _.concat(unit.topics, topic);
+            unit.topics = _.concat(unit.topics, new NewCourseTopicObj(topic));
         }
 
         setCourse(newCourse);
@@ -146,7 +147,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             let newTopic = new NewCourseTopicObj(topic);
             newTopic.courseUnitContentId = courseUnitContentId;
             const newTopicFields = [ 
-                'courseUnitContentId', 'topicTypeId', 'name', 'startDate', 'endDate', 'deadDate', 'partialExtend',
+                'courseUnitContentId', 'topicTypeId', 'name', 'startDate', 'endDate', 'deadDate', 'partialExtend', 'contentOrder'
             ];
             let postObject = _.pick(newTopic, newTopicFields);
             console.log('Creating topic', postObject);
@@ -285,20 +286,6 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     };
 
     const onDragEnd = (result: any) => {
-        console.log('onDragEnd!', result);
-        if (result.type === 'UNIT') {
-            onUnitDrop(result);
-        } else if (result.type === 'TOPIC') {
-            // For topics, we have to handle cross-droppable reordering.
-            if (result.source.droppableId === result.destination.droppableId) {
-                const unitIndex = result.source.droppableId.substring('topicList-'.length);
-                console.log(`Source unit index: ${unitIndex}`);
-            }
-        }
-    };
-
-    const onUnitDrop = (result: any) => {
-        console.log(`trying to move from ${result.source.index} to ${result.destination.index}`);
         if (!result.destination) {
             return;
         }
@@ -306,6 +293,51 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         if (result.destination.index === result.source.index) {
             return;
         }
+
+        console.log('onDragEnd!', result);
+
+        if (result.type === 'UNIT') {
+            onUnitDrop(result);
+        } else if (result.type === 'TOPIC') {
+            const courseCopy = new CourseObject(course);
+            // For topics, we have to handle cross-droppable reordering.
+            const sourceUnitUnique = parseInt(result.source.droppableId.substring('topicList-'.length), 10);
+            const destUnitUnique = parseInt(result.destination.droppableId.substring('topicList-'.length), 10);
+            console.log(`Source unit unique: ${sourceUnitUnique}, Destination unit unique: ${destUnitUnique}`);
+
+            const sourceUnit = _.find(courseCopy.units, ['unique', sourceUnitUnique]);
+            if (!sourceUnit) {
+                console.error('Could not find a source unit specified in drag. Is the unique tag correct?', sourceUnitUnique, result, courseCopy.units);
+                return;
+            }
+
+            if (sourceUnitUnique === destUnitUnique) {
+                const newTopics = reorder(sourceUnit.topics, result.source.index, result.destination.index);
+                sourceUnit.topics = newTopics.map((topic, i) => {
+                    topic.contentOrder = i;
+                    return topic;
+                });
+
+            } else {
+                const destUnit = _.find(courseCopy.units, ['unique', destUnitUnique]);
+                if (!destUnit) {
+                    console.error('Could not find a source unit specified in drag. Is the unique tag correct?', destUnitUnique, result, courseCopy.units);
+                    return;
+                }
+                // const sourceUnitTopics = Array.from(sourceUnit.topics);
+                // const destUnitTopics = Array.from(destUnit.topics);
+                
+                // Remove from source unit, add to the destination unit.
+                const [removed] = sourceUnit.topics.splice(result.source.index, 1);
+                destUnit.topics.splice(result.destination.index, 0, removed);
+            }
+
+            setCourse(courseCopy);
+        }
+    };
+
+    const onUnitDrop = (result: any) => {
+        console.log(`trying to move unit from ${result.source.index} to ${result.destination.index}`);
 
         let newUnits = reorder(course?.units, result.source.index, result.destination.index);
         newUnits = newUnits.map((prob, i) => {
