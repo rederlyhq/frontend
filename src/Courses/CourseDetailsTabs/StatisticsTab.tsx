@@ -1,5 +1,5 @@
 /* eslint-disable react/display-name */
-import React, { useState, forwardRef } from 'react';
+import React, { useState, forwardRef, useEffect } from 'react';
 import { Nav } from 'react-bootstrap';
 import MaterialTable from 'material-table';
 // import { MdSearch, MdFirstPage, MdLastPage, MdClear, MdFilterList, MdChevronRight, MdChevronLeft, MdArrowDownward, MdFileDownload} from 'react-icons/md';
@@ -8,6 +8,7 @@ import * as data from '../../Mocks/mockStatistics.json';
 import { ProblemObject, CourseObject } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import _ from 'lodash';
+import AxiosRequest from '../../Hooks/AxiosRequest';
 
 interface StatisticsTabProps {
     course: CourseObject;
@@ -43,22 +44,44 @@ const icons = {
 
 export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
     const [view, setView] = useState<string>(StatisticsView.UNITS);
-    let rowData: any = data.units;
+    const [rowData, setRowData] = useState<Array<any>>([]);
+    // let rowData: any = data.units;
     // This must be set for the demo.
     let mockProblem: ProblemObject =  new ProblemObject({id: 109, problemNumber: 1, webworkQuestionPath: 'webwork-open-problem-library/Contrib/CUNY/CityTech/CollegeAlgebra_Trig/QuadraticFormula/two-real-NS.pg'});
 
-    switch (view) {
-    case StatisticsView.TOPICS:
-        rowData = data.topics;
-        break;
-    case StatisticsView.PROBLEMS:
-        rowData = data.questions;
-        break;
-    default:
-        break;
-    }
+    useEffect(() => {
+        if (!course) return;
+    
+        let url = '/courses/statistics';
+        switch (view) {
+        case StatisticsView.TOPICS:
+            url = `${url}/topics?courseId=${course.id}`;
+            break;
+        case StatisticsView.PROBLEMS:
+            url = `${url}/questions?courseId=${course.id}`;
+            break;
+        default:
+            url = `${url}/units?courseId=${course.id}`;
+            break;
+        }
+
+        (async () => {
+            try {
+                const res = await AxiosRequest.get(url);
+                const data = res.data.data;
+                console.log(data);
+                setRowData(data);
+            } catch (e) {
+                console.error('Failed to get statistics.', e);
+                return;
+            }
+        })();
+
+        
+    }, [course, view]);
 
     const renderProblemPreview = (rowData: any) => {
+        console.log(rowData);
         return <ProblemIframe problem={mockProblem} setProblemDoneStateIcon={() => {}} />;
     };
 
@@ -108,10 +131,10 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
                     icons={icons}
                     title={course.name}
                     columns={[
-                        {title: 'Name', field: 'Name'},
-                        {title: 'Average number of attempts', field: 'Average number of attempts'},
-                        {title: 'Average grade', field: 'Average grade'},
-                        {title: '% Completed', field: '% Completed'},
+                        {title: 'Name', field: 'name'},
+                        {title: 'Average number of attempts', field: 'averageAttemptedCount'},
+                        {title: 'Average grade', field: 'averageScore'},
+                        {title: '% Completed', field: 'completionPercent'},
                     ]}
                     data={rowData}
                     actions={seeMoreActions}
