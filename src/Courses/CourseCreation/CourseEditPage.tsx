@@ -114,7 +114,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         const createUnit = async (unit: NewCourseUnitObj, newCourseId: number) => {
             console.log(`creating unit for course number ${newCourseId}`, unit);
             // Create the unit first.
-            const newUnitFields = ['name', 'courseId'];
+            const newUnitFields = ['name', 'courseId','contentOrder'];
             let unitPostObject = _.pick(unit, newUnitFields);
             unitPostObject.courseId = newCourseId;
             console.log('Creating a new unit', unitPostObject);
@@ -138,7 +138,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             let newTopic = new NewCourseTopicObj(topic);
             newTopic.courseUnitContentId = courseUnitContentId;
             const newTopicFields = [ 
-                'courseUnitContentId', 'topicTypeId', 'name', 'startDate', 'endDate', 'deadDate', 'partialExtend',
+                'courseUnitContentId', 'topicTypeId', 'name', 'startDate', 'endDate', 'deadDate', 'partialExtend', 'contentOrder'
             ];
             let postObject = _.pick(newTopic, newTopicFields);
             console.log('Creating topic', postObject);
