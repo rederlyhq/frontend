@@ -45,9 +45,6 @@ const icons = {
 export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
     const [view, setView] = useState<string>(StatisticsView.UNITS);
     const [rowData, setRowData] = useState<Array<any>>([]);
-    // let rowData: any = data.units;
-    // This must be set for the demo.
-    let mockProblem: ProblemObject =  new ProblemObject({id: 109, problemNumber: 1, webworkQuestionPath: 'webwork-open-problem-library/Contrib/CUNY/CityTech/CollegeAlgebra_Trig/QuadraticFormula/two-real-NS.pg'});
 
     useEffect(() => {
         if (!course) return;
@@ -81,8 +78,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
     }, [course, view]);
 
     const renderProblemPreview = (rowData: any) => {
-        console.log(rowData);
-        return <ProblemIframe problem={mockProblem} setProblemDoneStateIcon={() => {}} />;
+        return <ProblemIframe problem={new ProblemObject({id: rowData.id})} setProblemDoneStateIcon={() => {}} />;
     };
 
     const nextView = (event: any, rowData: any, togglePanel: any) => {
