@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
-import { ListGroup, ListGroupItem, Row, Col, Button, FormGroup, FormLabel, FormControl } from 'react-bootstrap';
-import { TopicObject, NewCourseTopicObj } from './CourseInterfaces';
+import { ListGroup, ListGroupItem, Row, Col, Button } from 'react-bootstrap';
+import { NewCourseTopicObj } from './CourseInterfaces';
 import { BsPencilSquare } from 'react-icons/bs';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import AxiosRequest from '../Hooks/AxiosRequest';
-import Feedback from 'react-bootstrap/Feedback';
-import { UserRole, getUserRole } from '../Enums/UserRole';
-import Cookies from 'js-cookie';
-import { CookieEnum } from '../Enums/CookieEnum';
 import MomentUtils from '@date-io/moment';
 import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
-import { useForm, Controller } from "react-hook-form";
-import { DevTool } from 'react-hook-form-devtools';
+import { useForm, Controller } from 'react-hook-form';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 

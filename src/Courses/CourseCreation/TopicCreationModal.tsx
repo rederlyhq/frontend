@@ -6,6 +6,9 @@ import moment from 'moment';
 import { useDropzone } from 'react-dropzone';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import MomentUtils from '@date-io/moment';
+import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
+import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 
 interface TopicCreationModalProps {
     unitIndex: number;
@@ -227,28 +230,44 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                     </Col>
                 </FormGroup>
                 <Row>
-                    <FormGroup as={Col} controlId='start'>
-                        <FormLabel>
-                            <h4>Start Date:</h4>
-                        </FormLabel>
-                        <FormControl 
-                            required
-                            type='date' 
-                            onChange={(e: any) => onTopicMetadataChange(e, 'startDate')}
-                            defaultValue={moment(topicMetadata?.startDate).format('YYYY-MM-DD')}
-                        />
-                    </FormGroup>
-                    <FormGroup as={Col} controlId='end'>
-                        <FormLabel>
-                            <h4>End Date:</h4>
-                        </FormLabel>
-                        <FormControl 
-                            required
-                            type='date' 
-                            onChange={(e: any) => onTopicMetadataChange(e, 'endDate')}
-                            defaultValue={moment(topicMetadata?.endDate).format('YYYY-MM-DD')}
-                        />
-                    </FormGroup>
+                    <MuiPickersUtilsProvider utils={MomentUtils}>
+                        <Col>
+                            <DateTimePicker 
+                                variant='inline'
+                                label='Start date'
+                                name={'start'}
+                                value={topicMetadata.startDate}
+                                onChange={() => {}}
+                                onAccept={(date: MaterialUiPickersDate) => {
+                                    if (!date) return;
+                                    const e = {target: {value: date.toDate()}};
+                                    onTopicMetadataChange(e, 'startDate');
+                                }}
+                                fullWidth={true}
+                                InputLabelProps={{shrink: false}}
+                                inputProps={{style: {textAlign: 'center'}}}
+                                defaultValue={moment(topicMetadata?.startDate).format('YYYY-MM-DD')}
+                            />
+                        </Col>
+                        <Col>
+                            <DateTimePicker 
+                                variant='inline'
+                                label='End date'
+                                name={'end'}
+                                value={topicMetadata.endDate}
+                                onChange={() => {}}
+                                onAccept={(date: MaterialUiPickersDate) => {
+                                    if (!date) return;
+                                    const e = {target: {value: date.toDate()}};
+                                    onTopicMetadataChange(e, 'endDate');
+                                }}
+                                fullWidth={true}
+                                InputLabelProps={{shrink: false}}
+                                inputProps={{style: {textAlign: 'center'}}}
+                                defaultValue={moment(topicMetadata?.endDate).format('YYYY-MM-DD')}
+                            />
+                        </Col>
+                    </MuiPickersUtilsProvider>
                 </Row>
                 <DragDropContext onDragEnd={onDragEnd}>
                     <Droppable droppableId='problemsList'>

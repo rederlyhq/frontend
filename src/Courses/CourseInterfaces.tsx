@@ -50,26 +50,26 @@ enum TopicTypeId {
     EXAM = 2
 }
 
+const newTopicUniqueGen = uniqueGen();
 export class TopicObject {
     name: string = '';
     questions: Array<ProblemObject> = [];
     curriculumUnitContentId: number = 0;
     topicTypeId: TopicTypeId = TopicTypeId.PROBLEM_SET;
     id: number = 0;
+    unique: number = newTopicUniqueGen.next().value || 0;
     
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
     }
 }
 
-const newTopicUniqueGen = uniqueGen();
 export class NewCourseTopicObj extends TopicObject {
     courseUnitContentId: number = 0;
     startDate: Date = new Date();
     endDate: Date = new Date();
     deadDate: Date = new Date();
     partialExtend: boolean = false;
-    unique: number = newTopicUniqueGen.next().value || 0;
 }
 
 const newUnitUniqueGen = uniqueGen();
