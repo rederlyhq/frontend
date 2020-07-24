@@ -1,3 +1,11 @@
+export function* uniqueGen() {
+    let index: number = 0;
+
+    while (true) {
+        yield ++index;
+    }
+}
+
 export class CourseObject {
     name: string = '';
     start: Date = new Date();
@@ -54,19 +62,24 @@ export class TopicObject {
     }
 }
 
+const newTopicUniqueGen = uniqueGen();
 export class NewCourseTopicObj extends TopicObject {
     courseUnitContentId: number = 0;
     startDate: Date = new Date();
     endDate: Date = new Date();
     deadDate: Date = new Date();
     partialExtend: boolean = false;
+    unique: number = newTopicUniqueGen.next().value || 0;
 }
 
+const newUnitUniqueGen = uniqueGen();
 export class UnitObject {
     id: number = 0;
     name: string = '';
     curriculumId: number = 0;
-    topics: Array<TopicObject> = [];
+    topics: Array<NewCourseTopicObj> = [];
+    unique: number = newUnitUniqueGen.next().value || 0;
+    contentOrder: number = 0;
     
     public constructor(init?:Partial<UnitObject>) {
         Object.assign(this, init);
@@ -77,6 +90,7 @@ export class NewCourseUnitObj extends UnitObject {
     courseId: number = 0;
 }
 
+const newProblemUniqueGen = uniqueGen();
 export class ProblemObject implements IProblemObject {
     id: number = 0;
     problemNumber: number = 1;
@@ -86,6 +100,7 @@ export class ProblemObject implements IProblemObject {
     maxAttempts: number = 3;
     hidden: boolean = false;
     optional: boolean = false;
+    unique: number = newProblemUniqueGen.next().value || 0;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);

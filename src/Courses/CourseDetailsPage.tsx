@@ -7,6 +7,7 @@ import AxiosRequest from '../Hooks/AxiosRequest';
 import GradesTab from './CourseDetailsTabs/GradesTab';
 import { Bar, Line } from 'react-chartjs-2';
 import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
+import { DragDropContext } from 'react-beautiful-dnd';
 
 interface CourseDetailsPageProps {
 
@@ -102,7 +103,9 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                     }
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.TOPICS} title={CourseDetailsTabs.TOPICS}>
-                    <TopicsTab course={course} />
+                    <DragDropContext onDragEnd={()=>{}}>
+                        <TopicsTab course={course} />
+                    </DragDropContext>
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
                     <EnrollmentsTab courseId={parseInt(courseId, 10)} courseCode={course.code} />
