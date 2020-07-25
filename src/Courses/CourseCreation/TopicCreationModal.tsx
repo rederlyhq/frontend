@@ -61,6 +61,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
             probs[index][name] = !probs[index][name];
             break;
         case 'unique':
+        case 'doneState':
             break;
         default:
             probs[index][name] = val;

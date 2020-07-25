@@ -1,3 +1,5 @@
+import { ProblemDoneState } from '../Enums/AssignmentEnums';
+
 export function* uniqueGen() {
     let index: number = 0;
 
@@ -102,6 +104,7 @@ export class ProblemObject implements IProblemObject {
     hidden: boolean = false;
     optional: boolean = false;
     unique: number = newProblemUniqueGen.next().value || 0;
+    doneState: ProblemDoneState = ProblemDoneState.UNTOUCHED;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);

@@ -16,19 +16,19 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     let location = useLocation();
     // TODO: We should keep problems in state so we can modify them after completion.
     let problemsFromState: Array<ProblemObject> = (location.state as any)?.problems || [];
-    const problems: Array<ProblemObject> = problemsFromState ? _.sortBy(problemsFromState, ['problemNumber']) : [];
-    const [problemsDoneState, setProblemsDoneState] = useState<Array<ProblemDoneState>>(new Array(problems.length).fill(ProblemDoneState.UNTOUCHED));
+    const initialProblems: Array<ProblemObject> = problemsFromState ? _.sortBy(problemsFromState, ['problemNumber']) : [];
     // TODO: Handle empty array case.
-    const [selectedProblem, setSelectedProblem] = useState<ProblemObject>(problems[0]);
+    const [problems, setProblems] = useState<Array<ProblemObject>>(initialProblems);
+    const [selectedProblem, setSelectedProblem] = useState<number>(0);
 
     // This should always be used on the selectedProblem.
     const setProblemDoneStateIcon = (val: ProblemDoneState) => {
-        problemsDoneState[selectedProblem.problemNumber] = val;
-        setProblemsDoneState([...problemsDoneState]);
+        problems[selectedProblem].doneState = val;
+        setProblems([...problems]);
     };
 
-    const renderDoneStateIcon = (problemNumber: number) => {
-        switch (problemsDoneState[problemNumber]) {
+    const renderDoneStateIcon = (problem: ProblemObject) => {
+        switch (problem.doneState) {
         case ProblemDoneState.CORRECT:
             return (<> CORRECT <BsCheckCircle className='text-success' role='status'/></>);
         case ProblemDoneState.INCORRECT:
@@ -50,21 +50,16 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 <Row>
                     <Col md={3}>
                         <Nav variant='pills' className='flex-column' defaultActiveKey={problems[0].id}>
-                            {problems.map((prob, id) => {
-                                if (prob.problemNumber !== id+1) {
-                                    console.error(`Problem number ${prob.problemNumber} and position in array ${id} do not match!`);
-                                    // TODO: Should we throw an error and prevent these problems from being rendered?
-                                    return (<div>There is an error with this problem set. Please contact your professor.</div>);
-                                }
+                            {problems.map(prob => {
                                 return (
                                     <NavLink 
                                         eventKey={prob.id} 
                                         key={`problemNavLink${prob.id}`} 
-                                        onSelect={() => {setSelectedProblem(prob); console.log(`selecting ${prob.id}`);}}
+                                        onSelect={() => {setSelectedProblem(prob.problemNumber); console.log(`selecting ${prob.id}`);}}
                                         role={`Link to Problem ${prob.problemNumber}`}
                                     >
                                         {`Problem ${prob.problemNumber}`}
-                                        <span className='float-right'>{renderDoneStateIcon(prob.problemNumber)}</span>
+                                        <span className='float-right'>{renderDoneStateIcon(prob)}</span>
                                     </NavLink>
                                 );
                             })}
@@ -74,7 +69,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         <a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
                             <Button className='float-right'>Ask for help</Button>
                         </a>
-                        <ProblemIframe problem={selectedProblem} setProblemDoneStateIcon={setProblemDoneStateIcon}/>
+                        <ProblemIframe problem={problems[selectedProblem]} setProblemDoneStateIcon={setProblemDoneStateIcon}/>
                     </Col>
                 </Row>
             </Container>
