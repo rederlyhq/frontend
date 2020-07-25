@@ -178,7 +178,9 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             // Not every field belongs in the request.
             const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode'];
             let postObject = _.pick(course, newCourseFields);
+            postObject.semesterCode = `${course.semesterCode}${course.semesterCodeYear}`;
             postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
+            postObject.code = encodeURIComponent(postObject.code);
             // TODO: Fix naming for route, should be 'templateId'.
 
             if (!courseId) {
@@ -392,7 +394,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                     </Col>
                 </Row>
                 <Row>
-                    <Col>
+                    <Col md={6}>
                         <FormGroup controlId='section-code'>
                             <FormLabel>
                                 <h4>Section Code:</h4>
@@ -402,14 +404,35 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                                 onChange={(e: any) => updateCourseValue('sectionCode', e)}/>
                         </FormGroup>
                     </Col>
-                    <Col>
+                    <Col md={3}>
                         <FormGroup controlId='semester-code'>
                             <FormLabel>
-                                <h4>Semester Code:</h4>
+                                <h4>Semester:</h4>
                             </FormLabel>
-                            <FormControl type='text' placeholder='SUM20'
+                            <FormControl 
+                                as='select'
+                                type='number'
                                 required
-                                onChange={(e: any) => updateCourseValue('semesterCode', e)}/>
+                                onChange={(e: any) => updateCourseValue('semesterCode', e)}
+                            >
+                                <option>FALL</option>
+                                <option>WINTER</option>
+                                <option>SPRING</option>
+                                <option>SUMMER</option>
+                            </FormControl>
+                        </FormGroup>
+                    </Col>
+                    <Col md={3}>
+                        <FormGroup controlId='semester-code-year'>
+                            <FormLabel>
+                                <h4>Semester Year:</h4>
+                            </FormLabel>
+                            <FormControl 
+                                type='number'
+                                placeholder='2020'
+                                defaultValue='2020'
+                                required
+                                onChange={(e: any) => updateCourseValue('semesterCodeYear', e)}/>
                         </FormGroup>
                     </Col>
                 </Row>
