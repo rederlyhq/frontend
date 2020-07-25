@@ -28,7 +28,7 @@ interface CourseEditPageProps {
  */
 export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     const { courseId } = useParams();
-    const [course, setCourse] = useState<CourseObject>(new CourseObject({}));
+    const [course, setCourse] = useState<CourseObject>(new CourseObject());
     const history = useHistory();
     const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined}>({show: false, unitIndex: -1});
     const [showLoadingSpinner, setShowLoadingSpinner] = useState<boolean>(false);
@@ -47,7 +47,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                     unit.topics = unit.topics.map((t: any) => new NewCourseTopicObj(t));
                     return new UnitObject(unit);
                 });
-                setCourse(courseData);
+                setCourse(new CourseObject(courseData));
             } catch (e) {
                 console.error('A bad Curriculum ID was used.', e);
             }
@@ -77,6 +77,12 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     // Adds a topic to the selected unit.
     // unitIndex is the index of the unit in the current course.
     const addTopic = (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
+        if (topic.questions.length <= 0) {
+            // TODO: Render validation!
+            console.error('Attempted to add a topic without questions!');
+            return;
+        }
+
         let newCourse: CourseObject = {...course};
         let unit = _.find(newCourse.units, ['unique', unitIndex]);
 
@@ -179,6 +185,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
         const createCourse = async (course: CourseObject) => {
             // Not every field belongs in the request.
+            console.log(course);
             const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode'];
             let postObject = _.pick(course, newCourseFields);
             postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
@@ -188,6 +195,8 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 // TODO: Move this to the useEffect, navigate away if it fails?
                 return;
             }
+
+            console.log(postObject);
 
             postObject.curriculumId = parseInt(courseId, 10);
             console.log('Creating a new course');

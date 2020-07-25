@@ -294,6 +294,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                 <Button 
                     variant="primary" 
                     type='submit'
+                    disabled={problems.length <= 0}
                 >Finish</Button>
             </Modal.Footer>
         </Form>
