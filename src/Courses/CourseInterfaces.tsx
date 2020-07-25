@@ -58,6 +58,7 @@ export class TopicObject {
     topicTypeId: TopicTypeId = TopicTypeId.PROBLEM_SET;
     id: number = 0;
     unique: number = newTopicUniqueGen.next().value || 0;
+    contentOrder: number = 0;
     
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);

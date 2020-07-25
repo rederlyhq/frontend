@@ -96,6 +96,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             _.assign(oldTopic, topic);
         } else {
             // Otherwise, concatenate this object onto the existing array.
+            topic.contentOrder = unit.topics.length;
             unit.topics = _.concat(unit.topics, new NewCourseTopicObj(topic));
         }
 

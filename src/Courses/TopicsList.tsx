@@ -11,6 +11,9 @@ import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
 import { useForm, Controller } from 'react-hook-form';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
+import { UserRole, getUserRole } from '../Enums/UserRole';
+import Cookies from 'js-cookie';
+import { CookieEnum } from '../Enums/CookieEnum';
 
 interface TopicsListProps {
     listOfTopics: Array<NewCourseTopicObj>;
@@ -47,12 +50,12 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                 <>
                     <Col md={10}>{topic.name}</Col>
                     <Col md={1}>
-                        <Button onClick={(e: any) => showEditTopic(e, topic.id)}>
+                        <Button onClick={(e: any) => showEditTopic(e, topic.unique)}>
                             <BsPencilSquare/> Edit
                         </Button>
                     </Col>
                     <Col md={1}>
-                        <Button variant='danger' onClick={(e: any) => removeTopic(e, topic.id)}>
+                        <Button variant='danger' onClick={(e: any) => removeTopic(e, topic.unique)}>
                             Delete
                         </Button>
                     </Col>
@@ -71,15 +74,16 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             <Controller 
                                 as={DateTimePicker}
                                 control={control}
-                                name={`${topic.id}-start`}
+                                name={`${topic.unique}-start`}
                                 variant='inline'
                                 inputVariant='filled'
                                 label='Start date'
                                 onChange={([val]) => {
-                                    updateTopicField(topic.id, 'startDate', val.toDate());
+                                    updateTopicField(topic.unique, 'startDate', val.toDate());
                                     return val;
                                 }}
                                 defaultValue={topic.startDate}
+                                disabled={userType === UserRole.STUDENT}
                             />
                         </Col>
                         <Col md={3}>
@@ -88,7 +92,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             <Controller 
                                 as={DateTimePicker}
                                 control={control}
-                                name={`${topic.id}-end`}
+                                name={`${topic.unique}-end`}
                                 variant='inline'
                                 label='End date'
                                 onChange={([val]) => {
@@ -97,10 +101,11 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                 }}
                                 onAccept={(date: MaterialUiPickersDate) => {
                                     if (!date) return;
-                                    updateTopicField(topic.id, 'endDate', date.toDate());
+                                    updateTopicField(topic.unique, 'endDate', date.toDate());
                                 }}
                                 defaultValue={topic.endDate}
                                 inputVariant={moment().isAfter(topic.endDate) ? 'filled' : 'outlined'}
+                                disabled={userType === UserRole.STUDENT}
                                 // Below are some options that would be useful for limiting how
                                 // professors can alter topics.
                                 // disablePast={true}
