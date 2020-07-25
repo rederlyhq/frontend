@@ -19,7 +19,7 @@ export const SubObjectDropdown: React.FC<SubObjectDropdownProps> = ({eventKeySta
     return (
         <NavDropdown title={title} id={`${eventKey}-dropdown`} active={_.startsWith(eventKeyState, eventKey)} style={style} drop='right'>
             {subObjArray && subObjArray.map(obj => {
-                return <NavDropdown.Item key={obj.id} eventKey={`${eventKey}-${obj.id}`}>{obj.problemNumber ? `Problem ${obj.problemNumber}` : obj.name}</NavDropdown.Item>;
+                return <NavDropdown.Item key={`${eventKey}-${obj.id}`} eventKey={`${eventKey}-${obj.id}`}>{obj.problemNumber ? `Problem ${obj.problemNumber}` : obj.name}</NavDropdown.Item>;
             })}
         </NavDropdown>
     );

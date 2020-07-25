@@ -19,12 +19,12 @@ export const CourseTemplateList: React.FC<CourseTemplateListProps> = ({courseTem
         <ListGroup>
             {courseTemplates.map(template => (
                 <ListGroupItem
-                    key={template.id}
+                    key={`template${template.id}`}
                     style={{cursor: 'pointer'}}
                     onClick={() => {}}
                 >
                     <Row>
-                        <Link key={template.id} to={`/common/courses/edit/${template.id}`}>
+                        <Link to={`/common/courses/edit/${template.id}`}>
                             <Col>
                                 {template.name}
                             </Col>
@@ -32,7 +32,7 @@ export const CourseTemplateList: React.FC<CourseTemplateListProps> = ({courseTem
                         <Col>
                             <CurriculumDetailsModal title={template.name} desc={'TODO: Get description.'} className='float-right'/>
                         </Col>
-                        <Link key={template.id} to={`/common/courses/edit/${template.id}`}>
+                        <Link to={`/common/courses/edit/${template.id}`}>
                             <Col md={1} style={{height: '100%'}}>
                                 <BsChevronCompactRight className="float-right" style={{height: '100%'}}/>
                             </Col>

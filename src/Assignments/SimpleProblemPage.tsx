@@ -59,7 +59,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 return (
                                     <NavLink 
                                         eventKey={prob.id} 
-                                        key={prob.id} 
+                                        key={`problemNavLink${prob.id}`} 
                                         onSelect={() => {setSelectedProblem(prob); console.log(`selecting ${prob.id}`);}}
                                         role={`Link to Problem ${prob.problemNumber}`}
                                     >

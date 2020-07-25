@@ -10,7 +10,7 @@ export const ProblemSetList: React.FC<ProblemSetListProps> = ({problems}) => {
     return (
         <ListGroup>
             {problems.map(problem => (
-                <ListGroupItem key={problem.problemNumber}>
+                <ListGroupItem key={`problem${problem.problemNumber}`}>
                     {problem.webworkQuestionPath}
                 </ListGroupItem>
             ))}

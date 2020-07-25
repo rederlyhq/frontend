@@ -15,7 +15,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({course}) => {
             <h4>Units</h4>
             {course?.units?.map((unit: any) => {
                 return (
-                    <div key={unit.id}>
+                    <div key={`unit${unit.id}`}>
                         <Accordion defaultActiveKey="1">
                             <Card>
                                 <Accordion.Toggle as={Card.Header} eventKey="0">

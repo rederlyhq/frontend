@@ -147,7 +147,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                     >
                         {listOfTopics.map((topic, index) => {
                             return (
-                                <Draggable draggableId={`topic-${topic.unique}`} index={index} key={`topic-${topic.unique}`} isDragDisabled={!showEditTopic}>
+                                <Draggable draggableId={`topic-${topic.unique}`} index={index} key={`topic${topic.unique}`} isDragDisabled={!showEditTopic}>
                                     {getDraggableTopic}
                                 </Draggable>
                             );
