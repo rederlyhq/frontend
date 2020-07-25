@@ -106,7 +106,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
     const removeTopic = (e: any, unitId: number, topicId: number) => {
         let newCourse: CourseObject = {...course};
-        let unit = _.find(newCourse.units, ['id', unitId]);
+        let unit = _.find(newCourse.units, ['unique', unitId]);
 
         if (!unit) {
             console.error(`Could not find a unit with id ${unitId}`);
@@ -115,7 +115,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
         // TODO: Do we need a confirmation workflow?
 
-        unit.topics = _.reject(unit.topics, ['id', topicId]);
+        unit.topics = _.reject(unit.topics, ['unique', topicId]);
         setCourse(newCourse);
     };
     
@@ -268,10 +268,6 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     };
 
     const handleRenameUnit = (e: any, unitIndex: number) => {
-        if (unitIndex >= course.units.length) {
-            console.error('Tried renaming a unit that exceeds the bounds of this courses units array.');
-            return false;
-        }
         let newCourse = new CourseObject(course);
         let updatingUnit = _.find(newCourse.units, ['unique', unitIndex]);
         if (!updatingUnit) {
@@ -282,6 +278,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         console.log(e.target);
         console.log(e.target.innerText);
         updatingUnit.name = e.target.innerText;
+        console.log(`Updating Unit ${unitIndex} name.`, newCourse);
         setCourse(newCourse);
     };
  
