@@ -3,6 +3,9 @@ import { UserObject } from '../CourseInterfaces';
 import EmailComponentWrapper from './EmailComponentWrapper';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { Row, FormLabel, InputGroup, FormControl, Button, Col } from 'react-bootstrap';
+import { UserRole, getUserRole } from '../../Enums/UserRole';
+import Cookies from 'js-cookie';
+import { CookieEnum } from '../../Enums/CookieEnum';
 
 interface EnrollmentsTabProps {
     courseId: number;
@@ -12,6 +15,7 @@ interface EnrollmentsTabProps {
 export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = ({ courseId, courseCode }) => {
     const [users, setUsers] = useState<Array<UserObject>>([]);
     const enrollUrl = `${window.location.host}/common/courses/enroll/${courseCode}`;
+    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
 
     const textAreaRef = useRef<FormControl<'input'> & HTMLInputElement>(null);
 
@@ -48,19 +52,23 @@ export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = ({ courseId, course
                     <h2>Current Enrollments</h2>
                 </Col>
             </Row>
-            <FormLabel>Enrollment Link:</FormLabel>
-            <InputGroup className="mb-3">
-                <FormControl
-                    readOnly
-                    aria-label="Enrollment link"
-                    aria-describedby="basic-addon2"
-                    ref={textAreaRef}
-                    value={`http://${enrollUrl}`}
-                />
-                <InputGroup.Append>
-                    <Button variant="outline-secondary" onClick={copyToClipboard}>Copy to Clipboard</Button>
-                </InputGroup.Append>
-            </InputGroup>
+            {userType !== UserRole.STUDENT && (
+                <>
+                    <FormLabel>Enrollment Link:</FormLabel>
+                    <InputGroup className="mb-3">
+                        <FormControl
+                            readOnly
+                            aria-label="Enrollment link"
+                            aria-describedby="basic-addon2"
+                            ref={textAreaRef}
+                            value={`http://${enrollUrl}`}
+                        />
+                        <InputGroup.Append>
+                            <Button variant="outline-secondary" onClick={copyToClipboard}>Copy to Clipboard</Button>
+                        </InputGroup.Append>
+                    </InputGroup>
+                </>
+            )}
 
             <EmailComponentWrapper users={users} />
         </>
