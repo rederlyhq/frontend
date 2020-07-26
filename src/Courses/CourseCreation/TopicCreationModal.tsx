@@ -83,7 +83,11 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                                 <InputGroup.Prepend>
                                     <InputGroup.Text>{webworkBasePath}</InputGroup.Text>
                                 </InputGroup.Prepend>
-                                <FormControl required value={_.trimStart(problem.webworkQuestionPath, webworkBasePath)} onChange={onFormChangeProblemIndex('webworkQuestionPath')}/>
+                                <FormControl 
+                                    required 
+                                    value={_.trimStart(problem.webworkQuestionPath, webworkBasePath)} 
+                                    onChange={onFormChangeProblemIndex('webworkQuestionPath')}
+                                />
                             </InputGroup>
                         </FormGroup>
                         <Row>

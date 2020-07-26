@@ -58,7 +58,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                         onSelect={() => {setSelectedProblem(prob.problemNumber); console.log(`selecting ${prob.id}`);}}
                                         role={`Link to Problem ${prob.problemNumber}`}
                                     >
-                                        {`Problem ${prob.problemNumber}`}
+                                        {`Problem ${prob.problemNumber+1}`}
                                         <span className='float-right'>{renderDoneStateIcon(prob)}</span>
                                     </NavLink>
                                 );

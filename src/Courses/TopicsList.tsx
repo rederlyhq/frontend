@@ -76,7 +76,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                 control={control}
                                 name={`${topic.unique}-start`}
                                 variant='inline'
-                                inputVariant='filled'
+                                inputVariant='outlined'
                                 label='Start date'
                                 onChange={([val]) => {
                                     updateTopicField(topic.unique, 'startDate', val.toDate());
@@ -104,7 +104,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                     updateTopicField(topic.unique, 'endDate', date.toDate());
                                 }}
                                 defaultValue={topic.endDate}
-                                inputVariant={moment().isAfter(topic.endDate) ? 'filled' : 'outlined'}
+                                inputVariant='outlined'
                                 disabled={userType === UserRole.STUDENT}
                                 // Below are some options that would be useful for limiting how
                                 // professors can alter topics.
