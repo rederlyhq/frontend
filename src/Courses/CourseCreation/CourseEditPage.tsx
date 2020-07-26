@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import TopicsList from '../TopicsList';
-import UnitAccordion from '../../Components/UnitAccordion';
 import { Button, Col, Row, Accordion, Card, Modal, FormControl, FormLabel, FormGroup, Spinner, Form } from 'react-bootstrap';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useParams } from 'react-router-dom';
@@ -10,10 +9,13 @@ import _ from 'lodash';
 import { TopicObject, CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject, uniqueGen } from '../CourseInterfaces';
 import moment from 'moment';
 import { useHistory } from 'react-router-dom';
+import MomentUtils from '@date-io/moment';
+import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
 
 import './Course.css';
 import { BsPlusCircleFill } from 'react-icons/bs';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 
 interface CourseEditPageProps {
 
@@ -26,7 +28,7 @@ interface CourseEditPageProps {
  */
 export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     const { courseId } = useParams();
-    const [course, setCourse] = useState<CourseObject>(new CourseObject({}));
+    const [course, setCourse] = useState<CourseObject>(new CourseObject());
     const history = useHistory();
     const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined}>({show: false, unitIndex: -1});
     const [showLoadingSpinner, setShowLoadingSpinner] = useState<boolean>(false);
@@ -45,7 +47,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                     unit.topics = unit.topics.map((t: any) => new NewCourseTopicObj(t));
                     return new UnitObject(unit);
                 });
-                setCourse(courseData);
+                setCourse(new CourseObject(courseData));
             } catch (e) {
                 console.error('A bad Curriculum ID was used.', e);
             }
@@ -75,8 +77,14 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     // Adds a topic to the selected unit.
     // unitIndex is the index of the unit in the current course.
     const addTopic = (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
+        if (topic.questions.length <= 0) {
+            // TODO: Render validation!
+            console.error('Attempted to add a topic without questions!');
+            return;
+        }
+
         let newCourse: CourseObject = {...course};
-        let unit = newCourse.units[unitIndex];
+        let unit = _.find(newCourse.units, ['unique', unitIndex]);
 
         if (!unit) {
             console.error(`Could not find a unit with id ${unitIndex}`);
@@ -85,7 +93,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
         // If a topic already exists, update and overwrite it in the course object.
         if (existingTopic) {
-            let oldTopic = _.find(unit.topics, ['id', existingTopic.id]);
+            let oldTopic = _.find(unit.topics, ['unique', existingTopic.unique]);
 
             if (!oldTopic) {
                 console.error(`Could not update topic ${existingTopic.id} in unit ${unitIndex}`);
@@ -94,6 +102,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             _.assign(oldTopic, topic);
         } else {
             // Otherwise, concatenate this object onto the existing array.
+            topic.contentOrder = unit.topics.length;
             unit.topics = _.concat(unit.topics, new NewCourseTopicObj(topic));
         }
 
@@ -103,7 +112,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
     const removeTopic = (e: any, unitId: number, topicId: number) => {
         let newCourse: CourseObject = {...course};
-        let unit = _.find(newCourse.units, ['id', unitId]);
+        let unit = _.find(newCourse.units, ['unique', unitId]);
 
         if (!unit) {
             console.error(`Could not find a unit with id ${unitId}`);
@@ -112,7 +121,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
         // TODO: Do we need a confirmation workflow?
 
-        unit.topics = _.reject(unit.topics, ['id', topicId]);
+        unit.topics = _.reject(unit.topics, ['unique', topicId]);
         setCourse(newCourse);
     };
     
@@ -176,6 +185,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
         const createCourse = async (course: CourseObject) => {
             // Not every field belongs in the request.
+            console.log(course);
             const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode'];
             let postObject = _.pick(course, newCourseFields);
             postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
@@ -185,6 +195,8 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 // TODO: Move this to the useEffect, navigate away if it fails?
                 return;
             }
+
+            console.log(postObject);
 
             postObject.curriculumId = parseInt(courseId, 10);
             console.log('Creating a new course');
@@ -237,14 +249,14 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
     const showEditTopic = (e: any, unitIndex: number, topicId: number) => {
         console.log(`Editing topic ${topicId} in unit ${unitIndex}`);
-        let unit: UnitObject | undefined = course.units[unitIndex];
+        let unit = _.find(course.units, ['unique', unitIndex]);
         console.log(unit);
         if (!unit) {
             console.error(`Cannot find unit with id ${unitIndex}`);
             return;
         }
 
-        const topic = _.find(unit.topics, ['id', topicId]);
+        const topic = _.find(unit.topics, ['unique', topicId]);
         if (!topic) {
             console.error(`Cannot find topic with id ${topicId} in unit with id ${unitIndex}`);
             return;
@@ -265,15 +277,17 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     };
 
     const handleRenameUnit = (e: any, unitIndex: number) => {
-        if (unitIndex >= course.units.length) {
-            console.error('Tried renaming a unit that exceeds the bounds of this courses units array.');
-            return false;
-        }
         let newCourse = new CourseObject(course);
-        let updatingUnit = newCourse.units[unitIndex];
+        let updatingUnit = _.find(newCourse.units, ['unique', unitIndex]);
+        if (!updatingUnit) {
+            console.error(`Could not find a unit with the unique identifier ${unitIndex}`);
+            return;
+        }
+    
         console.log(e.target);
         console.log(e.target.innerText);
         updatingUnit.name = e.target.innerText;
+        console.log(`Updating Unit ${unitIndex} name.`, newCourse);
         setCourse(newCourse);
     };
  
@@ -368,28 +382,44 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                     </Row>
                 </FormGroup>
                 <Row>
-                    <Col>
-                        <FormGroup controlId='start-date'>
-                            <FormLabel>
-                                <h4>Start Date:</h4>
-                            </FormLabel>
-                            <FormControl 
-                                required
-                                type='date' 
-                                onChange={(e: any) => updateCourseValue('start', e)}/>
-                        </FormGroup>
-                    </Col>
-                    <Col>
-                        <FormGroup controlId='end-date'>
-                            <FormLabel>
-                                <h4>End Date:</h4>
-                            </FormLabel>
-                            <FormControl 
-                                required
-                                type='date' 
-                                onChange={(e: any) => updateCourseValue('end', e)}/>
-                        </FormGroup>
-                    </Col>
+                    <MuiPickersUtilsProvider utils={MomentUtils}>
+                        <Col>
+                            <h4>Start Date</h4>
+                            <DateTimePicker 
+                                variant='inline'
+                                // label='Start date'
+                                name={'start-date'}
+                                value={course.start}
+                                onChange={() => {}}
+                                onAccept={(date: MaterialUiPickersDate) => {
+                                    if (!date) return;
+                                    const e = {target: {value: date.toDate()}};
+                                    updateCourseValue('start', e);
+                                }}
+                                fullWidth={true}
+                                InputLabelProps={{shrink: true}}
+                                inputProps={{style: {textAlign: 'center'}}}
+                            />
+                        </Col>
+                        <Col>
+                            <h4>End Date</h4>
+                            <DateTimePicker 
+                                variant='inline'
+                                // label='End date'
+                                name={'end-date'}
+                                value={course.end}
+                                onChange={() => {}}
+                                onAccept={(date: MaterialUiPickersDate) => {
+                                    if (!date) return;
+                                    const e = {target: {value: date.toDate()}};
+                                    updateCourseValue('end', e);
+                                }}
+                                fullWidth={true}
+                                InputLabelProps={{shrink: false}}
+                                inputProps={{style: {textAlign: 'center'}}}
+                            />
+                        </Col>
+                    </MuiPickersUtilsProvider>
                 </Row>
                 <Row>
                     <Col>
@@ -413,10 +443,6 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                         </FormGroup>
                     </Col>
                 </Row>
-                <h5>Textbooks:</h5>
-                <ul>
-                    <li>OpenStax Precalculus (Jay Abramson)</li>
-                </ul>
                 <h4>Units</h4>
                 <DragDropContext onDragEnd={onDragEnd}>
                     <Droppable droppableId='unitsList' type='UNIT'>
@@ -425,9 +451,9 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                                 <>
                                     <div ref={provided.innerRef} style={{backgroundColor: 'white'}} {...provided.droppableProps}>
                                         {course?.units?.map((unit: any, index) => {
-                                            const showEditWithUnitId = _.curry(showEditTopic)(_, index);
-                                            const removeTopicWithUnitId = _.curry(removeTopic)(_, index);
-                                            const renameUnit = _.curry(handleRenameUnit)(_, index);
+                                            const showEditWithUnitId = _.curry(showEditTopic)(_, unit.unique);
+                                            const removeTopicWithUnitId = _.curry(removeTopic)(_, unit.unique);
+                                            const renameUnit = _.curry(handleRenameUnit)(_, unit.unique);
 
                                             unit.contentOrder = index;
 
@@ -454,7 +480,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                                                                                 >{unit.name}</h4>
                                                                             </Col>
                                                                             <Col>
-                                                                                <Button className='float-right' onClick={(e: any) => callShowTopicCreation(unit.id, e)}>
+                                                                                <Button className='float-right' onClick={(e: any) => callShowTopicCreation(unit.unique, e)}>
                                                                                 Add a Topic
                                                                                 </Button>
                                                                             </Col>

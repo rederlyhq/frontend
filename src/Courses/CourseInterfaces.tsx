@@ -1,3 +1,5 @@
+import { ProblemDoneState } from '../Enums/AssignmentEnums';
+
 export function* uniqueGen() {
     let index: number = 0;
 
@@ -50,26 +52,27 @@ enum TopicTypeId {
     EXAM = 2
 }
 
+const newTopicUniqueGen = uniqueGen();
 export class TopicObject {
     name: string = '';
     questions: Array<ProblemObject> = [];
     curriculumUnitContentId: number = 0;
     topicTypeId: TopicTypeId = TopicTypeId.PROBLEM_SET;
     id: number = 0;
+    unique: number = newTopicUniqueGen.next().value || 0;
+    contentOrder: number = 0;
     
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
     }
 }
 
-const newTopicUniqueGen = uniqueGen();
 export class NewCourseTopicObj extends TopicObject {
     courseUnitContentId: number = 0;
     startDate: Date = new Date();
     endDate: Date = new Date();
     deadDate: Date = new Date();
     partialExtend: boolean = false;
-    unique: number = newTopicUniqueGen.next().value || 0;
 }
 
 const newUnitUniqueGen = uniqueGen();
@@ -101,6 +104,7 @@ export class ProblemObject implements IProblemObject {
     hidden: boolean = false;
     optional: boolean = false;
     unique: number = newProblemUniqueGen.next().value || 0;
+    doneState: ProblemDoneState = ProblemDoneState.UNTOUCHED;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);

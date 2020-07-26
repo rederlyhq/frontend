@@ -13,7 +13,7 @@ export const CourseList: React.FC<CourseListProps> = ({courses}) => {
 
     return (
         <ListGroup>
-            {courses.map(obj => <ListGroupItem action href={`${url}/${obj.id}`} key={obj.id}>
+            {courses.map(obj => <ListGroupItem action href={`${url}/${obj.id}`} key={`course${obj.id}`}>
                 <CourseRowComponent 
                     {...obj}
                 />
