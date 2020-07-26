@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import TopicsList from '../TopicsList';
-import { Button, Col, Row, Accordion, Card, Modal, FormControl, FormLabel, FormGroup, Spinner, Form } from 'react-bootstrap';
+import { Button, Col, Row, Accordion, Card, Modal, FormControl, FormLabel, FormGroup, Spinner, Form, Alert } from 'react-bootstrap';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useParams } from 'react-router-dom';
 import TopicCreationModal from './TopicCreationModal';
@@ -33,6 +33,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     const history = useHistory();
     const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined}>({show: false, unitIndex: -1});
     const [showLoadingSpinner, setShowLoadingSpinner] = useState<boolean>(false);
+    const [createCourseError, setCreateCourseError] = useState<string>('');
     const [progress, setProgress] = useState({curr: 0, total: 100});
     const [shouldFocusNewUnit, setShouldFocusNewUnit] = useState<boolean>(false);
     const newestUnitRef = useRef<HTMLHeadingElement>(null);
@@ -129,6 +130,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     
     // Save a course by recurisvely saving all sub-objects.
     const saveCourse = async (course: any) => {
+        setCreateCourseError('');
         setShowLoadingSpinner(true);
         // Course ID is generated from the CreateCourse call right before this.
         const createUnit = async (unit: NewCourseUnitObj, newCourseId: number) => {
@@ -216,10 +218,13 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             console.log(res);
         } catch (e) {
             console.error('Error creating course:', e);
+            setCreateCourseError(`Failed to create course. ${e}`);
+            return;
         }
 
         if (res?.status !== 201) {
-            console.error('Post failed.');
+            console.error('Post failed.', res);
+            setCreateCourseError(`Failed to create all course objects. ${res?.data}`);
             return;
         }
 
@@ -236,7 +241,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         } catch (e) {
             console.error('An error occurred when creating this course', e);
             console.log(e.response?.data.message);
-            setShowLoadingSpinner(false);
+            setCreateCourseError(`Post failed. ${e.response?.data.message}`);
         }
 
         return false;
@@ -538,10 +543,21 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                     existingTopic={showTopicCreation.existingTopic}
                 />
             </Modal>
-            <Modal show={showLoadingSpinner} className='text-center'>
-                <h4>Creating course, please wait.</h4>
+            <Modal 
+                show={showLoadingSpinner} 
+                className='text-center' 
+                onHide={() => createCourseError !== '' && setShowLoadingSpinner(false)}
+            >
+                <Modal.Header closeButton={createCourseError !== ''}>
+                    <h4>Creating course, please wait.</h4>
+                </Modal.Header>
                 <div style={{margin: '0 auto'}}>
-                    <CircularProgressWithLabel progress={(progress.curr / progress.total) * 100} />
+                    {createCourseError === '' ? 
+                        <CircularProgressWithLabel progress={(progress.curr / progress.total) * 100} /> :
+                        <Alert variant='danger'>
+                            {createCourseError}
+                        </Alert>
+                    }
                 </div>
             </Modal>
         </EnterRightAnimWrapper>
