@@ -13,7 +13,8 @@ export class CourseObject {
     start: Date = new Date();
     end: Date = new Date();
     sectionCode: string = '';
-    semesterCode: string = '';
+    semesterCode: string = 'FALL';
+    semesterCodeYear: number = 2020;
     id: number = 0;
     units: Array<UnitObject> = [];
     code: string = '';
