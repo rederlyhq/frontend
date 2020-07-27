@@ -10,6 +10,9 @@ import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { CourseObject } from './CourseInterfaces';
 import ActiveTopics from './CourseDetailsTabs/ActiveTopics';
+import { UserRole, getUserRole } from '../Enums/UserRole';
+import Cookies from 'js-cookie';
+import { CookieEnum } from '../Enums/CookieEnum';
 
 interface CourseDetailsPageProps {
 
@@ -32,6 +35,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<CourseObject>(new CourseObject());
     const [activeTab, setActiveTab] = useState<CourseDetailsTabs>(CourseDetailsTabs.DETAILS);
+    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
 
     useEffect(() => {
         (async () => {
@@ -76,12 +80,14 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                 <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
                     <EnrollmentsTab courseId={parseInt(courseId, 10)} courseCode={course.code} />
                 </Tab>
-                <Tab eventKey={CourseDetailsTabs.GRADES} title={CourseDetailsTabs.GRADES}>
-                    <GradesTab course={course} />
-                </Tab>
-                <Tab eventKey={CourseDetailsTabs.STATISTICS} title={CourseDetailsTabs.STATISTICS}>
-                    <StatisticsTab course={course} />
-                </Tab>
+                {userType !== UserRole.STUDENT && (
+                    <Tab eventKey={CourseDetailsTabs.GRADES} title={CourseDetailsTabs.GRADES}>
+                        <GradesTab course={course} />
+                    </Tab>)}
+                {userType !== UserRole.STUDENT && (
+                    <Tab eventKey={CourseDetailsTabs.STATISTICS} title={CourseDetailsTabs.STATISTICS}>
+                        <StatisticsTab course={course} />
+                    </Tab>)}
             </Tabs>
         </Container>
     );
