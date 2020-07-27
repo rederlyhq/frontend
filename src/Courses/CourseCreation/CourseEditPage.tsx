@@ -6,7 +6,7 @@ import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useParams } from 'react-router-dom';
 import TopicCreationModal from './TopicCreationModal';
 import _ from 'lodash';
-import { TopicObject, CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject, uniqueGen } from '../CourseInterfaces';
+import { CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject, uniqueGen } from '../CourseInterfaces';
 import moment from 'moment';
 import { useHistory } from 'react-router-dom';
 import MomentUtils from '@date-io/moment';
@@ -31,7 +31,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<CourseObject>(new CourseObject());
     const history = useHistory();
-    const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined}>({show: false, unitIndex: -1});
+    const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unitIndex: number, existingTopic?: NewCourseTopicObj | undefined}>({show: false, unitIndex: -1});
     const [showLoadingSpinner, setShowLoadingSpinner] = useState<boolean>(false);
     const [createCourseError, setCreateCourseError] = useState<string>('');
     const [progress, setProgress] = useState({curr: 0, total: 100});
@@ -79,14 +79,15 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
     // Adds a topic to the selected unit.
     // unitIndex is the index of the unit in the current course.
-    const addTopic = (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
+    const addTopic = (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => {
+        console.log('Adding Topic', unitIndex, existingTopic, topic);
         if (topic.questions.length <= 0) {
             // TODO: Render validation!
             console.error('Attempted to add a topic without questions!');
             return;
         }
 
-        let newCourse: CourseObject = {...course};
+        let newCourse: CourseObject = new CourseObject(course);
         let unit = _.find(newCourse.units, ['unique', unitIndex]);
 
         if (!unit) {
@@ -163,6 +164,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 'courseUnitContentId', 'topicTypeId', 'name', 'startDate', 'endDate', 'deadDate', 'partialExtend', 'contentOrder'
             ];
             let postObject = _.pick(newTopic, newTopicFields);
+            postObject.deadDate = moment(postObject.endDate).add(2, 'weeks').toDate();
             console.log('Creating topic', postObject);
             let res = await AxiosRequest.post('/courses/topic', postObject);
             let topicId = res.data?.data?.id;
@@ -190,7 +192,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         const createCourse = async (course: CourseObject) => {
             // Not every field belongs in the request.
             console.log(course);
-            const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode'];
+            const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode', 'textbooks'];
             let postObject = _.pick(course, newCourseFields);
             postObject.semesterCode = `${course.semesterCode}${course.semesterCodeYear}`;
             postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
@@ -477,6 +479,17 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                                 onChange={(e: any) => updateCourseValue('semesterCodeYear', e)}/>
                         </FormGroup>
                     </Col>
+                </Row>
+                <Row>
+                    <FormGroup as={Col} controlId='section-code'>
+                        <FormLabel>
+                            <h4>Textbooks:</h4>
+                        </FormLabel>
+                        <FormControl as='textarea'
+                            value={course.textbooks} 
+                            required
+                            onChange={(e: any) => updateCourseValue('textbooks', e)}/>
+                    </FormGroup>
                 </Row>
                 <h4>Units</h4>
                 <DragDropContext onDragEnd={onDragEnd}>

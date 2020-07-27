@@ -79,7 +79,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                 inputVariant='outlined'
                                 label='Start date'
                                 onChange={([val]) => {
-                                    updateTopicField(topic.unique, 'startDate', val.toDate());
+                                    updateTopicField(topic.id, 'startDate', val.toDate());
                                     return val;
                                 }}
                                 defaultValue={topic.startDate}
@@ -101,7 +101,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                 }}
                                 onAccept={(date: MaterialUiPickersDate) => {
                                     if (!date) return;
-                                    updateTopicField(topic.unique, 'endDate', date.toDate());
+                                    updateTopicField(topic.id, 'endDate', date.toDate());
                                 }}
                                 defaultValue={topic.endDate}
                                 inputVariant='outlined'

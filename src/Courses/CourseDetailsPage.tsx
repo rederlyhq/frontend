@@ -8,6 +8,8 @@ import GradesTab from './CourseDetailsTabs/GradesTab';
 import { Bar, Line } from 'react-chartjs-2';
 import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
 import { DragDropContext } from 'react-beautiful-dnd';
+import { CourseObject } from './CourseInterfaces';
+import ActiveTopics from './CourseDetailsTabs/ActiveTopics';
 import { UserRole, getUserRole } from '../Enums/UserRole';
 import Cookies from 'js-cookie';
 import { CookieEnum } from '../Enums/CookieEnum';
@@ -31,7 +33,7 @@ enum CourseDetailsTabs {
  */
 export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     const { courseId } = useParams();
-    const [course, setCourse] = useState<any>({});
+    const [course, setCourse] = useState<CourseObject>(new CourseObject());
     const [activeTab, setActiveTab] = useState<CourseDetailsTabs>(CourseDetailsTabs.DETAILS);
     const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
 
@@ -41,7 +43,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
 
             const courseResp = await AxiosRequest.get(`/courses/${courseId}`);
             console.log(courseResp.data);
-            setCourse(courseResp.data.data);
+            setCourse(new CourseObject(courseResp.data.data));
         })();
     }, [courseId]);
 
@@ -54,54 +56,18 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                     {course && (
                         <>
                             <h1>{course.name}</h1>
-                            <p>Course description content goes here.</p>
-
-                            <Line data={{
-                                labels: ['10','20','30','40','50','60','70','80','90','100',],
-                                datasets: [{
-                                    label: 'Student completion rate',
-                                    data: [85, 80, 75, 60, 45, 40, 40, 20, 5, 0],
-                                    backgroundColor: 'rgba(25,132,99,.5)',
-                                }]
-                            }} options={{
-                                scales: {
-                                    xAxes: [{
-                                        display: true,
-                                        scaleLabel: {
-                                            display: true,
-                                            labelString: 'Completion of topic'
-                                        }
-                                    }],
-                                    yAxes: [{
-                                        display: true,
-                                        scaleLabel: {
-                                            display: true,
-                                            labelString: 'Percentage of students'
-                                        }
-                                    }]
-                                }
-                            }} />
-
-                            <Bar data={{
-                                labels: ['Problem 1', 'Problem 2', 'Problem 3', 'Problem 4', 'Problem 5', 'Problem 6', 'Problem 7', 'Problem 8', 'Problem 9', 'Problem 10'],
-                                datasets: [{
-                                    label: 'Average attempts',
-                                    stack: 'Average attempts',
-                                    data: [3, 5, 1, 3, 5, 7, 10, 8, 3, 0],
-                                    backgroundColor: 'rgba(25,99,132,.5)',
-                                    borderColor: 'rgba(25,99,132,1)',
-                                },
-                                ],
-                            }} options={{
-                                scales: {
-                                    xAxes: [{
-                                        stacked: true
-                                    }],
-                                    yAxes: [{
-                                        stacked: true
-                                    }]
-                                }
-                            }} />
+                            <h5>Textbooks</h5>
+                            <ul>
+                                {course.textbooks?.split('\n').map(book => (
+                                    <li>
+                                        {book}
+                                    </li>
+                                ))}
+                            </ul>
+                            <h5>Open Topics</h5>
+                            <DragDropContext onDragEnd={()=>{}}>
+                                <ActiveTopics course={course} />
+                            </DragDropContext>
                         </>
                     )
                     }
