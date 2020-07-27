@@ -190,7 +190,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         const createCourse = async (course: CourseObject) => {
             // Not every field belongs in the request.
             console.log(course);
-            const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode'];
+            const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode', 'textbooks'];
             let postObject = _.pick(course, newCourseFields);
             postObject.semesterCode = `${course.semesterCode}${course.semesterCodeYear}`;
             postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
@@ -477,6 +477,17 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                                 onChange={(e: any) => updateCourseValue('semesterCodeYear', e)}/>
                         </FormGroup>
                     </Col>
+                </Row>
+                <Row>
+                    <FormGroup as={Col} controlId='section-code'>
+                        <FormLabel>
+                            <h4>Textbooks:</h4>
+                        </FormLabel>
+                        <FormControl as='textarea'
+                            value={course.textbooks} 
+                            required
+                            onChange={(e: any) => updateCourseValue('textbooks', e)}/>
+                    </FormGroup>
                 </Row>
                 <h4>Units</h4>
                 <DragDropContext onDragEnd={onDragEnd}>
