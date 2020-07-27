@@ -24,19 +24,15 @@ export const CourseTemplateList: React.FC<CourseTemplateListProps> = ({courseTem
                     onClick={() => {}}
                 >
                     <Row>
-                        <Link to={`/common/courses/edit/${template.id}`}>
-                            <Col>
-                                {template.name}
-                            </Col>
-                        </Link>
-                        <Col>
-                            <CurriculumDetailsModal title={template.name} desc={'TODO: Get description.'} className='float-right'/>
+                        <Col as={Link} md={9} to={`/common/courses/edit/${template.id}`}>
+                            {template.name}
                         </Col>
-                        <Link to={`/common/courses/edit/${template.id}`}>
-                            <Col md={1} style={{height: '100%'}}>
-                                <BsChevronCompactRight className="float-right" style={{height: '100%'}}/>
-                            </Col>
-                        </Link>
+                        <Col md={2}>
+                            <CurriculumDetailsModal title={template.name} desc={template.comment} className='float-right'/>
+                        </Col>
+                        <Col as={Link} md={1} to={`/common/courses/edit/${template.id}`}>
+                            <BsChevronCompactRight className="float-right" />
+                        </Col>
                     </Row>
                 </ListGroupItem>
             ))}
