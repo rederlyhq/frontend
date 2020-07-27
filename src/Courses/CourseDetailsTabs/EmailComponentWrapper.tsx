@@ -22,7 +22,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
 
     return (
         <>
-            {userType === UserRole.PROFESSOR && <Button className="email float-right" onClick={() => setShowModal(true)}>Email Students</Button>}
+            {userType !== UserRole.STUDENT && <Button className="email float-right" onClick={() => setShowModal(true)}>Email Students</Button>}
             <EmailModal show={showModal} setClose={() => setShowModal(false)} users={selectedStudents[0]} />
             <CourseUsersList users={users} setActive={setSelectedStudents} activeUsers={selectedStudents} />
         </>

@@ -7,6 +7,9 @@ import _ from 'lodash';
 import SubObjectDropdown from '../../Components/SubObjectDropdown';
 import { UnitObject, TopicObject, ProblemObject, CourseObject } from '../CourseInterfaces';
 import * as data from '../../Mocks/mockGrades.json';
+import { CookieEnum } from '../../Enums/CookieEnum';
+import Cookies from 'js-cookie';
+import { UserRole, getUserRole } from '../../Enums/UserRole';
 
 interface GradesTabProps {
     course: CourseObject;
@@ -36,6 +39,8 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
     const [selectedObjects, setSelectedObjects] = useState<IDropdownCascade>({});
     const [viewData, setViewData] = useState<Array<any>>([]);
     const [selfGrades, setSelfGrades] = useState([]);
+    const userId: string | undefined = Cookies.get(CookieEnum.USERID);
+    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
 
     const handleChangedView = (selectedView: string) => {
         console.log('handling changing view', selectedView);
@@ -57,7 +62,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
     };
 
     // This hook gets the grades for all users, filtered by the type of view selected.
-    useEffect(()=>{
+    const getCourseGradesHook = () => {
         if (_.isNil(course) || !course.id) return;
         (async () => {
             let urlArg = `courseId=${course.id}`;
@@ -81,21 +86,43 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
 
             setViewData(flatGradesArr);
         })();
-    }, [course, selectedObjects]);
+    };
 
     // This hook is intended to get the grades for the user that is currently signed in.
-    // useEffect(()=>{
-    //     (async () => {
-    //         const res = await AxiosRequest.get('/users/3?courseId=73&includeGrades=JUST_GRADE');
-    //         if (res.status !== 200) {
-    //             console.error('Bad status code');
-    //             return;
-    //         }
-    //         const grades = res.data?.data?.grades;
-    //         console.log(grades);
-    //         setSelfGrades(grades);
-    //     })();
-    // }, []);
+    const getSelfGradesHook = () => {
+        (async () => {
+            if (!userId || userId === 'undefined') {
+                console.error('Failed to retrieve userId from session.');
+                return;
+            }
+
+            const res = await AxiosRequest.get(`/users/${userId}?courseId=${course.id}&includeGrades=JUST_GRADE`);
+            if (res.status !== 200) {
+                console.error('Bad status code');
+                return;
+            }
+            const grades = res.data?.data?.grades;
+            if (!grades) {
+                console.error('Failed to download grades.', res);
+                return;
+            }
+
+            console.log(grades);
+            setViewData(grades.map((grade: any) => {
+                let gradeRow = grade;
+                delete gradeRow.id;
+                delete gradeRow.userId;
+                delete gradeRow.user_id;
+                delete gradeRow.randomSeed;
+                delete gradeRow.createdAt;
+                delete gradeRow.updatedAt;
+                return gradeRow;
+                // TODO: How do we get the question number from the problem?
+            }));
+        })();
+    };
+
+    useEffect((userType === UserRole.STUDENT ? getSelfGradesHook : getCourseGradesHook), [course, selectedObjects]);
 
     if (!course) return null;
 

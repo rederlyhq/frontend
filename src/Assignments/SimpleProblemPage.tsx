@@ -66,9 +66,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         </Nav>
                     </Col>
                     <Col md={9}>
-                        <a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
+                        {/* Temporarily disabled for release.  */}
+                        {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
                             <Button className='float-right'>Ask for help</Button>
-                        </a>
+                        </a>)}
                         <ProblemIframe problem={problems[selectedProblem]} setProblemDoneStateIcon={setProblemDoneStateIcon}/>
                     </Col>
                 </Row>
