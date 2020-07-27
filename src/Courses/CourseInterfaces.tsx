@@ -42,6 +42,7 @@ export class UserObject {
 export interface ICourseTemplate {
     name: string;
     id: number;
+    comment: string;
 }
 
 export interface IProblemObject {
@@ -75,6 +76,11 @@ export class NewCourseTopicObj extends TopicObject {
     endDate: Date = new Date();
     deadDate: Date = new Date();
     partialExtend: boolean = false;
+
+    public constructor(init?:Partial<NewCourseTopicObj>) {
+        super();
+        Object.assign(this, init);
+    }
 }
 
 const newUnitUniqueGen = uniqueGen();

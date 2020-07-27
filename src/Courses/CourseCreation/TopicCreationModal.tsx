@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { FormControl, FormLabel, Form, FormGroup, Modal, Button, InputGroup, Col, Row, FormCheck } from 'react-bootstrap';
 import _ from 'lodash';
-import { TopicObject, ProblemObject, NewCourseTopicObj } from '../CourseInterfaces';
+import { ProblemObject, NewCourseTopicObj } from '../CourseInterfaces';
 import moment from 'moment';
 import { useDropzone } from 'react-dropzone';
 import AxiosRequest from '../../Hooks/AxiosRequest';
@@ -12,8 +12,8 @@ import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 
 interface TopicCreationModalProps {
     unitIndex: number;
-    addTopic: (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => void;
-    existingTopic?: TopicObject;
+    addTopic: (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => void;
+    existingTopic?: NewCourseTopicObj;
 }
 
 /**
@@ -184,7 +184,8 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
             return problem;
         });
         console.log(problemsWithOrdering);
-        addTopic(unitIndex, existingTopic, new TopicObject({...topicMetadata, questions: problemsWithOrdering}));
+        console.log(topicMetadata);
+        addTopic(unitIndex, existingTopic, new NewCourseTopicObj({...topicMetadata, questions: problemsWithOrdering}));
     };
 
     const onDragEnd = (result: any) => {
