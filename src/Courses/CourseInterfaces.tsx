@@ -102,6 +102,16 @@ export class NewCourseUnitObj extends UnitObject {
 }
 
 const newProblemUniqueGen = uniqueGen();
+
+export class StudentGrade {
+    overallBestScore: number = 0;
+    bestScore: number = 0;
+    numAttempts: number = 0;
+
+    public constructor(init?:Partial<ProblemObject>) {
+        Object.assign(this, init);
+    }
+}
 export class ProblemObject implements IProblemObject {
     id: number = 0;
     problemNumber: number = 1;
@@ -112,7 +122,7 @@ export class ProblemObject implements IProblemObject {
     hidden: boolean = false;
     optional: boolean = false;
     unique: number = newProblemUniqueGen.next().value || 0;
-    doneState: ProblemDoneState = ProblemDoneState.UNTOUCHED;
+    grades?: StudentGrade[];
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);

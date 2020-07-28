@@ -78,7 +78,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
     }, [course, view]);
 
     const renderProblemPreview = (rowData: any) => {
-        return <ProblemIframe problem={new ProblemObject({id: rowData.id})} setProblemDoneStateIcon={() => {}} />;
+        return <ProblemIframe problem={new ProblemObject({id: rowData.id})} setProblemStudentGrade={() => {}} />;
     };
 
     const nextView = (event: any, rowData: any, togglePanel: any) => {

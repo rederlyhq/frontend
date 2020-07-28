@@ -8,7 +8,7 @@ import { ProblemDoneState } from '../Enums/AssignmentEnums';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
-    setProblemDoneStateIcon: (val: ProblemDoneState) => void;
+    setProblemStudentGrade: (val: any) => void;
 }
 
 /**
@@ -18,7 +18,7 @@ interface ProblemIframeProps {
  * with further work on the JSON data.
  * Important reference: https://medium.com/the-thinkmill/how-to-safely-inject-html-in-react-using-an-iframe-adc775d458bc
  */
-export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblemDoneStateIcon}) => {
+export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblemStudentGrade}) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
@@ -68,13 +68,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
             console.log(res);
             const grade = res.data.data.rendererData.problem_result.score;
             console.log(`You scored a ${grade} on this problem!`);
-            if (grade === 1) {
-                setProblemDoneStateIcon(ProblemDoneState.CORRECT);
-            } else if (grade < 1 && grade > 0) {
-                setProblemDoneStateIcon(ProblemDoneState.PARTIAL);
-            } else {
-                setProblemDoneStateIcon(ProblemDoneState.INCORRECT);
-            }
+            setProblemStudentGrade(res.data.data.studentGrade)
             setRenderedHTML(res.data.data.rendererData.renderedHTML);
             // When HTML rerenders, setLoading will be reset to false after resizing.
         } catch (e) {

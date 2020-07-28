@@ -49,13 +49,24 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = (props: Simpl
     }, [params.topicId]);
 
     // This should always be used on the selectedProblem.
-    const setProblemDoneStateIcon = (val: ProblemDoneState) => {
-        problems[selectedProblem].doneState = val;
+    const setProblemStudentGrade = (val: any) => {
+        problems[selectedProblem].grades = [val];
         setProblems([...problems]);
     };
 
     const renderDoneStateIcon = (problem: ProblemObject) => {
-        switch (problem.doneState) {
+        let doneState: ProblemDoneState = ProblemDoneState.UNTOUCHED;
+        if (_.isNil(problem.grades) || _.isNil(problem.grades[0]) || problem.grades[0].numAttempts === 0) {
+            // Do nothing but skip everything else
+        } else if(problem.grades[0].overallBestScore === 1) {
+            doneState = ProblemDoneState.CORRECT
+        } else if (problem.grades[0].overallBestScore === 0) {
+            doneState = ProblemDoneState.INCORRECT;
+        } else if (problem.grades[0].overallBestScore < 1) {
+            doneState = ProblemDoneState.PARTIAL;
+        }
+    
+        switch (doneState) {
         case ProblemDoneState.CORRECT:
             return (<> CORRECT <BsCheckCircle className='text-success' role='status'/></>);
         case ProblemDoneState.INCORRECT:
@@ -105,7 +116,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = (props: Simpl
                         {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
                             <Button className='float-right'>Ask for help</Button>
                         </a>)}
-                        <ProblemIframe problem={problems[selectedProblem]} setProblemDoneStateIcon={setProblemDoneStateIcon}/>
+                        <ProblemIframe problem={problems[selectedProblem]} setProblemStudentGrade={setProblemStudentGrade}/>
                     </Col>
                 </Row>
             </Container>
