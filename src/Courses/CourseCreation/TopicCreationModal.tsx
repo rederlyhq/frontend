@@ -48,8 +48,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         switch (name) {
         case 'webworkQuestionPath':
         case 'path':
-            probs[index].webworkQuestionPath = _.trimStart(val, webworkBasePath);
-            console.log('Removed the webwork base prefix');
+            probs[index].webworkQuestionPath = val;
             break;
         case 'weight':
         case 'maxAttempts':
