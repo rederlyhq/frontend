@@ -107,7 +107,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         } else {
             // Otherwise, concatenate this object onto the existing array.
             // topic.contentOrder = unit.topics.length;
-            topic.contentOrder = Math.max(...unit.topics.map(topic => topic.contentOrder)) + 1
+            topic.contentOrder = Math.max(...unit.topics.map(topic => topic.contentOrder), 0) + 1
             unit.topics = _.concat(unit.topics, new NewCourseTopicObj(topic));
         }
 
