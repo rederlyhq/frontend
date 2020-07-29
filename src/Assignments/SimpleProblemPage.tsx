@@ -24,7 +24,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = (props: Simpl
     // const initialProblems: Array<ProblemObject> = problemsFromState ? _.sortBy(problemsFromState, ['problemNumber']) : [];
     // TODO: Handle empty array case.
     const [problems, setProblems] = useState<Array<ProblemObject>>([]);
-    const [selectedProblem, setSelectedProblem] = useState<number>(0);
+    const [selectedProblem, setSelectedProblem] = useState<number>(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
