@@ -116,7 +116,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = (props: Simpl
                         {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
                             <Button className='float-right'>Ask for help</Button>
                         </a>)}
-                        <ProblemIframe problem={problems[selectedProblem]} setProblemStudentGrade={setProblemStudentGrade}/>
+                        <ProblemIframe problem={problems[selectedProblem-1]} setProblemStudentGrade={setProblemStudentGrade}/>
                     </Col>
                 </Row>
             </Container>
