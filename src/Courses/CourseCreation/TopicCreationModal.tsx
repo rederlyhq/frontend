@@ -48,7 +48,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         switch (name) {
         case 'webworkQuestionPath':
         case 'path':
-            probs[index].webworkQuestionPath = val
+            probs[index].webworkQuestionPath = val;
             break;
         case 'weight':
         case 'maxAttempts':
