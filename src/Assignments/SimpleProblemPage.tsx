@@ -50,7 +50,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = (props: Simpl
 
     // This should always be used on the selectedProblem.
     const setProblemStudentGrade = (val: any) => {
-        problems[selectedProblem].grades = [val];
+        problems[selectedProblem-1].grades = [val];
         setProblems([...problems]);
     };
 
