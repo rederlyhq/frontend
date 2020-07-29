@@ -79,12 +79,9 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                             <FormLabel>Problem Path:</FormLabel>
                             {/* This might be a nice UI addition, but might be annoying if we don't autoremove a duplicate. */}
                             <InputGroup>
-                                <InputGroup.Prepend>
-                                    <InputGroup.Text>{webworkBasePath}</InputGroup.Text>
-                                </InputGroup.Prepend>
                                 <FormControl 
                                     required 
-                                    value={_.trimStart(problem.webworkQuestionPath, webworkBasePath)} 
+                                    value={problem.webworkQuestionPath} 
                                     onChange={onFormChangeProblemIndex('webworkQuestionPath')}
                                 />
                             </InputGroup>
