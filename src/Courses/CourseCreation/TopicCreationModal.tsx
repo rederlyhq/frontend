@@ -161,7 +161,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         e.preventDefault();
         const problemsWithOrdering = problems.map((problem, index) => {
             // Problems should always render in the order that the professor sets them.
-            problem.problemNumber = index;
+            problem.problemNumber = index + 1; // problemNumber should be 1..n not 0..(n-1)
 
             // If the base path is present, this is already a full path and should escape further processing.
             if (_.startsWith(problem.webworkQuestionPath, webworkBasePath)) {
