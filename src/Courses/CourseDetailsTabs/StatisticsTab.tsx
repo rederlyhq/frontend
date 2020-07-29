@@ -9,6 +9,7 @@ import { ProblemObject, CourseObject } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import _ from 'lodash';
 import AxiosRequest from '../../Hooks/AxiosRequest';
+import * as qs from 'querystring';
 
 interface StatisticsTabProps {
     course: CourseObject;
@@ -44,23 +45,40 @@ const icons = {
 
 export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
     const [view, setView] = useState<string>(StatisticsView.UNITS);
+    const [idFilter, setIdFilter] = useState<number | null>(null);
     const [rowData, setRowData] = useState<Array<any>>([]);
 
     useEffect(() => {
         if (!course || course.id === 0) return;
     
         let url = '/courses/statistics';
+        let filterParam: string = '';
+        let idFilterLocal = idFilter;
         switch (view) {
         case StatisticsView.TOPICS:
-            url = `${url}/topics?courseId=${course.id}`;
+            url = `${url}/topics`;
+            filterParam = 'courseUnitContentId'
             break;
         case StatisticsView.PROBLEMS:
-            url = `${url}/questions?courseId=${course.id}`;
+            url = `${url}/questions`;
+            filterParam = 'courseTopicContentId';
             break;
         default:
-            url = `${url}/units?courseId=${course.id}`;
+            url = `${url}/units`;
+            filterParam = '';
+            if(idFilterLocal !== null) {
+                console.error('This should be null for units');
+                idFilterLocal = null;
+            }
             break;
         }
+
+        const queryString = qs.stringify(_({
+            courseId: course.id,
+            [filterParam]: idFilterLocal
+        }).omitBy(_.isNil).value() as any).toString();
+
+        url = `${url}?${queryString}`;
 
         (async () => {
             try {
@@ -84,7 +102,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
         })();
 
         
-    }, [course, view]);
+    }, [course, view, idFilter]);
 
     const renderProblemPreview = (rowData: any) => {
         return <ProblemIframe problem={new ProblemObject({id: rowData.id})} setProblemStudentGrade={() => {}} />;
@@ -93,9 +111,11 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
     const nextView = (event: any, rowData: any, togglePanel: any) => {
         switch (view) {
         case StatisticsView.UNITS:
+            setIdFilter(rowData.id);
             setView(StatisticsView.TOPICS);
             break;
         case StatisticsView.TOPICS:
+            setIdFilter(rowData.id);
             setView(StatisticsView.PROBLEMS);
             break;
         case StatisticsView.PROBLEMS:
@@ -114,7 +134,10 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
     
     return (
         <>
-            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => setView(selectedKey)}>
+            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
+                setView(selectedKey)
+                setIdFilter(null)
+            }}>
                 <Nav.Item>
                     <Nav.Link eventKey={StatisticsView.UNITS}>
                         Units
