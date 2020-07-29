@@ -47,7 +47,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
     const [rowData, setRowData] = useState<Array<any>>([]);
 
     useEffect(() => {
-        if (!course) return;
+        if (!course || course.id === 0) return;
     
         let url = '/courses/statistics';
         switch (view) {
@@ -65,8 +65,17 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
         (async () => {
             try {
                 const res = await AxiosRequest.get(url);
-                const data = res.data.data;
-                console.log(data);
+                let data = res.data.data;
+                const formatNumberString = (val: string) => {
+                    if(_.isNil(val)) return null;
+                    return parseFloat(val).toFixed(2);
+                }
+                data = data.map((d: any) => ({
+                    ...d,
+                    averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
+                    averageScore: formatNumberString(d.averageScore),
+                    completionPercent: formatNumberString(d.completionPercent)
+                }));
                 setRowData(data);
             } catch (e) {
                 console.error('Failed to get statistics.', e);
