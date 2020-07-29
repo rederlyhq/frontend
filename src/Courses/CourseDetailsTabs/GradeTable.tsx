@@ -34,8 +34,17 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
     if (grades.length <= 0) return null;
 
     // Material UI edits the object in-place, which causes problems.
-    const safeGrades = grades.map(obj => ({...obj}));
+    let safeGrades = grades.map(obj => ({
+        ...obj,
+    }));
     const headers = _.keys(safeGrades[0]);
+    if(headers.indexOf('average') >= 0) {
+        // Would include this in above mapping, however using ternary operated resulted in an empty column in questions
+        safeGrades = safeGrades.map(obj => ({
+            ...obj,
+            average: obj.average.toFixed(2)
+        }));
+    }
     console.log(headers);
     console.log(safeGrades);
 
