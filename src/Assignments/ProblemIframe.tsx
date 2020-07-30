@@ -27,6 +27,12 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
 
     useEffect(()=>{
         setLoading(true);
+        // We need to reset the error state since a new call means no error
+        setError('');
+        // If you don't reset the rendered html you won't get the load event
+        // Thus if you go to an error state and back to the success state
+        // The rendered html will never call load handler which will never stop loading
+        setRenderedHTML('');
         (async () => {
             try {
                 const res = await AxiosRequest.get(`/courses/question/${problem.id}`);
