@@ -1,8 +1,7 @@
 import React from 'react';
 import TopicsList from '../TopicsList';
-import { Accordion, Card, Row, Col, Modal } from 'react-bootstrap';
+import { Accordion, Card, Row, Col } from 'react-bootstrap';
 import { CourseObject } from '../CourseInterfaces';
-import TopicCreationModal from '../CourseCreation/TopicCreationModal';
 
 interface TopicsTabProps {
     course: CourseObject;

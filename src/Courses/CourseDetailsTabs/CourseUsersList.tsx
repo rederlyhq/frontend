@@ -41,7 +41,7 @@ export const CourseUsersList: React.FC<CourseUsersListProps> = ({users, activeUs
     };
 
     const filterUser = (e: any) => {
-        if (!e.target || e.target.value == '') {
+        if (!e.target || e.target.value === '') {
             setSearchedUsers(users);
             return;
         }

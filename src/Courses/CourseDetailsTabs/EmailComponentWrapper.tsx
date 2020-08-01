@@ -1,8 +1,7 @@
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState } from 'react';
 import CourseUsersList from './CourseUsersList';
 import { UserObject } from '../CourseInterfaces';
-import { Row, Col, Button, FormLabel, InputGroup, FormControl } from 'react-bootstrap';
-import { userContext } from '../../NavWrapper/NavWrapper';
+import { Button } from 'react-bootstrap';
 import EmailModal from './EmailModal';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import Cookies from 'js-cookie';
