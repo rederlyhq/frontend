@@ -27,7 +27,7 @@ const mock_advisees_passing = {
     options: {
         tooltips: {
             callbacks: {
-                label: function(tooltip: any, object: any) {
+                label: function(tooltip: any) {
                     if (tooltip.index === 1) {
                         return 'Failing Students: Mary Jane, Peter Parker';
                     } else {
