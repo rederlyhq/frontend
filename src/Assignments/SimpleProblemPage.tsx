@@ -7,6 +7,8 @@ import ProblemIframe from './ProblemIframe';
 import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
 import { ProblemDoneState } from '../Enums/AssignmentEnums';
 import _ from 'lodash';
+import {Upload} from "./Upload";
+
 
 interface SimpleProblemPageProps {
 }
@@ -112,6 +114,12 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         </Nav>
                     </Col>
                     <Col md={9}>
+                    <div>
+                            <p className="title">React Drag and Drop Image Upload</p>
+                            <div className="content">
+                                <Upload/>
+                            </div>
+                            </div>
                         {/* Temporarily disabled for release.  */}
                         {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
                             <Button className='float-right'>Ask for help</Button>
@@ -119,6 +127,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         <ProblemIframe problem={problems[selectedProblem-1]} setProblemStudentGrade={setProblemStudentGrade}/>
                     </Col>
                 </Row>
+                
             </Container>
         </>
     );
