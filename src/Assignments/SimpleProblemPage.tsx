@@ -8,7 +8,7 @@ import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
 import { ProblemDoneState } from '../Enums/AssignmentEnums';
 import _ from 'lodash';
 import {Upload} from "./Upload";
-
+import {GetUpload} from "./GetUpload";
 
 interface SimpleProblemPageProps {
 }
@@ -115,9 +115,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     </Col>
                     <Col md={9}>
                     <div>
-                            <p className="title">React Drag and Drop Image Upload</p>
                             <div className="content">
                                 <Upload/>
+                                <GetUpload problem={problems[selectedProblem-1]}/>
                             </div>
                             </div>
                         {/* Temporarily disabled for release.  */}

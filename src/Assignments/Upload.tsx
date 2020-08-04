@@ -1,6 +1,8 @@
 import React, {useCallback, CSSProperties} from 'react'
 import {useDropzone} from 'react-dropzone'
 import AxiosRequest from '../Hooks/AxiosRequest';
+import Cookies from 'js-cookie';
+import { CookieEnum } from '../Enums/CookieEnum';
 
 export interface StylesDictionary{
     [Key: string]: CSSProperties;
@@ -17,23 +19,27 @@ const styles:StylesDictionary  = {
 }
 
 interface UploadProps {}
-const API_ENDPOINT = 'https://d59vl80zk0.execute-api.us-east-2.amazonaws.com/Prod'
 
 export const Upload: React.FC<UploadProps> = () => {
-
+  const userId: string | undefined = Cookies.get(CookieEnum.USERID);
+  console.log(CookieEnum)
   const onDrop = useCallback(acceptedFiles => {
     console.log(acceptedFiles);
         console.log(acceptedFiles[0]['name']);
         (async () => {
             const data = new FormData();
             data.append(acceptedFiles[0]['name'], acceptedFiles[0]);
-            const pre_sign_url = await AxiosRequest.get(API_ENDPOINT);
-            console.log('Response: ', pre_sign_url.data)
-             const res2 = await AxiosRequest.put(pre_sign_url.data.uploadURL, data, {
+            const pre_sign_url = await AxiosRequest.get('/student-work/presign-url');
+            console.log('Response: ', pre_sign_url.data.data.data)
+            const res = await AxiosRequest.put(pre_sign_url.data.data.data.uploadURL, data, {
                 headers: {
                     'Content-Type': 'application/pdf'
                 }
             });
+            console.log("sent")
+            const update_db = await AxiosRequest.post(`/student-work/post-path`, {userId: userId,
+                                                     file_path:pre_sign_url.data.data.data.photoFilename});
+            console.log(update_db)
             console.log(acceptedFiles[0]['name']);        
         })();
   }, [])
