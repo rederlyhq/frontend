@@ -4,7 +4,6 @@ import { NewCourseTopicObj } from './CourseInterfaces';
 import { BsPencilSquare } from 'react-icons/bs';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
-import moment from 'moment';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import MomentUtils from '@date-io/moment';
 import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
@@ -29,7 +28,7 @@ interface TopicsListProps {
 export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, showEditTopic, removeTopic, unitUnique}) => {
     const [topicFeedback, setTopicFeedback] = useState({topicId: -1, feedback: '', variant: 'danger'});
     const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
-    const { register, control, handleSubmit, errors } = useForm();
+    const { control } = useForm();
     
     const updateTopicField = async (topicId: number, field: keyof NewCourseTopicObj, newData: Date) => {
         console.log(`Updating Topic ${topicId} to ${field} = ${newData}`);
@@ -78,6 +77,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                 variant='inline'
                                 inputVariant='outlined'
                                 label='Start date'
+                                title='Start date'
                                 onChange={([val]) => {
                                     updateTopicField(topic.id, 'startDate', val.toDate());
                                     return val;

@@ -4,7 +4,6 @@ import AxiosRequest from '../Hooks/AxiosRequest';
 import { fromEvent } from 'from-form-submit';
 import _ from 'lodash';
 import { Spinner } from 'react-bootstrap';
-import { ProblemDoneState } from '../Enums/AssignmentEnums';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
@@ -74,7 +73,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
             console.log(res);
             const grade = res.data.data.rendererData.problem_result.score;
             console.log(`You scored a ${grade} on this problem!`);
-            setProblemStudentGrade(res.data.data.studentGrade)
+            setProblemStudentGrade(res.data.data.studentGrade);
             setRenderedHTML(res.data.data.rendererData.renderedHTML);
             // When HTML rerenders, setLoading will be reset to false after resizing.
         } catch (e) {

@@ -1,7 +1,6 @@
 import React from 'react';
 import { NavDropdown } from 'react-bootstrap';
 import _ from 'lodash';
-import { ProblemObject } from '../Courses/CourseInterfaces';
 
 interface SubObjectDropdownProps {
     eventKeyState: string;

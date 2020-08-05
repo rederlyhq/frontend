@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Button, Container, Tabs, Tab, InputGroup, FormControl, FormLabel } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Container, Tabs, Tab } from 'react-bootstrap';
 import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
 import TopicsTab from './CourseDetailsTabs/TopicsTab';
 import { useParams } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import GradesTab from './CourseDetailsTabs/GradesTab';
-import { Bar, Line } from 'react-chartjs-2';
 import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { CourseObject } from './CourseInterfaces';

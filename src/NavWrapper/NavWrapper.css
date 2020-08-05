@@ -16,3 +16,11 @@
     font-size: 2em;
     margin: auto;
 }
+
+/* 0.8 passes the Accessibility contrast test. */
+.navbar-dark a.dropdown-toggle.nav-link {
+    color: rgba(255, 255, 255, 0.8);
+}
+.navbar-dark a.dropdown-toggle.nav-link:hover {
+    color: rgba(255, 255, 255, 0.9);
+}

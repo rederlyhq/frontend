@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import StudentGradesList from './StudentGradesList';
 import AxiosRequest from '../../Hooks/AxiosRequest';
-import { Nav, Table, DropdownButton, NavDropdown } from 'react-bootstrap';
+import { Nav } from 'react-bootstrap';
 import GradeTable from './GradeTable';
 import _ from 'lodash';
 import SubObjectDropdown from '../../Components/SubObjectDropdown';
 import { UnitObject, TopicObject, ProblemObject, CourseObject } from '../CourseInterfaces';
-import * as data from '../../Mocks/mockGrades.json';
 import { CookieEnum } from '../../Enums/CookieEnum';
 import Cookies from 'js-cookie';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
@@ -38,7 +36,6 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
     const [view, setView] = useState<string>(GradesView.OVERVIEW);
     const [selectedObjects, setSelectedObjects] = useState<IDropdownCascade>({});
     const [viewData, setViewData] = useState<Array<any>>([]);
-    const [selfGrades, setSelfGrades] = useState([]);
     const userId: string | undefined = Cookies.get(CookieEnum.USERID);
     const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
 

@@ -6,8 +6,6 @@ import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
 import CastForEducationIcon from '@material-ui/icons/CastForEducation';
 
 import { ExpandMore } from '@material-ui/icons';
@@ -22,7 +20,7 @@ interface UnitAccordionProps {
  * This is intended to replace the TopicsList, and the Accordion wrapper around it.
  * It uses Material UI rather than Bootstrap. 
  */
-export const UnitAccordion: React.FC<UnitAccordionProps> = ({}) => {
+export const UnitAccordion: React.FC<UnitAccordionProps> = () => {
     return (
         <ExpansionPanel>
             <ExpansionPanelSummary

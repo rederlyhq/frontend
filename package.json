@@ -75,6 +75,8 @@
     "create-polyfill-service-url": "^2.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-react": "^7.19.0",
-    "react-hook-form-devtools": "^1.2.0"
+    "react-hook-form-devtools": "^1.2.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "react-axe": "^3.4.1"
   }
 }

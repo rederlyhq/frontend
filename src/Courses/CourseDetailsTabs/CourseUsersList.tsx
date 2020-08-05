@@ -41,7 +41,7 @@ export const CourseUsersList: React.FC<CourseUsersListProps> = ({users, activeUs
     };
 
     const filterUser = (e: any) => {
-        if (!e.target || e.target.value == '') {
+        if (!e.target || e.target.value === '') {
             setSearchedUsers(users);
             return;
         }
@@ -61,7 +61,7 @@ export const CourseUsersList: React.FC<CourseUsersListProps> = ({users, activeUs
             <Form.Group controlId="searchBar">
                 <Row>
                     <Col md={10}>                    
-                        <FormControl type="search" onChange={filterUser} />
+                        <FormControl title='Search enrolled students' type="search" onChange={filterUser} />
                     </Col>
                     <Col md={2}>
                         <Button onClick={() => onSelectAll()}>{selectAllState ? 'Unselect All' : 'Select All'}</Button>

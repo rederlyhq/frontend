@@ -1,5 +1,3 @@
-import { ProblemDoneState } from '../Enums/AssignmentEnums';
-
 export function* uniqueGen() {
     let index: number = 0;
 

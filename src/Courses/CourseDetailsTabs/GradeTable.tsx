@@ -1,9 +1,8 @@
 /* eslint-disable react/display-name */
 import React, {forwardRef} from 'react';
-import { Table } from 'react-bootstrap';
 import _ from 'lodash';
 import MaterialTable from 'material-table';
-import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from "@material-ui/icons";
+import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from '@material-ui/icons';
 
 interface GradeTableProps {
     courseName: string;
