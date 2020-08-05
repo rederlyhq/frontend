@@ -14,12 +14,13 @@ import CourseEditPage from '../Courses/CourseCreation/CourseEditPage';
 import SimpleProblemPage from '../Assignments/SimpleProblemPage';
 import AdviserPage from '../Adviser/AdviserPage';
 import EnrollUserPage from '../Courses/EnrollUserPage';
+import { ProvideFeedback } from './ProvideFeedback';
 
 interface NavWrapperProps {
 
 }
 
-export const userContext = React.createContext({userType: 'Professor'});
+export const userContext = React.createContext({ userType: 'Professor' });
 
 /**
  * The NavWrapper is intended to allow for providing toolbars and menus for navigation.
@@ -52,7 +53,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
             {/* Header bar */}
             <Navbar role='navigation' variant='dark' bg='dark' className="toolbar mr-auto">
                 <NavbarBrand as={Link} to="/common/courses">
-                    <img 
+                    <img
                         src="/logo-rederly+RGB-original.png"
                         className='d-inline-block align-top'
                         alt='Rederly logo'
@@ -62,6 +63,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                 <NavbarCollapse>
                     <Nav className="text-center mr-auto">
                         {/* <Link to='/common/courses'>Courses</Link> */}
+                    </Nav>
+                    <Nav className="float-right">
+                        <ProvideFeedback />
                     </Nav>
                     <Nav className="float-right">
                         <NavDropdown title={`Welcome, ${userName}`} id='account-dropdown'>
@@ -76,25 +80,25 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     <AnimatePresence exitBeforeEnter initial={false}>
                         <Switch>
                             <Route exact path={`${path}/adviser`}>
-                                <AdviserPage/>
+                                <AdviserPage />
                             </Route>
                             <Route exact path={`${path}/courses`}>
-                                <CoursePage/>
+                                <CoursePage />
                             </Route>
                             <Route exact path={`${path}/courses/new`}>
-                                <CourseCreationPage/>
+                                <CourseCreationPage />
                             </Route>
                             <Route path={`${path}/courses/edit/:courseId`}>
-                                <CourseEditPage/>
+                                <CourseEditPage />
                             </Route>
                             <Route path={`${path}/courses/enroll/:enrollCode`}>
-                                <EnrollUserPage/>
+                                <EnrollUserPage />
                             </Route>
                             <Route path={`${path}/courses/:courseId/:topicId`}>
-                                <SimpleProblemPage/>
+                                <SimpleProblemPage />
                             </Route>
                             <Route path={`${path}/courses/:courseId`}>
-                                <CourseDetailsPage/>
+                                <CourseDetailsPage />
                             </Route>
                             <Route path="/">
                                 {/* <NoPage/> */}
