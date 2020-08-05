@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import TopicsList from '../TopicsList';
-import { Button, Col, Row, Accordion, Card, Modal, FormControl, FormLabel, FormGroup, Spinner, Form, Alert } from 'react-bootstrap';
+import { Button, Col, Row, Accordion, Card, Modal, FormControl, FormLabel, FormGroup, Form, Alert } from 'react-bootstrap';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useParams } from 'react-router-dom';
 import TopicCreationModal from './TopicCreationModal';
 import _ from 'lodash';
-import { CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject, uniqueGen } from '../CourseInterfaces';
+import { CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
 import moment from 'moment';
 import { useHistory } from 'react-router-dom';
 import MomentUtils from '@date-io/moment';
@@ -107,7 +107,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         } else {
             // Otherwise, concatenate this object onto the existing array.
             // topic.contentOrder = unit.topics.length;
-            topic.contentOrder = Math.max(...unit.topics.map(topic => topic.contentOrder), 0) + 1
+            topic.contentOrder = Math.max(...unit.topics.map(topic => topic.contentOrder), 0) + 1;
             unit.topics = _.concat(unit.topics, new NewCourseTopicObj(topic));
         }
 
@@ -157,7 +157,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             await Promise.all(unit.topics.map((createTopicForUnit as any)));
         };
         
-        const createTopic = async (topic: NewCourseTopicObj, courseUnitContentId: number, index: number, array: Array<NewCourseTopicObj>) => {
+        const createTopic = async (topic: NewCourseTopicObj, courseUnitContentId: number) => {
 
             let newTopic = new NewCourseTopicObj(topic);
             newTopic.courseUnitContentId = courseUnitContentId;
@@ -175,7 +175,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             setProgress(prevProg => ({curr: prevProg.curr + 1 + newTopic.questions.length, total: prevProg.total}));
         };
         
-        const createProblem = async (problem: ProblemObject, courseTopicContentId: number, index: number, array: Array<ProblemObject>) => {
+        const createProblem = async (problem: ProblemObject, courseTopicContentId: number) => {
             let newProblem = new ProblemObject(problem);
             const newProblemFields = [
                 'problemNumber', 'webworkQuestionPath', 'courseTopicContentId', 'weight', 'maxAttempts', 'hidden', 'optional'
@@ -184,7 +184,6 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             postObject.courseTopicContentId = courseTopicContentId;
             console.log('Creating problem', postObject, ' from ', problem);
             // Error bubbles up.
-            const res = await AxiosRequest.post('/courses/question', postObject);
         };
 
         // via 1loc.dev (consider moving to a utilities folder)
@@ -237,7 +236,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         console.log(`Currying createUnit with ${newCourseId}`);
         const createUnitForCourse = _.curry(createUnit)(_, newCourseId);
         try {
-            let unitRes = await Promise.all(course?.units?.map(createUnitForCourse));
+            await Promise.all(course?.units?.map(createUnitForCourse));
             // TODO: Need to handle extra validation to make sure everything succeeded.
             console.log('The course was successfully created (based on the log above)');
             setTimeout(()=> {

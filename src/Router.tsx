@@ -3,6 +3,7 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import HomePage from './Home/HomePage';
 import VerificationLandingPage from './Login/VerificationLandingPage';
 import NavWrapper from './NavWrapper/NavWrapper';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import AdviserPage from './Adviser/AdviserPage';
 
 interface RouterProps {

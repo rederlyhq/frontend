@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
 import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
 import { ProblemDoneState } from '../Enums/AssignmentEnums';
@@ -17,7 +17,7 @@ interface SimpleProblemPageLocationParams {
 }
 
 // This page has two panes. The left pane renders a list of questions, and the right pane renders the currently selected question.
-export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = (props: SimpleProblemPageProps) => {
+export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const params = useParams<SimpleProblemPageLocationParams>();
     // // TODO: We should keep problems in state so we can modify them after completion.
     // let problemsFromState: Array<ProblemObject> = (location.state as any)?.problems || [];
@@ -32,14 +32,14 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = (props: Simpl
         setLoading(true);
         (async () => {
             try {
-                const res = await AxiosRequest.get(`/courses/questions/`, {
+                const res = await AxiosRequest.get('/courses/questions/', {
                     params: {
                         userId: 'me',
                         courseTopicContentId: params.topicId
                     }
-                  });
-                  setProblems(res.data.data);
-                  setLoading(false);
+                });
+                setProblems(res.data.data);
+                setLoading(false);
             } catch (e) {
                 setError(e.message);
                 console.error(e);
@@ -59,7 +59,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = (props: Simpl
         if (_.isNil(problem.grades) || _.isNil(problem.grades[0]) || problem.grades[0].numAttempts === 0) {
             // Do nothing but skip everything else
         } else if(problem.grades[0].overallBestScore === 1) {
-            doneState = ProblemDoneState.CORRECT
+            doneState = ProblemDoneState.CORRECT;
         } else if (problem.grades[0].overallBestScore === 0) {
             doneState = ProblemDoneState.INCORRECT;
         } else if (problem.grades[0].overallBestScore < 1) {
@@ -80,11 +80,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = (props: Simpl
     };
 
     if (loading) {
-        return <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>
+        return <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>;
     }
 
     if (error) {
-        return <div>{error}</div>
+        return <div>{error}</div>;
     }
 
     if (problems.length <= 0) return <div>There was an error loading this assignment.</div>;
@@ -102,7 +102,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = (props: Simpl
                                         eventKey={prob.id} 
                                         key={`problemNavLink${prob.id}`} 
                                         onSelect={() => {setSelectedProblem(prob.problemNumber); console.log(`selecting ${prob.id}`);}}
-                                        role={`Link to Problem ${prob.problemNumber}`}
+                                        role='link'
                                     >
                                         {`Problem ${prob.problemNumber}`}
                                         <span className='float-right'>{renderDoneStateIcon(prob)}</span>

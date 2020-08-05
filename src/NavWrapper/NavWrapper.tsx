@@ -50,7 +50,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     return (
         <Container fluid id='navbarParent'>
             {/* Header bar */}
-            <Navbar variant='dark' bg='dark' className="toolbar mr-auto">
+            <Navbar role='navigation' variant='dark' bg='dark' className="toolbar mr-auto">
                 <NavbarBrand as={Link} to="/common/courses">
                     <img 
                         src="/logo-rederly+RGB-original.png"
@@ -71,7 +71,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                 </NavbarCollapse>
             </Navbar>
             {/* Routing for the page content */}
-            <Container fluid>
+            <Container fluid role='main'>
                 <Provider value={{userType: getUserRole(sessionCookie)}}>    
                     <AnimatePresence exitBeforeEnter initial={false}>
                         <Switch>
