@@ -21,7 +21,7 @@ export const EnrollUserPage: React.FC<EnrollUserPageProps> = () => {
         if (!enrollCode) return;
         (async () => {
             try {
-                const res = await Axios.post(`/courses/enroll/${enrollCode}`, {userId: userId});
+                const res = await Axios.post(`/courses/enroll/${enrollCode}`);
                 if (res.status === 200) {
                     console.log(res.data);
                     setVerifyState({enrollData: res.data.data, enrollError: ''});
