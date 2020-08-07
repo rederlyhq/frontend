@@ -37,7 +37,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 const problems: Array<ProblemObject> = res.data.data;
 
                 if (!_.isEmpty(problems)) {
-                    const problemDictionary = _.keyBy(problems, 'id');
+                    const problemDictionary = _.chain(problems)
+                        .map(prob => new ProblemObject(prob))
+                        .keyBy('id')
+                        .value();
                     console.log(problemDictionary);
                     setProblems(problemDictionary);
                     setSelectedProblemId(problems[0].id);
@@ -105,16 +108,16 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         <Nav variant='pills' className='flex-column' defaultActiveKey={selectedProblemId}>
                             {_.chain(problems)
                                 .values()
-                                .sortBy(['problemOrder'])
+                                .sortBy(['problemNumber'])
                                 .map(prob => {
                                     return (
                                         <NavLink 
                                             eventKey={prob.id} 
                                             key={`problemNavLink${prob.id}`} 
-                                            onSelect={() => {setSelectedProblemId(prob.problemNumber); console.log(`selecting ${prob.id}`);}}
+                                            onSelect={() => {setSelectedProblemId(prob.id);}}
                                             role='link'
                                         >
-                                            {`Problem ${prob.problemNumber} (${prob.id})`}
+                                            {`Problem ${prob.problemNumber} (ID#${prob.id})`}
                                             <span className='float-right'>{renderDoneStateIcon(prob)}</span>
                                         </NavLink>
                                     );
@@ -128,7 +131,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
                             <Button className='float-right'>Ask for help</Button>
                         </a>)}
-                        <ProblemIframe problem={problems[selectedProblemId]} setProblemStudentGrade={setProblemStudentGrade}/>
+                        {<ProblemIframe problem={problems[selectedProblemId]} setProblemStudentGrade={setProblemStudentGrade}/>}
                     </Col>
                 </Row>
             </Container>
