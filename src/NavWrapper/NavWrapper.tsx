@@ -15,6 +15,7 @@ import SimpleProblemPage from '../Assignments/SimpleProblemPage';
 import AdviserPage from '../Adviser/AdviserPage';
 import EnrollUserPage from '../Courses/EnrollUserPage';
 import { ProvideFeedback } from './ProvideFeedback';
+import AccountWrapper from '../Account/AccountWrapper';
 
 interface NavWrapperProps {
 
@@ -69,6 +70,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     </Nav>
                     <Nav className="float-right">
                         <NavDropdown title={`Welcome, ${userName}`} id='account-dropdown'>
+                            <NavDropdown.Item onClick={()=>{history.push(`${path}/account`);}}>My Account</NavDropdown.Item>
                             <NavDropdown.Item onClick={logout}>Log out</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
@@ -79,6 +81,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                 <Provider value={{userType: getUserRole(sessionCookie)}}>    
                     <AnimatePresence exitBeforeEnter initial={false}>
                         <Switch>
+                            <Route exact path={`${path}/account`}>
+                                <AccountWrapper />
+                            </Route>
                             <Route exact path={`${path}/adviser`}>
                                 <AdviserPage />
                             </Route>
