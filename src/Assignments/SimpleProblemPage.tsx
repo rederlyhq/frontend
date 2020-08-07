@@ -19,12 +19,8 @@ interface SimpleProblemPageLocationParams {
 // This page has two panes. The left pane renders a list of questions, and the right pane renders the currently selected question.
 export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const params = useParams<SimpleProblemPageLocationParams>();
-    // // TODO: We should keep problems in state so we can modify them after completion.
-    // let problemsFromState: Array<ProblemObject> = (location.state as any)?.problems || [];
-    // const initialProblems: Array<ProblemObject> = problemsFromState ? _.sortBy(problemsFromState, ['problemNumber']) : [];
-    // TODO: Handle empty array case.
-    const [problems, setProblems] = useState<Array<ProblemObject>>([]);
-    const [selectedProblem, setSelectedProblem] = useState<number>(1);
+    const [problems, setProblems] = useState<Record<number, ProblemObject> | null>(null);
+    const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -38,7 +34,15 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         courseTopicContentId: params.topicId
                     }
                 });
-                setProblems(res.data.data);
+                const problems: Array<ProblemObject> = res.data.data;
+
+                if (!_.isEmpty(problems)) {
+                    const problemDictionary = _.keyBy(problems, 'id');
+                    console.log(problemDictionary);
+                    setProblems(problemDictionary);
+                    setSelectedProblemId(problems[0].id);
+                }
+
                 setLoading(false);
             } catch (e) {
                 setError(e.message);
@@ -50,8 +54,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     // This should always be used on the selectedProblem.
     const setProblemStudentGrade = (val: any) => {
-        problems[selectedProblem-1].grades = [val];
-        setProblems([...problems]);
+        if (_.isEmpty(problems) || problems === null || _.isNaN(selectedProblemId) || selectedProblemId === null) return;
+        problems[selectedProblemId].grades = [val];
+        setProblems({...problems});
     };
 
     const renderDoneStateIcon = (problem: ProblemObject) => {
@@ -87,7 +92,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         return <div>{error}</div>;
     }
 
-    if (problems.length <= 0) return <div>There was an error loading this assignment.</div>;
+    if (_.isEmpty(problems)) return <div>There was an error loading this assignment.</div>;
+
+    if (problems === null || selectedProblemId === null) return <div>Loading...</div>;
 
     return (
         <>
@@ -95,20 +102,25 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             <Container fluid>
                 <Row>
                     <Col md={3}>
-                        <Nav variant='pills' className='flex-column' defaultActiveKey={problems[0].id}>
-                            {problems.map(prob => {
-                                return (
-                                    <NavLink 
-                                        eventKey={prob.id} 
-                                        key={`problemNavLink${prob.id}`} 
-                                        onSelect={() => {setSelectedProblem(prob.problemNumber); console.log(`selecting ${prob.id}`);}}
-                                        role='link'
-                                    >
-                                        {`Problem ${prob.problemNumber}`}
-                                        <span className='float-right'>{renderDoneStateIcon(prob)}</span>
-                                    </NavLink>
-                                );
-                            })}
+                        <Nav variant='pills' className='flex-column' defaultActiveKey={selectedProblemId}>
+                            {_.chain(problems)
+                                .values()
+                                .sortBy(['problemOrder'])
+                                .map(prob => {
+                                    return (
+                                        <NavLink 
+                                            eventKey={prob.id} 
+                                            key={`problemNavLink${prob.id}`} 
+                                            onSelect={() => {setSelectedProblemId(prob.problemNumber); console.log(`selecting ${prob.id}`);}}
+                                            role='link'
+                                        >
+                                            {`Problem ${prob.problemNumber} (${prob.id})`}
+                                            <span className='float-right'>{renderDoneStateIcon(prob)}</span>
+                                        </NavLink>
+                                    );
+                                })
+                                .value()
+                            }
                         </Nav>
                     </Col>
                     <Col md={9}>
@@ -116,7 +128,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
                             <Button className='float-right'>Ask for help</Button>
                         </a>)}
-                        <ProblemIframe problem={problems[selectedProblem-1]} setProblemStudentGrade={setProblemStudentGrade}/>
+                        <ProblemIframe problem={problems[selectedProblemId]} setProblemStudentGrade={setProblemStudentGrade}/>
                     </Col>
                 </Row>
             </Container>
