@@ -184,6 +184,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             postObject.courseTopicContentId = courseTopicContentId;
             console.log('Creating problem', postObject, ' from ', problem);
             // Error bubbles up.
+            const res = await AxiosRequest.post('/courses/question', postObject);
         };
 
         // via 1loc.dev (consider moving to a utilities folder)
