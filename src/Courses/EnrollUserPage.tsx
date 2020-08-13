@@ -27,7 +27,11 @@ export const EnrollUserPage: React.FC<EnrollUserPageProps> = () => {
                     setVerifyState({enrollData: res.data.data, enrollError: ''});
                 }
             } catch (e) {
-                setVerifyState({enrollError: 'An error occurred.', enrollData: {courseId: -1}});
+                console.error(e);
+                setVerifyState({
+                    enrollError: 'An error occurred. Please contact your professor for assistance.', 
+                    enrollData: {courseId: -1}
+                });
             }
         })();
     }, [enrollCode, userId]);
@@ -37,11 +41,13 @@ export const EnrollUserPage: React.FC<EnrollUserPageProps> = () => {
 
     return (
         <Jumbotron>
-            {enrollError && <h2>{enrollError}</h2>}
-            {enrollData && <>
-                <h4>You have been enrolled in this class!</h4>
-                <h3><Link to={`/common/courses/${enrollData.courseId}`}>Visit the class now.</Link></h3>
-            </>}
+            {enrollError ? 
+                <h2>{enrollError}</h2> :
+                (enrollData.courseId > -1 ? <>
+                    <h4>You have been enrolled in this class!</h4>
+                    <h3><Link to={`/common/courses/${enrollData.courseId}`}>Visit the class now.</Link></h3>
+                </> : <h2>Loading...</h2>)
+            }
         </Jumbotron>
     );
 };
