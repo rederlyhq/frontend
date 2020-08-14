@@ -28,10 +28,8 @@ export class CourseObject {
         Object.assign(this, init);
         if(_.isNil(init?.semesterCodeYear) && !_.isNil(init?.semesterCode)) {
             const semesterCodeRegex = /^(.*?)(\d+)$/;
-            // I don't want the first result
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            // also init cannot be nil from the if statement above
-            const [_fullMatch, group1, group2] = semesterCodeRegex.exec(init?.semesterCode ?? '') || [];
+            // init cannot be nil from the if statement above
+            const [, group1, group2] = semesterCodeRegex.exec(init?.semesterCode ?? '') || [];
             this.semesterCode = group1;
             this.semesterCodeYear = parseInt(group2);
         }

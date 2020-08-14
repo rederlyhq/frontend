@@ -29,11 +29,11 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
             return;
         }
         if(course[field] !== value) {
+            let courseObjectWithUpdates = new CourseObject(course);
+            (courseObjectWithUpdates as any)[field] = value;
             if(field === nameof<CourseObject>('semesterCodeYear')) {
                 field = 'semesterCode';
             }
-            let courseObjectWithUpdates = new CourseObject(course);
-            (courseObjectWithUpdates as any)[field] = value;
             const postObject = _.pick(CourseObject.toAPIObject(courseObjectWithUpdates), field);
             try {
                 setUpdateError(null);
