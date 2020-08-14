@@ -21,7 +21,21 @@ enum StatisticsView {
     UNITS = 'UNITS',
     TOPICS = 'TOPICS',
     PROBLEMS = 'PROBLEMS',
+    ATTEMPTS = 'ATTEMPTS',
 }
+
+const gradeCols = [
+    {title: 'Name', field: 'name'},
+    {title: 'Average number of attempts', field: 'averageAttemptedCount'},
+    {title: 'Average grade', field: 'averageScore'},
+    {title: '% Completed', field: 'completionPercent'},
+];
+
+const attemptCols = [
+    {title: 'Result', field: 'result'},
+    {title: 'Attempt Time', field: 'time'},
+]
+
 
 const icons = {
     // Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -60,15 +74,20 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
         let idFilterLocal = idFilter;
         switch (view) {
         case StatisticsView.TOPICS:
-            url = `${url}/topics`;
+            url = `${url}/topics?`;
             filterParam = 'courseUnitContentId';
             break;
         case StatisticsView.PROBLEMS:
-            url = `${url}/questions`;
+            url = `${url}/questions?`;
             filterParam = 'courseTopicContentId';
             break;
+        case StatisticsView.ATTEMPTS:
+            url = `/users/${userId}?includeGrades=WITH_ATTEMPTS&`;
+            // TODO: This should be removed when a similar call as the others is supported.
+            idFilterLocal = null;
+            break;
         default:
-            url = `${url}/units`;
+            url = `${url}/units?`;
             filterParam = '';
             if(idFilterLocal !== null) {
                 console.error('This should be null for units');
@@ -80,27 +99,48 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
         const queryString = qs.stringify(_({
             courseId: course.id,
             [filterParam]: idFilterLocal,
-            userId: userType === UserRole.STUDENT ? userId : null,
+            userId: userType === UserRole.STUDENT && view !== StatisticsView.ATTEMPTS ? userId : null,
         }).omitBy(_.isNil).value() as any).toString();
 
-        url = `${url}?${queryString}`;
+        url = `${url}${queryString}`;
 
         (async () => {
             try {
                 const res = await AxiosRequest.get(url);
                 let data = res.data.data;
+
+                
                 const formatNumberString = (val: string, percentage: boolean = false) => {
                     if(_.isNil(val)) return null;
                     if (percentage) return `${(parseFloat(val) * 100).toFixed(1)}%`;
-
+                    
                     return parseFloat(val).toFixed(2);
                 };
-                data = data.map((d: any) => ({
-                    ...d,
-                    averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
-                    averageScore: formatNumberString(d.averageScore, true),
-                    completionPercent: formatNumberString(d.completionPercent, true)
-                }));
+                
+                if (view === StatisticsView.ATTEMPTS) {
+                    console.log(data.grades);
+                    let grades = data.grades.filter((grade: any) => {
+                        const hasAttempts = grade.numAttempts > 0;
+                        const satisfiesIdFilter = idFilter ? grade.courseWWTopicQuestionId === idFilter : true;
+                        return hasAttempts && satisfiesIdFilter;
+                    });
+                    console.log(grades);
+                    data = grades.map((grade: any) => (
+                        grade.workbooks.map((attempt: any) => ({
+                            id: attempt.courseWWTopicQuestionId,
+                            result: attempt.result,
+                            time: attempt.time,
+                        }))
+                    ));
+                    data = _.flatten(data);
+                } else {
+                    data = data.map((d: any) => ({
+                        ...d,
+                        averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
+                        averageScore: formatNumberString(d.averageScore, true),
+                        completionPercent: formatNumberString(d.completionPercent, true)
+                    }));
+                }
                 setRowData(data);
             } catch (e) {
                 console.error('Failed to get statistics.', e);
@@ -126,6 +166,10 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
             setView(StatisticsView.PROBLEMS);
             break;
         case StatisticsView.PROBLEMS:
+            setIdFilter(rowData.id);
+            setView(StatisticsView.ATTEMPTS);
+            break;
+        case StatisticsView.ATTEMPTS:
             togglePanel();
             break;
         default:
@@ -133,7 +177,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
         }   
     };
 
-    let seeMoreActions: Array<any> | undefined = view === StatisticsView.PROBLEMS ? undefined : [{
+    let seeMoreActions: Array<any> | undefined = view === StatisticsView.ATTEMPTS ? undefined : [{
         icon: () => <ChevronRight/>,
         tooltip: 'See More',
         onClick: _.curryRight(nextView)(()=>{}),
@@ -142,8 +186,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
     return (
         <>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
-                setView(selectedKey)
-                setIdFilter(null)
+                setView(selectedKey);
+                setIdFilter(null);
             }}>
                 <Nav.Item>
                     <Nav.Link eventKey={StatisticsView.UNITS}>
@@ -160,24 +204,24 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
                         Problems
                     </Nav.Link>
                 </Nav.Item>
+                {userType === UserRole.STUDENT && <Nav.Item>
+                    <Nav.Link eventKey={StatisticsView.ATTEMPTS}>
+                        Attempts
+                    </Nav.Link>
+                </Nav.Item>}
             </Nav>
             <div style={{maxWidth: '100%'}}>
                 <MaterialTable
                     icons={icons}
                     title={course.name}
-                    columns={[
-                        {title: 'Name', field: 'name'},
-                        {title: 'Average number of attempts', field: 'averageAttemptedCount'},
-                        {title: 'Average grade', field: 'averageScore'},
-                        {title: '% Completed', field: 'completionPercent'},
-                    ]}
+                    columns={view === StatisticsView.ATTEMPTS ? attemptCols : gradeCols}
                     data={rowData}
                     actions={seeMoreActions}
                     onRowClick={nextView}
                     options={{
                         exportButton: true
                     }}
-                    detailPanel={view === StatisticsView.PROBLEMS ? [{
+                    detailPanel={view === StatisticsView.ATTEMPTS ? [{
                         icon: () => <ChevronRight/>,
                         render: renderProblemPreview
                     }] : undefined}
