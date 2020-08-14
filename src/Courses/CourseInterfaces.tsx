@@ -8,6 +8,9 @@ export function* uniqueGen() {
     }
 }
 
+// via 1loc.dev (consider moving to a utilities folder)
+const generateString = (length: number): string => Array(length).fill('').map(() => Math.random().toString(36).charAt(2)).join('');
+
 export class CourseObject {
     name: string = '';
     start: Date = new Date();
@@ -32,6 +35,17 @@ export class CourseObject {
             this.semesterCode = group1;
             this.semesterCodeYear = parseInt(group2);
         }
+    }
+
+    static toAPIObject(course: CourseObject) {
+        // Not every field belongs in the request.
+        const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode', 'textbooks', 'curriculumId'];
+        let postObject = _.pick(course, newCourseFields);
+        postObject.semesterCode = `${course.semesterCode}${course.semesterCodeYear}`;
+        postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
+        postObject.code = encodeURIComponent(postObject.code);
+        // TODO: Fix naming for route, should be 'templateId'.
+        return postObject;
     }
 }
 

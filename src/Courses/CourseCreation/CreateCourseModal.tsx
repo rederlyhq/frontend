@@ -14,9 +14,6 @@ interface CreateCourseModalProps {
     show?: boolean;
 }
 
-// via 1loc.dev (consider moving to a utilities folder)
-const generateString = (length: number): string => Array(length).fill('').map(() => Math.random().toString(36).charAt(2)).join('');
-
 export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({ courseTemplate, onHide, show }) => {
     const [course, setCourse] = useState<CourseObject>(new CourseObject());
     const [saving, setSaving] = useState<boolean>(false);
@@ -41,15 +38,7 @@ export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({ courseTemp
     };
 
     const createCourse = async (course: CourseObject) => {
-        // Not every field belongs in the request.
-        const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode', 'textbooks', 'curriculumId'];
-        let postObject = _.pick(course, newCourseFields);
-        postObject.semesterCode = `${course.semesterCode}${course.semesterCodeYear}`;
-        postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
-        postObject.code = encodeURIComponent(postObject.code);
-        // TODO: Fix naming for route, should be 'templateId'.
-
-        return await AxiosRequest.post('/courses?useCurriculum=true', postObject);
+        return await AxiosRequest.post('/courses?useCurriculum=true', CourseObject.toAPIObject(course));
     };
 
     const handleSubmit = async (e: any) => {
@@ -77,7 +66,7 @@ export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({ courseTemp
                         curriculumId: courseTemplate?.id,
                         name: courseTemplate?.name,
                         start: moment().toDate(),
-                        end: moment().add(6, 'M').toDate(),
+                        end: moment().add(4, 'M').toDate(),
                         semesterCodeYear: parseInt(moment().format('YYYY')),
                         textbooks: courseTemplate?.comment
                     }));

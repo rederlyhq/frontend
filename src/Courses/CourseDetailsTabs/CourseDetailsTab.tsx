@@ -9,16 +9,40 @@ import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { CookieEnum } from '../../Enums/CookieEnum';
 import Cookies from 'js-cookie';
+import AxiosRequest from '../../Hooks/AxiosRequest';
+import { nameof } from '../../Utilities/TypescriptUtils';
 
 interface CourseDetailsTabProps {
     course?: CourseObject;
     loading: boolean;
     error: string | null;
+    setCourse?: (course: CourseObject) => void;
 }
 
 export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, loading, error} ) => {
     const [inEditMode, setInEditMode] = useState<boolean>(false);
+    const [updateError, setUpdateError] = useState<string | null>(null);
     const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
+
+    const onCourseDetailsBlur = async (field: keyof CourseObject, value: any) => {
+        if(_.isNil(course)) {
+            return;
+        }
+        if(course[field] !== value) {
+            if(field === nameof<CourseObject>('semesterCodeYear')) {
+                field = 'semesterCode';
+            }
+            let courseObjectWithUpdates = new CourseObject(course);
+            (courseObjectWithUpdates as any)[field] = value;
+            const postObject = _.pick(CourseObject.toAPIObject(courseObjectWithUpdates), field);
+            try {
+                setUpdateError(null);
+                await AxiosRequest.put(`/courses/${course.id}`, postObject);
+            } catch (e) {
+                setUpdateError(`An error has occurred ${e.response.data.message}`);
+            }
+        }
+    };
 
     if (_.isNil(course)) {
         return <></>;
@@ -37,6 +61,7 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
     if(!_.isNil(error)) {
         return <Alert variant="danger">{error}</Alert>;
     }
+    
     return (
         <>
             {userType !== UserRole.STUDENT && (
@@ -51,7 +76,9 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
                     />
                 </Row>
             )}
-            <CourseDetailsForm disabled={!inEditMode} course={course} updateCourseValue={() => {}} />
+
+            {updateError && <Alert variant="danger">{updateError}</Alert>}
+            <CourseDetailsForm disabled={!inEditMode} course={course} onBlur={onCourseDetailsBlur} />
             <h5>Open Topics</h5>
             <DragDropContext onDragEnd={()=>{}}>
                 <ActiveTopics course={course} />
