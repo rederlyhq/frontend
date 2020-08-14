@@ -134,7 +134,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                             <h4>Textbooks:</h4>
                         </FormLabel>
                         <FormControl as='textarea'
-                            value={course.textbooks} 
+                            defaultValue={course.textbooks} 
                             required
                             onChange={(e: any) => updateCourseValue('textbooks', e)}/>
                     </FormGroup>
