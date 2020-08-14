@@ -6,6 +6,9 @@ import ActiveTopics from '../CourseDetailsTabs/ActiveTopics';
 import _ from 'lodash';
 import { CourseDetailsForm } from '../CourseCreation/CourseDetailsForm';
 import { EditToggleButton } from '../../Components/EditToggleButton';
+import { UserRole, getUserRole } from '../../Enums/UserRole';
+import { CookieEnum } from '../../Enums/CookieEnum';
+import Cookies from 'js-cookie';
 
 interface CourseDetailsTabProps {
     course?: CourseObject;
@@ -15,6 +18,7 @@ interface CourseDetailsTabProps {
 
 export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, loading, error} ) => {
     const [inEditMode, setInEditMode] = useState<boolean>(false);
+    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
 
     if (_.isNil(course)) {
         return <></>;
@@ -35,16 +39,18 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
     }
     return (
         <>
-            <Row>
-                <EditToggleButton
-                    selectedState={inEditMode}
-                    onClick={() => {setInEditMode(!inEditMode); }}
-                    style={{
-                        marginLeft: 'auto',
-                        padding: '20px'
-                    }}
-                />
-            </Row>
+            {userType !== UserRole.STUDENT && (
+                <Row>
+                    <EditToggleButton
+                        selectedState={inEditMode}
+                        onClick={() => {setInEditMode(!inEditMode); }}
+                        style={{
+                            marginLeft: 'auto',
+                            padding: '20px'
+                        }}
+                    />
+                </Row>
+            )}
             <CourseDetailsForm disabled={!inEditMode} course={course} updateCourseValue={() => {}} />
             <h5>Open Topics</h5>
             <DragDropContext onDragEnd={()=>{}}>
