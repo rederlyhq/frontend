@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Tabs, Tab, Spinner, Row, Alert } from 'react-bootstrap';
+import { Container, Tabs, Tab } from 'react-bootstrap';
 import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
 import TopicsTab from './CourseDetailsTabs/TopicsTab';
 import { useParams } from 'react-router-dom';
@@ -8,12 +8,11 @@ import GradesTab from './CourseDetailsTabs/GradesTab';
 import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { CourseObject } from './CourseInterfaces';
-import ActiveTopics from './CourseDetailsTabs/ActiveTopics';
 import { UserRole, getUserRole } from '../Enums/UserRole';
 import Cookies from 'js-cookie';
 import { CookieEnum } from '../Enums/CookieEnum';
-import { CourseDetailsForm } from './CourseCreation/CourseDetailsForm';
 import _ from 'lodash';
+import { CourseDetailsTab } from './CourseDetailsTabs/CourseDetailsTab';
 
 interface CourseDetailsPageProps {
 
@@ -62,21 +61,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
         <Container>
             <Tabs activeKey={activeTab} defaultActiveKey={CourseDetailsTabs.DETAILS} id="course-details-tabs" onSelect={(activeTab: any) => setActiveTab(activeTab)}>
                 <Tab eventKey={CourseDetailsTabs.DETAILS} title={CourseDetailsTabs.DETAILS} style={{marginBottom:'10px'}}>
-                    {course && <>
-                        {(() => {
-                            if(loading) return <Row style= {{display: 'flex', justifyContent: 'center', padding: '15px' }}><Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner></Row>;
-                            else if(!_.isNil(error)) return <Alert variant="danger">{error}</Alert>;
-                            else {
-                                return (<>
-                                    <CourseDetailsForm disabled={true} course={course} updateCourseValue={() => {}} />
-                                    <h5>Open Topics</h5>
-                                    <DragDropContext onDragEnd={()=>{}}>
-                                        <ActiveTopics course={course} />
-                                    </DragDropContext>            
-                                </>);
-                            }
-                        })()}
-                    </>}
+                    <CourseDetailsTab course={course} error={error} loading={loading} />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.TOPICS} title={CourseDetailsTabs.TOPICS}>
                     <DragDropContext onDragEnd={()=>{}}>
