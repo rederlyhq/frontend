@@ -134,6 +134,10 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
         );
     };
     
+    if(listOfTopics.length === 0) {
+        return <p>There are no active topics in this course</p>;
+    }
+
     return (
         <>
             {/* This could use a debug flag. */}

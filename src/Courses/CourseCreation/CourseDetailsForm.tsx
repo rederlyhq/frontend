@@ -9,130 +9,137 @@ import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 
 interface CourseDetailsProps {
     course: CourseObject;
-    updateCourseValue:  (field: keyof CourseObject, e: any) => void;
+    updateCourseValue?:  (field: keyof CourseObject, e: any) => void;
+    disabled?: boolean;
 }
 
-export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, updateCourseValue }) => {
+export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, updateCourseValue = () => {}, disabled = false }) => {
     return (
         <>
-            <FormGroup controlId='course-name'>
+            <fieldset disabled={disabled} className="course-details-form-fieldset">
+                <FormGroup controlId='course-name'>
+                    <Row>
+                        <Col>
+                            <FormLabel>
+                                <h3>Course Name: </h3>
+                            </FormLabel>
+                            <FormControl 
+                                required
+                                size='lg' 
+                                defaultValue={course?.name || ''}
+                                onChange={(e: any) => updateCourseValue('name', e)}
+                                onBlur={(e: any) => updateCourseValue('name', e)}
+                            />
+                        </Col>
+                    </Row>
+                </FormGroup>
                 <Row>
-                    <FormLabel column sm={2}>
-                        <h3>Course Name: </h3>
-                    </FormLabel>
-                    <Col>
-                        <FormControl 
-                            required
-                            size='lg' 
-                            defaultValue={course?.name || ''}
-                            onChange={(e: any) => updateCourseValue('name', e)}
-                            onBlur={(e: any) => updateCourseValue('name', e)}
-                        />
+                    <MuiPickersUtilsProvider utils={MomentUtils}>
+                        <Col>
+                            <h4>Start Date</h4>
+                            <KeyboardDatePicker
+                                disabled={disabled}
+                                variant="inline"
+                                format="MM/DD/yyyy"
+                                name={'start-date'}
+                                defaultValue={course.start}
+                                value={course.start}
+                                onChange={() => {}}
+                                onAccept={(date: MaterialUiPickersDate) => {
+                                    if (!date) return;
+                                    const e = {target: {value: date.toDate()}};
+                                    updateCourseValue('start', e);
+                                }}
+                                KeyboardButtonProps={{
+                                    'aria-label': 'change date',
+                                }}
+                                fullWidth={true}
+                                InputLabelProps={{shrink: false}}
+                                inputProps={{style: {textAlign: 'center'}}}
+                            />
+                        </Col>
+                        <Col>
+                            <h4>End Date</h4>
+                            <KeyboardDatePicker
+                                disabled={disabled}
+                                variant="inline"
+                                format="MM/DD/yyyy"
+                                name={'end-date'}
+                                defaultValue={course.end}
+                                value={course.end}
+                                onChange={() => {}}
+                                onAccept={(date: MaterialUiPickersDate) => {
+                                    if (!date) return;
+                                    const e = {target: {value: date.toDate()}};
+                                    updateCourseValue('end', e);
+                                }}
+                                KeyboardButtonProps={{
+                                    'aria-label': 'change date',
+                                }}
+                                fullWidth={true}
+                                InputLabelProps={{shrink: false}}
+                                inputProps={{style: {textAlign: 'center'}}}
+                            />
+                        </Col>
+                    </MuiPickersUtilsProvider>
+                </Row>
+                <Row>
+                    <Col md={6}>
+                        <FormGroup controlId='section-code'>
+                            <FormLabel>
+                                <h4>Section Code:</h4>
+                            </FormLabel>
+                            <FormControl type='text' placeholder='MAT120' 
+                                required
+                                defaultValue={course.sectionCode}
+                                onChange={(e: any) => updateCourseValue('sectionCode', e)}/>
+                        </FormGroup>
+                    </Col>
+                    <Col md={3}>
+                        <FormGroup controlId='semester-code'>
+                            <FormLabel>
+                                <h4>Semester:</h4>
+                            </FormLabel>
+                            <FormControl 
+                                as='select'
+                                type='number'
+                                required
+                                defaultValue={course.semesterCode}
+                                onChange={(e: any) => updateCourseValue('semesterCode', e)}
+                            >
+                                <option>FALL</option>
+                                <option>WINTER</option>
+                                <option>SPRING</option>
+                                <option>SUMMER</option>
+                            </FormControl>
+                        </FormGroup>
+                    </Col>
+                    <Col md={3}>
+                        <FormGroup controlId='semester-code-year'>
+                            <FormLabel>
+                                <h4>Semester Year:</h4>
+                            </FormLabel>
+                            <FormControl 
+                                type='number'
+                                placeholder='2020'
+                                defaultValue={course.semesterCodeYear}
+                                required
+                                onChange={(e: any) => updateCourseValue('semesterCodeYear', e)}/>
+                        </FormGroup>
                     </Col>
                 </Row>
-            </FormGroup>
-            <Row>
-                <MuiPickersUtilsProvider utils={MomentUtils}>
-                    <Col>
-                        <h4>Start Date</h4>
-                        <KeyboardDatePicker
-                            variant="inline"
-                            format="MM/DD/yyyy"
-                            name={'start-date'}
-                            defaultValue={course.start}
-                            value={course.start}
-                            onChange={() => {}}
-                            onAccept={(date: MaterialUiPickersDate) => {
-                                if (!date) return;
-                                const e = {target: {value: date.toDate()}};
-                                updateCourseValue('start', e);
-                            }}
-                            KeyboardButtonProps={{
-                                'aria-label': 'change date',
-                            }}
-                            fullWidth={true}
-                            InputLabelProps={{shrink: false}}
-                            inputProps={{style: {textAlign: 'center'}}}
-                        />
-                    </Col>
-                    <Col>
-                        <h4>End Date</h4>
-                        <KeyboardDatePicker
-                            variant="inline"
-                            format="MM/DD/yyyy"
-                            name={'end-date'}
-                            defaultValue={course.end}
-                            value={course.end}
-                            onChange={() => {}}
-                            onAccept={(date: MaterialUiPickersDate) => {
-                                if (!date) return;
-                                const e = {target: {value: date.toDate()}};
-                                updateCourseValue('end', e);
-                            }}
-                            KeyboardButtonProps={{
-                                'aria-label': 'change date',
-                            }}
-                            fullWidth={true}
-                            InputLabelProps={{shrink: false}}
-                            inputProps={{style: {textAlign: 'center'}}}
-                        />
-                    </Col>
-                </MuiPickersUtilsProvider>
-            </Row>
-            <Row>
-                <Col md={6}>
-                    <FormGroup controlId='section-code'>
+                <Row>
+                    <FormGroup as={Col} controlId='section-code'>
                         <FormLabel>
-                            <h4>Section Code:</h4>
+                            <h4>Textbooks:</h4>
                         </FormLabel>
-                        <FormControl type='text' placeholder='MAT120' 
+                        <FormControl as='textarea'
+                            value={course.textbooks} 
                             required
-                            onChange={(e: any) => updateCourseValue('sectionCode', e)}/>
+                            onChange={(e: any) => updateCourseValue('textbooks', e)}/>
                     </FormGroup>
-                </Col>
-                <Col md={3}>
-                    <FormGroup controlId='semester-code'>
-                        <FormLabel>
-                            <h4>Semester:</h4>
-                        </FormLabel>
-                        <FormControl 
-                            as='select'
-                            type='number'
-                            required
-                            onChange={(e: any) => updateCourseValue('semesterCode', e)}
-                        >
-                            <option>FALL</option>
-                            <option>WINTER</option>
-                            <option>SPRING</option>
-                            <option>SUMMER</option>
-                        </FormControl>
-                    </FormGroup>
-                </Col>
-                <Col md={3}>
-                    <FormGroup controlId='semester-code-year'>
-                        <FormLabel>
-                            <h4>Semester Year:</h4>
-                        </FormLabel>
-                        <FormControl 
-                            type='number'
-                            placeholder='2020'
-                            defaultValue='2020'
-                            required
-                            onChange={(e: any) => updateCourseValue('semesterCodeYear', e)}/>
-                    </FormGroup>
-                </Col>
-            </Row>
-            <Row>
-                <FormGroup as={Col} controlId='section-code'>
-                    <FormLabel>
-                        <h4>Textbooks:</h4>
-                    </FormLabel>
-                    <FormControl as='textarea'
-                        value={course.textbooks} 
-                        required
-                        onChange={(e: any) => updateCourseValue('textbooks', e)}/>
-                </FormGroup>
-            </Row>
+                </Row>
+            </fieldset>
         </>
     );
 };

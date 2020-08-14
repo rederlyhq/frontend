@@ -90,7 +90,7 @@ export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({ courseTemp
                     <Modal.Body>
                         {saving && <Row style= {{display: 'flex', justifyContent: 'center', padding: '15px' }}><Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner></Row>}
                         {!_.isNil(error) && <Alert variant="danger">{error}</Alert>}
-                        <CourseDetailsForm course={course} updateCourseValue={updateCourseValue} />
+                        <CourseDetailsForm course={course} updateCourseValue={updateCourseValue} disabled={saving} />
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={dismiss}>
