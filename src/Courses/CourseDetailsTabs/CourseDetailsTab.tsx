@@ -1,14 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Spinner, Row, Alert } from 'react-bootstrap';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { CourseObject } from '../CourseInterfaces';
 import ActiveTopics from '../CourseDetailsTabs/ActiveTopics';
 import _ from 'lodash';
 import { CourseDetailsForm } from '../CourseCreation/CourseDetailsForm';
-import {
-    FaPencilAlt
-} from 'react-icons/fa';
-import { ComponentToggleButton } from '../../Components/ComponentToggleButton';
+import { EditToggleButton } from '../../Components/EditToggleButton';
 
 interface CourseDetailsTabProps {
     course?: CourseObject;
@@ -17,6 +14,8 @@ interface CourseDetailsTabProps {
 }
 
 export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, loading, error} ) => {
+    const [inEditMode, setInEditMode] = useState<boolean>(false);
+
     if (_.isNil(course)) {
         return <></>;
     }
@@ -37,19 +36,16 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
     return (
         <>
             <Row>
-                <ComponentToggleButton
-                    defaultSelectedState={true}
-                    // selectedState={false}
-                    selectedStateJSX={ <FaPencilAlt color="#007bff" style={{float:'right'}} /> }
-                    notSelectedStateJSX={ <FaPencilAlt style={{float:'right'}} /> }
+                <EditToggleButton
+                    selectedState={inEditMode}
+                    onClick={() => {setInEditMode(!inEditMode); }}
                     style={{
                         marginLeft: 'auto',
                         padding: '20px'
                     }}
                 />
-                {/* <FaPencilAlt color="#007bff" style={{float:'right'}} /> */}
             </Row>
-            <CourseDetailsForm disabled={true} course={course} updateCourseValue={() => {}} />
+            <CourseDetailsForm disabled={!inEditMode} course={course} updateCourseValue={() => {}} />
             <h5>Open Topics</h5>
             <DragDropContext onDragEnd={()=>{}}>
                 <ActiveTopics course={course} />
