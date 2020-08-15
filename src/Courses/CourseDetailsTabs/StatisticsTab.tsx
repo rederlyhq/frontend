@@ -101,7 +101,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
         })();
 
         
-    }, [course, view, idFilter]);
+    }, [course.id, view, idFilter]);
 
     const renderProblemPreview = (rowData: any) => {
         return <ProblemIframe problem={new ProblemObject({id: rowData.id})} setProblemStudentGrade={() => {}} />;

@@ -17,7 +17,7 @@ export const ActiveTopics: React.FC<ActiveTopicsProps> = ({course}) => {
             const activeTopics = res.data?.data?.map((topic: any) => new NewCourseTopicObj(topic));
             setActiveTopics(activeTopics);
         })();
-    }, [course]);
+    }, [course.id]);
 
     return (
         <TopicsList 

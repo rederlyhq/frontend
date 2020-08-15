@@ -119,7 +119,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
         })();
     };
 
-    useEffect((userType === UserRole.STUDENT ? getSelfGradesHook : getCourseGradesHook), [course, selectedObjects]);
+    useEffect((userType === UserRole.STUDENT ? getSelfGradesHook : getCourseGradesHook), [course.id, selectedObjects]);
 
     if (!course) return null;
 
