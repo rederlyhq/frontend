@@ -1,25 +1,44 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Col, Row, FormControl, FormLabel, FormGroup } from 'react-bootstrap';
 import { CourseObject } from '../CourseInterfaces';
 import MomentUtils from '@date-io/moment';
 import { MuiPickersUtilsProvider, KeyboardDatePicker} from '@material-ui/pickers';
 import _ from 'lodash';
+import moment from 'moment';
 
 import './Course.css';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
+import { FormControlProps } from '@material-ui/core';
 
 interface CourseDetailsProps {
     course: CourseObject;
-    updateCourseValue?:  (field: keyof CourseObject, e: any) => void;
+    updateCourseValue?:  (field: keyof CourseObject, value: any) => void;
     disabled?: boolean;
     onBlur?: ((field: keyof CourseObject, value: any) => void)
 }
 
-export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, updateCourseValue = () => {}, disabled = false, onBlur }) => {
+export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, updateCourseValue: updateCourseValueProp = () => {}, disabled = false, onBlur }) => {
+    const [currentCourseState, setCurrentCourseState] = useState<CourseObject>(new CourseObject());
+
     const onTextInputBlurForCourseField = (field: keyof CourseObject, event: React.FocusEvent<HTMLInputElement>) => {
         onBlur?.(field, event.target.value);
     };
     const curriedOnTextInputBlurForCourseField = _.curry(onTextInputBlurForCourseField, 2);
+
+    const updateCourseValue = (field: keyof CourseObject, value: any) => {
+        setCurrentCourseState({...currentCourseState, [field]: value});
+        updateCourseValueProp?.(field, value);
+    };
+
+    const onTextInputChanged = (field: keyof CourseObject, e: React.ChangeEvent<HTMLInputElement>) => {
+        let value: string | Date = e.target.value;
+        if (field === 'start' || field === 'end') {
+            value = moment(value).toDate();
+        }
+        updateCourseValue(field, value);
+    };
+
+    const curriedOnTextInputChanged = _.curry(onTextInputChanged, 2);
 
     return (
         <>
@@ -34,7 +53,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 required
                                 size='lg' 
                                 defaultValue={course?.name || ''}
-                                onChange={(e: any) => updateCourseValue('name', e)}
+                                onChange={curriedOnTextInputChanged('name')}
                                 onBlur={curriedOnTextInputBlurForCourseField('name')}
                             />
                         </Col>
@@ -45,6 +64,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                         <Col>
                             <h4>Start Date</h4>
                             <KeyboardDatePicker
+                                autoOk
                                 disabled={disabled}
                                 variant="inline"
                                 format="MM/DD/yyyy"
@@ -55,7 +75,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 onAccept={(date: MaterialUiPickersDate) => {
                                     if (!date) return;
                                     const e = {target: {value: date.toDate()}};
-                                    updateCourseValue('start', e);
+                                    curriedOnTextInputChanged('start')(e as any);
                                 }}
                                 onBlur={curriedOnTextInputBlurForCourseField('start')}
                                 KeyboardButtonProps={{
@@ -69,6 +89,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                         <Col>
                             <h4>End Date</h4>
                             <KeyboardDatePicker
+                                autoOk
                                 disabled={disabled}
                                 variant="inline"
                                 format="MM/DD/yyyy"
@@ -79,7 +100,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 onAccept={(date: MaterialUiPickersDate) => {
                                     if (!date) return;
                                     const e = {target: {value: date.toDate()}};
-                                    updateCourseValue('end', e);
+                                    curriedOnTextInputChanged('end')(e as any);
                                 }}
                                 onBlur={curriedOnTextInputBlurForCourseField('end')}
                                 KeyboardButtonProps={{
@@ -101,7 +122,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                             <FormControl type='text' placeholder='MAT120' 
                                 required
                                 defaultValue={course.sectionCode}
-                                onChange={(e: any) => updateCourseValue('sectionCode', e)}
+                                onChange={curriedOnTextInputChanged('sectionCode')}
                                 onBlur={curriedOnTextInputBlurForCourseField('sectionCode')}
                             />
                         </FormGroup>
@@ -116,7 +137,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 type='number'
                                 required
                                 defaultValue={course.semesterCode}
-                                onChange={(e: any) => updateCourseValue('semesterCode', e)}
+                                onChange={curriedOnTextInputChanged('semesterCode')}
                                 onBlur={curriedOnTextInputBlurForCourseField('semesterCode')}
                             >
                                 <option>FALL</option>
@@ -136,7 +157,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 placeholder='2020'
                                 defaultValue={course.semesterCodeYear}
                                 required
-                                onChange={(e: any) => updateCourseValue('semesterCodeYear', e)}
+                                onChange={curriedOnTextInputChanged('semesterCodeYear')}
                                 onBlur={curriedOnTextInputBlurForCourseField('semesterCodeYear')}
                             />
                         </FormGroup>
@@ -150,7 +171,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                         <FormControl as='textarea'
                             defaultValue={course.textbooks} 
                             required
-                            onChange={(e: any) => updateCourseValue('textbooks', e)}
+                            onChange={curriedOnTextInputChanged('textbooks')}
                             onBlur={curriedOnTextInputBlurForCourseField('textbooks')}
                         />
                     </FormGroup>

@@ -20,16 +20,8 @@ export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({ courseTemp
     const [error, setError] = useState<string | undefined | null>();
     const history = useHistory();
 
-    const updateCourseValue = (field: keyof CourseObject, e: any) => {
-        const value = e.target.value;
-        switch (field) {
-        case 'start':
-        case 'end':
-            setCourse({...course, [field]: moment(value).toDate()});
-            break;
-        default:
-            setCourse({...course, [field]: value});
-        }
+    const updateCourseValue = (field: keyof CourseObject, value: any) => {
+        setCourse({...course, [field]: value});
     };
 
     const dismiss = () => {
