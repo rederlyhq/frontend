@@ -4,11 +4,9 @@ import { CourseObject } from '../CourseInterfaces';
 import MomentUtils from '@date-io/moment';
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import _ from 'lodash';
-import moment from 'moment';
 
 import './Course.css';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
-import { FormControlProps } from '@material-ui/core';
 
 interface CourseDetailsProps {
     course: CourseObject;
@@ -18,7 +16,7 @@ interface CourseDetailsProps {
 }
 
 export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, updateCourseValue: updateCourseValueProp = () => { }, disabled = false, onBlur }) => {
-    const [currentCourseState, setCurrentCourseState] = useState<CourseObject>(new CourseObject());
+    const [currentCourseState, setCurrentCourseState] = useState<CourseObject>(course);
 
     const onTextInputBlurForCourseField = (field: keyof CourseObject, event: React.FocusEvent<HTMLInputElement>) => {
         onBlur?.(field, event.target.value);
@@ -62,6 +60,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 required
                                 size='lg'
                                 defaultValue={course?.name || ''}
+                                value={currentCourseState.name}
                                 onChange={curriedOnTextInputChanged('name')}
                                 onBlur={curriedOnTextInputBlurForCourseField('name')}
                             />
@@ -79,7 +78,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 format="MM/DD/yyyy"
                                 name={'start-date'}
                                 defaultValue={course.start}
-                                value={course.start}
+                                value={currentCourseState.start}
                                 onChange={curriedOnDateChanged('start')}
                                 onAccept={curriedOnDatePicked('start')}
                                 onBlur={curriedOnTextInputBlurForCourseField('start')}
@@ -100,7 +99,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 format="MM/DD/yyyy"
                                 name={'end-date'}
                                 defaultValue={course.end}
-                                value={course.end}
+                                value={currentCourseState.end}
                                 onChange={curriedOnDateChanged('end')}
                                 onAccept={curriedOnDatePicked('end')}
                                 onBlur={curriedOnTextInputBlurForCourseField('end')}
@@ -123,6 +122,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                             <FormControl type='text' placeholder='MAT120'
                                 required
                                 defaultValue={course.sectionCode}
+                                value={currentCourseState.sectionCode}
                                 onChange={curriedOnTextInputChanged('sectionCode')}
                                 onBlur={curriedOnTextInputBlurForCourseField('sectionCode')}
                             />
@@ -138,6 +138,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 type='number'
                                 required
                                 defaultValue={course.semesterCode}
+                                value={currentCourseState.semesterCode}
                                 onChange={curriedOnTextInputChanged('semesterCode')}
                                 onBlur={curriedOnTextInputBlurForCourseField('semesterCode')}
                             >
@@ -157,6 +158,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 type='number'
                                 placeholder='2020'
                                 defaultValue={course.semesterCodeYear}
+                                value={currentCourseState.semesterCodeYear}
                                 required
                                 onChange={curriedOnTextInputChanged('semesterCodeYear')}
                                 onBlur={curriedOnTextInputBlurForCourseField('semesterCodeYear')}
@@ -171,6 +173,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                         </FormLabel>
                         <FormControl as='textarea'
                             defaultValue={course.textbooks}
+                            value={currentCourseState.semesterCodeYear}
                             required
                             onChange={curriedOnTextInputChanged('textbooks')}
                             onBlur={curriedOnTextInputBlurForCourseField('textbooks')}
