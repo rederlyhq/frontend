@@ -42,11 +42,12 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
     };
     const curriedOnDateChanged = _.curry(onDateChanged, 2);
 
-    // const onDatePicked = (field: keyof CourseObject, date: MaterialUiPickersDate) => {
-    //     if (!date) return;
-    //     updateCourseValue(field, date.toDate());
-    // };
-    // const curriedOnDatePicked = _.curry(onDatePicked, 2);
+    const onDatePicked = (field: keyof CourseObject, date: MaterialUiPickersDate) => {
+        if (!date) return;
+        onBlur?.(field, date.toDate());
+        updateCourseValue(field, date.toDate());
+    };
+    const curriedOnDatePicked = _.curry(onDatePicked, 2);
 
     return (
         <>
@@ -80,7 +81,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 defaultValue={course.start}
                                 value={course.start}
                                 onChange={curriedOnDateChanged('start')}
-                                onAccept={curriedOnDateChanged('start')}
+                                onAccept={curriedOnDatePicked('start')}
                                 onBlur={curriedOnTextInputBlurForCourseField('start')}
                                 KeyboardButtonProps={{
                                     'aria-label': 'change date',
@@ -101,7 +102,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 defaultValue={course.end}
                                 value={course.end}
                                 onChange={curriedOnDateChanged('end')}
-                                onAccept={curriedOnDateChanged('end')}
+                                onAccept={curriedOnDatePicked('end')}
                                 onBlur={curriedOnTextInputBlurForCourseField('end')}
                                 KeyboardButtonProps={{
                                     'aria-label': 'change date',
