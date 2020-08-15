@@ -61,7 +61,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
         <Container>
             <Tabs activeKey={activeTab} defaultActiveKey={CourseDetailsTabs.DETAILS} id="course-details-tabs" onSelect={(activeTab: any) => setActiveTab(activeTab)}>
                 <Tab eventKey={CourseDetailsTabs.DETAILS} title={CourseDetailsTabs.DETAILS} style={{marginBottom:'10px'}}>
-                    <CourseDetailsTab course={course} error={error} loading={loading} />
+                    <CourseDetailsTab course={course} error={error} loading={loading} setCourse={setCourse} />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.TOPICS} title={CourseDetailsTabs.TOPICS}>
                     <DragDropContext onDragEnd={()=>{}}>

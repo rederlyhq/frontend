@@ -7,6 +7,7 @@ import _ from 'lodash';
 
 import './Course.css';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
+import moment from 'moment';
 
 interface CourseDetailsProps {
     course: CourseObject;
@@ -19,7 +20,13 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
     const [currentCourseState, setCurrentCourseState] = useState<CourseObject>(course);
 
     const onTextInputBlurForCourseField = (field: keyof CourseObject, event: React.FocusEvent<HTMLInputElement>) => {
-        onBlur?.(field, event.target.value);
+        let value: string = event.target.value;
+        if (field === 'start' || field === 'end') {
+            // TODO the constructor for CourseObject simply does an assign, so the dates are actually strings
+            // this should not have the `toISOString` but since it is a date and initial fetch is a string it fails
+            value = moment(value).toDate().toISOString();
+        }
+        onBlur?.(field, value);
     };
     const curriedOnTextInputBlurForCourseField = _.curry(onTextInputBlurForCourseField, 2);
 
