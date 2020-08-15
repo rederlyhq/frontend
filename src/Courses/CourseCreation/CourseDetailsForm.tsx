@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Col, Row, FormControl, FormLabel, FormGroup } from 'react-bootstrap';
 import { CourseObject } from '../CourseInterfaces';
 import MomentUtils from '@date-io/moment';
-import { MuiPickersUtilsProvider, KeyboardDatePicker} from '@material-ui/pickers';
+import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import _ from 'lodash';
 import moment from 'moment';
 
@@ -12,12 +12,12 @@ import { FormControlProps } from '@material-ui/core';
 
 interface CourseDetailsProps {
     course: CourseObject;
-    updateCourseValue?:  (field: keyof CourseObject, value: any) => void;
+    updateCourseValue?: (field: keyof CourseObject, value: any) => void;
     disabled?: boolean;
     onBlur?: ((field: keyof CourseObject, value: any) => void)
 }
 
-export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, updateCourseValue: updateCourseValueProp = () => {}, disabled = false, onBlur }) => {
+export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, updateCourseValue: updateCourseValueProp = () => { }, disabled = false, onBlur }) => {
     const [currentCourseState, setCurrentCourseState] = useState<CourseObject>(new CourseObject());
 
     const onTextInputBlurForCourseField = (field: keyof CourseObject, event: React.FocusEvent<HTMLInputElement>) => {
@@ -26,19 +26,27 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
     const curriedOnTextInputBlurForCourseField = _.curry(onTextInputBlurForCourseField, 2);
 
     const updateCourseValue = (field: keyof CourseObject, value: any) => {
-        setCurrentCourseState({...currentCourseState, [field]: value});
+        setCurrentCourseState({ ...currentCourseState, [field]: value });
         updateCourseValueProp?.(field, value);
     };
 
     const onTextInputChanged = (field: keyof CourseObject, e: React.ChangeEvent<HTMLInputElement>) => {
-        let value: string | Date = e.target.value;
-        if (field === 'start' || field === 'end') {
-            value = moment(value).toDate();
-        }
+        const value: string = e.target.value;
         updateCourseValue(field, value);
     };
-
     const curriedOnTextInputChanged = _.curry(onTextInputChanged, 2);
+
+    const onDateChanged = (field: keyof CourseObject, date: MaterialUiPickersDate) => {
+        if (!date) return;
+        updateCourseValue(field, date.toDate());
+    };
+    const curriedOnDateChanged = _.curry(onDateChanged, 2);
+
+    // const onDatePicked = (field: keyof CourseObject, date: MaterialUiPickersDate) => {
+    //     if (!date) return;
+    //     updateCourseValue(field, date.toDate());
+    // };
+    // const curriedOnDatePicked = _.curry(onDatePicked, 2);
 
     return (
         <>
@@ -49,9 +57,9 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                             <FormLabel>
                                 <h3>Course Name: </h3>
                             </FormLabel>
-                            <FormControl 
+                            <FormControl
                                 required
-                                size='lg' 
+                                size='lg'
                                 defaultValue={course?.name || ''}
                                 onChange={curriedOnTextInputChanged('name')}
                                 onBlur={curriedOnTextInputBlurForCourseField('name')}
@@ -71,19 +79,15 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 name={'start-date'}
                                 defaultValue={course.start}
                                 value={course.start}
-                                onChange={() => {}}
-                                onAccept={(date: MaterialUiPickersDate) => {
-                                    if (!date) return;
-                                    const e = {target: {value: date.toDate()}};
-                                    curriedOnTextInputChanged('start')(e as any);
-                                }}
+                                onChange={curriedOnDateChanged('start')}
+                                onAccept={curriedOnDateChanged('start')}
                                 onBlur={curriedOnTextInputBlurForCourseField('start')}
                                 KeyboardButtonProps={{
                                     'aria-label': 'change date',
                                 }}
                                 fullWidth={true}
-                                InputLabelProps={{shrink: false}}
-                                inputProps={{style: {textAlign: 'center'}}}
+                                InputLabelProps={{ shrink: false }}
+                                inputProps={{ style: { textAlign: 'center' } }}
                             />
                         </Col>
                         <Col>
@@ -96,19 +100,15 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                                 name={'end-date'}
                                 defaultValue={course.end}
                                 value={course.end}
-                                onChange={() => {}}
-                                onAccept={(date: MaterialUiPickersDate) => {
-                                    if (!date) return;
-                                    const e = {target: {value: date.toDate()}};
-                                    curriedOnTextInputChanged('end')(e as any);
-                                }}
+                                onChange={curriedOnDateChanged('end')}
+                                onAccept={curriedOnDateChanged('end')}
                                 onBlur={curriedOnTextInputBlurForCourseField('end')}
                                 KeyboardButtonProps={{
                                     'aria-label': 'change date',
                                 }}
                                 fullWidth={true}
-                                InputLabelProps={{shrink: false}}
-                                inputProps={{style: {textAlign: 'center'}}}
+                                InputLabelProps={{ shrink: false }}
+                                inputProps={{ style: { textAlign: 'center' } }}
                             />
                         </Col>
                     </MuiPickersUtilsProvider>
@@ -119,7 +119,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                             <FormLabel>
                                 <h4>Section Code:</h4>
                             </FormLabel>
-                            <FormControl type='text' placeholder='MAT120' 
+                            <FormControl type='text' placeholder='MAT120'
                                 required
                                 defaultValue={course.sectionCode}
                                 onChange={curriedOnTextInputChanged('sectionCode')}
@@ -132,7 +132,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                             <FormLabel>
                                 <h4>Semester:</h4>
                             </FormLabel>
-                            <FormControl 
+                            <FormControl
                                 as='select'
                                 type='number'
                                 required
@@ -152,7 +152,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                             <FormLabel>
                                 <h4>Semester Year:</h4>
                             </FormLabel>
-                            <FormControl 
+                            <FormControl
                                 type='number'
                                 placeholder='2020'
                                 defaultValue={course.semesterCodeYear}
@@ -169,7 +169,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                             <h4>Textbooks:</h4>
                         </FormLabel>
                         <FormControl as='textarea'
-                            defaultValue={course.textbooks} 
+                            defaultValue={course.textbooks}
                             required
                             onChange={curriedOnTextInputChanged('textbooks')}
                             onBlur={curriedOnTextInputBlurForCourseField('textbooks')}
