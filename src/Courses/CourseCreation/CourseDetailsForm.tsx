@@ -180,7 +180,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                         </FormLabel>
                         <FormControl as='textarea'
                             defaultValue={course.textbooks}
-                            value={currentCourseState.semesterCodeYear}
+                            value={currentCourseState.textbooks}
                             required
                             onChange={curriedOnTextInputChanged('textbooks')}
                             onBlur={curriedOnTextInputBlurForCourseField('textbooks')}
