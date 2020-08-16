@@ -128,6 +128,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
                             id: attempt.courseWWTopicQuestionId,
+                            submitted: attempt.submitted,
                             result: attempt.result,
                             time: attempt.time,
                         }))
@@ -152,7 +153,14 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
     }, [course, view, idFilter]);
 
     const renderProblemPreview = (rowData: any) => {
-        return <ProblemIframe problem={new ProblemObject({id: rowData.id})} setProblemStudentGrade={() => {}} />;
+        return (
+            <iframe 
+                title='Problem Preview Frame'
+                style={{width: '100%', height: '30vh', border: 'none', minHeight: '350px'}}
+                sandbox='allow-same-origin allow-scripts allow-popups'
+                srcDoc={rowData.submitted.renderedHTML}
+            />
+        );
     };
 
     const nextView = (event: any, rowData: any, togglePanel: any) => {
