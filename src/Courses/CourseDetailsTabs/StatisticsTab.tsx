@@ -12,6 +12,7 @@ import * as qs from 'querystring';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import Cookies from 'js-cookie';
 import { CookieEnum } from '../../Enums/CookieEnum';
+import moment from 'moment';
 
 interface StatisticsTabProps {
     course: CourseObject;
@@ -132,7 +133,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
                             id: attempt.courseWWTopicQuestionId,
                             submitted: attempt.submitted,
                             result: attempt.result,
-                            time: attempt.time,
+                            time: moment(attempt.time).fromNow(),
                         }))
                     ));
                     data = _.flatten(data);
