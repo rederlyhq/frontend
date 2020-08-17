@@ -9,6 +9,9 @@ import ProblemIframe from '../../Assignments/ProblemIframe';
 import _ from 'lodash';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import * as qs from 'querystring';
+import { UserRole, getUserRole } from '../../Enums/UserRole';
+import Cookies from 'js-cookie';
+import { CookieEnum } from '../../Enums/CookieEnum';
 
 interface StatisticsTabProps {
     course: CourseObject;
@@ -46,6 +49,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
     const [view, setView] = useState<string>(StatisticsView.UNITS);
     const [idFilter, setIdFilter] = useState<number | null>(null);
     const [rowData, setRowData] = useState<Array<any>>([]);
+    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
+    const userId = Cookies.get(CookieEnum.USERID);
 
     useEffect(() => {
         if (!course || course.id === 0) return;
@@ -56,7 +61,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
         switch (view) {
         case StatisticsView.TOPICS:
             url = `${url}/topics`;
-            filterParam = 'courseUnitContentId'
+            filterParam = 'courseUnitContentId';
             break;
         case StatisticsView.PROBLEMS:
             url = `${url}/questions`;
@@ -74,7 +79,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
 
         const queryString = qs.stringify(_({
             courseId: course.id,
-            [filterParam]: idFilterLocal
+            [filterParam]: idFilterLocal,
+            userId: userType === UserRole.STUDENT ? userId : null,
         }).omitBy(_.isNil).value() as any).toString();
 
         url = `${url}?${queryString}`;
@@ -83,15 +89,17 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
             try {
                 const res = await AxiosRequest.get(url);
                 let data = res.data.data;
-                const formatNumberString = (val: string) => {
+                const formatNumberString = (val: string, percentage: boolean = false) => {
                     if(_.isNil(val)) return null;
+                    if (percentage) return `${(parseFloat(val) * 100).toFixed(1)}%`;
+
                     return parseFloat(val).toFixed(2);
-                }
+                };
                 data = data.map((d: any) => ({
                     ...d,
                     averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
-                    averageScore: formatNumberString(d.averageScore),
-                    completionPercent: formatNumberString(d.completionPercent)
+                    averageScore: formatNumberString(d.averageScore, true),
+                    completionPercent: formatNumberString(d.completionPercent, true)
                 }));
                 setRowData(data);
             } catch (e) {

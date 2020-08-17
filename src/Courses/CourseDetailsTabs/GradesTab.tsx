@@ -63,12 +63,17 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
         if (_.isNil(course) || !course.id) return;
         (async () => {
             let urlArg = `courseId=${course.id}`;
+            
             if (selectedObjects.problem) {
                 urlArg = `questionId=${selectedObjects.problem?.id}`;
             } else if (selectedObjects.topic) {
                 urlArg = `topicId=${selectedObjects.topic?.id}`;
             } else if (selectedObjects.unit) {
                 urlArg = `unitId=${selectedObjects.unit?.id}`;
+            }
+
+            if (userType === UserRole.STUDENT) {
+                urlArg = `${urlArg}&userId=${userId}`;
             }
             const res = await AxiosRequest(`/courses/grades?${urlArg}`);
 
@@ -85,41 +90,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
         })();
     };
 
-    // This hook is intended to get the grades for the user that is currently signed in.
-    const getSelfGradesHook = () => {
-        (async () => {
-            if (!userId || userId === 'undefined') {
-                console.error('Failed to retrieve userId from session.');
-                return;
-            }
-
-            const res = await AxiosRequest.get(`/users/${userId}?courseId=${course.id}&includeGrades=JUST_GRADE`);
-            if (res.status !== 200) {
-                console.error('Bad status code');
-                return;
-            }
-            const grades = res.data?.data?.grades;
-            if (!grades) {
-                console.error('Failed to download grades.', res);
-                return;
-            }
-
-            console.log(grades);
-            setViewData(grades.map((grade: any) => {
-                let gradeRow = grade;
-                delete gradeRow.id;
-                delete gradeRow.userId;
-                delete gradeRow.user_id;
-                delete gradeRow.randomSeed;
-                delete gradeRow.createdAt;
-                delete gradeRow.updatedAt;
-                return gradeRow;
-                // TODO: How do we get the question number from the problem?
-            }));
-        })();
-    };
-
-    useEffect((userType === UserRole.STUDENT ? getSelfGradesHook : getCourseGradesHook), [course, selectedObjects]);
+    useEffect(getCourseGradesHook, [course, userId, selectedObjects]);
 
     if (!course) return null;
 
