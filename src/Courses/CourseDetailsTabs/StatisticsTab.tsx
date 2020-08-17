@@ -12,9 +12,11 @@ import * as qs from 'querystring';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import Cookies from 'js-cookie';
 import { CookieEnum } from '../../Enums/CookieEnum';
+import moment from 'moment';
 
 interface StatisticsTabProps {
     course: CourseObject;
+    userId?: number;
 }
 
 enum StatisticsView {
@@ -34,7 +36,7 @@ const gradeCols = [
 const attemptCols = [
     {title: 'Result', field: 'result'},
     {title: 'Attempt Time', field: 'time'},
-]
+];
 
 
 const icons = {
@@ -58,15 +60,18 @@ const icons = {
 };
 
 
-
-export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
+/**
+ * When a professor wishes to see a student's view, they pass in the student's userId.
+ * When they wish to see overall course statistics, they do not pass any userId.
+ */
+export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) => {
     const [view, setView] = useState<string>(StatisticsView.UNITS);
     const [idFilter, setIdFilter] = useState<number | null>(null);
     const [rowData, setRowData] = useState<Array<any>>([]);
-    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
-    const userId = Cookies.get(CookieEnum.USERID);
+    const userType: UserRole = getUserRole();
 
     useEffect(() => {
+        console.log('Rerunning useEffect');
         if (!course || course.id === 0) return;
     
         let url = '/courses/statistics';
@@ -109,7 +114,6 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
                 const res = await AxiosRequest.get(url);
                 let data = res.data.data;
 
-                
                 const formatNumberString = (val: string, percentage: boolean = false) => {
                     if(_.isNil(val)) return null;
                     if (percentage) return `${(parseFloat(val) * 100).toFixed(1)}%`;
@@ -118,19 +122,18 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
                 };
                 
                 if (view === StatisticsView.ATTEMPTS) {
-                    console.log(data.grades);
                     let grades = data.grades.filter((grade: any) => {
                         const hasAttempts = grade.numAttempts > 0;
                         const satisfiesIdFilter = idFilter ? grade.courseWWTopicQuestionId === idFilter : true;
                         return hasAttempts && satisfiesIdFilter;
                     });
-                    console.log(grades);
+
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
                             id: attempt.courseWWTopicQuestionId,
                             submitted: attempt.submitted,
                             result: attempt.result,
-                            time: attempt.time,
+                            time: moment(attempt.time).fromNow(),
                         }))
                     ));
                     data = _.flatten(data);
@@ -148,19 +151,20 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
                 return;
             }
         })();
-
-        
-    }, [course, view, idFilter]);
+    }, [course, view, idFilter, userId]);
 
     const renderProblemPreview = (rowData: any) => {
-        return (
-            <iframe 
+        if (userId !== undefined) {
+            return <iframe 
                 title='Problem Preview Frame'
                 style={{width: '100%', height: '30vh', border: 'none', minHeight: '350px'}}
                 sandbox='allow-same-origin allow-scripts allow-popups'
                 srcDoc={rowData.submitted.renderedHTML}
-            />
-        );
+            />;
+        }
+        else {
+            return <ProblemIframe problem={new ProblemObject({id: rowData.id})} setProblemStudentGrade={() => {}} />;
+        }
     };
 
     const nextView = (event: any, rowData: any, togglePanel: any) => {
@@ -174,8 +178,15 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
             setView(StatisticsView.PROBLEMS);
             break;
         case StatisticsView.PROBLEMS:
-            setIdFilter(rowData.id);
-            setView(StatisticsView.ATTEMPTS);
+            console.log(userId);
+            if (userId !== undefined) {
+                setIdFilter(rowData.id);
+                console.log('Switching to Attempts');
+                setView(StatisticsView.ATTEMPTS);
+            } else {
+                console.log('Showing a panel.');
+                togglePanel();
+            }
             break;
         case StatisticsView.ATTEMPTS:
             togglePanel();
@@ -184,13 +195,17 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
             break;
         }   
     };
-
-    let seeMoreActions: Array<any> | undefined = view === StatisticsView.ATTEMPTS ? undefined : [{
+    
+    const hasDetailPanel = userId !== undefined ? 
+        view === StatisticsView.ATTEMPTS :
+        view === StatisticsView.PROBLEMS;
+    
+    let seeMoreActions: Array<any> | undefined = hasDetailPanel ? undefined : [{
         icon: () => <ChevronRight/>,
         tooltip: 'See More',
         onClick: _.curryRight(nextView)(()=>{}),
     }];
-    
+
     return (
         <>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
@@ -212,7 +227,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
                         Problems
                     </Nav.Link>
                 </Nav.Item>
-                {userType === UserRole.STUDENT && <Nav.Item>
+                {userId !== undefined && <Nav.Item>
                     <Nav.Link eventKey={StatisticsView.ATTEMPTS}>
                         Attempts
                     </Nav.Link>
@@ -229,7 +244,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course}) => {
                     options={{
                         exportButton: true
                     }}
-                    detailPanel={view === StatisticsView.ATTEMPTS ? [{
+                    detailPanel={hasDetailPanel ? [{
                         icon: () => <ChevronRight/>,
                         render: renderProblemPreview
                     }] : undefined}

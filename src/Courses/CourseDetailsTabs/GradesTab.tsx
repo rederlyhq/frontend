@@ -11,6 +11,7 @@ import { UserRole, getUserRole } from '../../Enums/UserRole';
 
 interface GradesTabProps {
     course: CourseObject;
+    setStudentGradesTab: (studentName: string, studentId: number) => void;
 }
 
 enum GradesView {
@@ -32,12 +33,12 @@ interface IDropdownCascade {
  *  2. A professor, showing summary grades for each student.
  * 
  */
-export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
+export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab}) => {
     const [view, setView] = useState<string>(GradesView.OVERVIEW);
     const [selectedObjects, setSelectedObjects] = useState<IDropdownCascade>({});
     const [viewData, setViewData] = useState<Array<any>>([]);
     const userId: string | undefined = Cookies.get(CookieEnum.USERID);
-    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
+    const userType: UserRole = getUserRole();
 
     const handleChangedView = (selectedView: string) => {
         console.log('handling changing view', selectedView);
@@ -82,7 +83,6 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
             const flatGradesArr = _.map(gradesArr, grade => {
                 const mergedGrade = {...grade.user, ...grade};
                 delete mergedGrade.user;
-                delete mergedGrade.id;
                 return mergedGrade;
             });
 
@@ -120,7 +120,15 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
                     subObjArray={selectedObjects.topic?.questions.sort((a, b) => a.problemNumber < b.problemNumber ? -1 : 1) || []} 
                     style={{visibility: selectedObjects.topic ? 'visible' : 'hidden'}} />
             </Nav>
-            {viewData ? <GradeTable courseName={course.name} grades={viewData}/> : <div>No data!</div>}
+            {viewData ? 
+                <GradeTable 
+                    courseName={course.name}
+                    grades={viewData} 
+                    onRowClick={(event: any, rowData: any) => {
+                        console.log(rowData);
+                        setStudentGradesTab(rowData.firstName, rowData.id);
+                    }} /> :
+                <div>No data!</div>}
         </>
     );
 };
