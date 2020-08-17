@@ -17,7 +17,7 @@ interface CoursePageProps {
 
 export const CoursePage: React.FC<CoursePageProps> = () => {
     const [courses, setCourses] = useState<Array<CourseObject>>([]);
-    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
+    const userType: UserRole = getUserRole();
     const userId: string | undefined = Cookies.get(CookieEnum.USERID);
 
     // Get the list of courses to render.

@@ -17,7 +17,7 @@ interface EmailComponentWrapperProps {
 export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ users }) => {
     const [selectedStudents, setSelectedStudents] = useState<Array<Set<number>>>([new Set()]);
     const [showModal, setShowModal] = useState(false);
-    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
+    const userType: UserRole = getUserRole();
 
     return (
         <>

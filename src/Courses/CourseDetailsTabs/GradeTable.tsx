@@ -7,7 +7,7 @@ import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronL
 interface GradeTableProps {
     courseName: string;
     grades: Array<any>;
-    onRowClick?: (id: number) => void;
+    onRowClick?: (event: any, rowData: any) => void;
 }
 const icons = {
     // Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -36,7 +36,7 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
     let safeGrades = grades.map(obj => ({
         ...obj,
     }));
-    const headers = _.keys(safeGrades[0]);
+    const headers = _(safeGrades[0]).keys().filter(n => n !== 'id').value();
     if(headers.indexOf('average') >= 0) {
         // Would include this in above mapping, however using ternary operated resulted in an empty column in questions
         safeGrades = safeGrades.map(obj => ({
@@ -44,8 +44,6 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
             average: obj.average.toFixed(2)
         }));
     }
-    console.log(headers);
-    console.log(safeGrades);
 
     return (
         <div style={{maxWidth: '100%'}}>
@@ -54,17 +52,10 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
                 title={courseName}
                 columns={headers.map(col => ({title: _.startCase(_.replace(col, 'ProblemCount', '')), field: col}))}
                 data={safeGrades || []}
-                // Actions might take a professor to a Student's profile.
-                // actions={seeMoreActions}
-                onRowClick={()=>{}}
+                onRowClick={onRowClick}
                 options={{
                     exportButton: true
                 }}
-                // detailPanel={view === StatisticsView.PROBLEMS ? [{
-                //     icon: () => <ChevronRight/>,
-                //     render: renderProblemPreview
-                // }] : undefined}
-                // localization={{header: { actions: '' }}}
             />
         </div>
     );

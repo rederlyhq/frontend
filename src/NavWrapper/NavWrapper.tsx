@@ -78,7 +78,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
             </Navbar>
             {/* Routing for the page content */}
             <Container fluid role='main'>
-                <Provider value={{userType: getUserRole(sessionCookie)}}>    
+                <Provider value={{userType: getUserRole()}}>    
                     <AnimatePresence exitBeforeEnter initial={false}>
                         <Switch>
                             <Route exact path={`${path}/account`}>
