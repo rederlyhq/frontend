@@ -31,9 +31,9 @@ export const CourseTemplateList: React.FC<CourseTemplateListProps> = ({ courseTe
                             <Col>
                                 {template.name}
                             </Col>
-                            <Col md={2}>
+                            {/* <Col md={2}>
                                 <CurriculumDetailsModal title={template.name} desc={template.comment} className='float-right' />
-                            </Col>
+                            </Col> */}
                             {/* <Col as={Link} md={1} to={`/common/courses/edit/${template.id}`}>
                                 <BsChevronCompactRight className="float-right" />
                             </Col> */}
