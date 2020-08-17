@@ -11,6 +11,7 @@ import { CookieEnum } from '../../Enums/CookieEnum';
 import Cookies from 'js-cookie';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { nameof } from '../../Utilities/TypescriptUtils';
+import { EditableCourseDetailsForm } from '../CourseCreation/EditableCourseDetailsForm';
 
 interface CourseDetailsTabProps {
     course?: CourseObject;
@@ -81,7 +82,7 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
             )}
 
             {updateError && <Alert variant="danger">{updateError}</Alert>}
-            <CourseDetailsForm disabled={!inEditMode} course={course} onBlur={onCourseDetailsBlur} />
+            <EditableCourseDetailsForm disabled={!inEditMode} course={course} onBlur={onCourseDetailsBlur} />
             <h5>Open Topics</h5>
             <DragDropContext onDragEnd={()=>{}}>
                 <ActiveTopics course={course} />
