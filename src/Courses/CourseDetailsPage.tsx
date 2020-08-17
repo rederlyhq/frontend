@@ -8,7 +8,8 @@ import GradesTab from './CourseDetailsTabs/GradesTab';
 import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { CourseObject } from './CourseInterfaces';
-import { UserRole, getUserRole } from '../Enums/UserRole';
+import ActiveTopics from './CourseDetailsTabs/ActiveTopics';
+import { UserRole, getUserRole, getUserId } from '../Enums/UserRole';
 import Cookies from 'js-cookie';
 import { CookieEnum } from '../Enums/CookieEnum';
 import _ from 'lodash';
@@ -23,7 +24,8 @@ enum CourseDetailsTabs {
     ENROLLMENTS = 'Enrollments',
     DETAILS = 'Details',
     GRADES = 'Grades',
-    STATISTICS = 'Statistics'
+    STATISTICS = 'Statistics',
+    STUDENT_GRADES = 'Student Grades',
 }
 
 /**
@@ -37,7 +39,9 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<CourseDetailsTabs>(CourseDetailsTabs.DETAILS);
-    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
+    const userType: UserRole = getUserRole();
+    const userId: number = getUserId();
+    const [studentNameAndId, setStudentNameAndId] = useState<{name: string, userId: number} | null>(null);
 
     useEffect(() => {
         (async () => {
@@ -55,12 +59,24 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
         })();
     }, [courseId]);
 
+    const setStudentGradesTab = (studentName: string, studentId: number) => {
+        setStudentNameAndId({name: studentName, userId: studentId});
+        setActiveTab(CourseDetailsTabs.STUDENT_GRADES);
+    };
+
     if (!courseId) return <div>Please return to login.</div>;
 
     return (
         <Container>
-            <Tabs activeKey={activeTab} defaultActiveKey={CourseDetailsTabs.DETAILS} id="course-details-tabs" onSelect={(activeTab: any) => setActiveTab(activeTab)}>
-                <Tab eventKey={CourseDetailsTabs.DETAILS} title={CourseDetailsTabs.DETAILS} style={{marginBottom:'10px'}}>
+            <Tabs 
+                activeKey={activeTab} 
+                defaultActiveKey={CourseDetailsTabs.DETAILS} 
+                id="course-details-tabs" 
+                onSelect={(activeTab: any) => {
+                    setActiveTab(activeTab);
+                    setStudentNameAndId(null);
+                }}>
+                <Tab eventKey={CourseDetailsTabs.DETAILS} title={CourseDetailsTabs.DETAILS}  style={{marginBottom:'10px'}}>
                     <CourseDetailsTab course={course} error={error} loading={loading} setCourse={setCourse} />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.TOPICS} title={CourseDetailsTabs.TOPICS}>
@@ -71,13 +87,19 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                 <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
                     <EnrollmentsTab courseId={parseInt(courseId, 10)} courseCode={course.code} />
                 </Tab>
-                {userType !== UserRole.STUDENT && (
-                    <Tab eventKey={CourseDetailsTabs.GRADES} title={CourseDetailsTabs.GRADES}>
-                        <GradesTab course={course} />
-                    </Tab>)}
+                <Tab eventKey={CourseDetailsTabs.GRADES} title={CourseDetailsTabs.GRADES}>
+                    {/* Students' Grades view is really the statisics view. */}
+                    {userType === UserRole.STUDENT ? 
+                        <StatisticsTab course={course} userId={userId} /> : 
+                        <GradesTab course={course} setStudentGradesTab={setStudentGradesTab} />}
+                </Tab>
                 {userType !== UserRole.STUDENT && (
                     <Tab eventKey={CourseDetailsTabs.STATISTICS} title={CourseDetailsTabs.STATISTICS}>
                         <StatisticsTab course={course} />
+                    </Tab>)}
+                {studentNameAndId !== null && (
+                    <Tab eventKey={CourseDetailsTabs.STUDENT_GRADES} title={`${studentNameAndId.name}'s Grades`}>
+                        <StatisticsTab course={course} userId={studentNameAndId.userId} />
                     </Tab>)}
             </Tabs>
         </Container>

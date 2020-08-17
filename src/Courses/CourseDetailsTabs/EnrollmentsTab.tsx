@@ -15,7 +15,7 @@ interface EnrollmentsTabProps {
 export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = ({ courseId, courseCode }) => {
     const [users, setUsers] = useState<Array<UserObject>>([]);
     const enrollUrl = `${window.location.host}/common/courses/enroll/${courseCode}`;
-    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
+    const userType: UserRole = getUserRole();
 
     const textAreaRef = useRef<FormControl<'input'> & HTMLInputElement>(null);
 

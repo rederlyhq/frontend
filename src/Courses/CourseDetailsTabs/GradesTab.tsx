@@ -11,6 +11,7 @@ import { UserRole, getUserRole } from '../../Enums/UserRole';
 
 interface GradesTabProps {
     course: CourseObject;
+    setStudentGradesTab: (studentName: string, studentId: number) => void;
 }
 
 enum GradesView {
@@ -32,12 +33,12 @@ interface IDropdownCascade {
  *  2. A professor, showing summary grades for each student.
  * 
  */
-export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
+export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab}) => {
     const [view, setView] = useState<string>(GradesView.OVERVIEW);
     const [selectedObjects, setSelectedObjects] = useState<IDropdownCascade>({});
     const [viewData, setViewData] = useState<Array<any>>([]);
     const userId: string | undefined = Cookies.get(CookieEnum.USERID);
-    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
+    const userType: UserRole = getUserRole();
 
     const handleChangedView = (selectedView: string) => {
         console.log('handling changing view', selectedView);
@@ -63,12 +64,17 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
         if (_.isNil(course) || !course.id) return;
         (async () => {
             let urlArg = `courseId=${course.id}`;
+            
             if (selectedObjects.problem) {
                 urlArg = `questionId=${selectedObjects.problem?.id}`;
             } else if (selectedObjects.topic) {
                 urlArg = `topicId=${selectedObjects.topic?.id}`;
             } else if (selectedObjects.unit) {
                 urlArg = `unitId=${selectedObjects.unit?.id}`;
+            }
+
+            if (userType === UserRole.STUDENT) {
+                urlArg = `${urlArg}&userId=${userId}`;
             }
             const res = await AxiosRequest(`/courses/grades?${urlArg}`);
 
@@ -77,7 +83,6 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
             const flatGradesArr = _.map(gradesArr, grade => {
                 const mergedGrade = {...grade.user, ...grade};
                 delete mergedGrade.user;
-                delete mergedGrade.id;
                 return mergedGrade;
             });
 
@@ -85,41 +90,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
         })();
     };
 
-    // This hook is intended to get the grades for the user that is currently signed in.
-    const getSelfGradesHook = () => {
-        (async () => {
-            if (!userId || userId === 'undefined') {
-                console.error('Failed to retrieve userId from session.');
-                return;
-            }
-
-            const res = await AxiosRequest.get(`/users/${userId}?courseId=${course.id}&includeGrades=JUST_GRADE`);
-            if (res.status !== 200) {
-                console.error('Bad status code');
-                return;
-            }
-            const grades = res.data?.data?.grades;
-            if (!grades) {
-                console.error('Failed to download grades.', res);
-                return;
-            }
-
-            console.log(grades);
-            setViewData(grades.map((grade: any) => {
-                let gradeRow = grade;
-                delete gradeRow.id;
-                delete gradeRow.userId;
-                delete gradeRow.user_id;
-                delete gradeRow.randomSeed;
-                delete gradeRow.createdAt;
-                delete gradeRow.updatedAt;
-                return gradeRow;
-                // TODO: How do we get the question number from the problem?
-            }));
-        })();
-    };
-
-    useEffect((userType === UserRole.STUDENT ? getSelfGradesHook : getCourseGradesHook), [course.id, selectedObjects]);
+    useEffect(getCourseGradesHook, [course.id, userId, selectedObjects]);
 
     if (!course) return null;
 
@@ -149,7 +120,15 @@ export const GradesTab: React.FC<GradesTabProps> = ({course}) => {
                     subObjArray={selectedObjects.topic?.questions.sort((a, b) => a.problemNumber < b.problemNumber ? -1 : 1) || []} 
                     style={{visibility: selectedObjects.topic ? 'visible' : 'hidden'}} />
             </Nav>
-            {viewData ? <GradeTable courseName={course.name} grades={viewData}/> : <div>No data!</div>}
+            {viewData ? 
+                <GradeTable 
+                    courseName={course.name}
+                    grades={viewData} 
+                    onRowClick={(event: any, rowData: any) => {
+                        console.log(rowData);
+                        setStudentGradesTab(rowData.firstName, rowData.id);
+                    }} /> :
+                <div>No data!</div>}
         </>
     );
 };

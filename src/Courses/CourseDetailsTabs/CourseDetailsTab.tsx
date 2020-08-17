@@ -22,7 +22,7 @@ interface CourseDetailsTabProps {
 export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, loading, error, setCourse} ) => {
     const [inEditMode, setInEditMode] = useState<boolean>(false);
     const [updateError, setUpdateError] = useState<string | null>(null);
-    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
+    const userType: UserRole = getUserRole();
 
     const onCourseDetailsBlur = async (field: keyof CourseObject, value: any) => {
         if(_.isNil(course)) {

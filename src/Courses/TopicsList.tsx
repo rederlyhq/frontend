@@ -27,7 +27,7 @@ interface TopicsListProps {
  */
 export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, showEditTopic, removeTopic, unitUnique}) => {
     const [topicFeedback, setTopicFeedback] = useState({topicId: -1, feedback: '', variant: 'danger'});
-    const userType: UserRole = getUserRole(Cookies.get(CookieEnum.USERTYPE));
+    const userType: UserRole = getUserRole();
     const { control } = useForm();
     
     const updateTopicField = async (topicId: number, field: keyof NewCourseTopicObj, newData: Date) => {

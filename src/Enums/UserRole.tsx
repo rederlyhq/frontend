@@ -19,8 +19,8 @@ export const getUserRoleFromServer = (roleFromServer: number): UserRole => {
     }
 };
 
-export const getUserRole = (roleFromCookie: string | undefined): UserRole => {
-    // I want this to be a soft compare, cause that's probably not a Cookie.
+export const getUserRole = (): UserRole => {
+    const roleFromCookie = Cookies.get(CookieEnum.USERTYPE);
     // eslint-disable-next-line eqeqeq
     if (roleFromCookie == undefined) {
         // TODO: Generic redirect to handle clearing cookies.
@@ -39,4 +39,19 @@ export const getUserRole = (roleFromCookie: string | undefined): UserRole => {
     default:
         return UserRole.STUDENT;
     }
+};
+
+export const getUserId = () => {
+    const userId = Cookies.get(CookieEnum.USERID);
+    let userIdValue = 0; 
+
+    if (userId === undefined || isNaN(userIdValue = parseInt(userId, 10))) {
+        // TODO: Generic redirect to handle clearing cookies.
+        window.location.assign('/');
+        Cookies.remove(CookieEnum.USERTYPE);
+        Cookies.remove(CookieEnum.SESSION);
+        throw Error('Cookie is missing. Please return to Login.');
+    }
+
+    return userIdValue;
 };
