@@ -8,6 +8,7 @@ import { FaPlusCircle, FaTrash } from 'react-icons/fa';
 import _ from 'lodash';
 import TopicCreationModal from '../CourseCreation/TopicCreationModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
+import AxiosRequest from '../../Hooks/AxiosRequest';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -44,8 +45,11 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         setShowTopicCreation({ show: true, unitIndex: unitIdentifier, existingTopic: topic });
     };
 
-    const removeTopic = (unitId: number, topicId: number) => {
+    const removeTopic = async (unitId: number, topicId: number) => {
         console.log(`removeTopic ${unitId} ${topicId}`);
+        
+        await AxiosRequest.delete(`/courses/topic/${topicId}`);
+
         let newCourse: CourseObject = { ...course };
         let unit = _.find(newCourse.units, ['id', unitId]);
 
@@ -53,8 +57,6 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             console.error(`Could not find a unit with id ${unitId}`);
             return;
         }
-
-        // TODO: Do we need a confirmation workflow?
 
         unit.topics = _.reject(unit.topics, ['id', topicId]);
         setCourse?.(newCourse);
