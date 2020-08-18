@@ -1,18 +1,169 @@
-import React from 'react';
+import React, { useState } from 'react';
 import TopicsList from '../TopicsList';
-import { Accordion, Card, Row, Col } from 'react-bootstrap';
-import { CourseObject } from '../CourseInterfaces';
+import { Accordion, Card, Row, Col, Modal } from 'react-bootstrap';
+import { CourseObject, NewCourseTopicObj } from '../CourseInterfaces';
+import { EditToggleButton } from '../../Components/EditToggleButton';
+import { UserRole, getUserRole } from '../../Enums/UserRole';
+import { FaPlusCircle, FaTrash } from 'react-icons/fa';
+import _ from 'lodash';
+import TopicCreationModal from '../CourseCreation/TopicCreationModal';
+import { ConfirmationModal } from '../../Components/ConfirmationModal';
 
 interface TopicsTabProps {
     course: CourseObject;
+    setCourse?: (course: CourseObject) => void;
 }
 
-export const TopicsTab: React.FC<TopicsTabProps> = ({course}) => {
+export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
+    const DEFAULT_CONFIRMATION_PARAMETERS = {
+        show: false,
+        onConfirm: null,
+        identifierText: ''
+    };
+
+    const [inEditMode, setInEditMode] = useState<boolean>(false);
+    const userType: UserRole = getUserRole();
+
+    const [showTopicCreation, setShowTopicCreation] = useState<{ show: boolean, unitIndex: number, existingTopic?: NewCourseTopicObj | undefined }>({ show: false, unitIndex: -1 });
+    const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
+
+    const showEditTopic = (e: any, unitIdentifier: number, topicIdentifier: number) => {
+        console.log(`Editing topic ${topicIdentifier} in unit ${unitIdentifier}`);
+        let unit = _.find(course.units, ['id', unitIdentifier]);
+        console.log(unit);
+        if (!unit) {
+            console.error(`Cannot find unit with identifier ${unitIdentifier}`);
+            return;
+        }
+
+        const topic = _.find(unit.topics, ['id', topicIdentifier]);
+        if (!topic) {
+            console.error(`Cannot find topic with id ${topicIdentifier} in unit with id ${unitIdentifier}`);
+            return;
+        }
+        setShowTopicCreation({ show: true, unitIndex: unitIdentifier, existingTopic: topic });
+    };
+
+    const removeTopic = (unitId: number, topicId: number) => {
+        console.log(`removeTopic ${unitId} ${topicId}`);
+        let newCourse: CourseObject = { ...course };
+        let unit = _.find(newCourse.units, ['id', unitId]);
+
+        if (!unit) {
+            console.error(`Could not find a unit with id ${unitId}`);
+            return;
+        }
+
+        // TODO: Do we need a confirmation workflow?
+
+        unit.topics = _.reject(unit.topics, ['id', topicId]);
+        setCourse?.(newCourse);
+    };
+
+    const onTopicDeleteClicked = (e: any, unitId: number, topicId: number) => {
+        setConfirmationParamters({
+            show: true,
+            // In the future we might want to pass something like topic name here
+            identifierText: 'this topic',
+            onConfirm: _.partial(removeTopic, unitId, topicId)
+        });
+    };
+
+    const addTopic = (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => {
+        console.log('Adding Topic', unitIndex, existingTopic, topic);
+        if (topic.questions.length <= 0) {
+            // TODO: Render validation!
+            console.error('Attempted to add a topic without questions!');
+            return;
+        }
+
+        let newCourse: CourseObject = new CourseObject(course);
+        let unit = _.find(newCourse.units, ['unique', unitIndex]);
+
+        if (!unit) {
+            console.error(`Could not find a unit with id ${unitIndex}`);
+            console.log(`Could not find a unit with id ${unitIndex}`);
+            return;
+        }
+
+        // If a topic already exists, update and overwrite it in the course object.
+        if (existingTopic) {
+            let oldTopic = _.find(unit.topics, ['unique', existingTopic.unique]);
+
+            if (!oldTopic) {
+                console.error(`Could not update topic ${existingTopic.id} in unit ${unitIndex}`);
+            }
+
+            _.assign(oldTopic, topic);
+        } else {
+            // Otherwise, concatenate this object onto the existing array.
+            // topic.contentOrder = unit.topics.length;
+            topic.contentOrder = Math.max(...unit.topics.map(topic => topic.contentOrder), 0) + 1;
+            unit.topics = _.concat(unit.topics, new NewCourseTopicObj(topic));
+        }
+
+        setCourse?.(newCourse);
+        setShowTopicCreation({show: false, unitIndex: -1});
+    };
 
     return (
         <>
+            <Modal
+                show={showTopicCreation.show}
+                onHide={() => setShowTopicCreation({ show: false, unitIndex: -1 })}
+                dialogClassName="topicCreationModal"
+            >
+                <TopicCreationModal
+                    unitIndex={showTopicCreation.unitIndex}
+                    addTopic={addTopic}
+                    existingTopic={showTopicCreation.existingTopic}
+                />
+            </Modal>
+            <ConfirmationModal
+                onConfirm={() => {
+                    confirmationParamters.onConfirm?.();
+                    setConfirmationParamters(DEFAULT_CONFIRMATION_PARAMETERS);
+                }}
+                onHide={() => {
+                    setConfirmationParamters(DEFAULT_CONFIRMATION_PARAMETERS);
+                }}
+                show={confirmationParamters.show}
+                headerContent={<h5>Confirm delete</h5>}
+                bodyContent={`Are you sure you want to remove ${confirmationParamters.identifierText}?`}
+            />
+            {userType !== UserRole.STUDENT && (
+                <Row>
+                    <Row style={{ marginLeft: 'auto' }}>
+                        {/* <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} > */}
+                        {
+                            inEditMode &&
+                            <span
+                                role="button"
+                                tabIndex={0}
+                                style={{
+                                    padding: '20px'
+                                }}
+                            // onClick={onClick}
+                            // onKeyPress={onClick}
+                            >
+                                <FaPlusCircle color='#00AA00' />
+                            </span>
+                        }
+                        <EditToggleButton
+                            selectedState={inEditMode}
+                            onClick={() => { setInEditMode(!inEditMode); }}
+                            style={{
+                                padding: '20px'
+                            }}
+                        />
+                    </Row>
+                </Row>
+            )}
             <h4>Units</h4>
             {course?.units?.map((unit: any) => {
+                const showEditWithUnitId = _.curry(showEditTopic)(_, unit.id);
+                const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
+
                 return (
                     <div key={`unit${unit.id}`}>
                         <Accordion defaultActiveKey="1">
@@ -22,16 +173,44 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({course}) => {
                                         <Col>
                                             <h4>{unit.name}</h4>
                                         </Col>
-                                        <Col>
-                                            <div></div>
-                                        </Col>
+                                        {
+                                            inEditMode &&
+                                            <div style={{ marginLeft: 'auto' }}>
+                                                <span
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    style={{
+                                                        padding: '6px'
+                                                    }}
+                                                // onClick={onClick}
+                                                // onKeyPress={onClick}
+                                                >
+                                                    <FaTrash color='#AA0000' />
+                                                </span>
+                                                <span
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    style={{
+                                                        padding: '6px'
+                                                    }}
+                                                // onClick={onClick}
+                                                // onKeyPress={onClick}
+                                                >
+                                                    <FaPlusCircle color='#00AA00' />
+                                                </span>
+                                            </div>
+                                        }
                                     </Row>
                                 </Accordion.Toggle>
                                 <Accordion.Collapse eventKey="0">
                                     <Card.Body>
-                                        <TopicsList 
+                                        <TopicsList
                                             flush
                                             listOfTopics={unit.topics}
+                                            showEditTopic={showEditWithUnitId}
+                                            removeTopic={onTopicDeleteClickedWithUnitId}
+                                            unitUnique={unit.id}
+                                        // inEditMode={inEditMode}
                                         />
                                     </Card.Body>
                                 </Accordion.Collapse>

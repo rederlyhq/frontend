@@ -40,8 +40,8 @@ export const ComponentToggleButton: React.FC<ComponentToggleButtonProps> = ({
     };
 
     return (
-        <div style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} >
+        <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} >
             {renderAppropriateJSX()}
-        </div>
+        </span>
     );
 };

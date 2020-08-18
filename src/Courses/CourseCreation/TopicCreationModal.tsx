@@ -74,6 +74,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
             <Draggable draggableId={`problemRow${problem.unique}`} index={problem.problemNumber} key={`problem-row-${problem.unique}`}>
                 {(provided) => (
                     <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                        <h4>Problem #{problem.problemNumber}</h4>
                         <FormGroup controlId={`problem${count}`}>
                             <FormLabel>Problem Path:</FormLabel>
                             {/* This might be a nice UI addition, but might be annoying if we don't autoremove a duplicate. */}

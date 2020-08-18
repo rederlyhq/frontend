@@ -19,8 +19,8 @@ export const EditToggleButton: React.FC<EditToggleButtonProps> = ({
     onClick
 }) => {
     return <ComponentToggleButton
-        selectedStateJSX={ <FaPencilAlt color="#007bff" style={{float:'right'}} /> }
-        notSelectedStateJSX={ <FaPencilAlt style={{float:'right'}} /> }
+        selectedStateJSX={ <FaPencilAlt color="#007bff" /> }
+        notSelectedStateJSX={ <FaPencilAlt /> }
         defaultSelectedState={defaultSelectedState}
         selectedState={selectedState}
         style={style}

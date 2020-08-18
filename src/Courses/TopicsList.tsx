@@ -49,12 +49,12 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                 <>
                     <Col md={10}>{topic.name}</Col>
                     <Col md={1}>
-                        <Button onClick={(e: any) => showEditTopic(e, topic.unique)}>
+                        <Button onClick={(e: any) => showEditTopic(e, topic.id)}>
                             <BsPencilSquare/> Edit
                         </Button>
                     </Col>
                     <Col md={1}>
-                        <Button variant='danger' onClick={(e: any) => removeTopic(e, topic.unique)}>
+                        <Button variant='danger' onClick={(e: any) => removeTopic(e, topic.id)}>
                             Delete
                         </Button>
                     </Col>
@@ -73,7 +73,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             <Controller 
                                 as={DateTimePicker}
                                 control={control}
-                                name={`${topic.unique}-start`}
+                                name={`${topic.id}-start`}
                                 variant='inline'
                                 inputVariant='outlined'
                                 label='Start date'
@@ -92,7 +92,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             <Controller 
                                 as={DateTimePicker}
                                 control={control}
-                                name={`${topic.unique}-end`}
+                                name={`${topic.id}-end`}
                                 variant='inline'
                                 label='End date'
                                 onChange={([val]) => {
@@ -151,7 +151,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                     >
                         {listOfTopics.map((topic, index) => {
                             return (
-                                <Draggable draggableId={`topic-${topic.unique}`} index={index} key={`topic${topic.unique}`} isDragDisabled={!showEditTopic}>
+                                <Draggable draggableId={`topic-${topic.id}`} index={index} key={`topic${topic.id}`} isDragDisabled={!showEditTopic}>
                                     {getDraggableTopic}
                                 </Draggable>
                             );
