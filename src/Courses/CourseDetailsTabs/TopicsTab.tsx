@@ -71,6 +71,17 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         });
     };
 
+    const createTopic = async (courseUnitContentId: number) => {
+        await AxiosRequest.post('/courses/topic/', {
+            courseUnitContentId
+        });
+    };
+
+    const addTopicClick = (e: React.MouseEvent<HTMLSpanElement, MouseEvent> | React.KeyboardEvent<HTMLSpanElement>, courseUnitContentId: number) => {
+        e.stopPropagation();
+        createTopic(courseUnitContentId);
+    };
+
     const addUnit = async (courseId: number) => {
         await AxiosRequest.post('/courses/unit', {
             courseId
@@ -214,8 +225,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                     style={{
                                                         padding: '6px'
                                                     }}
-                                                // onClick={onClick}
-                                                // onKeyPress={onClick}
+                                                    onClick={_.partial(addTopicClick, _, unit.id)}
+                                                    onKeyPress={_.partial(addTopicClick, _, unit.id)}
                                                 >
                                                     <FaPlusCircle color='#00AA00' />
                                                 </span>
