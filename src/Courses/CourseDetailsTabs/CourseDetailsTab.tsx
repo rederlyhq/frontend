@@ -41,8 +41,12 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
             try {
                 setUpdateError(null);
                 const result = await AxiosRequest.put(`/courses/${course.id}`, postObject);
-                setCourse?.(new CourseObject(result.data.data.updatesResult?.[0]));
+                setCourse?.(new CourseObject({
+                    ...result.data.data.updatesResult?.[0],
+                    units: course.units
+                }));
             } catch (e) {
+                console.error(e);
                 setUpdateError(`An error has occurred ${e.response.data.message}`);
             }
         }
