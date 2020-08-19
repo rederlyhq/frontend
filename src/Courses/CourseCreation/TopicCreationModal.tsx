@@ -40,7 +40,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
      * @param name   - The name of the form element to be updated.
      * @param e      - The event object.
      * */
-    const onFormChange = (index: number, name: keyof ProblemObject, e: any) => {
+    const onFormChange = async (index: number, name: keyof ProblemObject, e: any) => {
         let val = e.target.value;
         let probs = [...problems];
 
@@ -57,7 +57,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
             probs[index][name] = parseInt(val, 10);
             break;
         case 'optional':
-            probs[index][name] = !probs[index][name];
+            probs[index][name] = e.target.checked;
             break;
         case 'unique':
             break;
@@ -68,8 +68,50 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         setProblems(probs);
     };
 
+    const onFormBlur = async (index: number, name: keyof ProblemObject, e: any) => {
+        const key = name === 'path' ? 'webworkQuestionPath' : name;
+        const initialValue = problems[index][key];
+        let val = e.target.value;
+        let probs = [...problems];
+
+        // TODO: Handle validation.
+        switch (name) {
+        case 'webworkQuestionPath':
+        case 'path':
+            probs[index].webworkQuestionPath = val;
+            break;
+        case 'weight':
+        case 'maxAttempts':
+        case 'problemNumber':
+        case 'id':
+            val = parseInt(val, 10);
+            probs[index][name] = val;
+            break;
+        case 'optional':
+            val = e.target.checked;
+            probs[index][name] = val;
+            break;
+        case 'unique':
+            break;
+        default:
+            probs[index][name] = val;
+        }
+
+        // TODO prevent updates if nothing changed
+        // The problem here is that we update the state before we update the backend
+        // if (probs[index][name] === initialValue) {
+        //     return;
+        // }
+        await AxiosRequest.put(`/courses/question/${probs[index].id}`, {
+            [key]: val
+        });
+
+        setProblems(probs);
+    };
+
     const addProblemRows = (problem: ProblemObject, count: number) : any => {
         const onFormChangeProblemIndex = _.curry(onFormChange)(count);
+        const onFormBlurProblemIndex = _.curry(onFormBlur)(count);
         return (
             <Draggable draggableId={`problemRow${problem.unique}`} index={problem.problemNumber} key={`problem-row-${problem.unique}`}>
                 {(provided) => (
@@ -83,6 +125,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                                     required 
                                     value={problem.webworkQuestionPath} 
                                     onChange={onFormChangeProblemIndex('webworkQuestionPath')}
+                                    onBlur={onFormBlurProblemIndex('webworkQuestionPath')}
                                 />
                             </InputGroup>
                         </FormGroup>
@@ -90,15 +133,33 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                             <FormGroup as={Col} controlId={`weight${count}`}>
                                 <FormLabel>Problem Weight:</FormLabel>
                                 {/* Should this be a range? */}
-                                <FormControl value={problem.weight} type='number' min={0} onChange={onFormChangeProblemIndex('weight')}/>
+                                <FormControl
+                                    value={problem.weight}
+                                    type='number'
+                                    min={0}
+                                    onChange={onFormChangeProblemIndex('weight')}
+                                    onBlur={onFormBlurProblemIndex('weight')}
+                                />
                             </FormGroup>
                             <FormGroup as={Col} controlId={`attempts${count}`}>
                                 <FormLabel>Maximum Attempts:</FormLabel>
                                 {/* Should this be a range? */}
-                                <FormControl value={problem.maxAttempts} type='number' min={0} onChange={onFormChangeProblemIndex('maxAttempts')}/>
+                                <FormControl
+                                    value={problem.maxAttempts}
+                                    type='number'
+                                    min={-1}
+                                    onChange={onFormChangeProblemIndex('maxAttempts')}
+                                    onBlur={onFormBlurProblemIndex('maxAttempts')}
+                                />
                             </FormGroup>
                             <FormGroup as={Col} controlId={`optional${count}`}>
-                                <FormCheck label='Optional?' checked={problem.optional} type='checkbox' onChange={onFormChangeProblemIndex('optional')}/>
+                                <FormCheck
+                                    label='Optional?'
+                                    checked={problem.optional}
+                                    type='checkbox'
+                                    onChange={onFormChangeProblemIndex('optional')}
+                                    onBlur={onFormBlurProblemIndex('optional')}
+                                />
                             </FormGroup>
                         </Row>    
                     </div>
