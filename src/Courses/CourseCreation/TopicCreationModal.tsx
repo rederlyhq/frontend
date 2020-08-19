@@ -47,23 +47,23 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
 
         // TODO: Handle validation.
         switch (name) {
-            case 'webworkQuestionPath':
-            case 'path':
-                probs[index].webworkQuestionPath = val;
-                break;
-            case 'weight':
-            case 'maxAttempts':
-            case 'problemNumber':
-            case 'id':
-                probs[index][name] = parseInt(val, 10);
-                break;
-            case 'optional':
-                probs[index][name] = e.target.checked;
-                break;
-            case 'unique':
-                break;
-            default:
-                probs[index][name] = val;
+        case 'webworkQuestionPath':
+        case 'path':
+            probs[index].webworkQuestionPath = val;
+            break;
+        case 'weight':
+        case 'maxAttempts':
+        case 'problemNumber':
+        case 'id':
+            probs[index][name] = parseInt(val, 10);
+            break;
+        case 'optional':
+            probs[index][name] = e.target.checked;
+            break;
+        case 'unique':
+            break;
+        default:
+            probs[index][name] = val;
         }
 
         setProblems(probs);
@@ -77,25 +77,25 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
 
         // TODO: Handle validation.
         switch (name) {
-            case 'webworkQuestionPath':
-            case 'path':
-                probs[index].webworkQuestionPath = val;
-                break;
-            case 'weight':
-            case 'maxAttempts':
-            case 'problemNumber':
-            case 'id':
-                val = parseInt(val, 10);
-                probs[index][name] = val;
-                break;
-            case 'optional':
-                val = e.target.checked;
-                probs[index][name] = val;
-                break;
-            case 'unique':
-                break;
-            default:
-                probs[index][name] = val;
+        case 'webworkQuestionPath':
+        case 'path':
+            probs[index].webworkQuestionPath = val;
+            break;
+        case 'weight':
+        case 'maxAttempts':
+        case 'problemNumber':
+        case 'id':
+            val = parseInt(val, 10);
+            probs[index][name] = val;
+            break;
+        case 'optional':
+            val = e.target.checked;
+            probs[index][name] = val;
+            break;
+        case 'unique':
+            break;
+        default:
+            probs[index][name] = val;
         }
 
         // TODO prevent updates if nothing changed
@@ -112,6 +112,9 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
 
     const deleteProblem = async (problemId: number) => {
         await AxiosRequest.delete(`/courses/question/${problemId}`);
+        let newProblems = [...problems];
+        newProblems = _.reject(newProblems, ['id', problemId]);
+        setProblems(newProblems);
     };
 
     const deleteProblemClick = (event: React.KeyboardEvent<HTMLSpanElement> | React.MouseEvent<HTMLSpanElement, MouseEvent>, problemId: number) => {
@@ -203,11 +206,11 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         let val = e.target.value;
         console.log(`updating ${name} to ${val}`);
         switch (name) {
-            case 'startDate':
-            case 'endDate':
-            case 'deadDate':
-                val = moment(val);
-                break;
+        case 'startDate':
+        case 'endDate':
+        case 'deadDate':
+            val = moment(val);
+            break;
         }
 
         const updates = {
@@ -228,11 +231,11 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         let val = e.target.value;
         console.log(`updating ${name} to ${val}`);
         switch (name) {
-            case 'startDate':
-            case 'endDate':
-            case 'deadDate':
-                val = moment(val);
-                break;
+        case 'startDate':
+        case 'endDate':
+        case 'deadDate':
+            val = moment(val);
+            break;
         }
 
         const updates = {
