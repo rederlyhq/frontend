@@ -70,7 +70,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
 
     const onFormBlur = async (index: number, name: keyof ProblemObject, e: any) => {
         const key = name === 'path' ? 'webworkQuestionPath' : name;
-        const initialValue = problems[index][key];
+        // const initialValue = problems[index][key];
         let val = e.target.value;
         let probs = [...problems];
 
@@ -184,6 +184,25 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         console.log(topicMetadata);
     };
 
+    const onTopicMetadataBlur = async (e: any, name: keyof NewCourseTopicObj) => {
+        let val = e.target.value;
+        console.log(`updating ${name} to ${val}`);
+        switch (name) {
+        case 'startDate':
+        case 'endDate':
+            val = moment(val);
+            break;
+        }
+        
+        await AxiosRequest.put(`/courses/topic/${existingTopic?.id}`, {
+            [name]: val
+        });
+
+        setTopicMetadata({...topicMetadata, [name]: val});
+
+        console.log(topicMetadata);
+    };
+
     const onDrop = useCallback(acceptedFiles => {
         // TODO: Here, we should upload the DEF file to the server, and then move to the next page.
         console.log(acceptedFiles);
@@ -286,7 +305,8 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                     <Col sm="10">
                         <FormControl
                             required
-                            onChange={(e: any) => onTopicMetadataChange(e, 'name')} 
+                            onChange={(e: any) => onTopicMetadataChange(e, 'name')}
+                            onBlur={(e: any) => onTopicMetadataBlur(e, 'name')}
                             defaultValue={topicMetadata?.name}
                         />
                     </Col>
@@ -304,6 +324,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                                     if (!date) return;
                                     const e = {target: {value: date.toDate()}};
                                     onTopicMetadataChange(e, 'startDate');
+                                    onTopicMetadataBlur(e, 'startDate');
                                 }}
                                 fullWidth={true}
                                 InputLabelProps={{shrink: false}}
@@ -322,6 +343,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                                     if (!date) return;
                                     const e = {target: {value: date.toDate()}};
                                     onTopicMetadataChange(e, 'endDate');
+                                    onTopicMetadataBlur(e, 'endDate');
                                 }}
                                 fullWidth={true}
                                 InputLabelProps={{shrink: false}}
