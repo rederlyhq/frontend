@@ -114,8 +114,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const deleteUnit = async (unitId: number) => {
         await AxiosRequest.delete(`/courses/unit/${unitId}`);
-        let newCourse: CourseObject = { ...course };
-        course.units = _.reject(course.units, ['id', unitId]);
+        let newCourse: CourseObject = new CourseObject(course);
+        newCourse.units = _.reject(newCourse.units, ['id', unitId]);
         setCourse?.(newCourse);
     };
 

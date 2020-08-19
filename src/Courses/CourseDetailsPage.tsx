@@ -81,7 +81,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.TOPICS} title={CourseDetailsTabs.TOPICS}>
                     <DragDropContext onDragEnd={()=>{}}>
-                        <TopicsTab course={course} />
+                        <TopicsTab course={course} setCourse={setCourse} />
                     </DragDropContext>
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
