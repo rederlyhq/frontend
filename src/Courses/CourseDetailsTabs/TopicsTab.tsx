@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TopicsList from '../TopicsList';
 import { Accordion, Card, Row, Col, Modal } from 'react-bootstrap';
-import { CourseObject, NewCourseTopicObj } from '../CourseInterfaces';
+import { CourseObject, NewCourseTopicObj, UnitObject, TopicObject } from '../CourseInterfaces';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { FaPlusCircle, FaTrash } from 'react-icons/fa';
@@ -72,9 +72,21 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     };
 
     const createTopic = async (courseUnitContentId: number) => {
-        await AxiosRequest.post('/courses/topic/', {
+        const result = await AxiosRequest.post('/courses/topic/', {
             courseUnitContentId
         });
+
+        let newCourse: CourseObject = new CourseObject(course);
+        let unit = _.find(newCourse.units, ['id', courseUnitContentId]);
+
+        if (!unit) {
+            console.error(`Could not find a unit with id ${courseUnitContentId}`);
+            return;
+        }
+
+        unit.topics.push(new NewCourseTopicObj(result.data.data));
+        setCourse?.(newCourse);
+
     };
 
     const addTopicClick = (e: React.MouseEvent<HTMLSpanElement, MouseEvent> | React.KeyboardEvent<HTMLSpanElement>, courseUnitContentId: number) => {
@@ -83,9 +95,17 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     };
 
     const addUnit = async (courseId: number) => {
-        await AxiosRequest.post('/courses/unit', {
-            courseId
-        });
+        debugger;
+        try {
+            const result = await AxiosRequest.post('/courses/unit', {
+                courseId
+            });
+            let newCourse: CourseObject = new CourseObject(course);
+            newCourse.units.push(new UnitObject(result.data.data));
+            setCourse?.(newCourse);
+        } catch (e) {
+            console.error(e.response.data.message);
+        }
     };
 
     const addUnitClick = async (_e: any, courseId: number) => {
@@ -94,11 +114,19 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const deleteUnit = async (unitId: number) => {
         await AxiosRequest.delete(`/courses/unit/${unitId}`);
+        let newCourse: CourseObject = { ...course };
+        course.units = _.reject(course.units, ['id', unitId]);
+        setCourse?.(newCourse);
     };
 
     const deleteUnitClick = async (e: React.MouseEvent<HTMLSpanElement, MouseEvent> | React.KeyboardEvent<HTMLSpanElement>, unitId: number) => {
         e.stopPropagation();
-        deleteUnit(unitId);
+        setConfirmationParamters({
+            show: true,
+            // In the future we might want to pass something like topic name here
+            identifierText: 'this unit',
+            onConfirm: _.partial(deleteUnit, unitId)
+        });
     };
 
     const addTopic = (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => {
@@ -239,10 +267,9 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                         <TopicsList
                                             flush
                                             listOfTopics={unit.topics}
-                                            showEditTopic={showEditWithUnitId}
+                                            showEditTopic={inEditMode ? showEditWithUnitId : undefined}
                                             removeTopic={onTopicDeleteClickedWithUnitId}
                                             unitUnique={unit.id}
-                                        // inEditMode={inEditMode}
                                         />
                                     </Card.Body>
                                 </Accordion.Collapse>
