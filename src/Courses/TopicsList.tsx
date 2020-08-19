@@ -13,6 +13,7 @@ import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { UserRole, getUserRole } from '../Enums/UserRole';
 import Cookies from 'js-cookie';
 import { CookieEnum } from '../Enums/CookieEnum';
+import { nameof } from '../Utilities/TypescriptUtils';
 
 interface TopicsListProps {
     listOfTopics: Array<NewCourseTopicObj>;
@@ -32,8 +33,15 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
     
     const updateTopicField = async (topicId: number, field: keyof NewCourseTopicObj, newData: Date) => {
         console.log(`Updating Topic ${topicId} to ${field} = ${newData}`);
+        const updates = {
+            [field]: newData
+        };
+        // TODO remove once we know how we want to set the dead date
+        if (field === nameof<NewCourseTopicObj>('endDate')) {
+            updates[nameof<NewCourseTopicObj>('deadDate')] = newData;
+        }
         try {
-            const res = await AxiosRequest.put(`/courses/topic/${topicId}`, {[field]: newData});
+            const res = await AxiosRequest.put(`/courses/topic/${topicId}`, updates);
             console.log(res);
             setTopicFeedback({topicId: topicId, feedback: res.data.message, variant: 'success'});
         } catch (e) {
