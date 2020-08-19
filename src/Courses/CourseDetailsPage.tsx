@@ -64,8 +64,23 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
         setActiveTab(CourseDetailsTabs.STUDENT_GRADES);
     };
 
-    const onUnitDragEnd = (result: any) => {
+    const onUnitDragEnd = async (result: any) => {
+        const { draggableId: unitDraggableId } = result;
+        const unitIdRegex = /^unitRow(\d+)$/;
+        const newContentOrder = result.destination.index + 1;
+        // If exec doesn't match the result will be null
+        // If it does succeed the index `1` will always be the group above
+        const unitId = unitIdRegex.exec(unitDraggableId)?.[1];
 
+        // TODO use the result to update the updated objects
+        const res = await AxiosRequest.put(`/courses/unit/${unitId}`, {
+            contentOrder: newContentOrder
+        });
+
+        const newCourse = new CourseObject(course);
+        const [removed] = newCourse.units.splice(result.source.index, 1);
+        newCourse.units.splice(result.destination.index, 0, removed);
+        setCourse(newCourse);
     };
 
     const onTopicDragEnd = async (result: any) => {
@@ -101,7 +116,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
             updates.courseUnitContentId = destinationUnitId;
         }
 
-        // TODO use the result to update the udpated objects
+        // TODO use the result to update the updated objects
         const res = await AxiosRequest.put(`/courses/topic/${topicId}`, updates);
 
         const newCourse = new CourseObject(course);
