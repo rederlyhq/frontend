@@ -81,6 +81,14 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         addUnit(courseId);
     };
 
+    const deleteUnit = async (unitId: number) => {
+        await AxiosRequest.delete(`/courses/unit/${unitId}`);
+    };
+
+    const deleteUnitClick = async (e: React.MouseEvent<HTMLSpanElement, MouseEvent> | React.KeyboardEvent<HTMLSpanElement>, unitId: number) => {
+        e.stopPropagation();
+        deleteUnit(unitId);
+    };
 
     const addTopic = (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => {
         console.log('Adding Topic', unitIndex, existingTopic, topic);
@@ -195,8 +203,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                     style={{
                                                         padding: '6px'
                                                     }}
-                                                // onClick={onClick}
-                                                // onKeyPress={onClick}
+                                                    onClick={_.partial(deleteUnitClick, _, unit.id)}
+                                                    onKeyPress={_.partial(deleteUnitClick, _, unit.id)}
                                                 >
                                                     <FaTrash color='#AA0000' />
                                                 </span>
