@@ -64,6 +64,85 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
         setActiveTab(CourseDetailsTabs.STUDENT_GRADES);
     };
 
+    const onUnitDragEnd = (result: any) => {
+
+    };
+
+    const onTopicDragEnd = async (result: any) => {
+        const { draggableId: topicDraggableId } = result;
+        // Index is 0 based, while content order is 1 based
+        const newContentOrder = result.destination.index + 1;
+        const topicIdRegex = /^topic-(\d+)$/;
+        // If exec doesn't match the result will be null
+        // If it does succeed the index `1` will always be the group above
+        const topicId = topicIdRegex.exec(topicDraggableId)?.[1];
+
+        const sourceUnitDroppableId = result.source.droppableId;
+        const destinationUnitDroppableId = result.destination.droppableId;
+
+        const updates: any = {
+            contentOrder: newContentOrder
+        };
+        const unitIdRegex = /^topicList-(\d+)$/;
+        const destinationUnitId = unitIdRegex.exec(destinationUnitDroppableId)?.[1];
+        const sourceUnitId = unitIdRegex.exec(sourceUnitDroppableId)?.[1];
+
+        if(_.isNil(destinationUnitId)) {
+            console.error('Could not parse desintationUnitId');
+            return;
+        }
+
+        if(_.isNil(sourceUnitId)) {
+            console.error('Could not parse sourceUnitId');
+            return;
+        }
+
+        if (sourceUnitDroppableId !== destinationUnitDroppableId) {
+            updates.courseUnitContentId = destinationUnitId;
+        }
+
+        // TODO use the result to update the udpated objects
+        const res = await AxiosRequest.put(`/courses/topic/${topicId}`, updates);
+
+        const newCourse = new CourseObject(course);
+        const sourceUnit = _.find(newCourse.units, ['id', parseInt(sourceUnitId, 10)]);
+        const destinationUnit = sourceUnitId === destinationUnitId ? sourceUnit :_.find(newCourse.units, ['id', parseInt(destinationUnitId, 10)]);
+
+        if(_.isNil(sourceUnit)) {
+            console.error('Could not find source unit');
+            return;
+        }
+
+        if(_.isNil(destinationUnit)) {
+            console.error('Could not find destination unit');
+            return;
+        }
+        const [removed] = sourceUnit.topics.splice(result.source.index, 1);
+        destinationUnit.topics.splice(result.destination.index, 0, removed);
+
+        setCourse(newCourse);
+    };
+
+    const onDragEnd = (result: any) => {
+        if (!result.destination) {
+            return;
+        }
+    
+        if (result.destination.index === result.source.index) {
+            return;
+        }
+
+        console.log('onDragEnd!', result);
+
+        if (result.type === 'UNIT') {
+            onUnitDragEnd(result);
+        } else if (result.type === 'TOPIC') {
+            onTopicDragEnd(result);
+        } else {
+            console.error(`Invalid result.type "${result.type}"`);
+        }
+    };
+
     if (!courseId) return <div>Please return to login.</div>;
 
     return (
@@ -80,7 +159,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                     <CourseDetailsTab course={course} error={error} loading={loading} setCourse={setCourse} />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.TOPICS} title={CourseDetailsTabs.TOPICS}>
-                    <DragDropContext onDragEnd={()=>{}}>
+                    <DragDropContext onDragEnd={onDragEnd}>
                         <TopicsTab course={course} setCourse={setCourse} />
                     </DragDropContext>
                 </Tab>
