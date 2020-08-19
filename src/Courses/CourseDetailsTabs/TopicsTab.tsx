@@ -95,7 +95,6 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     };
 
     const addUnit = async (courseId: number) => {
-        debugger;
         try {
             const result = await AxiosRequest.post('/courses/unit', {
                 courseId

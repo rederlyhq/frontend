@@ -129,31 +129,15 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         (async () => {
             const data = new FormData();
             data.append('def-file', acceptedFiles[0]);
-            const res = await AxiosRequest.post('/courses/def', data, {
+            const res = await AxiosRequest.post(`/courses/def?courseTopicId=${existingTopic?.id}`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-            const topicData = res?.data;
-            console.log(topicData);
-            if (!topicData) {
-                console.error('Invalid DEF file.');
-                // TODO: Display error.
-                return false;
-            }
-            console.log(topicData.problems);
-            // We have to massage the old DEF format into a new ProblemObject.
-            // When we import the DEF parser to the frontend, we'll move this logic there.
-            const problems = topicData.problems.map((prob: any, index: number) => {
-                const newProb = new ProblemObject(prob);
-                newProb.webworkQuestionPath = prob.source_file;
-                newProb.weight = prob.value;
-                newProb.problemNumber = index;
-                // TODO: is counts_parent_grade the same as optional?
-                return newProb;
-            });
-            console.log(problems);
-            setProblems(problems);
+            setProblems([
+                ...problems,
+                ...res.data.data.newQuestions.map((question: ProblemObject) => new ProblemObject(question))
+            ]);
         })();
     }, []);
     const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop});
@@ -207,6 +191,21 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         });
         console.log(newProbs);
         setProblems(newProbs);
+    };
+
+    const addNewQuestion = async () => {
+        const result = await AxiosRequest.post('/courses/question', {
+            courseTopicContentId: existingTopic?.id
+        });
+        setProblems([
+            ...problems,
+            new ProblemObject(result.data.data)
+        ]);        
+    };
+
+    const addNewQuestionClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        event.stopPropagation();
+        addNewQuestion();
     };
 
     return (
@@ -288,10 +287,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                 {/* Do we need a cancel button in the Modal? You can click out and click the X. */}
                 {/* <Button variant="danger" className="float-left">Cancel</Button> */}
                 <Button variant="secondary" onClick={getRootProps().onClick}>Upload a DEF file</Button>
-                <Button variant="secondary" onClick={
-                    // FIXME: We're using random IDs to get this working right now because problems aren't created with real ids.
-                    () => setProblems([...problems, new ProblemObject({problemNumber: problems.length, id: -Math.floor(Math.random() * (10000 - 1000 + 1) + 1000)})])
-                }>Add Another Question</Button>
+                <Button variant="secondary" onClick={addNewQuestionClick}>Add Another Question</Button>
                 <Button 
                     variant="primary" 
                     type='submit'
