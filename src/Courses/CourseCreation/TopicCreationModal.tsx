@@ -7,8 +7,9 @@ import { useDropzone } from 'react-dropzone';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import MomentUtils from '@date-io/moment';
-import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
+import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
+import { FaTrash } from 'react-icons/fa';
 
 interface TopicCreationModalProps {
     unitIndex: number;
@@ -21,7 +22,7 @@ interface TopicCreationModalProps {
  * NOTE: The ProblemObject.problemNumber doesn't mean anything on this page, because it's going
  * to be set based on its position in the `problems` array.
  */
-export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex,  addTopic, existingTopic}) => {
+export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitIndex, addTopic, existingTopic }) => {
     const [topicMetadata, setTopicMetadata] = useState<NewCourseTopicObj>(new NewCourseTopicObj(existingTopic));
     const [problems, setProblems] = useState<Array<ProblemObject>>(existingTopic ? existingTopic.questions : []);
     const webworkBasePath = 'webwork-open-problem-library/';
@@ -46,23 +47,23 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
 
         // TODO: Handle validation.
         switch (name) {
-        case 'webworkQuestionPath':
-        case 'path':
-            probs[index].webworkQuestionPath = val;
-            break;
-        case 'weight':
-        case 'maxAttempts':
-        case 'problemNumber':
-        case 'id':
-            probs[index][name] = parseInt(val, 10);
-            break;
-        case 'optional':
-            probs[index][name] = e.target.checked;
-            break;
-        case 'unique':
-            break;
-        default:
-            probs[index][name] = val;
+            case 'webworkQuestionPath':
+            case 'path':
+                probs[index].webworkQuestionPath = val;
+                break;
+            case 'weight':
+            case 'maxAttempts':
+            case 'problemNumber':
+            case 'id':
+                probs[index][name] = parseInt(val, 10);
+                break;
+            case 'optional':
+                probs[index][name] = e.target.checked;
+                break;
+            case 'unique':
+                break;
+            default:
+                probs[index][name] = val;
         }
 
         setProblems(probs);
@@ -76,25 +77,25 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
 
         // TODO: Handle validation.
         switch (name) {
-        case 'webworkQuestionPath':
-        case 'path':
-            probs[index].webworkQuestionPath = val;
-            break;
-        case 'weight':
-        case 'maxAttempts':
-        case 'problemNumber':
-        case 'id':
-            val = parseInt(val, 10);
-            probs[index][name] = val;
-            break;
-        case 'optional':
-            val = e.target.checked;
-            probs[index][name] = val;
-            break;
-        case 'unique':
-            break;
-        default:
-            probs[index][name] = val;
+            case 'webworkQuestionPath':
+            case 'path':
+                probs[index].webworkQuestionPath = val;
+                break;
+            case 'weight':
+            case 'maxAttempts':
+            case 'problemNumber':
+            case 'id':
+                val = parseInt(val, 10);
+                probs[index][name] = val;
+                break;
+            case 'optional':
+                val = e.target.checked;
+                probs[index][name] = val;
+                break;
+            case 'unique':
+                break;
+            default:
+                probs[index][name] = val;
         }
 
         // TODO prevent updates if nothing changed
@@ -109,21 +110,51 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         setProblems(probs);
     };
 
-    const addProblemRows = (problem: ProblemObject, count: number) : any => {
+    const deleteProblem = async (problemId: number) => {
+        await AxiosRequest.delete(`/courses/question/${problemId}`);
+    };
+
+    const deleteProblemClick = (event: React.KeyboardEvent<HTMLSpanElement> | React.MouseEvent<HTMLSpanElement, MouseEvent>, problemId: number) => {
+        event.stopPropagation();
+        deleteProblem(problemId);
+    };
+
+    const addProblemRows = (problem: ProblemObject, count: number): any => {
         const onFormChangeProblemIndex = _.curry(onFormChange)(count);
         const onFormBlurProblemIndex = _.curry(onFormBlur)(count);
         return (
-            <Draggable draggableId={`problemRow${problem.unique}`} index={problem.problemNumber} key={`problem-row-${problem.unique}`}>
+            <Draggable draggableId={`problemRow${problem.id}`} index={problem.problemNumber} key={`problem-row-${problem.id}`}>
                 {(provided) => (
                     <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                        <h4>Problem #{problem.problemNumber}</h4>
+                        <Row>
+                            <Col>
+                                <h4>Problem #{problem.problemNumber}</h4>
+                            </Col>
+                            <Col
+                                style={{
+                                    textAlign: 'end'
+                                }}
+                            >
+                                <span
+                                    role="button"
+                                    tabIndex={0}
+                                    style={{
+                                        padding: '6px'
+                                    }}
+                                    onClick={_.partial(deleteProblemClick, _, problem.id)}
+                                    onKeyPress={_.partial(deleteProblemClick, _, problem.id)}
+                                >
+                                    <FaTrash color='#AA0000' />
+                                </span>
+                            </Col>
+                        </Row>
                         <FormGroup controlId={`problem${count}`}>
                             <FormLabel>Problem Path:</FormLabel>
                             {/* This might be a nice UI addition, but might be annoying if we don't autoremove a duplicate. */}
                             <InputGroup>
-                                <FormControl 
-                                    required 
-                                    value={problem.webworkQuestionPath} 
+                                <FormControl
+                                    required
+                                    value={problem.webworkQuestionPath}
                                     onChange={onFormChangeProblemIndex('webworkQuestionPath')}
                                     onBlur={onFormBlurProblemIndex('webworkQuestionPath')}
                                 />
@@ -161,7 +192,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                                     onBlur={onFormBlurProblemIndex('optional')}
                                 />
                             </FormGroup>
-                        </Row>    
+                        </Row>
                     </div>
                 )}
             </Draggable>
@@ -172,23 +203,23 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         let val = e.target.value;
         console.log(`updating ${name} to ${val}`);
         switch (name) {
-        case 'startDate':
-        case 'endDate':
-        case 'deadDate':
-            val = moment(val);
-            break;
+            case 'startDate':
+            case 'endDate':
+            case 'deadDate':
+                val = moment(val);
+                break;
         }
-        
+
         const updates = {
             [name]: val
         };
-        
+
         // TODO remove this once we have dead date ui
-        if(name === 'endDate') {
+        if (name === 'endDate') {
             updates.deadDate = val;
         }
 
-        setTopicMetadata({...topicMetadata, ...updates });
+        setTopicMetadata({ ...topicMetadata, ...updates });
 
         console.log(topicMetadata);
     };
@@ -197,23 +228,23 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         let val = e.target.value;
         console.log(`updating ${name} to ${val}`);
         switch (name) {
-        case 'startDate':
-        case 'endDate':
-        case 'deadDate':
-            val = moment(val);
-            break;
+            case 'startDate':
+            case 'endDate':
+            case 'deadDate':
+                val = moment(val);
+                break;
         }
-        
+
         const updates = {
             [name]: val
         };
         // TODO remove this once we have dead date ui
-        if(name === 'endDate') {
+        if (name === 'endDate') {
             updates.deadDate = val;
         }
         await AxiosRequest.put(`/courses/topic/${existingTopic?.id}`, updates);
 
-        setTopicMetadata({...topicMetadata, ...updates });
+        setTopicMetadata({ ...topicMetadata, ...updates });
 
         console.log(topicMetadata);
     };
@@ -235,7 +266,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
             ]);
         })();
     }, []);
-    const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop});
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
@@ -248,7 +279,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                 return problem;
             }
 
-            problem.webworkQuestionPath = problem.webworkQuestionPath.replace(/^Library/,'OpenProblemLibrary');
+            problem.webworkQuestionPath = problem.webworkQuestionPath.replace(/^Library/, 'OpenProblemLibrary');
             // If we don't recognize the prefix, assume they're using Contrib.
             if (_.startsWith(problem.webworkQuestionPath, 'Contrib') || _.startsWith(problem.webworkQuestionPath, 'OpenProblemLibrary')) {
                 problem.webworkQuestionPath = `${webworkBasePath}${problem.webworkQuestionPath}`;
@@ -260,14 +291,14 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         });
         console.log(problemsWithOrdering);
         console.log(topicMetadata);
-        addTopic(unitIndex, existingTopic, new NewCourseTopicObj({...topicMetadata, questions: problemsWithOrdering}));
+        addTopic(unitIndex, existingTopic, new NewCourseTopicObj({ ...topicMetadata, questions: problemsWithOrdering }));
     };
 
     const onDragEnd = (result: any) => {
         if (!result.destination) {
             return;
         }
-    
+
         if (result.destination.index === result.source.index) {
             return;
         }
@@ -276,7 +307,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
             const result = Array.from(list);
             const [removed] = result.splice(startIndex, 1);
             result.splice(endIndex, 0, removed);
-          
+
             return result;
         };
         let newProbs = reorder(problems, result.source.index, result.destination.index);
@@ -295,7 +326,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         setProblems([
             ...problems,
             new ProblemObject(result.data.data)
-        ]);        
+        ]);
     };
 
     const addNewQuestionClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -307,15 +338,15 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         <Form
             onSubmit={handleSubmit}
             {...getRootProps()}
-            onClick={()=>{}}
-            style={isDragActive ? {backgroundColor: 'red'} : {}}>
+            onClick={() => { }}
+            style={isDragActive ? { backgroundColor: 'red' } : {}}>
             <Modal.Header closeButton>
                 <h3>{existingTopic ? `Editing: ${existingTopic.name}` : 'Add a Topic'}</h3>
             </Modal.Header>
-            <Modal.Body style={{minHeight: `${24 + (problems.length * 19)}vh`}}>
+            <Modal.Body style={{ minHeight: `${24 + (problems.length * 19)}vh` }}>
                 <input type="file" {...getInputProps()} />
                 <h6>Add questions to your topic, or import a question list by dragging in a DEF file.</h6>
-                <FormGroup as={Row} controlId='topicTitle' onClick={(e : any) => {e.preventDefault(); e.stopPropagation();}}>
+                <FormGroup as={Row} controlId='topicTitle' onClick={(e: any) => { e.preventDefault(); e.stopPropagation(); }}>
                     <Form.Label column sm="2">Topic Title:</Form.Label>
                     <Col sm="10">
                         <FormControl
@@ -329,40 +360,40 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                 <Row>
                     <MuiPickersUtilsProvider utils={MomentUtils}>
                         <Col>
-                            <DateTimePicker 
+                            <DateTimePicker
                                 variant='inline'
                                 label='Start date'
                                 name={'start'}
                                 value={topicMetadata.startDate}
-                                onChange={() => {}}
+                                onChange={() => { }}
                                 onAccept={(date: MaterialUiPickersDate) => {
                                     if (!date) return;
-                                    const e = {target: {value: date.toDate()}};
+                                    const e = { target: { value: date.toDate() } };
                                     onTopicMetadataChange(e, 'startDate');
                                     onTopicMetadataBlur(e, 'startDate');
                                 }}
                                 fullWidth={true}
-                                InputLabelProps={{shrink: false}}
-                                inputProps={{style: {textAlign: 'center'}}}
+                                InputLabelProps={{ shrink: false }}
+                                inputProps={{ style: { textAlign: 'center' } }}
                                 defaultValue={moment(topicMetadata?.startDate).format('YYYY-MM-DD')}
                             />
                         </Col>
                         <Col>
-                            <DateTimePicker 
+                            <DateTimePicker
                                 variant='inline'
                                 label='End date'
                                 name={'end'}
                                 value={topicMetadata.endDate}
-                                onChange={() => {}}
+                                onChange={() => { }}
                                 onAccept={(date: MaterialUiPickersDate) => {
                                     if (!date) return;
-                                    const e = {target: {value: date.toDate()}};
+                                    const e = { target: { value: date.toDate() } };
                                     onTopicMetadataChange(e, 'endDate');
                                     onTopicMetadataBlur(e, 'endDate');
                                 }}
                                 fullWidth={true}
-                                InputLabelProps={{shrink: false}}
-                                inputProps={{style: {textAlign: 'center'}}}
+                                InputLabelProps={{ shrink: false }}
+                                inputProps={{ style: { textAlign: 'center' } }}
                                 defaultValue={moment(topicMetadata?.endDate).format('YYYY-MM-DD')}
                             />
                         </Col>
@@ -372,7 +403,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                     <Droppable droppableId='problemsList'>
                         {
                             (provided) => (
-                                <div ref={provided.innerRef} style={{backgroundColor: 'white'}} {...provided.droppableProps}>
+                                <div ref={provided.innerRef} style={{ backgroundColor: 'white' }} {...provided.droppableProps}>
                                     {problems.map(addProblemRows)}
                                     {provided.placeholder}
                                 </div>
@@ -386,8 +417,8 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
                 {/* <Button variant="danger" className="float-left">Cancel</Button> */}
                 <Button variant="secondary" onClick={getRootProps().onClick}>Upload a DEF file</Button>
                 <Button variant="secondary" onClick={addNewQuestionClick}>Add Another Question</Button>
-                <Button 
-                    variant="primary" 
+                <Button
+                    variant="primary"
                     type='submit'
                     disabled={problems.length <= 0}
                 >Finish</Button>
