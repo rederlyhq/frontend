@@ -165,6 +165,20 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         setShowTopicCreation({show: false, unitIndex: -1});
     };
 
+    const onUnitBlur = async (event: React.FocusEvent<HTMLHeadingElement>, unitId: number) => {
+        let newCourse = new CourseObject(course);
+        let updatingUnit = _.find(newCourse.units, ['id', unitId]);
+        if (!updatingUnit) {
+            console.error(`Could not find a unit with the unique identifier ${unitId}`);
+            return;
+        }
+        updatingUnit.name = event.target.innerText;
+        await AxiosRequest.put(`/courses/unit/${unitId}`, {
+            name: event.target.innerText
+        });
+        setCourse?.(newCourse);
+    };
+
     return (
         <>
             <Modal
@@ -230,8 +244,26 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                 <Accordion.Toggle as={Card.Header} eventKey="0">
                                     <Row>
                                         <Col>
-                                            <h4>{unit.name}</h4>
+                                            {
+                                                // This is complaining because of the click event, however it is not a true click event, it is just stopping the accordion
+                                                // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                                            } <h4
+                                                contentEditable={inEditMode}
+                                                suppressContentEditableWarning={true}
+                                                className='active-editable'
+                                                onClick={inEditMode ? ((event: React.MouseEvent<HTMLHeadingElement, MouseEvent>) => { event.stopPropagation(); }) : undefined}
+                                                onKeyDown={(e: any) => {
+                                                    if (e.keyCode === 13) {
+                                                        e.preventDefault();
+                                                        e.target.blur();
+                                                    }
+                                                }}
+                                                onBlur={_.partial(onUnitBlur, _, unit.id)}
+                                            >
+                                                {unit.name}
+                                            </h4>
                                         </Col>
+                                        <Col />
                                         {
                                             inEditMode &&
                                             <div style={{ marginLeft: 'auto' }}>
