@@ -169,18 +169,27 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
     };
 
     const onTopicMetadataChange = (e: any, name: keyof NewCourseTopicObj) => {
-        const val = e.target.value;
+        let val = e.target.value;
         console.log(`updating ${name} to ${val}`);
         switch (name) {
         case 'startDate':
-        case 'endDate': {
-            let date = moment(val);
-            setTopicMetadata({...topicMetadata, [name]: date.toDate()});
+        case 'endDate':
+        case 'deadDate':
+            val = moment(val);
             break;
         }
-        default:
-            setTopicMetadata({...topicMetadata, [name]: val});
+        
+        const updates = {
+            [name]: val
+        };
+        
+        // TODO remove this once we have dead date ui
+        if(name === 'endDate') {
+            updates.deadDate = val;
         }
+
+        setTopicMetadata({...topicMetadata, ...updates });
+
         console.log(topicMetadata);
     };
 
@@ -190,15 +199,21 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({unitIndex
         switch (name) {
         case 'startDate':
         case 'endDate':
+        case 'deadDate':
             val = moment(val);
             break;
         }
         
-        await AxiosRequest.put(`/courses/topic/${existingTopic?.id}`, {
+        const updates = {
             [name]: val
-        });
+        };
+        // TODO remove this once we have dead date ui
+        if(name === 'endDate') {
+            updates.deadDate = val;
+        }
+        await AxiosRequest.put(`/courses/topic/${existingTopic?.id}`, updates);
 
-        setTopicMetadata({...topicMetadata, [name]: val});
+        setTopicMetadata({...topicMetadata, ...updates });
 
         console.log(topicMetadata);
     };
