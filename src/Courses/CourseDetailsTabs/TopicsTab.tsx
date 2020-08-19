@@ -191,6 +191,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     unitIndex={showTopicCreation.unitIndex}
                     addTopic={addTopic}
                     existingTopic={showTopicCreation.existingTopic}
+                    closeModal={_.partial(setShowTopicCreation, { show: false, unitIndex: -1 })}
                 />
             </Modal>
             <ConfirmationModal

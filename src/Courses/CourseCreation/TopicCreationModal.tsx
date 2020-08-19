@@ -15,6 +15,7 @@ interface TopicCreationModalProps {
     unitIndex: number;
     addTopic: (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => void;
     existingTopic?: NewCourseTopicObj;
+    closeModal?: () => void;
 }
 
 /**
@@ -22,7 +23,7 @@ interface TopicCreationModalProps {
  * NOTE: The ProblemObject.problemNumber doesn't mean anything on this page, because it's going
  * to be set based on its position in the `problems` array.
  */
-export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitIndex, addTopic, existingTopic }) => {
+export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitIndex, addTopic, existingTopic, closeModal }) => {
     const [topicMetadata, setTopicMetadata] = useState<NewCourseTopicObj>(new NewCourseTopicObj(existingTopic));
     const [problems, setProblems] = useState<Array<ProblemObject>>(existingTopic ? existingTopic.questions : []);
     const webworkBasePath = 'webwork-open-problem-library/';
@@ -273,6 +274,8 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
+        closeModal?.();
+        return;
         const problemsWithOrdering = problems.map((problem, index) => {
             // Problems should always render in the order that the professor sets them.
             problem.problemNumber = index + 1; // problemNumber should be 1..n not 0..(n-1)
@@ -423,7 +426,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                 <Button
                     variant="primary"
                     type='submit'
-                    disabled={problems.length <= 0}
+                    // disabled={problems.length <= 0}
                 >Finish</Button>
             </Modal.Footer>
         </Form>
