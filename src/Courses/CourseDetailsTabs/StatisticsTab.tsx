@@ -1,7 +1,7 @@
 /* eslint-disable react/display-name */
 import React, { useState, forwardRef, useEffect } from 'react';
 import { Nav } from 'react-bootstrap';
-import MaterialTable from 'material-table';
+import MaterialTable, { Column } from 'material-table';
 // import { MdSearch, MdFirstPage, MdLastPage, MdClear, MdFilterList, MdChevronRight, MdChevronLeft, MdArrowDownward, MdFileDownload} from 'react-icons/md';
 import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from '@material-ui/icons';
 import { ProblemObject, CourseObject } from '../CourseInterfaces';
@@ -33,9 +33,20 @@ const gradeCols = [
     {title: '% Completed', field: 'completionPercent'},
 ];
 
-const attemptCols = [
-    {title: 'Result', field: 'result'},
-    {title: 'Attempt Time', field: 'time'},
+const attemptCols: Array<Column<any>> = [
+    {title: 'Result', field: 'result', defaultSort: 'asc'},
+    {
+        title: 'Attempt Time',
+        field: 'time', 
+        // These options don't seem to work.
+        // defaultSort: 'desc',
+        // defaultGroupSort: 'desc',
+        // defaultGroupOrder: 1,
+        sorting: true,
+        type: 'datetime',
+        render: (datetime: any) => <span title={moment(datetime.time).toString()}>{moment(datetime.time).fromNow()}</span>,
+        customSort: (a: any, b: any) => moment(b.time).diff(moment(a.time))
+    },
 ];
 
 
@@ -133,10 +144,11 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
                             id: attempt.courseWWTopicQuestionId,
                             submitted: attempt.submitted,
                             result: attempt.result,
-                            time: moment(attempt.time).fromNow(),
+                            time: attempt.time,
                         }))
                     ));
                     data = _.flatten(data);
+                    data = data.sort((a: any, b: any)=>moment(b.time).diff(moment(a.time)));
                 } else {
                     data = data.map((d: any) => ({
                         ...d,
@@ -242,7 +254,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
                     actions={seeMoreActions}
                     onRowClick={nextView}
                     options={{
-                        exportButton: true
+                        exportButton: true,
+                        sorting: true
                     }}
                     detailPanel={hasDetailPanel ? [{
                         icon: () => <ChevronRight/>,
