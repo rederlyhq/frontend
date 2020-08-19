@@ -71,6 +71,17 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         });
     };
 
+    const addUnit = async (courseId: number) => {
+        await AxiosRequest.post('/courses/unit', {
+            courseId
+        });
+    };
+
+    const addUnitClick = async (_e: any, courseId: number) => {
+        addUnit(courseId);
+    };
+
+
     const addTopic = (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => {
         console.log('Adding Topic', unitIndex, existingTopic, topic);
         if (topic.questions.length <= 0) {
@@ -145,8 +156,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                 style={{
                                     padding: '20px'
                                 }}
-                            // onClick={onClick}
-                            // onKeyPress={onClick}
+                                onClick={_.partial(addUnitClick, _, course.id)}
+                                onKeyPress={_.partial(addUnitClick, _, course.id)}
                             >
                                 <FaPlusCircle color='#00AA00' />
                             </span>
