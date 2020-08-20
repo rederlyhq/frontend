@@ -252,6 +252,15 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
 
         setTopicMetadata({ ...topicMetadata, ...updates });
 
+        if(_.isNil(existingTopic)) {
+            console.error('Cannot update topic because it is nil');
+            return;
+        }
+        updateTopic?.({
+            ...existingTopic,
+            ...topicMetadata
+        });
+
         console.log(topicMetadata);
     };
 
