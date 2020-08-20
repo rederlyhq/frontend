@@ -346,10 +346,18 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         const result = await AxiosRequest.post('/courses/question', {
             courseTopicContentId: existingTopic?.id
         });
+        const newProb = new ProblemObject(result.data.data);
         setProblems([
             ...problems,
-            new ProblemObject(result.data.data)
+            newProb
         ]);
+        
+        if(_.isNil(existingTopic)) {
+            console.error('Cannot update topic because it is nil');
+            return;
+        }
+        existingTopic.questions.push(newProb);
+        updateTopic?.(existingTopic);
     };
 
     const addNewQuestionClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
