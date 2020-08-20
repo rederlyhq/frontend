@@ -192,6 +192,20 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     addTopic={addTopic}
                     existingTopic={showTopicCreation.existingTopic}
                     closeModal={_.partial(setShowTopicCreation, { show: false, unitIndex: -1 })}
+                    updateTopic={(topic: NewCourseTopicObj) => {
+                        const existingUnit = _.find(course.units, ['id', topic.courseUnitContentId]);
+                        if(_.isNil(existingUnit)) {
+                            console.error('Could not find unit');
+                            return;
+                        }
+                        const topicIndex = _.findIndex(existingUnit.topics, ['id', topic.id]);
+                        if(_.isNil(topicIndex)) {
+                            console.error('Could not find topic');
+                            return;
+                        }
+                        existingUnit.topics[topicIndex] = topic;
+                        setCourse?.(new CourseObject(course));
+                    }}
                 />
             </Modal>
             <ConfirmationModal

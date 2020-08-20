@@ -16,6 +16,7 @@ interface TopicCreationModalProps {
     addTopic: (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => void;
     existingTopic?: NewCourseTopicObj;
     closeModal?: () => void;
+    updateTopic?: (topic: NewCourseTopicObj) => void;
 }
 
 /**
@@ -23,7 +24,7 @@ interface TopicCreationModalProps {
  * NOTE: The ProblemObject.problemNumber doesn't mean anything on this page, because it's going
  * to be set based on its position in the `problems` array.
  */
-export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitIndex, addTopic, existingTopic, closeModal }) => {
+export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitIndex, addTopic, existingTopic, closeModal, updateTopic }) => {
     const [topicMetadata, setTopicMetadata] = useState<NewCourseTopicObj>(new NewCourseTopicObj(existingTopic));
     const [problems, setProblems] = useState<Array<ProblemObject>>(existingTopic ? existingTopic.questions : []);
     const webworkBasePath = 'webwork-open-problem-library/';
@@ -123,16 +124,17 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         deleteProblem(problemId);
     };
 
-    const addProblemRows = (problem: ProblemObject, count: number): any => {
-        const onFormChangeProblemIndex = _.curry(onFormChange)(count);
-        const onFormBlurProblemIndex = _.curry(onFormBlur)(count);
+    const addProblemRows = (problem: ProblemObject, index: number): any => {
+        const onFormChangeProblemIndex = _.curry(onFormChange)(index);
+        const onFormBlurProblemIndex = _.curry(onFormBlur)(index);
         return (
-            <Draggable draggableId={`problemRow${problem.id}`} index={problem.problemNumber} key={`problem-row-${problem.id}`}>
+            <Draggable draggableId={`problemRow${problem.id}`} index={index} key={`problem-row-${problem.id}`}>
                 {(provided) => (
                     <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
                         <Row>
                             <Col>
-                                <h4>Problem #{problem.problemNumber}</h4>
+                                {/* <h4>Problem #{problem.problemNumber}</h4> */}
+                                <h4>Problem #{index + 1}</h4>
                             </Col>
                             <Col
                                 style={{
@@ -152,7 +154,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                                 </span>
                             </Col>
                         </Row>
-                        <FormGroup controlId={`problem${count}`}>
+                        <FormGroup controlId={`problem${index}`}>
                             <FormLabel>Problem Path:</FormLabel>
                             {/* This might be a nice UI addition, but might be annoying if we don't autoremove a duplicate. */}
                             <InputGroup>
@@ -165,7 +167,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                             </InputGroup>
                         </FormGroup>
                         <Row>
-                            <FormGroup as={Col} controlId={`weight${count}`}>
+                            <FormGroup as={Col} controlId={`weight${index}`}>
                                 <FormLabel>Problem Weight:</FormLabel>
                                 {/* Should this be a range? */}
                                 <FormControl
@@ -176,7 +178,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                                     onBlur={onFormBlurProblemIndex('weight')}
                                 />
                             </FormGroup>
-                            <FormGroup as={Col} controlId={`attempts${count}`}>
+                            <FormGroup as={Col} controlId={`attempts${index}`}>
                                 <FormLabel>Maximum Attempts:</FormLabel>
                                 {/* Should this be a range? */}
                                 <FormControl
@@ -187,7 +189,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                                     onBlur={onFormBlurProblemIndex('maxAttempts')}
                                 />
                             </FormGroup>
-                            <FormGroup as={Col} controlId={`optional${count}`}>
+                            <FormGroup as={Col} controlId={`optional${index}`}>
                                 <FormCheck
                                     label='Optional?'
                                     checked={problem.optional}
@@ -300,7 +302,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         addTopic(unitIndex, existingTopic, new NewCourseTopicObj({ ...topicMetadata, questions: problemsWithOrdering }));
     };
 
-    const onDragEnd = (result: any) => {
+    const onDragEnd = async (result: any) => {
         if (!result.destination) {
             return;
         }
@@ -309,20 +311,35 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             return;
         }
 
-        const reorder = (list: Array<any>, startIndex: number, endIndex: number) => {
-            const result = Array.from(list);
-            const [removed] = result.splice(startIndex, 1);
-            result.splice(endIndex, 0, removed);
+        const newContentOrder = result.destination.index + 1;
+        const problemIdRegex = /^problemRow(\d+)$/;
+        const { draggableId: problemDraggableId } = result;
+        // If exec doesn't match the result will be null
+        // If it does succeed the index `1` will always be the group above
+        const problemId = problemIdRegex.exec(problemDraggableId)?.[1];
+        if(_.isNil(problemId)) {
+            console.error('problem not found could not update backend');
+            return;
+        }
 
-            return result;
-        };
-        let newProbs = reorder(problems, result.source.index, result.destination.index);
-        newProbs = newProbs.map((prob, i) => {
-            prob.problemNumber = i;
-            return prob;
+        // TODO use the result to update the updated objects
+        const res = await AxiosRequest.put(`/courses/question/${problemId}`, {
+            problemNumber: newContentOrder
         });
-        console.log(newProbs);
+
+        const existingProblem = _.find(problems, ['id', parseInt(problemId, 10)]);
+        if(_.isNil(existingProblem)) {
+            console.error('existing problem not found could not update frontend');
+            return;
+        }
+        existingProblem.problemNumber = newContentOrder;
+        const newProbs = [...problems];
+        const [removed] = newProbs.splice(result.source.index, 1);
+        newProbs.splice(result.destination.index, 0, removed);
         setProblems(newProbs);
+        const newTopic = new NewCourseTopicObj(existingTopic);
+        newTopic.questions = newProbs;
+        updateTopic?.(newTopic);
     };
 
     const addNewQuestion = async () => {
