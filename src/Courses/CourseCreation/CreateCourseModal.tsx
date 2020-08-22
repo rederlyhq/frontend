@@ -7,6 +7,7 @@ import './Course.css';
 import moment from 'moment';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useHistory } from 'react-router-dom';
+import { postCourse } from '../../APIInterfaces/BackendAPI/Requests/Courses';
 
 interface CreateCourseModalProps {
     courseTemplate: ICourseTemplate | null;
@@ -30,7 +31,10 @@ export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({ courseTemp
     };
 
     const createCourse = async (course: CourseObject) => {
-        return await AxiosRequest.post('/courses?useCurriculum=true', CourseObject.toAPIObject(course));
+        return postCourse({
+            useCurriculum: true,
+            data: CourseObject.toAPIObject(course)
+        });
     };
 
     const handleSubmit = async (e: any) => {
@@ -41,7 +45,7 @@ export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({ courseTemp
             const result = await createCourse(course);
             history.push(`/common/courses/${result.data.data.id}`);
         } catch (e) {
-            setError(e.response.data.message);
+            setError(e.message);
         }
         setSaving(false);
     };
