@@ -10,8 +10,6 @@ import _ from 'lodash';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import * as qs from 'querystring';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
-import Cookies from 'js-cookie';
-import { CookieEnum } from '../../Enums/CookieEnum';
 import moment from 'moment';
 
 interface StatisticsTabProps {
@@ -163,7 +161,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
                 return;
             }
         })();
-    }, [course, view, idFilter, userId]);
+    }, [course.id, view, idFilter, userId]);
 
     const renderProblemPreview = (rowData: any) => {
         if (userId !== undefined) {

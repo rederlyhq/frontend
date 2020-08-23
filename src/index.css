@@ -11,3 +11,17 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.course-details-form-fieldset .form-control:disabled {
+  appearance: none;
+  background-color: inherit;
+  border: none;
+}
+
+.course-details-form-fieldset .MuiIconButton-root.Mui-disabled {
+  color: gray ! important;
+}
+
+.course-details-form-fieldset .MuiInputBase-root.Mui-disabled {
+  color: inherit ! important;
+}

@@ -6,12 +6,9 @@ import { useParams } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import GradesTab from './CourseDetailsTabs/GradesTab';
 import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
-import { DragDropContext } from 'react-beautiful-dnd';
 import { CourseObject } from './CourseInterfaces';
-import ActiveTopics from './CourseDetailsTabs/ActiveTopics';
 import { UserRole, getUserRole, getUserId } from '../Enums/UserRole';
-import Cookies from 'js-cookie';
-import { CookieEnum } from '../Enums/CookieEnum';
+import { CourseDetailsTab } from './CourseDetailsTabs/CourseDetailsTab';
 
 interface CourseDetailsPageProps {
 
@@ -34,6 +31,8 @@ enum CourseDetailsTabs {
 export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<CourseObject>(new CourseObject());
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<CourseDetailsTabs>(CourseDetailsTabs.DETAILS);
     const userType: UserRole = getUserRole();
     const userId: number = getUserId();
@@ -42,10 +41,16 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     useEffect(() => {
         (async () => {
             if (!courseId) return;
-
-            const courseResp = await AxiosRequest.get(`/courses/${courseId}`);
-            console.log(courseResp.data);
-            setCourse(new CourseObject(courseResp.data.data));
+            setLoading(true);
+            setError(null);
+            try {
+                const courseResp = await AxiosRequest.get(`/courses/${courseId}`);
+                const fetchedCourse = new CourseObject(courseResp.data.data);
+                setCourse(fetchedCourse);
+            } catch (e) {
+                setError(e.response.data.message);
+            }
+            setLoading(false);
         })();
     }, [courseId]);
 
@@ -66,30 +71,11 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                     setActiveTab(activeTab);
                     setStudentNameAndId(null);
                 }}>
-                <Tab eventKey={CourseDetailsTabs.DETAILS} title={CourseDetailsTabs.DETAILS}>
-                    {course && (
-                        <>
-                            <h1>{course.name}</h1>
-                            <h5>Textbooks</h5>
-                            <ul>
-                                {course.textbooks?.split('\n').map(book => (
-                                    <li>
-                                        {book}
-                                    </li>
-                                ))}
-                            </ul>
-                            <h5>Open Topics</h5>
-                            <DragDropContext onDragEnd={()=>{}}>
-                                <ActiveTopics course={course} />
-                            </DragDropContext>
-                        </>
-                    )
-                    }
+                <Tab eventKey={CourseDetailsTabs.DETAILS} title={CourseDetailsTabs.DETAILS}  style={{marginBottom:'10px'}}>
+                    <CourseDetailsTab course={course} error={error} loading={loading} setCourse={setCourse} />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.TOPICS} title={CourseDetailsTabs.TOPICS}>
-                    <DragDropContext onDragEnd={()=>{}}>
-                        <TopicsTab course={course} />
-                    </DragDropContext>
+                    <TopicsTab course={course} setCourse={setCourse} />
                 </Tab>
                 <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
                     <EnrollmentsTab courseId={parseInt(courseId, 10)} courseCode={course.code} />

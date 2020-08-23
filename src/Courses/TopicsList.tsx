@@ -11,8 +11,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { UserRole, getUserRole } from '../Enums/UserRole';
-import Cookies from 'js-cookie';
-import { CookieEnum } from '../Enums/CookieEnum';
+import { nameof } from '../Utilities/TypescriptUtils';
 
 interface TopicsListProps {
     listOfTopics: Array<NewCourseTopicObj>;
@@ -32,8 +31,15 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
     
     const updateTopicField = async (topicId: number, field: keyof NewCourseTopicObj, newData: Date) => {
         console.log(`Updating Topic ${topicId} to ${field} = ${newData}`);
+        const updates = {
+            [field]: newData
+        };
+        // TODO remove once we know how we want to set the dead date
+        if (field === nameof<NewCourseTopicObj>('endDate')) {
+            updates[nameof<NewCourseTopicObj>('deadDate')] = newData;
+        }
         try {
-            const res = await AxiosRequest.put(`/courses/topic/${topicId}`, {[field]: newData});
+            const res = await AxiosRequest.put(`/courses/topic/${topicId}`, updates);
             console.log(res);
             setTopicFeedback({topicId: topicId, feedback: res.data.message, variant: 'success'});
         } catch (e) {
@@ -49,12 +55,12 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                 <>
                     <Col md={10}>{topic.name}</Col>
                     <Col md={1}>
-                        <Button onClick={(e: any) => showEditTopic(e, topic.unique)}>
+                        <Button onClick={(e: any) => showEditTopic(e, topic.id)}>
                             <BsPencilSquare/> Edit
                         </Button>
                     </Col>
                     <Col md={1}>
-                        <Button variant='danger' onClick={(e: any) => removeTopic(e, topic.unique)}>
+                        <Button variant='danger' onClick={(e: any) => removeTopic(e, topic.id)}>
                             Delete
                         </Button>
                     </Col>
@@ -73,7 +79,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             <Controller 
                                 as={DateTimePicker}
                                 control={control}
-                                name={`${topic.unique}-start`}
+                                name={`${topic.id}-start`}
                                 variant='inline'
                                 inputVariant='outlined'
                                 label='Start date'
@@ -92,7 +98,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             <Controller 
                                 as={DateTimePicker}
                                 control={control}
-                                name={`${topic.unique}-end`}
+                                name={`${topic.id}-end`}
                                 variant='inline'
                                 label='End date'
                                 onChange={([val]) => {
@@ -134,6 +140,10 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
         );
     };
     
+    if(listOfTopics.length === 0) {
+        return <p>There are no active topics in this course</p>;
+    }
+
     return (
         <>
             {/* This could use a debug flag. */}
@@ -147,7 +157,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                     >
                         {listOfTopics.map((topic, index) => {
                             return (
-                                <Draggable draggableId={`topic-${topic.unique}`} index={index} key={`topic${topic.unique}`} isDragDisabled={!showEditTopic}>
+                                <Draggable draggableId={`topic-${topic.id}`} index={index} key={`topic${topic.id}`} isDragDisabled={!showEditTopic}>
                                     {getDraggableTopic}
                                 </Draggable>
                             );

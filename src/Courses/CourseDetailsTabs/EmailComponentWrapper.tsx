@@ -4,8 +4,6 @@ import { UserObject } from '../CourseInterfaces';
 import { Button } from 'react-bootstrap';
 import EmailModal from './EmailModal';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
-import Cookies from 'js-cookie';
-import { CookieEnum } from '../../Enums/CookieEnum';
 
 interface EmailComponentWrapperProps {
     users: Array<UserObject>;

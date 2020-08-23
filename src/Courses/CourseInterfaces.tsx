@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export function* uniqueGen() {
     let index: number = 0;
 
@@ -5,6 +7,9 @@ export function* uniqueGen() {
         yield ++index;
     }
 }
+
+// via 1loc.dev (consider moving to a utilities folder)
+const generateString = (length: number): string => Array(length).fill('').map(() => Math.random().toString(36).charAt(2)).join('');
 
 export class CourseObject {
     name: string = '';
@@ -21,6 +26,24 @@ export class CourseObject {
     
     public constructor(init?:Partial<CourseObject>) {
         Object.assign(this, init);
+        if(_.isNil(init?.semesterCodeYear) && !_.isNil(init?.semesterCode)) {
+            const semesterCodeRegex = /^(.*?)(\d+)$/;
+            // init cannot be nil from the if statement above
+            const [, group1, group2] = semesterCodeRegex.exec(init?.semesterCode ?? '') || [];
+            this.semesterCode = group1;
+            this.semesterCodeYear = parseInt(group2);
+        }
+    }
+
+    static toAPIObject(course: CourseObject) {
+        // Not every field belongs in the request.
+        const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode', 'textbooks', 'curriculumId'];
+        let postObject = _.pick(course, newCourseFields);
+        postObject.semesterCode = `${course.semesterCode}${course.semesterCodeYear}`;
+        postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
+        postObject.code = encodeURIComponent(postObject.code);
+        // TODO: Fix naming for route, should be 'templateId'.
+        return postObject;
     }
 }
 
@@ -125,4 +148,8 @@ export class ProblemObject implements IProblemObject {
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
     }
+}
+
+export class NewProblemObject extends ProblemObject {
+    courseTopicContentId: number = 0;
 }

@@ -4,8 +4,6 @@ import EmailComponentWrapper from './EmailComponentWrapper';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { Row, FormLabel, InputGroup, FormControl, Button, Col } from 'react-bootstrap';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
-import Cookies from 'js-cookie';
-import { CookieEnum } from '../../Enums/CookieEnum';
 
 interface EnrollmentsTabProps {
     courseId: number;

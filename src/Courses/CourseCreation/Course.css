@@ -17,3 +17,9 @@
     background-color: rgba(20, 20, 20, 0.7);
     cursor: pointer;
 }
+
+/* https://react-bootstrap.github.io/components/modal/#modal-custom-sizing */
+.modal-90w {
+    max-width: none!important;
+    width: 90%;
+}

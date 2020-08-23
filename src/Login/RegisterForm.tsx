@@ -57,7 +57,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
             console.log(resp);
 
             if (resp.status === 201) {
-                setRegistrationAlert({message: 'Registration succeeded! Please check your email to continue.', variant: 'success'});
+                let message = 'Registration succeeded!';
+                if (!resp.data.data.verificationBypass) {
+                    message =`${message} Please check your email to continue.`;
+                }
+                setRegistrationAlert({message, variant: 'success'});
             } else {
                 setRegistrationAlert({message: 'Registration failed.', variant: 'danger'});
             }

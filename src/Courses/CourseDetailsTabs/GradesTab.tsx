@@ -90,7 +90,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
         })();
     };
 
-    useEffect(getCourseGradesHook, [course, userId, selectedObjects]);
+    useEffect(getCourseGradesHook, [course.id, userId, selectedObjects]);
 
     if (!course) return null;
 
