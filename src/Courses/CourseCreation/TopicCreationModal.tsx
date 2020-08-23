@@ -4,7 +4,6 @@ import _ from 'lodash';
 import { ProblemObject, NewCourseTopicObj } from '../CourseInterfaces';
 import moment from 'moment';
 import { useDropzone } from 'react-dropzone';
-import AxiosRequest from '../../Hooks/AxiosRequest';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import MomentUtils from '@date-io/moment';
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';

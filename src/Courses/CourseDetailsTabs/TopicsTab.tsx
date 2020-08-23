@@ -10,7 +10,7 @@ import TopicCreationModal from '../CourseCreation/TopicCreationModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
-import { putUnit, putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { putUnit, putTopic, deleteTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -49,20 +49,25 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     };
 
     const removeTopic = async (unitId: number, topicId: number) => {
-        console.log(`removeTopic ${unitId} ${topicId}`);
-        
-        await AxiosRequest.delete(`/courses/topic/${topicId}`);
+        try {
+            setError(null);
+            await deleteTopic({
+                id: topicId
+            });
 
-        let newCourse: CourseObject = { ...course };
-        let unit = _.find(newCourse.units, ['id', unitId]);
-
-        if (!unit) {
-            console.error(`Could not find a unit with id ${unitId}`);
-            return;
+            let newCourse: CourseObject = { ...course };
+            let unit = _.find(newCourse.units, ['id', unitId]);
+    
+            if (!unit) {
+                console.error(`Could not find a unit with id ${unitId}`);
+                return;
+            }
+    
+            unit.topics = _.reject(unit.topics, ['id', topicId]);
+            setCourse?.(newCourse);    
+        } catch (e) {
+            setError(e);
         }
-
-        unit.topics = _.reject(unit.topics, ['id', topicId]);
-        setCourse?.(newCourse);
     };
 
     const onTopicDeleteClicked = (e: any, unitId: number, topicId: number) => {

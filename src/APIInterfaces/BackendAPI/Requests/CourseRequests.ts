@@ -1,4 +1,4 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
@@ -57,6 +57,20 @@ export const putTopic = async ({
                 `${id}/`
             ),
             data);
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const deleteTopic = async ({
+    id
+}: DeleteCourseTopicOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.delete(
+            url.resolve(
+                COURSE_TOPIC_PATH,
+                `${id}/`
+            ));
     } catch (e) {
         throw new BackendAPIError(e);
     }
