@@ -144,6 +144,9 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             let newProblems = [...problems];
             newProblems = _.reject(newProblems, ['id', problemId]);
             setProblems(newProblems);
+            const newTopic = new NewCourseTopicObj(existingTopic);
+            newTopic.questions = newProblems;
+            updateTopic?.(newTopic);
         } catch (e) {
             setError(e);
         }
