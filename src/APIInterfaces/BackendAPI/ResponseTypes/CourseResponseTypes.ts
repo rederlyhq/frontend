@@ -21,3 +21,9 @@ interface PutCourseTopicQuestionUpdates {
 }
 
 export type PutCourseTopicQuestionUpdatesResponse = BackendAPIResponse<PutCourseTopicQuestionUpdates>;
+
+interface PostDefFile {
+    newQuestions: ProblemObject[]
+}
+
+export type PostDefFileResponse = BackendAPIResponse<PostDefFile>;

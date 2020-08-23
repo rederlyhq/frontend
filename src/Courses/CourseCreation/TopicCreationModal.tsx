@@ -10,7 +10,7 @@ import MomentUtils from '@date-io/moment';
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { FaTrash } from 'react-icons/fa';
-import { putQuestion, postQuestion, putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { putQuestion, postQuestion, putTopic, postDefFile } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface TopicCreationModalProps {
     unitIndex: number;
@@ -294,20 +294,24 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
     };
 
     const onDrop = useCallback(acceptedFiles => {
-        // TODO: Here, we should upload the DEF file to the server, and then move to the next page.
-        console.log(acceptedFiles);
         (async () => {
-            const data = new FormData();
-            data.append('def-file', acceptedFiles[0]);
-            const res = await AxiosRequest.post(`/courses/def?courseTopicId=${existingTopic?.id}`, data, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
+            try {
+                setError(null);
+                if (_.isNil(existingTopic)) {
+                    console.error('existing topic is nil');
+                    throw new Error('Cannot find topic you are trying to add questions to');
                 }
-            });
-            setProblems([
-                ...problems,
-                ...res.data.data.newQuestions.map((question: ProblemObject) => new ProblemObject(question))
-            ]);
+                const res = await postDefFile({
+                    acceptedFiles,
+                    courseTopicId: existingTopic.id
+                });
+                setProblems([
+                    ...problems,
+                    ...res.data.data.newQuestions.map((question: ProblemObject) => new ProblemObject(question))
+                ]);    
+            } catch (e) {
+                setError(e);
+            }
         })();
     }, []);
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });

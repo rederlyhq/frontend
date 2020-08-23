@@ -23,3 +23,8 @@ export interface PutCourseTopicQuestionOptions {
 export interface PostCourseTopicQuestionOptions {
     data: Partial<NewProblemObject>;
 }
+
+export interface PostDefFileOptions {
+    acceptedFiles: any;
+    courseTopicId: number;
+}
