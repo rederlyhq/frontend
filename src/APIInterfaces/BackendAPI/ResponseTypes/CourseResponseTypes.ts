@@ -20,7 +20,7 @@ export type PutCourseUnitUpdatesResponse = BackendAPIResponse<PutCourseUnitUpdat
 /* *************** *************** */
 /* *********** Topics  *********** */
 /* *************** *************** */
-export type CreateTopicResponse = BackendAPIResponse<Partial<NewCourseTopicObj>>;
+export type PostTopicResponse = BackendAPIResponse<Partial<NewCourseTopicObj>>;
 
 interface PutCourseTopicUpdates {
     updatesResult: Partial<NewCourseTopicObj>[]

@@ -10,7 +10,7 @@ import TopicCreationModal from '../CourseCreation/TopicCreationModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
-import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -80,21 +80,27 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     };
 
     const createTopic = async (courseUnitContentId: number) => {
-        const result = await AxiosRequest.post('/courses/topic/', {
-            courseUnitContentId
-        });
-
-        let newCourse: CourseObject = new CourseObject(course);
-        let unit = _.find(newCourse.units, ['id', courseUnitContentId]);
-
-        if (!unit) {
-            console.error(`Could not find a unit with id ${courseUnitContentId}`);
-            return;
+        try {
+            setError(null);
+            const result = await postTopic({
+                data: {
+                    courseUnitContentId
+                }
+            });
+    
+            let newCourse: CourseObject = new CourseObject(course);
+            let unit = _.find(newCourse.units, ['id', courseUnitContentId]);
+    
+            if (!unit) {
+                console.error(`Could not find a unit with id ${courseUnitContentId}`);
+                return;
+            }
+    
+            unit.topics.push(new NewCourseTopicObj(result.data.data));
+            setCourse?.(newCourse);
+        } catch (e) {
+            setError(e);
         }
-
-        unit.topics.push(new NewCourseTopicObj(result.data.data));
-        setCourse?.(newCourse);
-
     };
 
     const addTopicClick = (e: React.MouseEvent<HTMLSpanElement, MouseEvent> | React.KeyboardEvent<HTMLSpanElement>, courseUnitContentId: number) => {
