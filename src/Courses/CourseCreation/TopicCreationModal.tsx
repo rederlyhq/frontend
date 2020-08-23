@@ -77,7 +77,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         const key = name === 'path' ? 'webworkQuestionPath' : name;
         // const initialValue = problems[index][key];
         let val = e.target.value;
-        let probs = [...problems];
+        let probs = _.cloneDeep(problems);
 
         // TODO: Handle validation.
         switch (name) {
@@ -107,11 +107,24 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         // if (probs[index][name] === initialValue) {
         //     return;
         // }
-        await AxiosRequest.put(`/courses/question/${probs[index].id}`, {
-            [key]: val
-        });
-
-        setProblems(probs);
+        try {
+            // We could find the question and update from the response
+            // It would update other fields too if they were stale
+            // However other objects would still be stale
+            // And we've already updated the object itself
+            await putQuestion({
+                id: probs[index].id,
+                data: {
+                    [key]: val
+                }
+            });
+    
+            setProblems(probs);
+        } catch (e) {
+            setError(e);
+            // No need to set problems back because they haven't been modified yet
+            // TODO They won't revert because of the way the topic modal was written
+        }
     };
 
     const deleteProblem = async (problemId: number) => {
