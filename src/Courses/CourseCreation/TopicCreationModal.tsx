@@ -10,6 +10,7 @@ import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { FaTrash } from 'react-icons/fa';
 import { putQuestion, postQuestion, putTopic, postDefFile, deleteQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { ConfirmationModal } from '../../Components/ConfirmationModal';
 
 interface TopicCreationModalProps {
     unitIndex: number;
@@ -25,9 +26,16 @@ interface TopicCreationModalProps {
  * to be set based on its position in the `problems` array.
  */
 export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitIndex, addTopic, existingTopic, closeModal, updateTopic }) => {
+    const DEFAULT_CONFIRMATION_PARAMETERS = {
+        show: false,
+        onConfirm: null,
+        identifierText: ''
+    };
+
     const [error, setError] = useState<Error | null>(null);
     const [topicMetadata, setTopicMetadata] = useState<NewCourseTopicObj>(new NewCourseTopicObj(existingTopic));
     const [problems, setProblems] = useState<Array<ProblemObject>>(existingTopic ? existingTopic.questions : []);
+    const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
     const webworkBasePath = 'webwork-open-problem-library/';
 
     useEffect(() => {
@@ -143,7 +151,12 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
 
     const deleteProblemClick = (event: React.KeyboardEvent<HTMLSpanElement> | React.MouseEvent<HTMLSpanElement, MouseEvent>, problemId: number) => {
         event.stopPropagation();
-        deleteProblem(problemId);
+        setConfirmationParamters({
+            show: true,
+            // In the future we might want to pass something like topic name here
+            identifierText: 'this question',
+            onConfirm: _.partial(deleteProblem, problemId)
+        });
     };
 
     const addProblemRows = (problem: ProblemObject, index: number): any => {
@@ -449,96 +462,117 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
     };
 
     return (
-        <Form
-            onSubmit={handleSubmit}
-            {...getRootProps()}
-            onClick={() => { }}
-            style={isDragActive ? { backgroundColor: 'red' } : {}}>
-            <Modal.Header closeButton>
-                <h3>{existingTopic ? `Editing: ${existingTopic.name}` : 'Add a Topic'}</h3>
-            </Modal.Header>
-            <Modal.Body style={{ minHeight: `${24 + (problems.length * 19)}vh` }}>
-                {error && <Alert variant="danger">{error.message}</Alert>}
-                <input type="file" {...getInputProps()} />
-                <h6>Add questions to your topic, or import a question list by dragging in a DEF file.</h6>
-                <FormGroup as={Row} controlId='topicTitle' onClick={(e: any) => { e.preventDefault(); e.stopPropagation(); }}>
-                    <Form.Label column sm="2">Topic Title:</Form.Label>
-                    <Col sm="10">
-                        <FormControl
-                            required
-                            onChange={(e: any) => onTopicMetadataChange(e, 'name')}
-                            onBlur={(e: any) => onTopicMetadataBlur(e, 'name')}
-                            defaultValue={topicMetadata?.name}
-                        />
-                    </Col>
-                </FormGroup>
-                <Row>
-                    <MuiPickersUtilsProvider utils={MomentUtils}>
-                        <Col>
-                            <DateTimePicker
-                                variant='inline'
-                                label='Start date'
-                                name={'start'}
-                                value={topicMetadata.startDate}
-                                onChange={() => { }}
-                                onAccept={(date: MaterialUiPickersDate) => {
-                                    if (!date) return;
-                                    const e = { target: { value: date.toDate() } };
-                                    onTopicMetadataChange(e, 'startDate');
-                                    onTopicMetadataBlur(e, 'startDate');
-                                }}
-                                fullWidth={true}
-                                InputLabelProps={{ shrink: false }}
-                                inputProps={{ style: { textAlign: 'center' } }}
-                                defaultValue={moment(topicMetadata?.startDate).format('YYYY-MM-DD')}
+        <>
+            <ConfirmationModal
+                onConfirm={() => {
+                    confirmationParamters.onConfirm?.();
+                    setConfirmationParamters(DEFAULT_CONFIRMATION_PARAMETERS);
+                }}
+                onHide={() => {
+                    setConfirmationParamters(DEFAULT_CONFIRMATION_PARAMETERS);
+                }}
+                show={confirmationParamters.show}
+                headerContent={<h5>Confirm delete</h5>}
+                bodyContent={`Are you sure you want to remove ${confirmationParamters.identifierText}?`}
+            />
+            <Form
+                onSubmit={handleSubmit}
+                {...getRootProps()}
+                onClick={() => { }}
+                style={_({
+                    backgroundColor: isDragActive ? 'red' : undefined,
+                    // TODO this is a terrible work around, however when I actually make this component a modal
+                    // The topic data stops rendering correctly
+                    // I think it has to do with how we pass props in and will need serious rework
+                    display: confirmationParamters.show ? 'none' : undefined
+                }).omitBy(_.isUndefined).value()}
+            >
+                <Modal.Header closeButton>
+                    <h3>{existingTopic ? `Editing: ${existingTopic.name}` : 'Add a Topic'}</h3>
+                </Modal.Header>
+                <Modal.Body style={{ minHeight: `${24 + (problems.length * 19)}vh` }}>
+                    {error && <Alert variant="danger">{error.message}</Alert>}
+                    <input type="file" {...getInputProps()} />
+                    <h6>Add questions to your topic, or import a question list by dragging in a DEF file.</h6>
+                    <FormGroup as={Row} controlId='topicTitle' onClick={(e: any) => { e.preventDefault(); e.stopPropagation(); }}>
+                        <Form.Label column sm="2">Topic Title:</Form.Label>
+                        <Col sm="10">
+                            <FormControl
+                                required
+                                onChange={(e: any) => onTopicMetadataChange(e, 'name')}
+                                onBlur={(e: any) => onTopicMetadataBlur(e, 'name')}
+                                defaultValue={topicMetadata?.name}
                             />
                         </Col>
-                        <Col>
-                            <DateTimePicker
-                                variant='inline'
-                                label='End date'
-                                name={'end'}
-                                value={topicMetadata.endDate}
-                                onChange={() => { }}
-                                onAccept={(date: MaterialUiPickersDate) => {
-                                    if (!date) return;
-                                    const e = { target: { value: date.toDate() } };
-                                    onTopicMetadataChange(e, 'endDate');
-                                    onTopicMetadataBlur(e, 'endDate');
-                                }}
-                                fullWidth={true}
-                                InputLabelProps={{ shrink: false }}
-                                inputProps={{ style: { textAlign: 'center' } }}
-                                defaultValue={moment(topicMetadata?.endDate).format('YYYY-MM-DD')}
-                            />
-                        </Col>
-                    </MuiPickersUtilsProvider>
-                </Row>
-                <DragDropContext onDragEnd={onDragEnd}>
-                    <Droppable droppableId='problemsList'>
-                        {
-                            (provided) => (
-                                <div ref={provided.innerRef} style={{ backgroundColor: 'white' }} {...provided.droppableProps}>
-                                    {problems.map(addProblemRows)}
-                                    {provided.placeholder}
-                                </div>
-                            )
-                        }
-                    </Droppable>
-                </DragDropContext>
-            </Modal.Body>
-            <Modal.Footer>
-                {/* Do we need a cancel button in the Modal? You can click out and click the X. */}
-                {/* <Button variant="danger" className="float-left">Cancel</Button> */}
-                <Button variant="secondary" onClick={getRootProps().onClick}>Upload a DEF file</Button>
-                <Button variant="secondary" onClick={addNewQuestionClick}>Add Another Question</Button>
-                <Button
-                    variant="primary"
-                    type='submit'
+                    </FormGroup>
+                    <Row>
+                        <MuiPickersUtilsProvider utils={MomentUtils}>
+                            <Col>
+                                <DateTimePicker
+                                    variant='inline'
+                                    label='Start date'
+                                    name={'start'}
+                                    value={topicMetadata.startDate}
+                                    onChange={() => { }}
+                                    onAccept={(date: MaterialUiPickersDate) => {
+                                        if (!date) return;
+                                        const e = { target: { value: date.toDate() } };
+                                        onTopicMetadataChange(e, 'startDate');
+                                        onTopicMetadataBlur(e, 'startDate');
+                                    }}
+                                    fullWidth={true}
+                                    InputLabelProps={{ shrink: false }}
+                                    inputProps={{ style: { textAlign: 'center' } }}
+                                    defaultValue={moment(topicMetadata?.startDate).format('YYYY-MM-DD')}
+                                />
+                            </Col>
+                            <Col>
+                                <DateTimePicker
+                                    variant='inline'
+                                    label='End date'
+                                    name={'end'}
+                                    value={topicMetadata.endDate}
+                                    onChange={() => { }}
+                                    onAccept={(date: MaterialUiPickersDate) => {
+                                        if (!date) return;
+                                        const e = { target: { value: date.toDate() } };
+                                        onTopicMetadataChange(e, 'endDate');
+                                        onTopicMetadataBlur(e, 'endDate');
+                                    }}
+                                    fullWidth={true}
+                                    InputLabelProps={{ shrink: false }}
+                                    inputProps={{ style: { textAlign: 'center' } }}
+                                    defaultValue={moment(topicMetadata?.endDate).format('YYYY-MM-DD')}
+                                />
+                            </Col>
+                        </MuiPickersUtilsProvider>
+                    </Row>
+                    <DragDropContext onDragEnd={onDragEnd}>
+                        <Droppable droppableId='problemsList'>
+                            {
+                                (provided) => (
+                                    <div ref={provided.innerRef} style={{ backgroundColor: 'white' }} {...provided.droppableProps}>
+                                        {problems.map(addProblemRows)}
+                                        {provided.placeholder}
+                                    </div>
+                                )
+                            }
+                        </Droppable>
+                    </DragDropContext>
+                </Modal.Body>
+                <Modal.Footer>
+                    {/* Do we need a cancel button in the Modal? You can click out and click the X. */}
+                    {/* <Button variant="danger" className="float-left">Cancel</Button> */}
+                    <Button variant="secondary" onClick={getRootProps().onClick}>Upload a DEF file</Button>
+                    <Button variant="secondary" onClick={addNewQuestionClick}>Add Another Question</Button>
+                    <Button
+                        variant="primary"
+                        type='submit'
                     // disabled={problems.length <= 0}
-                >Finish</Button>
-            </Modal.Footer>
-        </Form>
+                    >Finish</Button>
+                </Modal.Footer>
+            </Form>
+        </>
     );
 };
 
