@@ -5,9 +5,8 @@ import _ from 'lodash';
 import { CourseDetailsForm } from './CourseDetailsForm';
 import './Course.css';
 import moment from 'moment';
-import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useHistory } from 'react-router-dom';
-import { postCourse } from '../../APIInterfaces/BackendAPI/Requests/Courses';
+import { postCourse } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface CreateCourseModalProps {
     courseTemplate: ICourseTemplate | null;

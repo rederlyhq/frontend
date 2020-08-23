@@ -14,6 +14,7 @@ import Cookies from 'js-cookie';
 import { CookieEnum } from '../Enums/CookieEnum';
 import _ from 'lodash';
 import { CourseDetailsTab } from './CourseDetailsTabs/CourseDetailsTab';
+import { putUnit } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface CourseDetailsPageProps {
 
@@ -72,10 +73,24 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
         // If it does succeed the index `1` will always be the group above
         const unitId = unitIdRegex.exec(unitDraggableId)?.[1];
 
-        // TODO use the result to update the updated objects
-        const res = await AxiosRequest.put(`/courses/unit/${unitId}`, {
-            contentOrder: newContentOrder
-        });
+        try {
+            if (_.isNil(unitId)) {
+                // This should not be possible
+                console.error('unitId was nil when dropping');
+                throw new Error('Something went wrong with drag and drop');
+            }
+            // TODO use the result to update the updated objects
+            const response = await putUnit({
+                id: parseInt(unitId, 10),
+                data: {
+                    contentOrder: newContentOrder
+                }
+            });
+            console.log(response);
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
 
         const newCourse = new CourseObject(course);
         const [removed] = newCourse.units.splice(result.source.index, 1);
