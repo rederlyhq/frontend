@@ -10,6 +10,10 @@ export interface PutCourseUnitOptions {
     data: Partial<UnitObject>;
 }
 
+export interface DeleteCourseUnitOptions {
+    id: number;
+}
+
 export interface PutCourseTopicOptions {
     id: number;
     data: Partial<NewCourseTopicObj>;

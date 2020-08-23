@@ -10,7 +10,7 @@ import TopicCreationModal from '../CourseCreation/TopicCreationModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
-import { putUnit, putTopic, deleteTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { putUnit, putTopic, deleteTopic, deleteUnit } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -119,20 +119,27 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         addUnit(courseId);
     };
 
-    const deleteUnit = async (unitId: number) => {
-        await AxiosRequest.delete(`/courses/unit/${unitId}`);
-        let newCourse: CourseObject = new CourseObject(course);
-        newCourse.units = _.reject(newCourse.units, ['id', unitId]);
-        setCourse?.(newCourse);
+    const removeUnit = async (unitId: number) => {
+        try {
+            setError(null);
+            await deleteUnit({
+                id: unitId
+            });
+            let newCourse: CourseObject = new CourseObject(course);
+            newCourse.units = _.reject(newCourse.units, ['id', unitId]);
+            setCourse?.(newCourse);
+        } catch (e) {
+            setError(e);
+        }
     };
 
-    const deleteUnitClick = async (e: React.MouseEvent<HTMLSpanElement, MouseEvent> | React.KeyboardEvent<HTMLSpanElement>, unitId: number) => {
+    const removeUnitClick = async (e: React.MouseEvent<HTMLSpanElement, MouseEvent> | React.KeyboardEvent<HTMLSpanElement>, unitId: number) => {
         e.stopPropagation();
         setConfirmationParamters({
             show: true,
             // In the future we might want to pass something like topic name here
             identifierText: 'this unit',
-            onConfirm: _.partial(deleteUnit, unitId)
+            onConfirm: _.partial(removeUnit, unitId)
         });
     };
 
@@ -451,8 +458,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                         style={{
                                                                             padding: '6px'
                                                                         }}
-                                                                        onClick={_.partial(deleteUnitClick, _, unit.id)}
-                                                                        onKeyPress={_.partial(deleteUnitClick, _, unit.id)}
+                                                                        onClick={_.partial(removeUnitClick, _, unit.id)}
+                                                                        onKeyPress={_.partial(removeUnitClick, _, unit.id)}
                                                                     >
                                                                         <FaTrash color='#AA0000' />
                                                                     </span>

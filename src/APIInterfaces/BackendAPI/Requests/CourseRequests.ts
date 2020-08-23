@@ -1,4 +1,4 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
@@ -24,7 +24,8 @@ export const postCourse = async ({
                 `?${qs.stringify({
                     useCurriculum
                 })}`
-            ), data);
+            ), data
+        );
     } catch (e) {
         throw new BackendAPIError(e);
     }
@@ -40,7 +41,23 @@ export const putUnit = async ({
                 COURSE_UNIT_PATH,
                 `${id}/`
             ),
-            data);
+            data
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const deleteUnit = async ({
+    id
+}: DeleteCourseUnitOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.delete(
+            url.resolve(
+                COURSE_UNIT_PATH,
+                `${id}/`
+            )
+        );
     } catch (e) {
         throw new BackendAPIError(e);
     }
@@ -56,7 +73,8 @@ export const putTopic = async ({
                 COURSE_TOPIC_PATH,
                 `${id}/`
             ),
-            data);
+            data
+        );
     } catch (e) {
         throw new BackendAPIError(e);
     }
@@ -70,7 +88,8 @@ export const deleteTopic = async ({
             url.resolve(
                 COURSE_TOPIC_PATH,
                 `${id}/`
-            ));
+            )
+        );
     } catch (e) {
         throw new BackendAPIError(e);
     }
@@ -99,7 +118,8 @@ export const putQuestion = async ({
                 COURSE_QUESTION_PATH,
                 `${id}/`
             ),
-            data);
+            data
+        );
     } catch (e) {
         throw new BackendAPIError(e);
     }
@@ -140,7 +160,8 @@ export const postDefFile = async ({
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
-            });
+            }
+        );
     } catch (e) {
         throw new BackendAPIError(e);
     }
