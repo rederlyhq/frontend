@@ -10,7 +10,7 @@ import MomentUtils from '@date-io/moment';
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { FaTrash } from 'react-icons/fa';
-import { putQuestion, postQuestion, putTopic, postDefFile } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { putQuestion, postQuestion, putTopic, postDefFile, deleteQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface TopicCreationModalProps {
     unitIndex: number;
@@ -129,10 +129,17 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
     };
 
     const deleteProblem = async (problemId: number) => {
-        await AxiosRequest.delete(`/courses/question/${problemId}`);
-        let newProblems = [...problems];
-        newProblems = _.reject(newProblems, ['id', problemId]);
-        setProblems(newProblems);
+        try {
+            setError(null);
+            await deleteQuestion({
+                id: problemId
+            });    
+            let newProblems = [...problems];
+            newProblems = _.reject(newProblems, ['id', problemId]);
+            setProblems(newProblems);
+        } catch (e) {
+            setError(e);
+        }
     };
 
     const deleteProblemClick = (event: React.KeyboardEvent<HTMLSpanElement> | React.MouseEvent<HTMLSpanElement, MouseEvent>, problemId: number) => {

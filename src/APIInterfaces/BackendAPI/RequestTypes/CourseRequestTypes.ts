@@ -20,6 +20,10 @@ export interface PutCourseTopicQuestionOptions {
     data: Partial<ProblemObject>;
 }
 
+export interface DeleteCourseTopicQuestionOptions {
+    id: number;
+}
+
 export interface PostCourseTopicQuestionOptions {
     data: Partial<NewProblemObject>;
 }

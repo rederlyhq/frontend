@@ -1,10 +1,11 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
 import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
+import { BackendAPIResponse } from '../BackendAPIResponse';
 
 const COURSE_PATH = '/courses/';
 const COURSE_UNIT_PATH = url.resolve(COURSE_PATH, 'unit/');
@@ -85,6 +86,21 @@ export const putQuestion = async ({
                 `${id}/`
             ),
             data);
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const deleteQuestion = async ({
+    id
+}: DeleteCourseTopicQuestionOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.delete(
+            url.resolve(
+                COURSE_QUESTION_PATH,
+                `${id}/`
+            )
+        );
     } catch (e) {
         throw new BackendAPIError(e);
     }
