@@ -291,6 +291,17 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 id: parseInt(topicId, 10),
                 data: updates
             });
+
+            response.data.data.updatesResult.forEach((returnedTopic: Partial<NewCourseTopicObj>) => {
+                const existingUnit = _.find(newCourse.units, ['id', returnedTopic.courseUnitContentId]);
+                if (_.isNil(existingUnit)) {
+                    console.error('Could not find topics unit');
+                    throw new Error('Drag and drop encountered an unexpected error');
+                }
+                const existingTopic = _.find(existingUnit.topics, ['id', returnedTopic.id]);
+                Object.assign(existingTopic, returnedTopic);
+            });
+            setCourse?.(new CourseObject(newCourse));
         } catch (e) {
             setError(e);
             setCourse?.(course);

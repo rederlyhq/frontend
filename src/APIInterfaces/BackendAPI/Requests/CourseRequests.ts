@@ -1,4 +1,4 @@
-import { CreateCourseOptions, PutCourseUnitOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
@@ -46,7 +46,7 @@ export const putUnit = async ({
 export const putTopic = async ({
     id,
     data
-}: PutCourseUnitOptions): Promise<AxiosResponse<PutCourseTopicUpdatesResponse>> => {
+}: PutCourseTopicOptions): Promise<AxiosResponse<PutCourseTopicUpdatesResponse>> => {
     try {
         return await AxiosRequest.put(
             url.resolve(

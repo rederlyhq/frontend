@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, NewCourseTopicObj } from '../../../Courses/CourseInterfaces';
 
 export interface CreateCourseOptions {
     useCurriculum?: boolean;
@@ -8,4 +8,9 @@ export interface CreateCourseOptions {
 export interface PutCourseUnitOptions {
     id: number;
     data: Partial<UnitObject>;
+}
+
+export interface PutCourseTopicOptions {
+    id: number;
+    data: Partial<NewCourseTopicObj>;
 }
