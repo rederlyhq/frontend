@@ -3,7 +3,7 @@ import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 
 const COURSE_PATH = '/courses/';
@@ -29,7 +29,7 @@ export const postCourse = async ({
 export const putUnit = async ({
     id,
     data
-}: PutCourseUnitOptions): Promise<AxiosResponse<CreateCourseResponse>> => {
+}: PutCourseUnitOptions): Promise<AxiosResponse<PutCourseUnitUpdatesResponse>> => {
     try {
         return await AxiosRequest.put(
             url.resolve(

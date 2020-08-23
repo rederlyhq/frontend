@@ -205,7 +205,6 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             newCourse.units.splice(result.destination.index, 0, removed);
             setCourse?.(newCourse);
 
-            // TODO use the result to update the updated objects
             const response = await putUnit({
                 id: parseInt(unitId, 10),
                 data: {
@@ -214,6 +213,13 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     // contentOrder: 2147483649
                 }
             });
+
+            // The response for the put returns the updated objects, update the units from what the backend has
+            response.data.data.updatesResult.forEach((returnedUnit: Partial<UnitObject>) => {
+                const existingUnit = _.find(newCourse.units, ['id', returnedUnit.id]);
+                Object.assign(existingUnit, returnedUnit);
+            });
+            setCourse?.(new CourseObject(newCourse));
         } catch (e) {
             setError(e);
             setCourse?.(course);
