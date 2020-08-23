@@ -20,6 +20,6 @@
 
 /* https://react-bootstrap.github.io/components/modal/#modal-custom-sizing */
 .modal-90w {
-    width: 90%;
     max-width: none!important;
+    width: 90%;
 }

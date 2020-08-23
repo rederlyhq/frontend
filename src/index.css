@@ -13,9 +13,9 @@ code {
 }
 
 .course-details-form-fieldset .form-control:disabled {
+  appearance: none;
   background-color: inherit;
   border: none;
-  appearance: none;
 }
 
 .course-details-form-fieldset .MuiIconButton-root.Mui-disabled {
