@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TopicsList from '../TopicsList';
 import { Accordion, Card, Row, Col, Modal } from 'react-bootstrap';
-import { CourseObject, NewCourseTopicObj, UnitObject, TopicObject } from '../CourseInterfaces';
+import { CourseObject, NewCourseTopicObj, UnitObject } from '../CourseInterfaces';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { FaPlusCircle, FaTrash } from 'react-icons/fa';
@@ -9,7 +9,8 @@ import _ from 'lodash';
 import TopicCreationModal from '../CourseCreation/TopicCreationModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import AxiosRequest from '../../Hooks/AxiosRequest';
-import { Droppable, Draggable } from 'react-beautiful-dnd';
+import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
+import { putUnit } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -180,6 +181,114 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         setCourse?.(newCourse);
     };
 
+    const onUnitDragEnd = async (result: any) => {
+        const { draggableId: unitDraggableId } = result;
+        const unitIdRegex = /^unitRow(\d+)$/;
+        const newContentOrder = result.destination.index + 1;
+        // If exec doesn't match the result will be null
+        // If it does succeed the index `1` will always be the group above
+        const unitId = unitIdRegex.exec(unitDraggableId)?.[1];
+
+        try {
+            if (_.isNil(unitId)) {
+                // This should not be possible
+                console.error('unitId was nil when dropping');
+                throw new Error('Something went wrong with drag and drop');
+            }
+            // TODO use the result to update the updated objects
+            const response = await putUnit({
+                id: parseInt(unitId, 10),
+                data: {
+                    contentOrder: newContentOrder
+                }
+            });
+            console.log(response);
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+
+        const newCourse = new CourseObject(course);
+        const [removed] = newCourse.units.splice(result.source.index, 1);
+        newCourse.units.splice(result.destination.index, 0, removed);
+        setCourse?.(newCourse);
+    };
+
+    const onTopicDragEnd = async (result: any) => {
+        const { draggableId: topicDraggableId } = result;
+        // Index is 0 based, while content order is 1 based
+        const newContentOrder = result.destination.index + 1;
+        const topicIdRegex = /^topic-(\d+)$/;
+        // If exec doesn't match the result will be null
+        // If it does succeed the index `1` will always be the group above
+        const topicId = topicIdRegex.exec(topicDraggableId)?.[1];
+
+        const sourceUnitDroppableId = result.source.droppableId;
+        const destinationUnitDroppableId = result.destination.droppableId;
+
+        const updates: any = {
+            contentOrder: newContentOrder
+        };
+        const unitIdRegex = /^topicList-(\d+)$/;
+        const destinationUnitId = unitIdRegex.exec(destinationUnitDroppableId)?.[1];
+        const sourceUnitId = unitIdRegex.exec(sourceUnitDroppableId)?.[1];
+
+        if(_.isNil(destinationUnitId)) {
+            console.error('Could not parse desintationUnitId');
+            return;
+        }
+
+        if(_.isNil(sourceUnitId)) {
+            console.error('Could not parse sourceUnitId');
+            return;
+        }
+
+        if (sourceUnitDroppableId !== destinationUnitDroppableId) {
+            updates.courseUnitContentId = destinationUnitId;
+        }
+
+        // TODO use the result to update the updated objects
+        const res = await AxiosRequest.put(`/courses/topic/${topicId}`, updates);
+
+        const newCourse = new CourseObject(course);
+        const sourceUnit = _.find(newCourse.units, ['id', parseInt(sourceUnitId, 10)]);
+        const destinationUnit = sourceUnitId === destinationUnitId ? sourceUnit :_.find(newCourse.units, ['id', parseInt(destinationUnitId, 10)]);
+
+        if(_.isNil(sourceUnit)) {
+            console.error('Could not find source unit');
+            return;
+        }
+
+        if(_.isNil(destinationUnit)) {
+            console.error('Could not find destination unit');
+            return;
+        }
+        const [removed] = sourceUnit.topics.splice(result.source.index, 1);
+        destinationUnit.topics.splice(result.destination.index, 0, removed);
+
+        setCourse?.(newCourse);
+    };
+
+    const onDragEnd = (result: any) => {
+        if (!result.destination) {
+            return;
+        }
+    
+        if (result.destination.index === result.source.index) {
+            return;
+        }
+
+        console.log('onDragEnd!', result);
+
+        if (result.type === 'UNIT') {
+            onUnitDragEnd(result);
+        } else if (result.type === 'TOPIC') {
+            onTopicDragEnd(result);
+        } else {
+            console.error(`Invalid result.type "${result.type}"`);
+        }
+    };
+
     return (
         <>
             <Modal
@@ -249,97 +358,99 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 </Row>
             )}
             <h4>Units</h4>
-            <Droppable droppableId='unitsList' type='UNIT'>
-                {
-                    (provided: any) => (
-                        <>
-                            <div ref={provided.innerRef} style={{backgroundColor: 'white'}} {...provided.droppableProps}>
-                                {course?.units?.map((unit: any, index) => {
-                                    const showEditWithUnitId = _.curry(showEditTopic)(_, unit.id);
-                                    const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
+            <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId='unitsList' type='UNIT'>
+                    {
+                        (provided: any) => (
+                            <>
+                                <div ref={provided.innerRef} style={{backgroundColor: 'white'}} {...provided.droppableProps}>
+                                    {course?.units?.map((unit: any, index) => {
+                                        const showEditWithUnitId = _.curry(showEditTopic)(_, unit.id);
+                                        const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
 
-                                    return (
-                                        <Draggable draggableId={`unitRow${unit.id}`} index={index} key={`problem-row-${unit.id}`} isDragDisabled={!inEditMode}>
-                                            {(provided) => (
-                                                <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} key={unit.id}>
-                                                    <Accordion defaultActiveKey="1">
-                                                        <Card>
-                                                            <Accordion.Toggle as={Card.Header} eventKey="0">
-                                                                <Row>
-                                                                    <Col>
+                                        return (
+                                            <Draggable draggableId={`unitRow${unit.id}`} index={index} key={`problem-row-${unit.id}`} isDragDisabled={!inEditMode}>
+                                                {(provided) => (
+                                                    <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} key={unit.id}>
+                                                        <Accordion defaultActiveKey="1">
+                                                            <Card>
+                                                                <Accordion.Toggle as={Card.Header} eventKey="0">
+                                                                    <Row>
+                                                                        <Col>
+                                                                            {
+                                                                                // This is complaining because of the click event, however it is not a true click event, it is just stopping the accordion
+                                                                                // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                                                                            } <h4
+                                                                                contentEditable={inEditMode}
+                                                                                suppressContentEditableWarning={true}
+                                                                                className='active-editable'
+                                                                                onClick={inEditMode ? ((event: React.MouseEvent<HTMLHeadingElement, MouseEvent>) => { event.stopPropagation(); }) : undefined}
+                                                                                onKeyDown={(e: any) => {
+                                                                                    if (e.keyCode === 13) {
+                                                                                        e.preventDefault();
+                                                                                        e.target.blur();
+                                                                                    }
+                                                                                }}
+                                                                                onBlur={_.partial(onUnitBlur, _, unit.id)}
+                                                                            >
+                                                                                {unit.name}
+                                                                            </h4>
+                                                                        </Col>
+                                                                        <Col />
                                                                         {
-                                                                            // This is complaining because of the click event, however it is not a true click event, it is just stopping the accordion
-                                                                            // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-                                                                        } <h4
-                                                                            contentEditable={inEditMode}
-                                                                            suppressContentEditableWarning={true}
-                                                                            className='active-editable'
-                                                                            onClick={inEditMode ? ((event: React.MouseEvent<HTMLHeadingElement, MouseEvent>) => { event.stopPropagation(); }) : undefined}
-                                                                            onKeyDown={(e: any) => {
-                                                                                if (e.keyCode === 13) {
-                                                                                    e.preventDefault();
-                                                                                    e.target.blur();
-                                                                                }
-                                                                            }}
-                                                                            onBlur={_.partial(onUnitBlur, _, unit.id)}
-                                                                        >
-                                                                            {unit.name}
-                                                                        </h4>
-                                                                    </Col>
-                                                                    <Col />
-                                                                    {
-                                                                        inEditMode &&
-                                                            <div style={{ marginLeft: 'auto' }}>
-                                                                <span
-                                                                    role="button"
-                                                                    tabIndex={0}
-                                                                    style={{
-                                                                        padding: '6px'
-                                                                    }}
-                                                                    onClick={_.partial(deleteUnitClick, _, unit.id)}
-                                                                    onKeyPress={_.partial(deleteUnitClick, _, unit.id)}
-                                                                >
-                                                                    <FaTrash color='#AA0000' />
-                                                                </span>
-                                                                <span
-                                                                    role="button"
-                                                                    tabIndex={0}
-                                                                    style={{
-                                                                        padding: '6px'
-                                                                    }}
-                                                                    onClick={_.partial(addTopicClick, _, unit.id)}
-                                                                    onKeyPress={_.partial(addTopicClick, _, unit.id)}
-                                                                >
-                                                                    <FaPlusCircle color='#00AA00' />
-                                                                </span>
-                                                            </div>
-                                                                    }
-                                                                </Row>
-                                                            </Accordion.Toggle>
-                                                            <Accordion.Collapse eventKey="0">
-                                                                <Card.Body>
-                                                                    <TopicsList
-                                                                        flush
-                                                                        listOfTopics={unit.topics}
-                                                                        showEditTopic={inEditMode ? showEditWithUnitId : undefined}
-                                                                        removeTopic={onTopicDeleteClickedWithUnitId}
-                                                                        unitUnique={unit.id}
-                                                                    />
-                                                                </Card.Body>
-                                                            </Accordion.Collapse>
-                                                        </Card>
-                                                    </Accordion>
-                                                </div>
-                                            )}
-                                        </Draggable>
-                                    );
-                                })
-                                }
-                            </div>
-                        </>
-                    )
-                }
-            </ Droppable>
+                                                                            inEditMode &&
+                                                                <div style={{ marginLeft: 'auto' }}>
+                                                                    <span
+                                                                        role="button"
+                                                                        tabIndex={0}
+                                                                        style={{
+                                                                            padding: '6px'
+                                                                        }}
+                                                                        onClick={_.partial(deleteUnitClick, _, unit.id)}
+                                                                        onKeyPress={_.partial(deleteUnitClick, _, unit.id)}
+                                                                    >
+                                                                        <FaTrash color='#AA0000' />
+                                                                    </span>
+                                                                    <span
+                                                                        role="button"
+                                                                        tabIndex={0}
+                                                                        style={{
+                                                                            padding: '6px'
+                                                                        }}
+                                                                        onClick={_.partial(addTopicClick, _, unit.id)}
+                                                                        onKeyPress={_.partial(addTopicClick, _, unit.id)}
+                                                                    >
+                                                                        <FaPlusCircle color='#00AA00' />
+                                                                    </span>
+                                                                </div>
+                                                                        }
+                                                                    </Row>
+                                                                </Accordion.Toggle>
+                                                                <Accordion.Collapse eventKey="0">
+                                                                    <Card.Body>
+                                                                        <TopicsList
+                                                                            flush
+                                                                            listOfTopics={unit.topics}
+                                                                            showEditTopic={inEditMode ? showEditWithUnitId : undefined}
+                                                                            removeTopic={onTopicDeleteClickedWithUnitId}
+                                                                            unitUnique={unit.id}
+                                                                        />
+                                                                    </Card.Body>
+                                                                </Accordion.Collapse>
+                                                            </Card>
+                                                        </Accordion>
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        );
+                                    })
+                                    }
+                                </div>
+                            </>
+                        )
+                    }
+                </ Droppable>
+            </ DragDropContext>
         </>
     );
 };
