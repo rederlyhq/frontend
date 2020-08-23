@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { FormControl, FormLabel, Form, FormGroup, Modal, Button, InputGroup, Col, Row, FormCheck } from 'react-bootstrap';
+import { FormControl, FormLabel, Form, FormGroup, Modal, Button, InputGroup, Col, Row, FormCheck, Alert } from 'react-bootstrap';
 import _ from 'lodash';
 import { ProblemObject, NewCourseTopicObj } from '../CourseInterfaces';
 import moment from 'moment';
@@ -25,6 +25,7 @@ interface TopicCreationModalProps {
  * to be set based on its position in the `problems` array.
  */
 export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitIndex, addTopic, existingTopic, closeModal, updateTopic }) => {
+    const [error, setError] = useState<Error | null>(null);
     const [topicMetadata, setTopicMetadata] = useState<NewCourseTopicObj>(new NewCourseTopicObj(existingTopic));
     const [problems, setProblems] = useState<Array<ProblemObject>>(existingTopic ? existingTopic.questions : []);
     const webworkBasePath = 'webwork-open-problem-library/';
@@ -349,11 +350,13 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                 updateTopic?.(newTopic);
             }
     
+            setError(null);
             // TODO use the result to update the updated objects
             const res = await AxiosRequest.put(`/courses/question/${problemId}`, {
                 problemNumber: newContentOrder
             });
         } catch (e) {
+            setError(e);
             setProblems(problems);
             if (!_.isNil(existingTopic)) {
                 updateTopic?.(existingTopic);
@@ -394,6 +397,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                 <h3>{existingTopic ? `Editing: ${existingTopic.name}` : 'Add a Topic'}</h3>
             </Modal.Header>
             <Modal.Body style={{ minHeight: `${24 + (problems.length * 19)}vh` }}>
+                {error && <Alert variant="danger">{error.message}</Alert>}
                 <input type="file" {...getInputProps()} />
                 <h6>Add questions to your topic, or import a question list by dragging in a DEF file.</h6>
                 <FormGroup as={Row} controlId='topicTitle' onClick={(e: any) => { e.preventDefault(); e.stopPropagation(); }}>
