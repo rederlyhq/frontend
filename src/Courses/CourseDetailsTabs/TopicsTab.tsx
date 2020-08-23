@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import TopicsList from '../TopicsList';
-import { Accordion, Card, Row, Col, Modal } from 'react-bootstrap';
+import { Accordion, Card, Row, Col, Modal, Alert } from 'react-bootstrap';
 import { CourseObject, NewCourseTopicObj, UnitObject } from '../CourseInterfaces';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
@@ -25,6 +25,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     };
 
     const [inEditMode, setInEditMode] = useState<boolean>(false);
+    const [error, setError] = useState<Error | null | undefined>(null);
     const userType: UserRole = getUserRole();
 
     const [showTopicCreation, setShowTopicCreation] = useState<{ show: boolean, unitIndex: number, existingTopic?: NewCourseTopicObj | undefined }>({ show: false, unitIndex: -1 });
@@ -195,23 +196,28 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 console.error('unitId was nil when dropping');
                 throw new Error('Something went wrong with drag and drop');
             }
+
+            // TODO when should the error disappear
+            setError(null);
+
+            const newCourse = _.cloneDeep(course);
+            const [removed] = newCourse.units.splice(result.source.index, 1);
+            newCourse.units.splice(result.destination.index, 0, removed);
+            setCourse?.(newCourse);
+
             // TODO use the result to update the updated objects
             const response = await putUnit({
                 id: parseInt(unitId, 10),
                 data: {
                     contentOrder: newContentOrder
+                    // Used to test error handling
+                    // contentOrder: 2147483649
                 }
             });
-            console.log(response);
         } catch (e) {
-            console.error(e);
-            throw e;
+            setError(e);
+            setCourse?.(course);
         }
-
-        const newCourse = new CourseObject(course);
-        const [removed] = newCourse.units.splice(result.source.index, 1);
-        newCourse.units.splice(result.destination.index, 0, removed);
-        setCourse?.(newCourse);
     };
 
     const onTopicDragEnd = async (result: any) => {
@@ -357,6 +363,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     </Row>
                 </Row>
             )}
+            {error && <Alert variant="danger">{error.message}</Alert>}
             <h4>Units</h4>
             <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId='unitsList' type='UNIT'>
