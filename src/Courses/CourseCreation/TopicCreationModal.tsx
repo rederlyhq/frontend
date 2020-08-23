@@ -334,7 +334,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                 return;
             }
 
-            const newProbs = _.cloneDeep(problems);
+            let newProbs = _.cloneDeep(problems);
             const existingProblem = _.find(newProbs, ['id', parseInt(problemId, 10)]);
             if(_.isNil(existingProblem)) {
                 console.error('existing problem not found could not update frontend');
@@ -345,18 +345,30 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             const [removed] = newProbs.splice(result.source.index, 1);
             newProbs.splice(result.destination.index, 0, removed);
             setProblems(newProbs);
+            let newTopic: NewCourseTopicObj | null = null;
             if (!_.isNil(existingTopic)) {
-                const newTopic = _.cloneDeep(existingTopic);
+                newTopic = _.cloneDeep(existingTopic);
                 newTopic.questions = newProbs;
                 updateTopic?.(newTopic);
             }
     
             setError(null);
-            // TODO use the result to update the updated objects
             const response = await putQuestion({
                 id: parseInt(problemId, 10),
                 data: {
                     problemNumber: parseInt(newContentOrder, 10)
+                }
+            });
+
+            response.data.data.updatesResult.forEach((returnedProblem: Partial<ProblemObject>) => {
+                const existingProblem = _.find(newProbs, ['id', returnedProblem.id]);
+                Object.assign(existingProblem, returnedProblem);
+                newProbs = [...newProbs];
+                setProblems(newProbs);
+                if (!_.isNil(newTopic)) {
+                    newTopic = new NewCourseTopicObj(newTopic);
+                    newTopic.questions = newProbs;
+                    updateTopic?.(newTopic);
                 }
             });
         } catch (e) {
