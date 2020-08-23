@@ -51,7 +51,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build": "react-scripts build",
-    "rebuild_renderer": "(cd ../renderer-docker && ./rebuild_docker.sh)"
+    "rebuild_renderer": "(cd ../renderer-docker && ./rebuild_docker.sh)",
+    "lint": "eslint src/ --ext ts,tsx"
   },
   "eslintConfig": {
     "extends": "react-app"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Col, Row, FormControl, FormLabel, FormGroup } from 'react-bootstrap';
 import { CourseObject } from '../CourseInterfaces';
 import MomentUtils from '@date-io/moment';

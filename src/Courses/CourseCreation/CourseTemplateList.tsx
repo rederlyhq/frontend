@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ListGroup, ListGroupItem, Col, Row } from 'react-bootstrap';
 import { ICourseTemplate } from '../CourseInterfaces';
-import CurriculumDetailsModal from './CurriculumDetailsModal';
 import _ from 'lodash';
 import { CreateCourseModal } from './CreateCourseModal';
 

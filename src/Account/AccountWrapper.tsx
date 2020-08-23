@@ -16,7 +16,7 @@ export const AccountWrapper: React.FC<AccountWrapperProps> = () => {
             return <AccountDetailsPage />;
         case 1:
         case 2:
-            return <Grid container item spacing={3} xs={6} justify='center'><h3>Sorry! This content isn't ready yet.</h3></Grid>;
+            return <Grid container item spacing={3} xs={6} justify='center'><h3>Sorry! This content is not ready yet.</h3></Grid>;
         }
     };
 

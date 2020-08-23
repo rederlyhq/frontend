@@ -11,8 +11,6 @@ import { useForm, Controller } from 'react-hook-form';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { UserRole, getUserRole } from '../Enums/UserRole';
-import Cookies from 'js-cookie';
-import { CookieEnum } from '../Enums/CookieEnum';
 import { nameof } from '../Utilities/TypescriptUtils';
 
 interface TopicsListProps {

@@ -1,5 +1,4 @@
 import React from 'react';
-import _ from 'lodash';
 import { ComponentToggleButton } from './ComponentToggleButton';
 import { FaPencilAlt } from 'react-icons/fa';
 
