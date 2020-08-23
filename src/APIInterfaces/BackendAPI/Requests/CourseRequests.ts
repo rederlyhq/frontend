@@ -1,9 +1,9 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 
@@ -13,6 +13,9 @@ const COURSE_TOPIC_PATH = url.resolve(COURSE_PATH, 'topic/');
 const COURSE_QUESTION_PATH = url.resolve(COURSE_PATH, 'question/');
 const COURSE_DEF_PATH = url.resolve(COURSE_PATH, 'def/');
 
+/* *************** *************** */
+/* *********** Courses *********** */
+/* *************** *************** */
 export const postCourse = async ({
     useCurriculum = true,
     data
@@ -25,6 +28,22 @@ export const postCourse = async ({
                     useCurriculum
                 })}`
             ), data
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+/* *************** *************** */
+/* ************ Units ************ */
+/* *************** *************** */
+export const postUnit = async ({
+    data
+}: PostCourseUnitOptions): Promise<AxiosResponse<PostUnitResponse>> => {
+    try {
+        return await AxiosRequest.post(
+            COURSE_UNIT_PATH,
+            data
         );
     } catch (e) {
         throw new BackendAPIError(e);
@@ -63,6 +82,9 @@ export const deleteUnit = async ({
     }
 };
 
+/* *************** *************** */
+/* *********** Topics  *********** */
+/* *************** *************** */
 export const putTopic = async ({
     id,
     data
@@ -95,6 +117,9 @@ export const deleteTopic = async ({
     }
 };
 
+/* *************** *************** */
+/* ********** Questions ********** */
+/* *************** *************** */
 export const postQuestion = async ({
     data
 }: PostCourseTopicQuestionOptions): Promise<AxiosResponse<CreateQuestionResponse>> => {

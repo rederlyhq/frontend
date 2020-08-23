@@ -1,8 +1,18 @@
-import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject, NewCourseUnitObj } from '../../../Courses/CourseInterfaces';
 
+/* *************** *************** */
+/* *********** Courses *********** */
+/* *************** *************** */
 export interface CreateCourseOptions {
     useCurriculum?: boolean;
     data: Partial<CourseObject>;
+}
+
+/* *************** *************** */
+/* ************ Units ************ */
+/* *************** *************** */
+export interface PostCourseUnitOptions {
+    data: Partial<NewCourseUnitObj>;
 }
 
 export interface PutCourseUnitOptions {
@@ -14,6 +24,13 @@ export interface DeleteCourseUnitOptions {
     id: number;
 }
 
+/* *************** *************** */
+/* *********** Topics  *********** */
+/* *************** *************** */
+export interface PostCourseTopicOptions {
+    data: Partial<NewCourseTopicObj>;
+}
+
 export interface PutCourseTopicOptions {
     id: number;
     data: Partial<NewCourseTopicObj>;
@@ -23,6 +40,9 @@ export interface DeleteCourseTopicOptions {
     id: number;
 }
 
+/* *************** *************** */
+/* ********** Questions ********** */
+/* *************** *************** */
 export interface PutCourseTopicQuestionOptions {
     id: number;
     data: Partial<ProblemObject>;

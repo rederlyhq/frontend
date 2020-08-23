@@ -1,14 +1,26 @@
-import { CourseObject, UnitObject, TopicObject, NewCourseTopicObj, ProblemObject, NewProblemObject } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject } from '../../../Courses/CourseInterfaces';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 
+/* *************** *************** */
+/* *********** Courses *********** */
+/* *************** *************** */
 export type CreateCourseResponse = BackendAPIResponse<Partial<CourseObject>>;
-export type CreateQuestionResponse = BackendAPIResponse<Partial<NewProblemObject>>;
+
+/* *************** *************** */
+/* ************ Units ************ */
+/* *************** *************** */
+export type PostUnitResponse = BackendAPIResponse<Partial<UnitObject>>;
 
 interface PutCourseUnitUpdates {
     updatesResult: Partial<UnitObject>[]
 }
 
 export type PutCourseUnitUpdatesResponse = BackendAPIResponse<PutCourseUnitUpdates>;
+
+/* *************** *************** */
+/* *********** Topics  *********** */
+/* *************** *************** */
+export type CreateTopicResponse = BackendAPIResponse<Partial<NewCourseTopicObj>>;
 
 interface PutCourseTopicUpdates {
     updatesResult: Partial<NewCourseTopicObj>[]
@@ -19,6 +31,11 @@ export type PutCourseTopicUpdatesResponse = BackendAPIResponse<PutCourseTopicUpd
 interface PutCourseTopicQuestionUpdates {
     updatesResult: Partial<ProblemObject>[]
 }
+
+/* *************** *************** */
+/* ********** Questions ********** */
+/* *************** *************** */
+export type CreateQuestionResponse = BackendAPIResponse<Partial<NewProblemObject>>;
 
 export type PutCourseTopicQuestionUpdatesResponse = BackendAPIResponse<PutCourseTopicQuestionUpdates>;
 

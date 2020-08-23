@@ -10,7 +10,7 @@ import TopicCreationModal from '../CourseCreation/TopicCreationModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
-import { putUnit, putTopic, deleteTopic, deleteUnit } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -104,14 +104,17 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const addUnit = async (courseId: number) => {
         try {
-            const result = await AxiosRequest.post('/courses/unit', {
-                courseId
+            setError(null);
+            const result = await postUnit({
+                data: {
+                    courseId
+                }
             });
             let newCourse: CourseObject = new CourseObject(course);
             newCourse.units.push(new UnitObject(result.data.data));
             setCourse?.(newCourse);
         } catch (e) {
-            console.error(e.response.data.message);
+            setError(e);
         }
     };
 
