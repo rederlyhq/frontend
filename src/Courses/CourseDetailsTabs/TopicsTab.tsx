@@ -259,10 +259,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             updates.courseUnitContentId = destinationUnitId;
         }
 
-        // TODO use the result to update the updated objects
-        const res = await AxiosRequest.put(`/courses/topic/${topicId}`, updates);
-
-        const newCourse = new CourseObject(course);
+        const newCourse = _.cloneDeep(course);
         const sourceUnit = _.find(newCourse.units, ['id', parseInt(sourceUnitId, 10)]);
         const destinationUnit = sourceUnitId === destinationUnitId ? sourceUnit :_.find(newCourse.units, ['id', parseInt(destinationUnitId, 10)]);
 
@@ -279,6 +276,15 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         destinationUnit.topics.splice(result.destination.index, 0, removed);
 
         setCourse?.(newCourse);
+
+        try {
+            setError(null);
+            // TODO use the result to update the updated objects
+            const res = await AxiosRequest.put(`/courses/topic/${topicId}`, updates);
+        } catch (e) {
+            setError(e);
+            setCourse?.(course);
+        }
     };
 
     const onDragEnd = (result: any) => {
