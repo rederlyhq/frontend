@@ -8,6 +8,11 @@ export interface CreateCourseOptions {
     data: Partial<CourseObject>;
 }
 
+export interface PutCourseOptions {
+    id: number;
+    data: Partial<CourseObject>;
+}
+
 /* *************** *************** */
 /* ************ Units ************ */
 /* *************** *************** */

@@ -4,14 +4,11 @@ import { DragDropContext } from 'react-beautiful-dnd';
 import { CourseObject } from '../CourseInterfaces';
 import ActiveTopics from '../CourseDetailsTabs/ActiveTopics';
 import _ from 'lodash';
-import { CourseDetailsForm } from '../CourseCreation/CourseDetailsForm';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
-import { CookieEnum } from '../../Enums/CookieEnum';
-import Cookies from 'js-cookie';
-import AxiosRequest from '../../Hooks/AxiosRequest';
 import { nameof } from '../../Utilities/TypescriptUtils';
 import { EditableCourseDetailsForm } from '../CourseCreation/EditableCourseDetailsForm';
+import { putCourse } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface CourseDetailsTabProps {
     course?: CourseObject;
@@ -40,14 +37,17 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
             const postObject = _.pick(CourseObject.toAPIObject(courseObjectWithUpdates), field);
             try {
                 setUpdateError(null);
-                const result = await AxiosRequest.put(`/courses/${course.id}`, postObject);
+                const result = await putCourse({
+                    id: course.id,
+                    data: postObject
+                });
                 setCourse?.(new CourseObject({
                     ...result.data.data.updatesResult?.[0],
                     units: course.units
                 }));
             } catch (e) {
                 console.error(e);
-                setUpdateError(`An error has occurred ${e.response.data.message}`);
+                setUpdateError(e.message);
             }
         }
     };

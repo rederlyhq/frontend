@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import TopicsList from '../TopicsList';
 import { Accordion, Card, Row, Col, Modal, Alert } from 'react-bootstrap';
-import { CourseObject, NewCourseTopicObj, UnitObject, TopicObject } from '../CourseInterfaces';
+import { CourseObject, NewCourseTopicObj, UnitObject } from '../CourseInterfaces';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { FaPlusCircle, FaTrash } from 'react-icons/fa';
 import _ from 'lodash';
 import TopicCreationModal from '../CourseCreation/TopicCreationModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
-import AxiosRequest from '../../Hooks/AxiosRequest';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
 import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 

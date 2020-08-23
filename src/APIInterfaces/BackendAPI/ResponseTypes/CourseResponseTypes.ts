@@ -6,6 +6,12 @@ import { BackendAPIResponse } from '../BackendAPIResponse';
 /* *************** *************** */
 export type CreateCourseResponse = BackendAPIResponse<Partial<CourseObject>>;
 
+interface PutCourseUpdates {
+    updatesResult: Partial<CourseObject>[]
+}
+
+export type PutCourseUpdatesResponse = BackendAPIResponse<PutCourseUpdates>;
+
 /* *************** *************** */
 /* ************ Units ************ */
 /* *************** *************** */
