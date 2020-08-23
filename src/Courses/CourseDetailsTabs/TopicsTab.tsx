@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TopicsList from '../TopicsList';
 import { Accordion, Card, Row, Col, Modal, Alert } from 'react-bootstrap';
-import { CourseObject, NewCourseTopicObj, UnitObject } from '../CourseInterfaces';
+import { CourseObject, NewCourseTopicObj, UnitObject, TopicObject } from '../CourseInterfaces';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { FaPlusCircle, FaTrash } from 'react-icons/fa';
@@ -10,7 +10,7 @@ import TopicCreationModal from '../CourseCreation/TopicCreationModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
-import { putUnit } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { putUnit, putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -227,60 +227,70 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     };
 
     const onTopicDragEnd = async (result: any) => {
-        const { draggableId: topicDraggableId } = result;
-        // Index is 0 based, while content order is 1 based
-        const newContentOrder = result.destination.index + 1;
-        const topicIdRegex = /^topic-(\d+)$/;
-        // If exec doesn't match the result will be null
-        // If it does succeed the index `1` will always be the group above
-        const topicId = topicIdRegex.exec(topicDraggableId)?.[1];
-
-        const sourceUnitDroppableId = result.source.droppableId;
-        const destinationUnitDroppableId = result.destination.droppableId;
-
-        const updates: any = {
-            contentOrder: newContentOrder
-        };
-        const unitIdRegex = /^topicList-(\d+)$/;
-        const destinationUnitId = unitIdRegex.exec(destinationUnitDroppableId)?.[1];
-        const sourceUnitId = unitIdRegex.exec(sourceUnitDroppableId)?.[1];
-
-        if(_.isNil(destinationUnitId)) {
-            console.error('Could not parse desintationUnitId');
-            return;
-        }
-
-        if(_.isNil(sourceUnitId)) {
-            console.error('Could not parse sourceUnitId');
-            return;
-        }
-
-        if (sourceUnitDroppableId !== destinationUnitDroppableId) {
-            updates.courseUnitContentId = destinationUnitId;
-        }
-
-        const newCourse = _.cloneDeep(course);
-        const sourceUnit = _.find(newCourse.units, ['id', parseInt(sourceUnitId, 10)]);
-        const destinationUnit = sourceUnitId === destinationUnitId ? sourceUnit :_.find(newCourse.units, ['id', parseInt(destinationUnitId, 10)]);
-
-        if(_.isNil(sourceUnit)) {
-            console.error('Could not find source unit');
-            return;
-        }
-
-        if(_.isNil(destinationUnit)) {
-            console.error('Could not find destination unit');
-            return;
-        }
-        const [removed] = sourceUnit.topics.splice(result.source.index, 1);
-        destinationUnit.topics.splice(result.destination.index, 0, removed);
-
-        setCourse?.(newCourse);
-
         try {
+            const { draggableId: topicDraggableId } = result;
+            // Index is 0 based, while content order is 1 based
+            const newContentOrder = result.destination.index + 1;
+            const topicIdRegex = /^topic-(\d+)$/;
+            // If exec doesn't match the result will be null
+            // If it does succeed the index `1` will always be the group above
+            const topicId = topicIdRegex.exec(topicDraggableId)?.[1];
+
+            const sourceUnitDroppableId = result.source.droppableId;
+            const destinationUnitDroppableId = result.destination.droppableId;
+
+            const updates: Partial<NewCourseTopicObj> = {
+                contentOrder: newContentOrder
+            };
+            const unitIdRegex = /^topicList-(\d+)$/;
+            const destinationUnitId = unitIdRegex.exec(destinationUnitDroppableId)?.[1];
+            const sourceUnitId = unitIdRegex.exec(sourceUnitDroppableId)?.[1];
+
+            if(_.isNil(destinationUnitId)) {
+                console.error('Could not parse desintationUnitId');
+                return;
+            }
+
+            if(_.isNil(sourceUnitId)) {
+                console.error('Could not parse sourceUnitId');
+                return;
+            }
+
+            if (sourceUnitDroppableId !== destinationUnitDroppableId) {
+                if(_.isNil(destinationUnitId)) {
+                    console.error('destinationUnitId was somehow nil');
+                    throw new Error('Something went wrong with drag and drop');
+                }
+                updates.courseUnitContentId = parseInt(destinationUnitId, 10);
+            }
+
+            const newCourse = _.cloneDeep(course);
+            const sourceUnit = _.find(newCourse.units, ['id', parseInt(sourceUnitId, 10)]);
+            const destinationUnit = sourceUnitId === destinationUnitId ? sourceUnit :_.find(newCourse.units, ['id', parseInt(destinationUnitId, 10)]);
+
+            if(_.isNil(sourceUnit)) {
+                console.error('Could not find source unit');
+                return;
+            }
+
+            if(_.isNil(destinationUnit)) {
+                console.error('Could not find destination unit');
+                return;
+            }
+            const [removed] = sourceUnit.topics.splice(result.source.index, 1);
+            destinationUnit.topics.splice(result.destination.index, 0, removed);
+
+            setCourse?.(newCourse);
             setError(null);
-            // TODO use the result to update the updated objects
-            const res = await AxiosRequest.put(`/courses/topic/${topicId}`, updates);
+            if (_.isNil(topicId)) {
+                // This should not be possible
+                console.error('topicId was nil when dropping');
+                throw new Error('Something went wrong with drag and drop');
+            }    
+            const response = await putTopic({
+                id: parseInt(topicId, 10),
+                data: updates
+            });
         } catch (e) {
             setError(e);
             setCourse?.(course);
