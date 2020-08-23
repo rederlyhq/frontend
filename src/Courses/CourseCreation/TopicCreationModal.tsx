@@ -312,43 +312,53 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
     };
 
     const onDragEnd = async (result: any) => {
-        if (!result.destination) {
-            return;
-        }
+        try {
+            if (!result.destination) {
+                return;
+            }
+    
+            if (result.destination.index === result.source.index) {
+                return;
+            }
+    
+            const newContentOrder = result.destination.index + 1;
+            const problemIdRegex = /^problemRow(\d+)$/;
+            const { draggableId: problemDraggableId } = result;
+            // If exec doesn't match the result will be null
+            // If it does succeed the index `1` will always be the group above
+            const problemId = problemIdRegex.exec(problemDraggableId)?.[1];
+            if(_.isNil(problemId)) {
+                console.error('problem not found could not update backend');
+                return;
+            }
 
-        if (result.destination.index === result.source.index) {
-            return;
-        }
+            const newProbs = _.cloneDeep(problems);
+            const existingProblem = _.find(newProbs, ['id', parseInt(problemId, 10)]);
+            if(_.isNil(existingProblem)) {
+                console.error('existing problem not found could not update frontend');
+                return;
+            }
 
-        const newContentOrder = result.destination.index + 1;
-        const problemIdRegex = /^problemRow(\d+)$/;
-        const { draggableId: problemDraggableId } = result;
-        // If exec doesn't match the result will be null
-        // If it does succeed the index `1` will always be the group above
-        const problemId = problemIdRegex.exec(problemDraggableId)?.[1];
-        if(_.isNil(problemId)) {
-            console.error('problem not found could not update backend');
-            return;
+            existingProblem.problemNumber = newContentOrder;
+            const [removed] = newProbs.splice(result.source.index, 1);
+            newProbs.splice(result.destination.index, 0, removed);
+            setProblems(newProbs);
+            if (!_.isNil(existingTopic)) {
+                const newTopic = _.cloneDeep(existingTopic);
+                newTopic.questions = newProbs;
+                updateTopic?.(newTopic);
+            }
+    
+            // TODO use the result to update the updated objects
+            const res = await AxiosRequest.put(`/courses/question/${problemId}`, {
+                problemNumber: newContentOrder
+            });
+        } catch (e) {
+            setProblems(problems);
+            if (!_.isNil(existingTopic)) {
+                updateTopic?.(existingTopic);
+            }
         }
-
-        // TODO use the result to update the updated objects
-        const res = await AxiosRequest.put(`/courses/question/${problemId}`, {
-            problemNumber: newContentOrder
-        });
-
-        const existingProblem = _.find(problems, ['id', parseInt(problemId, 10)]);
-        if(_.isNil(existingProblem)) {
-            console.error('existing problem not found could not update frontend');
-            return;
-        }
-        existingProblem.problemNumber = newContentOrder;
-        const newProbs = [...problems];
-        const [removed] = newProbs.splice(result.source.index, 1);
-        newProbs.splice(result.destination.index, 0, removed);
-        setProblems(newProbs);
-        const newTopic = new NewCourseTopicObj(existingTopic);
-        newTopic.questions = newProbs;
-        updateTopic?.(newTopic);
     };
 
     const addNewQuestion = async () => {
