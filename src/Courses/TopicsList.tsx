@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ListGroup, ListGroupItem, Row, Col, Button } from 'react-bootstrap';
 import { NewCourseTopicObj } from './CourseInterfaces';
-import { BsPencilSquare } from 'react-icons/bs';
+import { BsPencilSquare, BsTrash } from 'react-icons/bs';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
@@ -61,6 +61,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                     </Col>
                     <Col md={1}>
                         <Button variant='danger' onClick={(e: any) => removeTopic(e, topic.id)}>
+                            <BsTrash />
                             Delete
                         </Button>
                     </Col>
