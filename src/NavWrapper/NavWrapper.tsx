@@ -16,6 +16,8 @@ import AdviserPage from '../Adviser/AdviserPage';
 import EnrollUserPage from '../Courses/EnrollUserPage';
 import { ProvideFeedback } from './ProvideFeedback';
 import AccountWrapper from '../Account/AccountWrapper';
+import { CookieEnum } from '../Enums/CookieEnum';
+import URLBreadcrumb from './URLBreadcrumb';
 
 interface NavWrapperProps {
 
@@ -30,12 +32,13 @@ export const userContext = React.createContext({ userType: 'Professor' });
 export const NavWrapper: React.FC<NavWrapperProps> = () => {
     const { path } = useRouteMatch();
     const history = useHistory();
-    const sessionCookie = Cookies.get('sessionToken');
-    const userName = Cookies.get('userName');
+    const sessionCookie = Cookies.get(CookieEnum.SESSION);
+    const userName = Cookies.get(CookieEnum.USERNAME);
     const { Provider } = userContext;
 
     // TODO: Check if the user has been deauthenticated (ex: expired) and display a message.
     if (!sessionCookie) {
+        console.log('Logging out due to missing session token.');
         return <Redirect to={{
             pathname: '/'
         }} />;
@@ -80,6 +83,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
             <Container fluid role='main'>
                 <Provider value={{userType: getUserRole()}}>    
                     <AnimatePresence exitBeforeEnter initial={false}>
+                        <URLBreadcrumb/>
                         <Switch>
                             <Route exact path={`${path}/account`}>
                                 <AccountWrapper />
@@ -99,7 +103,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             <Route path={`${path}/courses/enroll/:enrollCode`}>
                                 <EnrollUserPage />
                             </Route>
-                            <Route path={`${path}/courses/:courseId/:topicId`}>
+                            <Route path={`${path}/courses/:courseId/topic/:topicId`}>
                                 <SimpleProblemPage />
                             </Route>
                             <Route path={`${path}/courses/:courseId`}>
