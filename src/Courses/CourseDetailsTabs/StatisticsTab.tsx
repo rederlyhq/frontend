@@ -81,7 +81,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
 
     useEffect(() => {
         console.log('Rerunning useEffect');
-        if (!course || course.id === 0) return;
+        if (course?.id === 0) return;
     
         let url = '/courses/statistics';
         let filterParam: string = '';
@@ -161,7 +161,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
                 return;
             }
         })();
-    }, [course, course.id, userType, view, idFilter, userId]);
+    }, [course.id, view, idFilter, userId, userType]);
 
     const renderProblemPreview = (rowData: any) => {
         if (userId !== undefined) {
