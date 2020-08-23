@@ -29,6 +29,11 @@ export const HomePage: React.FC<HomePageProps> = () => {
                                 <RegisterForm/>
                             </ButtonAndModal>
                         </Row>
+                        <Row>
+                            <Col style={{margin: '10px'}}>
+                                <a href="https://rederly.com/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                            </Col>
+                        </Row>
                     </Col>
                 </Row>
             </Container>
