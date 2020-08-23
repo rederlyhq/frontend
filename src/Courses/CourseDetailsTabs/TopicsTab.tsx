@@ -56,14 +56,20 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
             let newCourse: CourseObject = { ...course };
             let unit = _.find(newCourse.units, ['id', unitId]);
-    
+
             if (!unit) {
                 console.error(`Could not find a unit with id ${unitId}`);
                 return;
             }
-    
+
+            const deletedTopic = _.find(unit.topics, ['id', topicId]);
+            // Decrement everything after
+            if (!_.isNil(deletedTopic)) {
+                _.filter(unit.topics, topic => topic.contentOrder > deletedTopic.contentOrder).forEach(topic => topic.contentOrder--);
+            }
+
             unit.topics = _.reject(unit.topics, ['id', topicId]);
-            setCourse?.(newCourse);    
+            setCourse?.(newCourse);
         } catch (e) {
             setError(e);
         }
@@ -86,15 +92,15 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     courseUnitContentId
                 }
             });
-    
+
             let newCourse: CourseObject = new CourseObject(course);
             let unit = _.find(newCourse.units, ['id', courseUnitContentId]);
-    
+
             if (!unit) {
                 console.error(`Could not find a unit with id ${courseUnitContentId}`);
                 return;
             }
-    
+
             unit.topics.push(new NewCourseTopicObj(result.data.data));
             setCourse?.(newCourse);
         } catch (e) {
@@ -185,7 +191,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         }
 
         setCourse?.(newCourse);
-        setShowTopicCreation({show: false, unitIndex: -1});
+        setShowTopicCreation({ show: false, unitIndex: -1 });
     };
 
     const onUnitBlur = async (event: React.FocusEvent<HTMLHeadingElement>, unitId: number) => {
@@ -274,18 +280,18 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             const destinationUnitId = unitIdRegex.exec(destinationUnitDroppableId)?.[1];
             const sourceUnitId = unitIdRegex.exec(sourceUnitDroppableId)?.[1];
 
-            if(_.isNil(destinationUnitId)) {
+            if (_.isNil(destinationUnitId)) {
                 console.error('Could not parse desintationUnitId');
                 return;
             }
 
-            if(_.isNil(sourceUnitId)) {
+            if (_.isNil(sourceUnitId)) {
                 console.error('Could not parse sourceUnitId');
                 return;
             }
 
             if (sourceUnitDroppableId !== destinationUnitDroppableId) {
-                if(_.isNil(destinationUnitId)) {
+                if (_.isNil(destinationUnitId)) {
                     console.error('destinationUnitId was somehow nil');
                     throw new Error('Something went wrong with drag and drop');
                 }
@@ -294,14 +300,14 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
             const newCourse = _.cloneDeep(course);
             const sourceUnit = _.find(newCourse.units, ['id', parseInt(sourceUnitId, 10)]);
-            const destinationUnit = sourceUnitId === destinationUnitId ? sourceUnit :_.find(newCourse.units, ['id', parseInt(destinationUnitId, 10)]);
+            const destinationUnit = sourceUnitId === destinationUnitId ? sourceUnit : _.find(newCourse.units, ['id', parseInt(destinationUnitId, 10)]);
 
-            if(_.isNil(sourceUnit)) {
+            if (_.isNil(sourceUnit)) {
                 console.error('Could not find source unit');
                 return;
             }
 
-            if(_.isNil(destinationUnit)) {
+            if (_.isNil(destinationUnit)) {
                 console.error('Could not find destination unit');
                 return;
             }
@@ -314,7 +320,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 // This should not be possible
                 console.error('topicId was nil when dropping');
                 throw new Error('Something went wrong with drag and drop');
-            }    
+            }
             const response = await putTopic({
                 id: parseInt(topicId, 10),
                 data: updates
@@ -340,7 +346,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         if (!result.destination) {
             return;
         }
-    
+
         if (result.destination.index === result.source.index) {
             return;
         }
@@ -370,12 +376,12 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     closeModal={_.partial(setShowTopicCreation, { show: false, unitIndex: -1 })}
                     updateTopic={(topic: NewCourseTopicObj) => {
                         const existingUnit = _.find(course.units, ['id', topic.courseUnitContentId]);
-                        if(_.isNil(existingUnit)) {
+                        if (_.isNil(existingUnit)) {
                             console.error('Could not find unit');
                             return;
                         }
                         const topicIndex = _.findIndex(existingUnit.topics, ['id', topic.id]);
-                        if(_.isNil(topicIndex)) {
+                        if (_.isNil(topicIndex)) {
                             console.error('Could not find topic');
                             return;
                         }
@@ -431,7 +437,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     {
                         (provided: any) => (
                             <>
-                                <div ref={provided.innerRef} style={{backgroundColor: 'white'}} {...provided.droppableProps}>
+                                <div ref={provided.innerRef} style={{ backgroundColor: 'white' }} {...provided.droppableProps}>
                                     {course?.units?.map((unit: any, index) => {
                                         const showEditWithUnitId = _.curry(showEditTopic)(_, unit.id);
                                         const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
@@ -467,30 +473,30 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                         <Col />
                                                                         {
                                                                             inEditMode &&
-                                                                <div style={{ marginLeft: 'auto' }}>
-                                                                    <span
-                                                                        role="button"
-                                                                        tabIndex={0}
-                                                                        style={{
-                                                                            padding: '6px'
-                                                                        }}
-                                                                        onClick={_.partial(removeUnitClick, _, unit.id)}
-                                                                        onKeyPress={_.partial(removeUnitClick, _, unit.id)}
-                                                                    >
-                                                                        <FaTrash color='#AA0000' />
-                                                                    </span>
-                                                                    <span
-                                                                        role="button"
-                                                                        tabIndex={0}
-                                                                        style={{
-                                                                            padding: '6px'
-                                                                        }}
-                                                                        onClick={_.partial(addTopicClick, _, unit.id)}
-                                                                        onKeyPress={_.partial(addTopicClick, _, unit.id)}
-                                                                    >
-                                                                        <FaPlusCircle color='#00AA00' />
-                                                                    </span>
-                                                                </div>
+                                                                            <div style={{ marginLeft: 'auto' }}>
+                                                                                <span
+                                                                                    role="button"
+                                                                                    tabIndex={0}
+                                                                                    style={{
+                                                                                        padding: '6px'
+                                                                                    }}
+                                                                                    onClick={_.partial(removeUnitClick, _, unit.id)}
+                                                                                    onKeyPress={_.partial(removeUnitClick, _, unit.id)}
+                                                                                >
+                                                                                    <FaTrash color='#AA0000' />
+                                                                                </span>
+                                                                                <span
+                                                                                    role="button"
+                                                                                    tabIndex={0}
+                                                                                    style={{
+                                                                                        padding: '6px'
+                                                                                    }}
+                                                                                    onClick={_.partial(addTopicClick, _, unit.id)}
+                                                                                    onKeyPress={_.partial(addTopicClick, _, unit.id)}
+                                                                                >
+                                                                                    <FaPlusCircle color='#00AA00' />
+                                                                                </span>
+                                                                            </div>
                                                                         }
                                                                     </Row>
                                                                 </Accordion.Toggle>
