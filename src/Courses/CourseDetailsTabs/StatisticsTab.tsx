@@ -161,7 +161,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
                 return;
             }
         })();
-    }, [course.id, view, idFilter, userId]);
+    }, [course, course.id, userType, view, idFilter, userId]);
 
     const renderProblemPreview = (rowData: any) => {
         if (userId !== undefined) {

@@ -68,7 +68,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
             ) : (
                 <>
                     <Col md={6}>
-                        <Link to={loc =>({pathname: `${loc.pathname}/${topic.id}`, state: {problems: topic.questions}})}>
+                        <Link to={loc =>({pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}})}>
                             <h5>{topic.name}</h5>
                         </Link>
                     </Col>
