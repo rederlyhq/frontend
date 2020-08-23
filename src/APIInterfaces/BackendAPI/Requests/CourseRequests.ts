@@ -1,9 +1,9 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 
 const COURSE_PATH = '/courses/';
@@ -55,6 +55,19 @@ export const putTopic = async ({
                 `${id}/`
             ),
             data);    
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const postQuestion = async ({
+    data
+}: PostCourseTopicQuestionOptions): Promise<AxiosResponse<CreateQuestionResponse>> => {
+    try {
+        return await AxiosRequest.post(
+            COURSE_QUESTION_PATH,
+            data
+        );    
     } catch (e) {
         throw new BackendAPIError(e);
     }

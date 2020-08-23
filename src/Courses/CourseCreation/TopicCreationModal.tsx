@@ -10,7 +10,7 @@ import MomentUtils from '@date-io/moment';
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { FaTrash } from 'react-icons/fa';
-import { putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { putQuestion, postQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface TopicCreationModalProps {
     unitIndex: number;
@@ -381,21 +381,28 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
     };
 
     const addNewQuestion = async () => {
-        const result = await AxiosRequest.post('/courses/question', {
-            courseTopicContentId: existingTopic?.id
-        });
-        const newProb = new ProblemObject(result.data.data);
-        setProblems([
-            ...problems,
-            newProb
-        ]);
-        
-        if(_.isNil(existingTopic)) {
-            console.error('Cannot update topic because it is nil');
-            return;
+        try {
+            const result = await postQuestion({
+                data: {
+                    courseTopicContentId: existingTopic?.id
+                }
+            });
+
+            const newProb = new ProblemObject(result.data.data);
+            setProblems([
+                ...problems,
+                newProb
+            ]);
+            
+            if(_.isNil(existingTopic)) {
+                console.error('Cannot update topic because it is nil');
+                return;
+            }
+            existingTopic.questions.push(newProb);
+            updateTopic?.(existingTopic);
+        } catch (e) {
+            setError(e);
         }
-        existingTopic.questions.push(newProb);
-        updateTopic?.(existingTopic);
     };
 
     const addNewQuestionClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

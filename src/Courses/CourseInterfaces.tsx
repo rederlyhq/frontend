@@ -149,3 +149,7 @@ export class ProblemObject implements IProblemObject {
         Object.assign(this, init);
     }
 }
+
+export class NewProblemObject extends ProblemObject {
+    courseTopicContentId: number = 0;
+}

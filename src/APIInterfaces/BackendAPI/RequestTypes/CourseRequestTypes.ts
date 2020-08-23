@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject } from '../../../Courses/CourseInterfaces';
 
 export interface CreateCourseOptions {
     useCurriculum?: boolean;
@@ -18,4 +18,8 @@ export interface PutCourseTopicOptions {
 export interface PutCourseTopicQuestionOptions {
     id: number;
     data: Partial<ProblemObject>;
+}
+
+export interface PostCourseTopicQuestionOptions {
+    data: Partial<NewProblemObject>;
 }
