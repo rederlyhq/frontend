@@ -190,17 +190,25 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     };
 
     const onUnitBlur = async (event: React.FocusEvent<HTMLHeadingElement>, unitId: number) => {
-        let newCourse = new CourseObject(course);
-        let updatingUnit = _.find(newCourse.units, ['id', unitId]);
-        if (!updatingUnit) {
-            console.error(`Could not find a unit with the unique identifier ${unitId}`);
-            return;
+        try {
+            setError(null);
+            let newCourse = _.cloneDeep(course);
+            let updatingUnit = _.find(newCourse.units, ['id', unitId]);
+            if (!updatingUnit) {
+                console.error(`Could not find a unit with the unique identifier ${unitId}`);
+                return;
+            }
+            updatingUnit.name = event.target.innerText;
+            await putUnit({
+                id: unitId,
+                data: {
+                    name: event.target.innerText
+                }
+            });
+            setCourse?.(newCourse);
+        } catch (e) {
+            setError(e);
         }
-        updatingUnit.name = event.target.innerText;
-        await AxiosRequest.put(`/courses/unit/${unitId}`, {
-            name: event.target.innerText
-        });
-        setCourse?.(newCourse);
     };
 
     const onUnitDragEnd = async (result: any) => {
