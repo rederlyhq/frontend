@@ -140,6 +140,11 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 id: unitId
             });
             let newCourse: CourseObject = new CourseObject(course);
+            const deletedUnit = _.find(newCourse.units, ['id', unitId]);
+            // Decrement everything after
+            if (!_.isNil(deletedUnit)) {
+                _.filter(newCourse.units, unit => unit.contentOrder > deletedUnit.contentOrder).forEach(unit => unit.contentOrder--);
+            }
             newCourse.units = _.reject(newCourse.units, ['id', unitId]);
             setCourse?.(newCourse);
         } catch (e) {
