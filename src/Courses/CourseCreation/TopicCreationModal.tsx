@@ -142,6 +142,11 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                 id: problemId
             });    
             let newProblems = [...problems];
+            const deletedProblem = _.find(newProblems, ['id', problemId]);
+            // Decrement everything after
+            if (!_.isNil(deletedProblem)) {
+                _.filter(newProblems, problem => problem.problemNumber > deletedProblem.problemNumber).forEach(problem => problem.problemNumber--);
+            }
             newProblems = _.reject(newProblems, ['id', problemId]);
             setProblems(newProblems);
             const newTopic = new NewCourseTopicObj(existingTopic);
