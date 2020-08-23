@@ -10,7 +10,7 @@ import MomentUtils from '@date-io/moment';
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { FaTrash } from 'react-icons/fa';
-import { putQuestion, postQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { putQuestion, postQuestion, putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface TopicCreationModalProps {
     unitIndex: number;
@@ -112,6 +112,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             // It would update other fields too if they were stale
             // However other objects would still be stale
             // And we've already updated the object itself
+            setError(null);
             await putQuestion({
                 id: probs[index].id,
                 data: {
@@ -263,20 +264,33 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         if (name === 'endDate') {
             updates.deadDate = val;
         }
-        await AxiosRequest.put(`/courses/topic/${existingTopic?.id}`, updates);
+        try {
+            setError(null);
+            if(_.isNil(existingTopic)) {
+                console.error('Tried to edit a topic that does not exist');
+                throw new Error('Error updating existing topic');
+            }
+            // We could pull the changes down however we already have them so why bother
+            await putTopic({
+                id: existingTopic.id,
+                data: updates
+            });
 
-        setTopicMetadata({ ...topicMetadata, ...updates });
-
-        if(_.isNil(existingTopic)) {
-            console.error('Cannot update topic because it is nil');
-            return;
+            setTopicMetadata({ ...topicMetadata, ...updates });
+    
+            if(_.isNil(existingTopic)) {
+                console.error('Cannot update topic because it is nil');
+                return;
+            }
+            updateTopic?.({
+                ...existingTopic,
+                ...topicMetadata
+            });
+    
+            console.log(topicMetadata);    
+        } catch (e) {
+            setError(e);
         }
-        updateTopic?.({
-            ...existingTopic,
-            ...topicMetadata
-        });
-
-        console.log(topicMetadata);
     };
 
     const onDrop = useCallback(acceptedFiles => {
@@ -395,6 +409,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
 
     const addNewQuestion = async () => {
         try {
+            setError(null);
             const result = await postQuestion({
                 data: {
                     courseTopicContentId: existingTopic?.id
