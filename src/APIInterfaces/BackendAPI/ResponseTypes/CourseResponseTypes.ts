@@ -14,3 +14,9 @@ interface PutCourseTopicUpdates {
 }
 
 export type PutCourseTopicUpdatesResponse = BackendAPIResponse<PutCourseTopicUpdates>;
+
+interface PutCourseTopicQuestionUpdates {
+    updatesResult: Partial<NewCourseTopicObj>[]
+}
+
+export type PutCourseTopicQuestionUpdatesResponse = BackendAPIResponse<PutCourseTopicQuestionUpdates>;

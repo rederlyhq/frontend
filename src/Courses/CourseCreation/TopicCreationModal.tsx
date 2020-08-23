@@ -10,6 +10,7 @@ import MomentUtils from '@date-io/moment';
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { FaTrash } from 'react-icons/fa';
+import { putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface TopicCreationModalProps {
     unitIndex: number;
@@ -352,8 +353,11 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
     
             setError(null);
             // TODO use the result to update the updated objects
-            const res = await AxiosRequest.put(`/courses/question/${problemId}`, {
-                problemNumber: newContentOrder
+            const response = await putQuestion({
+                id: parseInt(problemId, 10),
+                data: {
+                    problemNumber: parseInt(newContentOrder, 10)
+                }
             });
         } catch (e) {
             setError(e);
