@@ -50,3 +50,5 @@ interface PostDefFile {
 }
 
 export type PostDefFileResponse = BackendAPIResponse<PostDefFile>;
+
+export type GetQuestionsResponse = BackendAPIResponse<any>;

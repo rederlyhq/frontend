@@ -7,6 +7,7 @@ import ProblemIframe from './ProblemIframe';
 import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
 import { ProblemDoneState } from '../Enums/AssignmentEnums';
 import _ from 'lodash';
+import { getQuestions } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface SimpleProblemPageProps {
 }
@@ -28,11 +29,14 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         setLoading(true);
         (async () => {
             try {
-                const res = await AxiosRequest.get('/courses/questions/', {
-                    params: {
-                        userId: 'me',
-                        courseTopicContentId: params.topicId
-                    }
+                if(_.isNil(params.topicId)) {
+                    console.error('topicId is null');
+                    setError('An unexpected error has occurred');
+                    return;
+                }
+                const res = await getQuestions({
+                    userId: 'me',
+                    courseTopicContentId: parseInt(params.topicId, 10)
                 });
                 const problems: Array<ProblemObject> = res.data.data;
 
