@@ -51,4 +51,8 @@ interface PostDefFile {
 
 export type PostDefFileResponse = BackendAPIResponse<PostDefFile>;
 
-export type GetQuestionsResponse = BackendAPIResponse<any>;
+interface GetQuestions {
+    questions: Array<ProblemObject>;
+    topic: NewCourseTopicObj
+}
+export type GetQuestionsResponse = BackendAPIResponse<GetQuestions>;

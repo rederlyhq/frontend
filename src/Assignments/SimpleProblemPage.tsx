@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ProblemObject } from '../Courses/CourseInterfaces';
+import { ProblemObject, NewCourseTopicObj } from '../Courses/CourseInterfaces';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
@@ -21,6 +21,7 @@ interface SimpleProblemPageLocationParams {
 export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const params = useParams<SimpleProblemPageLocationParams>();
     const [problems, setProblems] = useState<Record<number, ProblemObject> | null>(null);
+    const [topic, setTopic] = useState<NewCourseTopicObj | null>(null);
     const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -38,7 +39,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     userId: 'me',
                     courseTopicContentId: parseInt(params.topicId, 10)
                 });
-                const problems: Array<ProblemObject> = res.data.data;
+                const problems: Array<ProblemObject> = res.data.data.questions;
+                const topic = res.data.data.topic;
+                setTopic(topic);
 
                 if (!_.isEmpty(problems)) {
                     const problemDictionary = _.chain(problems)
@@ -105,7 +108,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     return (
         <>
-            <h3>Homework</h3>
+            {topic && <h3>{topic.name}</h3>}
             <Container fluid>
                 <Row>
                     <Col md={3}>
