@@ -1,9 +1,9 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 
@@ -11,6 +11,7 @@ const COURSE_PATH = '/courses/';
 const COURSE_UNIT_PATH = url.resolve(COURSE_PATH, 'unit/');
 const COURSE_TOPIC_PATH = url.resolve(COURSE_PATH, 'topic/');
 const COURSE_QUESTION_PATH = url.resolve(COURSE_PATH, 'question/');
+const COURSE_QUESTIONS_PATH = url.resolve(COURSE_PATH, 'questions/');
 const COURSE_DEF_PATH = url.resolve(COURSE_PATH, 'def/');
 
 /* *************** *************** */
@@ -221,3 +222,19 @@ export const postDefFile = async ({
         throw new BackendAPIError(e);
     }
 };
+
+export const getQuestions = async ({
+    userId,
+    courseTopicContentId
+}: GetQuestionsOptions): Promise<AxiosResponse<GetQuestionsResponse>> => {
+    try {
+        return await AxiosRequest.get(COURSE_QUESTIONS_PATH, {
+            params: {
+                userId,
+                courseTopicContentId
+            }
+        });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+}
