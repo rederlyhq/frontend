@@ -332,10 +332,14 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                     acceptedFiles,
                     courseTopicId: existingTopic.id
                 });
-                setProblems([
+                const newProblems = [
                     ...problems,
                     ...res.data.data.newQuestions.map((question: ProblemObject) => new ProblemObject(question))
-                ]);    
+                ];
+                setProblems(newProblems);
+                const newTopic = new NewCourseTopicObj(existingTopic);
+                newTopic.questions = newProblems;
+                updateTopic?.(newTopic);
             } catch (e) {
                 setError(e);
             }
@@ -448,16 +452,17 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             });
 
             const newProb = new ProblemObject(result.data.data);
-            setProblems([
+            const newProblems = [
                 ...problems,
                 newProb
-            ]);
+            ];
+            setProblems(newProblems);
             
             if(_.isNil(existingTopic)) {
                 console.error('Cannot update topic because it is nil');
                 return;
             }
-            existingTopic.questions.push(newProb);
+            existingTopic.questions = newProblems;
             updateTopic?.(existingTopic);
         } catch (e) {
             setError(e);
