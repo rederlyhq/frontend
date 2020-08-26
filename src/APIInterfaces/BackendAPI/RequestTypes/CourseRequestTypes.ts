@@ -65,3 +65,8 @@ export interface PostDefFileOptions {
     acceptedFiles: any;
     courseTopicId: number;
 }
+
+export interface GetQuestionsOptions {
+    userId: number | 'me';
+    courseTopicContentId: number;
+}
