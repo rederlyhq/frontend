@@ -58,16 +58,13 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
     };
 
     function urlencodeFormData(fd: FormData) {
-        var s = '';
-        function encode(s: string) {
-            return encodeURIComponent(s).replace(/%20/g,'+');
-        }
+        var efd = new URLSearchParams();
         for(var pair of fd.entries()){
-            if(typeof pair[1]=='string'){
-                s += (s?'&':'') + encode(pair[0])+'='+encode(pair[1]);
-            }
+            let key = pair[0] as string;
+            let val = pair[1] as string;
+            efd.append(encodeURIComponent(key),encodeURIComponent(val));
         }
-        return s;
+        return efd;
     }
 
     function insertListener() {
@@ -143,7 +140,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
         _.each(obj, (key, val) => formData.append(encodeURIComponent(val), encodeURIComponent(key)));
 
         try {
-            const res = await AxiosRequest.post(`/courses/question/${problem.id}`, 
+            const res = await AxiosRequest.post(`/courses/question/${problem.id}`,
                 formData, {headers: {'Content-Type': 'application/x-www-form-urlencoded'}});
             console.log(res);
             const grade = res.data.data.rendererData.problem_result.score;
@@ -196,9 +193,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
         <>
             { loading && <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>}
             {error && <div>{error}</div>}
-            <iframe 
+            <iframe
                 title='Problem Frame'
-                ref={iframeRef} 
+                ref={iframeRef}
                 style={{width: '100%', height: height, border: 'none', minHeight: '350px', visibility: (loading || error) ? 'hidden' : 'visible'}}
                 sandbox='allow-same-origin allow-forms allow-scripts allow-popups'
                 srcDoc={renderedHTML}
