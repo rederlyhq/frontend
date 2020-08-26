@@ -57,6 +57,81 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
         setHeight(`${scrollHeight}px`);
     };
 
+    function urlencodeFormData(fd: FormData) {
+        var s = '';
+        function encode(s: string) {
+            return encodeURIComponent(s).replace(/%20/g,'+');
+        }
+        for(var pair of fd.entries()){
+            if(typeof pair[1]=='string'){
+                s += (s?'&':'') + encode(pair[0])+'='+encode(pair[1]);
+            }
+        }
+        return s;
+    }
+
+    function insertListener() {
+        // assuming global problemiframe - too sloppy?
+        let problemForm = iframeRef?.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
+        // don't croak when the empty iframe is first loaded
+        // problably not an issue for rederly/frontend
+        if (_.isNil(problemForm)) {
+            // This will happen, if you set error then it will never be true and breaks the page
+            // setError('An error occurred');
+            // console.error('Hijacker: Could not find the form to insert the listener');
+            return;
+        }
+        problemForm.addEventListener('submit', (event: { preventDefault: () => void; }) => {
+            event.preventDefault();
+            if (_.isNil(problemForm)) {
+                console.error('Hijacker: Could not find the form when submitting the form');
+                setError('An error occurred');
+                return;
+            }
+            let formData = new FormData(problemForm);
+            let clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
+            if (_.isNil(clickedButton)) {
+                setError('Hijacker: An error occurred');
+                console.error('Could not find the button that submitted the form');
+                return;
+            }
+            formData.append('format', 'json');
+            formData.append(clickedButton.name, clickedButton.value);
+            const submiturl = problemForm.getAttribute('action');
+            if(_.isNil(submiturl)) {
+                setError('An error occurred');
+                console.error('Hijacker: Couldn\'t find the submit URL');
+                return;
+            }
+            const submit_params = {
+                body : urlencodeFormData(formData),
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            };
+            fetch(submiturl, submit_params).then( function(response) {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Could not submit your answers: ' + response.statusText);
+                }
+            }).then( function(res) {
+                if(_.isNil(iframeRef?.current)) {
+                    console.error('Hijacker: Could not find the iframe ref');
+                    setError('An error occurred');
+                    return;
+                }
+                setRenderedHTML(res.data.rendererData.renderedHTML);
+                setProblemStudentGrade(res.data.studentGrade);
+            }).catch( function(e) {
+                console.error(e);
+                setError(e.message);
+            });
+        });
+    }
+
+    // TODO this was the old hijacker and should be deleted after vetting out the new hijacker code
     const hijackFormSubmit = async (e: any) => {
         e.preventDefault();
         setLoading(true);
@@ -98,8 +173,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
         body.onresize = recalculateHeight;
 
         // HTMLCollectionOf is not iterable by default in Typescript.
-        const forms = iframeDoc.getElementsByTagName('form');
-        _.forEach(forms, form => form.addEventListener('submit', hijackFormSubmit));
+        // const forms = iframeDoc.getElementsByTagName('form');
+        // _.forEach(forms, form => form.addEventListener('submit', hijackFormSubmit));
+        insertListener();
 
         console.log('Checking MathJax...');
         const MathJax = (iframeRef.current?.contentWindow as any)?.MathJax;
