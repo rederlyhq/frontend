@@ -197,7 +197,6 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             let postObject = _.pick(course, newCourseFields);
             postObject.semesterCode = `${course.semesterCode}${course.semesterCodeYear}`;
             postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
-            postObject.code = encodeURIComponent(postObject.code);
             // TODO: Fix naming for route, should be 'templateId'.
 
             if (!courseId) {
