@@ -57,16 +57,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
         setHeight(`${scrollHeight}px`);
     };
 
-    function urlencodeFormData(fd: FormData) {
-        var efd = new URLSearchParams();
-        for(var pair of fd.entries()){
-            let key = pair[0] as string;
-            let val = pair[1] as string;
-            efd.append(encodeURIComponent(key),encodeURIComponent(val));
-        }
-        return efd;
-    }
-
     function insertListener() {
         // assuming global problemiframe - too sloppy?
         let problemForm = iframeRef?.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
@@ -92,7 +82,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
                 console.error('Could not find the button that submitted the form');
                 return;
             }
-            formData.append('format', 'json');
             formData.append(clickedButton.name, clickedButton.value);
             const submiturl = problemForm.getAttribute('action');
             if(_.isNil(submiturl)) {
@@ -101,11 +90,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
                 return;
             }
             const submit_params = {
-                body : urlencodeFormData(formData),
+                body: formData,
                 method: 'post',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
             };
             fetch(submiturl, submit_params).then( function(response) {
                 if (response.ok) {
