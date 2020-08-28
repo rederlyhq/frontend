@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Modal } from 'react-bootstrap';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import useAlertState from '../Hooks/useAlertState';
 import _ from 'lodash';
+import { postForgotPassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 
 interface ForgotPasswordButtonAndModalProps {
     defaultEmail?: string;
@@ -22,23 +22,52 @@ export const ForgotPasswordButtonAndModal: React.FC<ForgotPasswordButtonAndModal
     const [formState, setFormState] = useState<ForgotPasswordFormData>({ email: defaultEmail });
     const [showModal, setShowModal] = useState(false);
 
+    useEffect(() => {
+        setFormState({
+            ...formState,
+            email: defaultEmail
+        });
+    }, [defaultEmail]);
+
     const callShowModal = (show: boolean, e: any = null) => {
         if (e != null) {
             e.stopPropagation();
             e.preventDefault();
         }
+
+        if (show === false) {
+            setForgotPasswordAlertMsg({
+                message: '',
+                variant: 'info'
+            });
+            setValidated(false);    
+        }
         setShowModal(show);
     };
 
-    const handleForgotPassword = () => {
-        setForgotPasswordAlertMsg({
-            message: 'Forgot password email sent successfully!',
-            variant: 'success'
-        });
-        setTimeout(() => {
-            callShowModal(false);
-            onComplete?.();
-        }, 3000);
+    const handleForgotPassword = async () => {
+        try {
+            setForgotPasswordAlertMsg({
+                message: '',
+                variant: 'info'
+            });
+            await postForgotPassword({
+                email: formState.email
+            });
+            setForgotPasswordAlertMsg({
+                message: 'Forgot password email sent successfully!',
+                variant: 'success'
+            });
+            setTimeout(() => {
+                callShowModal(false);
+                onComplete?.();
+            }, 3000);
+        } catch (e) {
+            setForgotPasswordAlertMsg({
+                variant: 'danger',
+                message: e.message
+            });
+        }
     };
 
     const handleNamedChange = (name: keyof ForgotPasswordFormData, event: any) => {
