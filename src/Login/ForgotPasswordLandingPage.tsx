@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Form, Button, Alert, Jumbotron } from 'react-bootstrap';
 import { useParams } from 'react-router';
-import Axios from '../Hooks/AxiosRequest';
 import SimpleFormRow from '../Components/SimpleFormRow';
 import useAlertState from '../Hooks/useAlertState';
 import { putUpdatePassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
+import { Link } from 'react-router-dom';
 
 interface ForgotPasswordLandingPageProps {
 
@@ -25,6 +25,7 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
         passwordConf: '',
     });
     const [validated, setValidated] = useState(false);
+    const [success, setSuccess] = useState(false);
     const [{ message: forgotPasswordAlertMsg, variant: forgotPasswordAlertType }, setForgotPasswordAlert] = useAlertState();
 
     const handleForgotPassword = async () => {
@@ -38,6 +39,7 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
                 message: '',
                 variant: 'info'
             });
+            setSuccess(true);
         } catch (e) {
             setForgotPasswordAlert({
                 message: e.message,
@@ -82,15 +84,15 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
     // TODO: Redirect back to home after timeout?
     if (!uid) return <div>This page is no longer valid.</div>;
 
-    // return (
-    //     <Jumbotron>
-    //         {forgotPasswordError && <h2>{forgotPasswordError}</h2>}
-    //         {forgotPasswordData && <>
-    //             <h4>Your password has been updated!</h4>
-    //             <h2>Please <Link to='/'>click here</Link> to login and continue your learning journey!</h2>
-    //         </>}
-    //     </Jumbotron>
-    // );
+    if(success) {
+        return (
+            <Jumbotron>
+                <h4>Your password has been updated!</h4>
+                <h2>Please <Link to='/'>click here</Link> to login and continue your learning journey!</h2>
+            </Jumbotron>
+        );    
+    }
+
     return (
         <Jumbotron>
             <Form noValidate validated={validated} onSubmit={handleSubmit} action='#'>
