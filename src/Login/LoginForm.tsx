@@ -6,8 +6,7 @@ import { useHistory } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import { getUserRoleFromServer } from '../Enums/UserRole';
 import { CookieEnum } from '../Enums/CookieEnum';
-import ButtonAndModal from '../Components/ButtonAndModal';
-import { ForgotPasswordForm } from './ForgotPasswordForm';
+import { ForgotPasswordButtonAndModal } from './ForgotPasswordButtonAndModal';
 
 interface LoginFormProps {
 
@@ -123,13 +122,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
             </Form>
             <Row>
                 <Col className="text-center">
-                    <ButtonAndModal
-                        buttonText="Forgot password"
-                        header={<h1>Forgot Password</h1>}
-                        variant="link"
-                    >
-                        <ForgotPasswordForm defaultEmail={formState.email} />
-                    </ButtonAndModal>
+                    <ForgotPasswordButtonAndModal defaultEmail={formState.email} />
                 </Col>
             </Row>
         </>
