@@ -7,6 +7,7 @@ import Cookie from 'js-cookie';
 import { getUserRoleFromServer } from '../Enums/UserRole';
 import { CookieEnum } from '../Enums/CookieEnum';
 import ButtonAndModal from '../Components/ButtonAndModal';
+import { ForgotPasswordForm } from './ForgotPasswordForm';
 
 interface LoginFormProps {
 
@@ -126,7 +127,9 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                         buttonText="Forgot password"
                         header={<h1>Forgot Password</h1>}
                         variant="link"
-                    ></ButtonAndModal>
+                    >
+                        <ForgotPasswordForm defaultEmail={formState.email} />
+                    </ButtonAndModal>
                 </Col>
             </Row>
         </>
