@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Form, Button, Alert, Jumbotron } from 'react-bootstrap';
+import { Form, Button, Alert } from 'react-bootstrap';
 import SimpleFormRow from '../Components/SimpleFormRow';
 import useAlertState from '../Hooks/useAlertState';
 import { putUpdatePassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
-import { Link } from 'react-router-dom';
 import { Grid } from '@material-ui/core';
 
 interface AccountChangePasswordPageProps {
@@ -53,7 +52,7 @@ export const AccountChangePasswordPage: React.FC<AccountChangePasswordPageProps>
         } else {
             if (formState.password !== formState.passwordConf) {
                 setUpdatePasswordAlert({
-                    message: 'The two passwords you provided do not match',
+                    message: 'Your password did not match the confirmation.',
                     variant: 'danger'
                 });
             } else {
@@ -74,6 +73,11 @@ export const AccountChangePasswordPage: React.FC<AccountChangePasswordPageProps>
                 ...formState,
                 [name]: val
             });
+            // remove any errors
+            setUpdatePasswordAlert({
+                message: '',
+                variant: 'info'
+            });    
         };
     };
 

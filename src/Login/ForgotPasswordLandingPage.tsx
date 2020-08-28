@@ -57,7 +57,7 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
         } else {
             if (formState.password !== formState.passwordConf) {
                 setForgotPasswordAlert({
-                    message: 'The two passwords you provided do not match',
+                    message: 'Your password did not match the confirmation.',
                     variant: 'danger'
                 });
             } else {
@@ -78,6 +78,11 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
                 ...formState,
                 [name]: val
             });
+            // Remove the error
+            setForgotPasswordAlert({
+                message: '',
+                variant: 'info'
+            });    
         };
     };
 
