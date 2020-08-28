@@ -4,8 +4,11 @@ export interface PostForgotPasswordOptions {
 
 export interface PutUpdatePasswordOptions {
     newPassword: string;
-    email?: string;
-    id?: string;
+    oldPassword: string;
+}
+
+export interface PutUpdateForgottonPasswordOptions {
+    newPassword: string;
+    email: string;
     forgotPasswordToken?: string;
-    oldPassword?: string;
 }

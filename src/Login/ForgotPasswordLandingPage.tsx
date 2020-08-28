@@ -3,7 +3,7 @@ import { Form, Button, Alert, Jumbotron } from 'react-bootstrap';
 import { useParams } from 'react-router';
 import SimpleFormRow from '../Components/SimpleFormRow';
 import useAlertState from '../Hooks/useAlertState';
-import { putUpdatePassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
+import { putUpdateForgottonPassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { Link } from 'react-router-dom';
 
 interface ForgotPasswordLandingPageProps {
@@ -30,7 +30,7 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
 
     const handleForgotPassword = async () => {
         try {
-            await putUpdatePassword({
+            await putUpdateForgottonPassword({
                 email: formState.email,
                 newPassword: formState.password,
                 forgotPasswordToken: uid
