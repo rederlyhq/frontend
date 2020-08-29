@@ -97,6 +97,7 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
     if(success) {
         return (
             <Jumbotron>
+                <h3>Forgot Password</h3>
                 <h4>Your password has been updated!</h4>
                 <h2>Please <Link to='/'>click here</Link> to login and continue your learning journey!</h2>
             </Jumbotron>
@@ -105,6 +106,7 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
 
     return (
         <Jumbotron>
+            <h3>Forgot Password</h3>
             <Form noValidate validated={validated} onSubmit={handleSubmit} action='#'>
                 {(forgotPasswordAlertMsg !== '') && <Alert variant={forgotPasswordAlertType}>{forgotPasswordAlertMsg}</Alert>}
                 <SimpleFormRow
