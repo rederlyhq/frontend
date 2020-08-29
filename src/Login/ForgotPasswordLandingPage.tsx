@@ -5,6 +5,7 @@ import SimpleFormRow from '../Components/SimpleFormRow';
 import useAlertState from '../Hooks/useAlertState';
 import { putUpdateForgottonPassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { Link } from 'react-router-dom';
+import _ from 'lodash';
 
 interface ForgotPasswordLandingPageProps {
 
@@ -30,6 +31,10 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
 
     const handleForgotPassword = async () => {
         try {
+            if(_.isNil(uid)) {
+                console.error('The router should not allow for null uid');
+                throw new Error('Cannot reset password with token!');
+            }
             await putUpdateForgottonPassword({
                 email: formState.email,
                 newPassword: formState.password,
@@ -92,6 +97,7 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
     if(success) {
         return (
             <Jumbotron>
+                <h3>Forgot Password</h3>
                 <h4>Your password has been updated!</h4>
                 <h2>Please <Link to='/'>click here</Link> to login and continue your learning journey!</h2>
             </Jumbotron>
@@ -100,6 +106,7 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
 
     return (
         <Jumbotron>
+            <h3>Forgot Password</h3>
             <Form noValidate validated={validated} onSubmit={handleSubmit} action='#'>
                 {(forgotPasswordAlertMsg !== '') && <Alert variant={forgotPasswordAlertType}>{forgotPasswordAlertMsg}</Alert>}
                 <SimpleFormRow

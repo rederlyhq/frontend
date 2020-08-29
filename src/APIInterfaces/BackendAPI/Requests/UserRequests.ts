@@ -1,5 +1,5 @@
-import { PostForgotPasswordOptions, PutUpdatePasswordOptions, PutUpdateForgottonPasswordOptions } from '../RequestTypes/UserRequestTypes';
-import { PostForgotPasswordResponse, PutUpdatePasswordResponse, PutUpdateForgottonPasswordResponse } from '../ResponseTypes/UserResponseTypes';
+import { PostForgotPasswordOptions, PutUpdatePasswordOptions, PutUpdateForgottonPasswordOptions, PostLoginOptions, PostResendVerificationOptions } from '../RequestTypes/UserRequestTypes';
+import { PostForgotPasswordResponse, PutUpdatePasswordResponse, PutUpdateForgottonPasswordResponse, PostLoginResponse, PostResendVerificationResponse } from '../ResponseTypes/UserResponseTypes';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import url from 'url';
@@ -16,6 +16,14 @@ const USER_UPDATE_PASSWORD_PATH = url.resolve(
 const USER_UPDATE_FORGOTTON_PASSWORD_PATH = url.resolve(
     USER_PATH,
     'update-forgotton-password'
+);
+const USER_LOGIN_PATH = url.resolve(
+    USER_PATH,
+    'login'
+);
+const USER_RESEND_VERIFICATION_PATH = url.resolve(
+    USER_PATH,
+    'resend-verification'
 );
 
 export const postForgotPassword = async ({
@@ -62,6 +70,38 @@ export const putUpdateForgottonPassword = async ({
                 email,
                 newPassword,
                 forgotPasswordToken,
+            }
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const postLogin = async ({
+    email,
+    password
+}: PostLoginOptions): Promise<PostLoginResponse> => {
+    try {
+        return await AxiosRequest.post(
+            USER_LOGIN_PATH,
+            {
+                email,
+                password
+            }
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const postResendVerification = async ({
+    email
+}: PostResendVerificationOptions): Promise<PostResendVerificationResponse> => {
+    try {
+        return await AxiosRequest.post(
+            USER_RESEND_VERIFICATION_PATH,
+            {
+                email,
             }
         );
     } catch (e) {
