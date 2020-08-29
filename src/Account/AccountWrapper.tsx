@@ -1,6 +1,7 @@
 import React from 'react';
 import { Container, Tabs, Tab, Grid } from '@material-ui/core';
 import AccountDetailsPage from './AccountDetailsPage';
+import AccountChangePasswordPage from './AccountChangePasswordPage';
 
 interface AccountWrapperProps {
 
@@ -15,7 +16,9 @@ export const AccountWrapper: React.FC<AccountWrapperProps> = () => {
         default:
             return <AccountDetailsPage />;
         case 1:
+            return <AccountChangePasswordPage />;
         case 2:
+        case 3:
             return <Grid container item spacing={3} xs={6} justify='center'><h3>Sorry! This content is not ready yet.</h3></Grid>;
         }
     };
@@ -32,6 +35,7 @@ export const AccountWrapper: React.FC<AccountWrapperProps> = () => {
                         aria-label='Account Page Navigation'
                     >
                         <Tab label={'Details'} />
+                        <Tab label={'Change Password'} />
                         <Tab label={'Settings'} />
                         <Tab label={'Grades'} />
                     </Tabs>

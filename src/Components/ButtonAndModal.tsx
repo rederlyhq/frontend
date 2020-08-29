@@ -2,10 +2,29 @@ import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
 interface loginProps {
-    header: string;
+    header: string | JSX.Element;
     buttonText: string;
     stopProp?: boolean;
     [x: string]: any;
+    // Took this from bootstrap... this is how they had it
+    variant?:
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'danger'
+    | 'warning'
+    | 'info'
+    | 'dark'
+    | 'light'
+    | 'link'
+    | 'outline-primary'
+    | 'outline-secondary'
+    | 'outline-success'
+    | 'outline-danger'
+    | 'outline-warning'
+    | 'outline-info'
+    | 'outline-dark'
+    | 'outline-light';
 }
 
 /**
@@ -16,7 +35,7 @@ interface loginProps {
  * Note: React-Bootstrap 1.0.0 throws a warning for deprecated usage of findDOMNode.
  *       This issue is being tracked here: https://github.com/react-bootstrap/react-bootstrap/issues/5075
  */
-export const ButtonAndModal: React.FC<loginProps> = ({children, header, buttonText, stopProp, ...props}) => {
+export const ButtonAndModal: React.FC<loginProps> = ({children, header, buttonText, stopProp, variant, ...props}) => {
     const [showModal, setShowModal] = useState(false);
 
     const callShowModal = (show: boolean, e: any = null) => {
@@ -29,7 +48,7 @@ export const ButtonAndModal: React.FC<loginProps> = ({children, header, buttonTe
 
     return (
         <>
-            <Button className="button-margin" onClick={(e: any) => callShowModal(true, e)} {...props}>{buttonText || header}</Button>
+            <Button variant={variant} className="button-margin" onClick={(e: any) => callShowModal(true, e)} {...props}>{buttonText || header}</Button>
             <Modal show={showModal} onHide={() => callShowModal(false)}>
                 <Modal.Header closeButton>
                     {header}

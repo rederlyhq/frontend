@@ -6,8 +6,7 @@
       "dom.iterable",
       "esnext"
     ],
-    // TODO look into
-    "downlevelIteration": true,
+    "downlevelIteration": false,
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
