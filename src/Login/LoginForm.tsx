@@ -7,6 +7,9 @@ import Cookie from 'js-cookie';
 import { getUserRoleFromServer } from '../Enums/UserRole';
 import { CookieEnum } from '../Enums/CookieEnum';
 import { ForgotPasswordButtonAndModal } from './ForgotPasswordButtonAndModal';
+import { postLogin } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
+import BackendAPIError, { isAxiosError } from '../APIInterfaces/BackendAPI/BackendAPIError';
+import ResendVerificationModal from './ResendVerificationModal';
 
 interface LoginFormProps {
 
@@ -26,6 +29,8 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
     const [validated, setValidated] = useState(false);
     const [{ message: loginAlertMsg, variant: registrationAlertType }, setLoginAlertMsg] = useAlertState();
     const [formState, setFormState] = useState<LoginFormData>({ email: '', password: '' });
+    const [showResendVerificationModal, setShowResendVerificationModal] = useState<boolean>(false);
+
     const history = useHistory();
 
     const handleNamedChange = (name: keyof LoginFormData) => {
@@ -40,8 +45,10 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
 
     const handleLogin = async () => {
         try {
-            const resp = await AxiosRequest.post('/users/login', { email: formState.email, password: formState.password });
-            console.log(resp.data);
+            const resp = await postLogin({
+                email: formState.email,
+                password: formState.password
+            });
 
             if (resp.status === 200) {
                 setLoginAlertMsg({ message: resp.data?.msg || 'Logged in!', variant: 'success' });
@@ -53,9 +60,17 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                 history.replace('/common/courses');
             }
         } catch (err) {
-            if (err.response?.status === 401) {
-                setLoginAlertMsg({ message: 'Login Failed. Incorrect email and/or password', variant: 'danger' });
-            } else {
+            let handled = false;
+            if (err instanceof BackendAPIError && isAxiosError(err.originalError)) {
+                if (err.originalError.response?.status === 401) {
+                    setLoginAlertMsg({ message: 'Login Failed. Incorrect email and/or password', variant: 'danger' });
+                    handled = true;
+                } else if(err.originalError.response?.status === 403) {
+                    setShowResendVerificationModal(true);
+                    handled = true;
+                }
+            }
+            if (!handled) {
                 setLoginAlertMsg({ message: err.message, variant: 'danger' });
             }
         }
@@ -88,6 +103,11 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
 
     return (
         <>
+            <ResendVerificationModal
+                email={formState.email}
+                showResendVerificationModal={showResendVerificationModal}
+                setShowResendVerificationModal={setShowResendVerificationModal}
+            />
             <Form noValidate validated={validated} onSubmit={handleSubmit} action='#'>
                 <Form.Group controlId="institutionalEmail">
                     {(loginAlertMsg !== '') && <Alert variant={registrationAlertType}>{loginAlertMsg}</Alert>}

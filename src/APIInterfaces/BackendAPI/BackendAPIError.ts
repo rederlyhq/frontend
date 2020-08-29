@@ -2,12 +2,14 @@ import _ from 'lodash';
 import { AxiosError } from 'axios';
 
 // https://www.reddit.com/r/typescript/comments/f91zlt/how_do_i_check_that_a_caught_error_matches_a/
-function isAxiosError(error: any): error is AxiosError {
+export function isAxiosError(error: any): error is AxiosError {
     return (error as AxiosError).isAxiosError !== undefined;
 }
 
 export default class BackendAPIError extends Error {
     public name: string;
+    public originalError: any;
+
     constructor(e: any) {
         // This should be constructed from the error in a catch
         // You cannot put a type annotation and anything can be be thrown
@@ -26,6 +28,7 @@ export default class BackendAPIError extends Error {
             message = e.toString();
         }
         super(message);
+        this.originalError = e;
         this.name = 'BackendAPIError';
     }
 }
