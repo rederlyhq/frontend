@@ -3,6 +3,7 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import HomePage from './Home/HomePage';
 import VerificationLandingPage from './Login/VerificationLandingPage';
 import NavWrapper from './NavWrapper/NavWrapper';
+import ForgotPasswordLandingPage from './Login/ForgotPasswordLandingPage';
 
 interface RouterProps {
 
@@ -22,6 +23,9 @@ export const Router: React.FC<RouterProps> = () => {
                 </Route>
                 <Route path="/verify/:uid">
                     <VerificationLandingPage />
+                </Route>
+                <Route path="/forgot-password/:uid">
+                    <ForgotPasswordLandingPage />
                 </Route>
                 <Route path="/">
                     <NoPage/>

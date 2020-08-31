@@ -12,7 +12,10 @@ interface EnrollmentsTabProps {
 
 export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = ({ courseId, courseCode }) => {
     const [users, setUsers] = useState<Array<UserObject>>([]);
-    const enrollUrl = `${window.location.host}/common/courses/enroll/${courseCode}`;
+    // I don't understand why I need two encodeURIComponent here
+    // I want one to be in the enroll user page (since the params decodes it anyway, but it needs to be encoded so it can be decoded by express)
+    // The only thing I can think of is that useParams is decoding as a uri and not a uri component, however using just uri breaks it (and I can see it's not encoded correctly)
+    const enrollUrl = `${window.location.host}/common/courses/enroll/${encodeURIComponent(encodeURIComponent(courseCode))}`;
     const userType: UserRole = getUserRole();
 
     const textAreaRef = useRef<FormControl<'input'> & HTMLInputElement>(null);

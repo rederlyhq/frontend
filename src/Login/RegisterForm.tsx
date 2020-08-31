@@ -42,6 +42,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
             }
             const val = event.target.value;
             setFormState({...formState, [name]: val});
+            // On change remove error
+            setRegistrationAlert({message: '', variant: 'info'});
         };
     };
 
@@ -82,7 +84,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
         if (form.checkValidity() === false) {
             event.stopPropagation();
         } else {
-            handleRegister();
+            if(formState.registerPassword !== formState.registerPasswordConf) {
+                setRegistrationAlert({message: 'Your password did not match the confirmation.', variant: 'danger'});
+            } else {
+                handleRegister();
+            }
         }
   
         setValidated(true);
@@ -144,10 +150,14 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
                 id="registerPasswordConf"
                 label="Confirm Password"
                 errmsg="Passwords must match."
-                type="password"
+                required
+                defaultValue=''
+                name="registerPasswordConf" 
                 autocomplete="new-password"
-                isValid={formState.registerPassword?.length > 3 && doPasswordsMatch}
+                type="password"
                 onChange={handleNamedChange('registerPasswordConf')}
+                placeholder="******"
+                isValid={formState.registerPassword?.length > 3 && doPasswordsMatch}
             />
             <Form.Group>
                 <Button type="submit" disabled={registrationAlertType === 'success'}>Submit</Button>
