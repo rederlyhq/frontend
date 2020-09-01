@@ -113,7 +113,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
         const queryString = qs.stringify(_({
             courseId: course.id,
             [filterParam]: idFilterLocal,
-            userId: userType === UserRole.STUDENT && view !== StatisticsView.ATTEMPTS ? userId : null,
+            userId: view !== StatisticsView.ATTEMPTS ? userId : null,
         }).omitBy(_.isNil).value() as any).toString();
 
         url = `${url}${queryString}`;
