@@ -82,7 +82,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
                 console.error('Could not find the button that submitted the form');
                 return;
             }
-            formData.append(clickedButton.name, clickedButton.value);
+            formData.set(clickedButton.name, clickedButton.value);
             const submiturl = problemForm.getAttribute('action');
             if(_.isNil(submiturl)) {
                 setError('An error occurred');
