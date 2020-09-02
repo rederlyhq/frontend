@@ -8,6 +8,7 @@ import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
 import { ProblemDoneState } from '../Enums/AssignmentEnums';
 import _ from 'lodash';
 import { getQuestions } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { ProblemDetails } from './ProblemDetails';
 
 interface SimpleProblemPageProps {
 }
@@ -135,6 +136,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         </Nav>
                     </Col>
                     <Col md={9}>
+                        <ProblemDetails
+                            problem={problems[selectedProblemId]}
+                            topic={topic}
+                        />
                         {/* Temporarily disabled for release.  */}
                         {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
                             <Button className='float-right'>Ask for help</Button>
