@@ -1,5 +1,5 @@
 export enum ProblemDoneState {
-    CORRECT,
+    COMPLETE,
     PARTIAL,
     INCORRECT,
     UNTOUCHED,

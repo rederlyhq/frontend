@@ -74,7 +74,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         if (_.isNil(problem.grades) || _.isNil(problem.grades[0]) || problem.grades[0].numAttempts === 0) {
             // Do nothing but skip everything else
         } else if(problem.grades[0].overallBestScore === 1) {
-            doneState = ProblemDoneState.CORRECT;
+            doneState = ProblemDoneState.COMPLETE;
         } else if (problem.grades[0].overallBestScore === 0) {
             doneState = ProblemDoneState.INCORRECT;
         } else if (problem.grades[0].overallBestScore < 1) {
@@ -82,8 +82,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         }
     
         switch (doneState) {
-        case ProblemDoneState.CORRECT:
-            return (<> CORRECT <BsCheckCircle className='text-success' role='status'/></>);
+        case ProblemDoneState.COMPLETE:
+            return (<> COMPLETE <BsCheckCircle className='text-success' role='status'/></>);
         case ProblemDoneState.INCORRECT:
             return (<> INCORRECT <BsXCircle className='text-danger' role='status'/></>);
         case ProblemDoneState.PARTIAL:
