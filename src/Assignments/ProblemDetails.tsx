@@ -85,7 +85,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         let message = null;
                         if (_.isNil(maxAttempts) || _.isNil(usedAttempts)) {
                             message = 'Students would see information about how many attempts they have used here';
-                        } else if (maxAttempts >= 0) {
+                        } else if (maxAttempts > INFINITE_MAX_ATTEMPT_VALUE) {
                             message = `You have used ${usedAttempts} of ${maxAttempts} graded attempts`;
                         } else {
                             message = `You have attempted this problem ${usedAttempts} time${usedAttempts === 1 ? '' : 's'}`;
