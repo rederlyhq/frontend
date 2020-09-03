@@ -1,128 +1,169 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { ProblemObject, NewCourseTopicObj } from '../Courses/CourseInterfaces';
-import AxiosRequest from '../Hooks/AxiosRequest';
-import { fromEvent } from 'from-form-submit';
+import React from 'react';
+import { ProblemObject, NewCourseTopicObj, StudentGrade } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
 import moment from 'moment';
-import { Spinner, Row, Col } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { getUserRole, UserRole } from '../Enums/UserRole';
+
+const INFINITE_MAX_ATTEMPT_VALUE = 0;
 
 interface ProblemDetailsProps {
     problem: ProblemObject;
     topic: NewCourseTopicObj | null;
-    // setProblemStudentGrade: (val: any) => void;
 }
-
-
-const renderCell = (key: string, value?: string | null) => {
-    return (
-        <Col style={{
-            paddingBottom: '25px',
-            paddingRight: '25px'
-        }}>
-            {!_.isNil(value) && (
-                <>
-                    <Row>
-                        <h6>{key}</h6>
-                    </Row>
-                    <Row>
-                        {value}
-                    </Row>
-                </>
-            )}
-        </Col>
-    );
-};
-
-const renderAvailableDate = (startDate?: Date) => {
-    return renderCell('Available Date', startDate && moment(startDate).format('LLLL'));
-};
-
-const renderDueDate = (endDate?: Date) => {
-    return renderCell('Due Date', endDate && moment(endDate).format('LLLL'));
-};
-
-const renderDeadDate = (deadDate?: Date | null, endDate?: Date) => {
-    // If an end date is provided, we are not past that end date, and the end date does not match partial credit date
-    if (
-        !_.isNil(deadDate) &&
-        !_.isNil(endDate) &&
-        (
-            moment().isBefore(moment(endDate)) ||
-            moment(endDate).isSame(moment(deadDate))
-        )
-    ) {
-        deadDate = null;
-    }
-    return renderCell('Partial Credit Due Date', deadDate && moment(deadDate).format('LLLL'));
-};
-
-const renderTimeRemaining = (endDate?: Date, deadDate?: Date) => {
-    if (_.isNil(deadDate) || _.isNil(endDate)) {
-        return (<></>);
-    }
-    const limit = moment.max(moment(endDate), moment(deadDate));
-
-    return renderCell('Time Remaining', `Due ${limit.fromNow()}`);
-};
-
-const renderCurrentGrade = (grade?: number) => {
-    return renderCell('Current Grade', _.isNil(grade) ? null : `${(grade * 100).toFixed(1)}%`);
-};
-
-const renderBestScore = (grade?: number) => {
-    return renderCell('Best Score', _.isNil(grade) ? null : `${(grade * 100).toFixed(1)}%`);
-};
-
-const renderUsedAttempts = (numAttempts?: number) => {
-    return renderCell('Number of Attempts', numAttempts?.toString());
-};
-
-const renderWeight = (weight?: number) => {
-    return renderCell('Weight', weight?.toString());
-};
-
-const renderMaxAttempts = (numAttempts?: number) => {
-    let value = numAttempts?.toString();
-    if (!_.isNil(numAttempts) && numAttempts < 0) {
-        value = 'NA';
-    }
-    return renderCell('Max Number of Attempts', value);
-};
-
-const renderRemainingAttempts = (numAttempts?: number, maxAttempts?: number) => {
-    let value: number | null;
-    if (_.isNil(numAttempts) || _.isNil(maxAttempts) ||  maxAttempts < 0) {
-        value = null;
-    } else {
-        value = maxAttempts - numAttempts;
-    }
-    return renderCell('Remaining Attempts', value?.toString());
-};
 
 export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     problem,
     topic,
 }) => {
+    const startDate = moment(topic?.startDate);
+    const endDate = moment(topic?.endDate);
+    const deadDate = moment(topic?.deadDate);
+
+    const grade: StudentGrade | undefined = problem?.grades?.[0];
+
+    const maxAttempts = problem?.maxAttempts;
+    const usedAttempts = grade?.numAttempts;
+
+    const currentMoment = moment();
+
+
     return (
-        <>
-            <Row>
-                {renderAvailableDate(topic?.startDate)}
-                {renderDueDate(topic?.endDate)}
-                {renderDeadDate(topic?.deadDate, topic?.endDate)}
-                {renderTimeRemaining(topic?.endDate, topic?.deadDate)}
-            </Row>
-            <Row>
-                {renderWeight(problem.weight)}
-                {renderMaxAttempts(problem.maxAttempts)}
-                {renderUsedAttempts(problem?.grades?.[0].numAttempts)}
-                {renderRemainingAttempts(problem?.grades?.[0].numAttempts, problem.maxAttempts)}
-            </Row>
-            <Row>
-                {renderCurrentGrade(problem?.grades?.[0].effectiveScore)}
-                {renderBestScore(problem?.grades?.[0].overallBestScore)}
-                {renderCell('', null)}
-                {renderCell('', null)}
-            </Row>
-        </>
+        <div>
+            <div className="d-flex">
+                <h2>{topic?.name}</h2>
+                <OverlayTrigger
+                    placement="top"
+                    delay={{ show: 250, hide: 400 }}
+                    overlay={(props: any) => (
+                        <Tooltip id="dates-tooltip" {...props}>
+                            <strong>Started</strong> on {startDate.format('LLLL')} <br />
+                            <strong>Due</strong> on {endDate.format('LLLL')} <br />
+                            {(() => {
+                                if ((getUserRole() === UserRole.PROFESSOR || currentMoment.isAfter(endDate)) && !deadDate.isSame(endDate)) {
+                                    return (
+                                        <>
+                                            <strong>Can receive partial credit</strong> until {deadDate.format('LLLL')} <br />
+                                        </>
+                                    );
+                                }
+                                return <></>;
+                            })()}
+                        </Tooltip>
+                    )}
+                >
+                    <div style={{
+                        marginTop: 'auto',
+                        marginLeft: '8px',
+                        marginBottom: '8px',
+                    }}>
+                        {(()=>{
+                            if(currentMoment.isBefore(endDate)) {
+                                return `Due ${endDate.fromNow()}`;
+                            } else if (currentMoment.isBefore(deadDate)) {
+                                return `Partial credit expires ${deadDate.fromNow()}`;
+                            } else {
+                                return <></>;
+                            }
+                        })()}
+                    </div>
+                </OverlayTrigger>
+            </div>
+            <div className="d-flex">
+                <OverlayTrigger
+                    placement="top"
+                    delay={{ show: 250, hide: 400 }}
+                    overlay={(props: any) => {
+                        let message = null;
+                        if (_.isNil(maxAttempts) || _.isNil(usedAttempts)) {
+                            message = 'Students would see information about how many attempts they have used here';
+                        } else if (maxAttempts >= 0) {
+                            message = `You have used ${usedAttempts} of ${maxAttempts} graded attempts`;
+                        } else {
+                            message = `You have attempted this problem ${usedAttempts} time${usedAttempts === 1 ? '' : 's'}`;
+                        }
+                        return (
+                            <Tooltip id="attempts-tooltip" {...props}>
+                                {message}
+                            </Tooltip>
+                        );
+                    }}
+                >
+                    <div>
+                        {(() => {
+                            if (_.isNil(maxAttempts)) {
+                                return null;
+                            }
+
+                            if (maxAttempts <= INFINITE_MAX_ATTEMPT_VALUE) {
+                                return 'This question does not have an attempt limit.';
+                            } else {
+                                if (_.isNil(usedAttempts)) {
+                                    return `This problem allows ${maxAttempts} attempt${maxAttempts === 1 ? '' : 's'}.`;
+                                }
+                                const remainingAttempts = maxAttempts - usedAttempts;
+                                return `You have ${remainingAttempts} graded attempt${remainingAttempts === 1 ? '' : 's'} remaining.`;
+                            }
+                        })()}
+                    </div>
+                </OverlayTrigger>
+            </div>
+            <div className="d-flex">
+                {(() => {
+                    if (_.isNil(problem)) {
+                        return null;
+                    }
+
+                    let message = null;
+                    if(problem.weight > 0) {
+                        // has weight (and maybe optional)
+                        message = `This problem is worth ${problem.weight}${problem.optional ? ' extra credit' : ''} point${problem.weight === 1 ? '' : 's'}.`;
+                    } else if (problem.optional) {
+                        // optional and no weight
+                        message = 'This problem is optional.';
+                    }
+                    return message;
+                })()}
+            </div>
+            {_.isNil(grade) ? null : (
+                <>
+                    <div className="d-flex">
+                        Your recorded score for this problem is {(grade.effectiveScore * 100).toFixed(1)}%.
+                    </div>
+                    {grade.effectiveScore === grade.overallBestScore ? null : (
+                        <div className="d-flex">
+                            Your best attempt for this problem is {(grade.overallBestScore * 100).toFixed(1)}%.
+                        </div>
+                    )}
+                </>
+            )}
+            <div className="d-flex">
+                {(() => {
+                    if (_.isNil(grade) || _.isNil(problem)) {
+                        return null;
+                    }
+
+                    const solutionsMoment = moment(deadDate).add(1, 'days');
+                    let message = null;
+                    if (grade.overallBestScore >= 1) {
+                        message = 'You have completed this problem, your attempts will not be recorded.';
+                    } else if (problem.maxAttempts > 0 && grade.numAttempts >= problem.maxAttempts) {
+                        message = 'You have exceeded the attempt limit. Your attempts on this problem will not be graded but will count toward completion.';
+                    } else if (currentMoment.isAfter(solutionsMoment)) {
+                        // TODO get from backend
+                        message = 'Solutions are available, your attempts will not be recorded.';
+                    } else if (currentMoment.isBefore(solutionsMoment) && currentMoment.isAfter(deadDate)) {
+                        message = 'The topic is past due. Your attempts on this problem will not be graded but will count toward completion.';
+                    } else if (grade.overallBestScore < 1 && currentMoment.isBefore(endDate) && (grade.numAttempts < problem.maxAttempts || problem.maxAttempts <= INFINITE_MAX_ATTEMPT_VALUE)) {
+                        // All of these situations should already be handled, just making it more defensive
+                        message = 'Your attempts on this problem will be graded.';
+                    } else {
+                        // TODO remote error logging
+                        message = 'An unknown error has occured and it is unclear if your attempt will be graded.';
+                    }
+                    return message;
+                })()}
+            </div>
+        </div>
     );
 };

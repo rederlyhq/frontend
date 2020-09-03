@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ProblemObject, NewCourseTopicObj } from '../Courses/CourseInterfaces';
-import AxiosRequest from '../Hooks/AxiosRequest';
-import { Row, Col, Container, Nav, NavLink, Button, Spinner, Badge } from 'react-bootstrap';
+import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
 import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
@@ -109,7 +108,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     return (
         <>
-            {topic && <h3>{topic.name}</h3>}
             <Container fluid>
                 <Row>
                     <Col md={3}>
@@ -126,7 +124,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                             role='link'
                                         >
                                             {`Problem ${prob.problemNumber} (ID#${prob.id})`}
-                                            <span className='float-right'><Badge pill variant="light" style={{visibility: !prob.optional ? 'hidden' : undefined, marginLeft: '5px'}}>optional</Badge></span>
                                             <span className='float-right'>{renderDoneStateIcon(prob)}</span>
                                         </NavLink>
                                     );
