@@ -2,7 +2,7 @@ import React from 'react';
 import { ProblemObject, NewCourseTopicObj, StudentGrade } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
 import moment from 'moment';
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip, Badge } from 'react-bootstrap';
 import { getUserRole, UserRole } from '../Enums/UserRole';
 
 const INFINITE_MAX_ATTEMPT_VALUE = 0;
@@ -19,6 +19,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     const startDate = moment(topic?.startDate);
     const endDate = moment(topic?.endDate);
     const deadDate = moment(topic?.deadDate);
+    const solutionsMoment = moment(deadDate).add(1, 'days');
 
     const grade: StudentGrade | undefined = problem?.grades?.[0];
 
@@ -62,8 +63,10 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                 return `Due ${endDate.fromNow()}`;
                             } else if (currentMoment.isBefore(deadDate)) {
                                 return `Partial credit expires ${deadDate.fromNow()}`;
+                            } else if (currentMoment.isBefore(solutionsMoment)) {
+                                return `Solutions available ${solutionsMoment.fromNow()}`;
                             } else {
-                                return <></>;
+                                return 'Past due';
                             }
                         })()}
                     </div>
@@ -143,12 +146,13 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         return null;
                     }
 
-                    const solutionsMoment = moment(deadDate).add(1, 'days');
                     let message = null;
                     if (grade.overallBestScore >= 1) {
                         message = 'You have completed this problem, your attempts will not be recorded.';
                     } else if (problem.maxAttempts > 0 && grade.numAttempts >= problem.maxAttempts) {
                         message = 'You have exceeded the attempt limit. Your attempts on this problem will not be graded but will count toward completion.';
+                    } else if (currentMoment.isBefore(deadDate) && currentMoment.isAfter(endDate)) {
+                        message = 'The topic is past due but partial credit is available. Your attempts will be graded with a penalty.';
                     } else if (currentMoment.isAfter(solutionsMoment)) {
                         // TODO get from backend
                         message = 'Solutions are available, your attempts will not be recorded.';
