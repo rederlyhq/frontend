@@ -122,8 +122,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                             key={`problemNavLink${prob.id}`} 
                                             onSelect={() => {setSelectedProblemId(prob.id);}}
                                             role='link'
+                                            style={{
+                                                fontStyle: prob.optional ? 'italic' : undefined
+                                            }}
                                         >
-                                            {`Problem ${prob.problemNumber} (ID#${prob.id})`}
+                                            {`Problem ${prob.problemNumber} (${prob.weight} Point${prob.weight === 1 ? '' : 's'})`}
                                             <span className='float-right'>{renderDoneStateIcon(prob)}</span>
                                         </NavLink>
                                     );

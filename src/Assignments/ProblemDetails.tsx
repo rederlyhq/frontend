@@ -71,6 +71,11 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         })()}
                     </div>
                 </OverlayTrigger>
+                <div style={{marginLeft: 'auto'}}>
+                    <Badge pill variant="dark">
+                        {problem.id}
+                    </Badge>
+                </div>
             </div>
             <div className="d-flex">
                 <OverlayTrigger
