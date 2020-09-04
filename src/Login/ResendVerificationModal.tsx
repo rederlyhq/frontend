@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Jumbotron, Modal, Button, Alert } from 'react-bootstrap';
-import { useParams } from 'react-router';
-import { Link } from 'react-router-dom';
-import Axios from '../Hooks/AxiosRequest';
+import React, { useState } from 'react';
+import { Modal, Button, Alert } from 'react-bootstrap';
 import _ from 'lodash';
 import { postResendVerification } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import useAlertState from '../Hooks/useAlertState';

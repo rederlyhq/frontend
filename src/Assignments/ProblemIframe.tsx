@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
 import AxiosRequest from '../Hooks/AxiosRequest';
-import { fromEvent } from 'from-form-submit';
 import _ from 'lodash';
 import { Spinner } from 'react-bootstrap';
 
@@ -113,34 +112,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
             });
         });
     }
-
-    // TODO this was the old hijacker and should be deleted after vetting out the new hijacker code
-    const hijackFormSubmit = async (e: any) => {
-        e.preventDefault();
-        setLoading(true);
-        const obj = fromEvent(e);
-        console.log('Hijacking the form!');
-        console.log(obj);
-        const formData = new URLSearchParams();
-        // Yes, appending in a different order is intentional.
-        _.each(obj, (key, val) => formData.append(encodeURIComponent(val), encodeURIComponent(key)));
-
-        try {
-            const res = await AxiosRequest.post(`/courses/question/${problem.id}`,
-                formData, {headers: {'Content-Type': 'application/x-www-form-urlencoded'}});
-            console.log(res);
-            const grade = res.data.data.rendererData.problem_result.score;
-            console.log(`You scored a ${grade} on this problem!`);
-            setProblemStudentGrade(res.data.data.studentGrade);
-            setRenderedHTML(res.data.data.rendererData.renderedHTML);
-            // When HTML rerenders, setLoading will be reset to false after resizing.
-        } catch (e) {
-            console.log(e);
-            setRenderedHTML(e);
-        }
-        setLoading(false);
-        return true;
-    };
 
     const onLoadHandlers = () => {
         const iframeDoc = iframeRef.current?.contentDocument;
