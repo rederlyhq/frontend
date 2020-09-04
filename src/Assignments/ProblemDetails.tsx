@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ProblemObject, NewCourseTopicObj, StudentGrade } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
 import moment from 'moment';
@@ -39,8 +39,9 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                             <strong>Started</strong> on {startDate.format('LLLL')} <br />
                             <strong>Due</strong> on {endDate.format('LLLL')} <br />
                             <MomentReacter
-                                significantMoments={[endDate, deadDate]}
+                                significantMoments={[endDate]}
                                 stopMoment={deadDate}
+                                logTag='partialCreditDateAvailable'
                             >
                                 {(currentMoment) => {
                                     if ((getUserRole() === UserRole.PROFESSOR || currentMoment.isAfter(endDate)) && !deadDate.isSame(endDate)) {
@@ -62,6 +63,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         marginBottom: '8px',
                     }}>
                         <MomentReacter
+                            // TODO Instead of using an interval it might be nice to have a way to calculate the next fromNow text change
                             intervalInMillis={60000} // fromNow changes at it's most granular by the minute
                             offsetInMillis={30000} // fromNow rounds though so it changes on the 30 second of every minute
                             absolute={true} // Since it occurs on the 30th second of the minute if less than an hour
@@ -163,6 +165,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                 <MomentReacter
                     significantMoments={[endDate, deadDate, solutionsMoment]}
                     stopMoment={solutionsMoment} // Once solutions are available this timer means nothing
+                    logTag='gradedMessage'
                 >
                     {(currentMoment) => {
                         if (_.isNil(grade) || _.isNil(problem)) {
