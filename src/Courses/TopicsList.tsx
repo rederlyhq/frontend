@@ -34,10 +34,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
         const updates = {
             [field]: newData
         };
-        // TODO remove once we know how we want to set the dead date
-        if (field === nameof<NewCourseTopicObj>('endDate')) {
-            updates[nameof<NewCourseTopicObj>('deadDate')] = newData;
-        }
+
         try {
             const res = await AxiosRequest.put(`/courses/topic/${topicId}`, updates);
             console.log(res);
@@ -68,7 +65,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                 </>
             ) : (
                 <>
-                    <Col md={6}>
+                    <Col md={true}>
                         <Link to={loc =>({pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}})}>
                             <h5>{topic.name}</h5>
                         </Link>
@@ -111,6 +108,35 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                     updateTopicField(topic.id, 'endDate', date.toDate());
                                 }}
                                 defaultValue={topic.endDate}
+                                inputVariant='outlined'
+                                disabled={userType === UserRole.STUDENT}
+                                // Below are some options that would be useful for limiting how
+                                // professors can alter topics.
+                                // disablePast={true}
+                                // minDateMessage='This topic has already closed.'
+                                // readOnly={moment().isAfter(topic.endDate)}
+                                // rules={{validate: val => {console.log(val); return true;}}}
+                                // style={{'cursor': 'not-allowed'}}
+                            />
+                        </Col>
+                        <Col md={3}>
+                            {/*
+                            // @ts-ignore */}
+                            <Controller 
+                                as={DateTimePicker}
+                                control={control}
+                                name={`${topic.id}-dead`}
+                                variant='inline'
+                                label='Dead date'
+                                onChange={([val]) => {
+                                    console.log(val);
+                                    return val;
+                                }}
+                                onAccept={(date: MaterialUiPickersDate) => {
+                                    if (!date) return;
+                                    updateTopicField(topic.id, 'deadDate', date.toDate());
+                                }}
+                                defaultValue={topic.deadDate}
                                 inputVariant='outlined'
                                 disabled={userType === UserRole.STUDENT}
                                 // Below are some options that would be useful for limiting how
