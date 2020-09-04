@@ -3,6 +3,7 @@ import moment from 'moment';
 import _ from 'lodash';
 
 const FILE_LOG_TAG = 'MomentReacter';
+const MAX_TIMEOUT_TIME = 2147483647;
 interface NextMomentResult {
     theMoment: moment.Moment;
     theDiff: number;
@@ -11,8 +12,8 @@ interface NextMomentResult {
 const nextMoment = (referenceMoment: moment.Moment, moments: Array<moment.Moment>): NextMomentResult | null => {
     let result: NextMomentResult | null = null;
     moments.forEach(theMoment => {
-        // future negative, present positive
-        const theDiff = referenceMoment.diff(theMoment);
+        // the amount of time until the reference moment, if reference moment is in the future this is positive
+        const theDiff = theMoment.diff(referenceMoment);
         if (theDiff >= 0 && (_.isNil(result) || theDiff < result.theDiff)) {
             result = {
                 theMoment,
@@ -71,7 +72,7 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
             }
         } else {
             if(!_.isNil(offsetInMillis)) {
-                console.warn('offsetInMillis is only used with absolute time interval');
+                console.warn(`${TAG} offsetInMillis is only used with absolute time interval`);
             }
         }
 
@@ -86,23 +87,30 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
             }
         }
 
-        if(_.isNil(stopMoment) && currentMoment.isAfter(stopMoment)) {
+        if(!_.isNil(stopMoment) && currentMoment.isAfter(stopMoment)) {
             console.debug(`${TAG} Hit the stop moment`);
             return;
         }
 
         if(_.isNil(timeoutTime)) {
-            console.error(`${TAG} No timeoutTime could be calculated`);
+            console.debug(`${TAG} No timeoutTime was calculated, this might mean that significant dates were used and they are all in the past`);
             return;
         }
+
+        if (timeoutTime > MAX_TIMEOUT_TIME) {
+            console.debug(`${TAG} calculated timeout time too large, falling back to max value ${MAX_TIMEOUT_TIME}`);
+            timeoutTime = MAX_TIMEOUT_TIME;
+        }
+
         console.debug(`${TAG} timeoutTime ${timeoutTime}`);
-        console.debug(`${TAG} moment().add(timeoutTime, 'milliseconds') ${moment().add(timeoutTime, 'milliseconds')}`);
+        console.debug(`${TAG} should execute at ${moment().add(timeoutTime, 'milliseconds')}`);
         if(!_.isNil(currentTimeoutHandle.current)) {
             clearTimeout(currentTimeoutHandle.current);
         }
+        
         const newTimeoutHandle = setTimeout(() => setReactiveMoment(moment()), timeoutTime);
         currentTimeoutHandle.current = newTimeoutHandle;
-    }, [reactiveMoment]);
+    }, [reactiveMoment, TAG, absolute, intervalInMillis, logTag, offsetInMillis, significantMoments, stop, stopMoment]);
     
     // I don't use reactive moment here since there is no guarentee this was run immediately, it is more accurate to use a new moment
     const currentMoment = moment();
