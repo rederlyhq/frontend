@@ -6,22 +6,32 @@ interface CheckboxHiderProps {
     children: React.ReactNode;
     style?: React.CSSProperties;
     labelText: string;
+    onChange?: (newValue: boolean) => void;
 }
 
 export const CheckboxHider: React.FC<CheckboxHiderProps> = ({
     defaultChecked = true,
     children,
     style,
-    labelText
+    labelText,
+    onChange
 }) => {
     const [checked, setChecked] = useState<boolean>(defaultChecked);
     return (
         <>
             {checked && children}
-            <Form.Group style={{
-                marginBottom: '0px',
-                ...style
-            }}>
+            <Form.Group
+                className="unhighlightable"
+                style={{
+                    marginBottom: '0px',
+                    ...style
+                }}
+                onClick={() => {
+                    const newValue = !checked;
+                    setChecked(newValue);
+                    onChange?.(newValue);
+                }}
+            >
                 <Form.Label style={{
                     marginBottom: '0px'
                 }}>{labelText}</Form.Label>
@@ -31,7 +41,9 @@ export const CheckboxHider: React.FC<CheckboxHiderProps> = ({
                     }}
                     checked={checked}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                        setChecked(event.target.checked);
+                        const newValue = event.target.checked;
+                        setChecked(newValue);
+                        onChange?.(newValue);
                     }}
                 />
             </Form.Group>
