@@ -11,6 +11,7 @@ import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { FaTrash } from 'react-icons/fa';
 import { putQuestion, postQuestion, putTopic, postDefFile, deleteQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
+import { CheckboxHider, CheckboxHiderChildrenPosition } from '../../Components/CheckboxHider';
 
 interface TopicCreationModalProps {
     unitIndex: number;
@@ -263,8 +264,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             [name]: val
         };
 
-        // TODO remove this once we have dead date ui
-        if (name === 'endDate') {
+        if (name === 'endDate' && (val.isAfter(moment(topicMetadata.deadDate)) || moment(topicMetadata.deadDate).isSame(moment(topicMetadata.endDate)))) {
             updates.deadDate = val;
         }
 
@@ -287,10 +287,11 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         const updates = {
             [name]: val
         };
-        // TODO remove this once we have dead date ui
-        if (name === 'endDate') {
+
+        if (name === 'endDate' && (val.isAfter(moment(topicMetadata.deadDate)) || moment(topicMetadata.deadDate).isSame(moment(topicMetadata.endDate)))) {
             updates.deadDate = val;
         }
+
         try {
             setError(null);
             if(_.isNil(existingTopic)) {
@@ -518,8 +519,8 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                             />
                         </Col>
                     </FormGroup>
-                    <Row>
-                        <MuiPickersUtilsProvider utils={MomentUtils}>
+                    <MuiPickersUtilsProvider utils={MomentUtils}>
+                        <Row>
                             <Col>
                                 <DateTimePicker
                                     variant='inline'
@@ -558,8 +559,47 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                                     defaultValue={moment(topicMetadata?.endDate).format('YYYY-MM-DD')}
                                 />
                             </Col>
-                        </MuiPickersUtilsProvider>
-                    </Row>
+                        </Row>
+                        <Row>
+                            <CheckboxHider
+                                style={{
+                                    margin: '10px',
+                                    alignSelf: 'center'
+                                }}
+                                labelText='Partial Credit Extension Date?'
+                                defaultChecked={!moment(topicMetadata.endDate).isSame(moment(topicMetadata.deadDate))}
+                                onChange={(newValue: boolean) => {
+                                    if (!newValue) {
+                                        const e = { target: { value: topicMetadata.endDate } };
+                                        onTopicMetadataChange(e, 'deadDate');
+                                        onTopicMetadataBlur(e, 'deadDate');
+                                    }
+                                }}
+                                position={CheckboxHiderChildrenPosition.BEFORE}
+                                stackLabel={false}
+                            >
+                                <Col md={6}>
+                                    <DateTimePicker
+                                        variant='inline'
+                                        label='Dead date'
+                                        name={'dead'}
+                                        value={topicMetadata.deadDate}
+                                        onChange={() => { }}
+                                        onAccept={(date: MaterialUiPickersDate) => {
+                                            if (!date) return;
+                                            const e = { target: { value: date.toDate() } };
+                                            onTopicMetadataChange(e, 'deadDate');
+                                            onTopicMetadataBlur(e, 'deadDate');
+                                        }}
+                                        fullWidth={true}
+                                        InputLabelProps={{ shrink: false }}
+                                        inputProps={{ style: { textAlign: 'center' } }}
+                                        defaultValue={moment(topicMetadata?.endDate).format('YYYY-MM-DD')}
+                                    />
+                                </Col>
+                            </CheckboxHider>
+                        </Row>
+                    </MuiPickersUtilsProvider>
                     <DragDropContext onDragEnd={onDragEnd}>
                         <Droppable droppableId='problemsList'>
                             {
