@@ -174,7 +174,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
 
                         let message = null;
                         if (grade.overallBestScore >= 1) {
-                            message = 'You have completed this problem, your attempts will not be recorded.';
+                            message = 'You have completed this problem. Your attempts will no longer be recorded.';
                         } else if (problem.maxAttempts > 0 && grade.numAttempts >= problem.maxAttempts) {
                             message = 'You have exceeded the attempt limit. Your attempts on this problem will not be graded but will count toward completion.';
                         } else if (currentMoment.isBefore(deadDate) && currentMoment.isAfter(endDate)) {
