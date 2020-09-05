@@ -78,54 +78,40 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                         <h5>{topic.name}</h5>
                     </Link>
                     <MuiPickersUtilsProvider utils={MomentUtils}>
-                        <Controller
+                        <DateTimePicker
                             style={{
                                 marginLeft: 'auto'
                             }} 
-                            as={DateTimePicker}
-                            control={control}
-                            name={`${topic.id}-start`}
                             variant='inline'
-                            inputVariant='outlined'
                             label='Start date'
-                            title='Start date'
-                            onChange={([val]) => {
-                                updateTopicField(topic, 'startDate', val.toDate());
-                                return val;
-                            }}
-                            defaultValue={topic.startDate}
+                            name={'start'}
                             value={topic.startDate}
+                            onChange={()=>{}}
+                            onAccept={(date: MaterialUiPickersDate) => {
+                                if (!date) return;
+                                updateTopicField(topic, 'startDate', date.toDate());
+                            }}
+                            inputVariant='outlined'
                             disabled={userType === UserRole.STUDENT}
                         />
-                        <Controller 
+
+                        <DateTimePicker
                             style={{
                                 marginLeft: '10px'
                             }} 
-                            as={DateTimePicker}
-                            control={control}
-                            name={`${topic.id}-end`}
                             variant='inline'
                             label='End date'
-                            onChange={([val]) => {
-                                console.log(val);
-                                return val;
-                            }}
+                            name={'end'}
+                            value={topic.endDate}
+                            onChange={()=>{}}
                             onAccept={(date: MaterialUiPickersDate) => {
                                 if (!date) return;
                                 updateTopicField(topic, 'endDate', date.toDate());
                             }}
-                            defaultValue={topic.endDate}
-                            value={topic.endDate}
                             inputVariant='outlined'
                             disabled={userType === UserRole.STUDENT}
-                            // Below are some options that would be useful for limiting how
-                            // professors can alter topics.
-                            // disablePast={true}
-                            // minDateMessage='This topic has already closed.'
-                            // readOnly={moment().isAfter(topic.endDate)}
-                            // rules={{validate: val => {console.log(val); return true;}}}
-                            // style={{'cursor': 'not-allowed'}}
                         />
+
                         <CheckboxHider
                             style={{
                                 marginLeft: '10px'
@@ -138,35 +124,22 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                 }
                             }}
                         >
-                            <Controller 
+                            <DateTimePicker
                                 style={{
                                     marginLeft: '10px'
                                 }} 
-                                as={DateTimePicker}
-                                control={control}
-                                name={`${topic.id}-dead`}
                                 variant='inline'
                                 label='Dead date'
-                                onChange={([val]) => {
-                                    console.log(val);
-                                    return val;
-                                }}
+                                name={'end'}
+                                value={topic.deadDate}
+                                onChange={()=>{}}
                                 onAccept={(date: MaterialUiPickersDate) => {
                                     if (!date) return;
                                     updateTopicField(topic, 'deadDate', date.toDate());
                                 }}
-                                defaultValue={topic.deadDate}
-                                value={topic.deadDate}
                                 inputVariant='outlined'
                                 disabled={userType === UserRole.STUDENT}
-                                // Below are some options that would be useful for limiting how
-                                // professors can alter topics.
-                                // disablePast={true}
-                                // minDateMessage='This topic has already closed.'
-                                // readOnly={moment().isAfter(topic.endDate)}
-                                // rules={{validate: val => {console.log(val); return true;}}}
-                                // style={{'cursor': 'not-allowed'}}
-                            />                            
+                            />
                         </CheckboxHider>
                     </MuiPickersUtilsProvider>
                 </>
