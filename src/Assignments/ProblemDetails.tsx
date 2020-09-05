@@ -189,7 +189,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                             message = 'Your attempts on this problem will be graded.';
                         } else {
                             // TODO remote error logging
-                            message = 'An unknown error has occured and it is unclear if your attempt will be graded.';
+                            message = 'An unknown error has occurred and it is unclear if your attempt will be graded.';
                         }
                         return (<>{message}</>);
                     }}
