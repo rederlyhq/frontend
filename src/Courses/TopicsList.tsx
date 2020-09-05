@@ -111,7 +111,8 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             inputVariant='outlined'
                             disabled={userType === UserRole.STUDENT}
                         />
-
+                        
+                        {(userType !== UserRole.STUDENT || moment().isAfter(moment(topic.endDate))) &&
                         <CheckboxHider
                             style={{
                                 marginLeft: '10px'
@@ -142,6 +143,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                 disabled={userType === UserRole.STUDENT}
                             />
                         </CheckboxHider>
+                        }
                     </MuiPickersUtilsProvider>
                 </>
             )}
