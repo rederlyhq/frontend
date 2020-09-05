@@ -123,6 +123,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                     updateTopicField(topic, 'deadDate', topic.endDate);
                                 }
                             }}
+                            showCheckbox={userType !== UserRole.STUDENT}
                         >
                             <DateTimePicker
                                 style={{

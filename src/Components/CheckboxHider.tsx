@@ -14,6 +14,7 @@ interface CheckboxHiderProps {
     onChange?: (newValue: boolean) => void;
     position?: CheckboxHiderChildrenPosition;
     stackLabel?: boolean;
+    showCheckbox?: boolean;
 }
 
 export const CheckboxHider: React.FC<CheckboxHiderProps> = ({
@@ -23,12 +24,14 @@ export const CheckboxHider: React.FC<CheckboxHiderProps> = ({
     labelText,
     onChange,
     position = CheckboxHiderChildrenPosition.BEFORE,
-    stackLabel = true
+    stackLabel = true,
+    showCheckbox = true
 }) => {
     const [checked, setChecked] = useState<boolean>(defaultChecked);
     return (
         <>
             {checked && position === CheckboxHiderChildrenPosition.BEFORE && children}
+            {showCheckbox && 
             <Form.Group
                 className="unhighlightable"
                 style={{
@@ -58,6 +61,7 @@ export const CheckboxHider: React.FC<CheckboxHiderProps> = ({
                     label={!stackLabel ? labelText : undefined}
                 />
             </Form.Group>
+            }
             {checked && position === CheckboxHiderChildrenPosition.AFTER && children}
         </>
     );
