@@ -4,6 +4,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import { OverlayTrigger, Tooltip, Badge } from 'react-bootstrap';
 import { getUserRole, UserRole } from '../Enums/UserRole';
+import { MomentReacter } from '../Components/MomentReacter';
 
 const INFINITE_MAX_ATTEMPT_VALUE = 0;
 
@@ -26,9 +27,6 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     const maxAttempts = problem?.maxAttempts;
     const usedAttempts = grade?.numAttempts;
 
-    const currentMoment = moment();
-
-
     return (
         <div>
             <div className="d-flex">
@@ -40,16 +38,22 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         <Tooltip id="dates-tooltip" {...props}>
                             <strong>Started</strong> on {startDate.format('LLLL')} <br />
                             <strong>Due</strong> on {endDate.format('LLLL')} <br />
-                            {(() => {
-                                if ((getUserRole() === UserRole.PROFESSOR || currentMoment.isAfter(endDate)) && !deadDate.isSame(endDate)) {
-                                    return (
-                                        <>
-                                            <strong>Can receive partial credit</strong> until {deadDate.format('LLLL')} <br />
-                                        </>
-                                    );
-                                }
-                                return <></>;
-                            })()}
+                            <MomentReacter
+                                significantMoments={[endDate]}
+                                stopMoment={deadDate}
+                                logTag='partialCreditDateAvailable'
+                            >
+                                {(currentMoment) => {
+                                    if ((getUserRole() === UserRole.PROFESSOR || currentMoment.isAfter(endDate)) && !deadDate.isSame(endDate)) {
+                                        return (
+                                            <>
+                                                <strong>Can receive partial credit</strong> until {deadDate.format('LLLL')} <br />
+                                            </>
+                                        );
+                                    }
+                                    return <></>;
+                                }}
+                            </MomentReacter>
                         </Tooltip>
                     )}
                 >
@@ -58,20 +62,32 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         marginLeft: '8px',
                         marginBottom: '8px',
                     }}>
-                        {(()=>{
-                            if(currentMoment.isBefore(endDate)) {
-                                return `Due ${endDate.fromNow()}`;
-                            } else if (currentMoment.isBefore(deadDate)) {
-                                return `Partial credit expires ${deadDate.fromNow()}`;
-                            } else if (currentMoment.isBefore(solutionsMoment)) {
-                                return `Solutions available ${solutionsMoment.fromNow()}`;
-                            } else {
-                                return 'Past due';
-                            }
-                        })()}
+                        <MomentReacter
+                            // TODO Instead of using an interval it might be nice to have a way to calculate the next fromNow text change
+                            intervalInMillis={60000} // fromNow changes at it's most granular by the minute
+                            offsetInMillis={30000} // fromNow rounds though so it changes on the 30 second of every minute
+                            absolute={true} // Since it occurs on the 30th second of the minute if less than an hour
+                            stopMoment={solutionsMoment} // Once solutions are available this timer means nothing
+                            significantMoments={[endDate, deadDate, solutionsMoment]}
+                            logTag='dueMessage'
+                        >
+                            {(currentMoment: moment.Moment) => {
+                                let message = '';
+                                if (currentMoment.isBefore(endDate)) {
+                                    message = `Due ${endDate.fromNow()}`;
+                                } else if (currentMoment.isBefore(deadDate)) {
+                                    message = `Partial credit expires ${deadDate.fromNow()}`;
+                                } else if (currentMoment.isBefore(solutionsMoment)) {
+                                    message = `Solutions available ${solutionsMoment.fromNow()}`;
+                                } else {
+                                    message = 'Past due';
+                                }
+                                return (<>{message}</>);
+                            }}
+                        </MomentReacter>
                     </div>
                 </OverlayTrigger>
-                <div style={{marginLeft: 'auto'}}>
+                <div style={{ marginLeft: 'auto' }}>
                     <Badge pill variant="dark">
                         {problem.id}
                     </Badge>
@@ -123,7 +139,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                     }
 
                     let message = null;
-                    if(problem.weight > 0) {
+                    if (problem.weight > 0) {
                         // has weight (and maybe optional)
                         message = `This problem is worth ${problem.weight}${problem.optional ? ' extra credit' : ''} point${problem.weight === 1 ? '' : 's'}.`;
                     } else if (problem.optional) {
@@ -146,32 +162,38 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                 </>
             )}
             <div className="d-flex">
-                {(() => {
-                    if (_.isNil(grade) || _.isNil(problem)) {
-                        return null;
-                    }
+                <MomentReacter
+                    significantMoments={[endDate, deadDate, solutionsMoment]}
+                    stopMoment={solutionsMoment} // Once solutions are available this timer means nothing
+                    logTag='gradedMessage'
+                >
+                    {(currentMoment) => {
+                        if (_.isNil(grade) || _.isNil(problem)) {
+                            return (<></>);
+                        }
 
-                    let message = null;
-                    if (grade.overallBestScore >= 1) {
-                        message = 'You have completed this problem, your attempts will not be recorded.';
-                    } else if (problem.maxAttempts > 0 && grade.numAttempts >= problem.maxAttempts) {
-                        message = 'You have exceeded the attempt limit. Your attempts on this problem will not be graded but will count toward completion.';
-                    } else if (currentMoment.isBefore(deadDate) && currentMoment.isAfter(endDate)) {
-                        message = 'The topic is past due but partial credit is available. Your attempts will be graded with a penalty.';
-                    } else if (currentMoment.isAfter(solutionsMoment)) {
-                        // TODO get from backend
-                        message = 'Solutions are available, your attempts will not be recorded.';
-                    } else if (currentMoment.isBefore(solutionsMoment) && currentMoment.isAfter(deadDate)) {
-                        message = 'The topic is past due. Your attempts on this problem will not be graded but will count toward completion.';
-                    } else if (grade.overallBestScore < 1 && currentMoment.isBefore(endDate) && (grade.numAttempts < problem.maxAttempts || problem.maxAttempts <= INFINITE_MAX_ATTEMPT_VALUE)) {
-                        // All of these situations should already be handled, just making it more defensive
-                        message = 'Your attempts on this problem will be graded.';
-                    } else {
-                        // TODO remote error logging
-                        message = 'An unknown error has occured and it is unclear if your attempt will be graded.';
-                    }
-                    return message;
-                })()}
+                        let message = null;
+                        if (grade.overallBestScore >= 1) {
+                            message = 'You have completed this problem, your attempts will not be recorded.';
+                        } else if (problem.maxAttempts > 0 && grade.numAttempts >= problem.maxAttempts) {
+                            message = 'You have exceeded the attempt limit. Your attempts on this problem will not be graded but will count toward completion.';
+                        } else if (currentMoment.isBefore(deadDate) && currentMoment.isAfter(endDate)) {
+                            message = 'The topic is past due but partial credit is available. Your attempts will be graded with a penalty.';
+                        } else if (currentMoment.isAfter(solutionsMoment)) {
+                            // TODO get from backend
+                            message = 'Solutions are available, your attempts will not be recorded.';
+                        } else if (currentMoment.isBefore(solutionsMoment) && currentMoment.isAfter(deadDate)) {
+                            message = 'The topic is past due. Your attempts on this problem will not be graded but will count toward completion.';
+                        } else if (grade.overallBestScore < 1 && currentMoment.isBefore(endDate) && (grade.numAttempts < problem.maxAttempts || problem.maxAttempts <= INFINITE_MAX_ATTEMPT_VALUE)) {
+                            // All of these situations should already be handled, just making it more defensive
+                            message = 'Your attempts on this problem will be graded.';
+                        } else {
+                            // TODO remote error logging
+                            message = 'An unknown error has occured and it is unclear if your attempt will be graded.';
+                        }
+                        return (<>{message}</>);
+                    }}
+                </MomentReacter>
             </div>
         </div>
     );
