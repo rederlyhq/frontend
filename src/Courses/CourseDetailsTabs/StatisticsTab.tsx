@@ -141,7 +141,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
                         grade.workbooks.map((attempt: any) => ({
                             id: attempt.courseWWTopicQuestionId,
                             submitted: attempt.submitted,
-                            result: attempt.result,
+                            result: `${(attempt.result * 100).toFixed(1)}%`,
                             time: attempt.time,
                         }))
                     ));
