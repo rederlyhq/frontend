@@ -13,6 +13,7 @@ import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { UserRole, getUserRole } from '../Enums/UserRole';
 import { CheckboxHider } from '../Components/CheckboxHider';
 import moment from 'moment';
+import { nameof } from '../Utilities/TypescriptUtils';
 
 interface TopicsListProps {
     listOfTopics: Array<NewCourseTopicObj>;
@@ -30,19 +31,26 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
     const userType: UserRole = getUserRole();
     const { control } = useForm();
     
-    const updateTopicField = async (topicId: number, field: keyof NewCourseTopicObj, newData: Date) => {
-        console.log(`Updating Topic ${topicId} to ${field} = ${newData}`);
+    const updateTopicField = async (topic: NewCourseTopicObj, field: keyof NewCourseTopicObj, newData: Date) => {
+        console.log(`Updating Topic ${topic.id} to ${field} = ${newData}`);
         const updates = {
             [field]: newData
         };
 
+        if (field === nameof<NewCourseTopicObj>('endDate')) {
+            if (moment(newData).isAfter(topic.deadDate)) {
+                updates[nameof<NewCourseTopicObj>('deadDate')] = newData;
+            }
+        }
+
         try {
-            const res = await AxiosRequest.put(`/courses/topic/${topicId}`, updates);
+            const res = await AxiosRequest.put(`/courses/topic/${topic.id}`, updates);
+            _.assign(topic, updates);
             console.log(res);
-            setTopicFeedback({topicId: topicId, feedback: res.data.message, variant: 'success'});
+            setTopicFeedback({topicId: topic.id, feedback: res.data.message, variant: 'success'});
         } catch (e) {
             console.error(e);
-            setTopicFeedback({topicId: topicId, feedback: e.message, variant: 'danger'});
+            setTopicFeedback({topicId: topic.id, feedback: e.message, variant: 'danger'});
         }
     };
 
@@ -70,8 +78,6 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                         <h5>{topic.name}</h5>
                     </Link>
                     <MuiPickersUtilsProvider utils={MomentUtils}>
-                        {/*
-                        // @ts-ignore */}
                         <Controller
                             style={{
                                 marginLeft: 'auto'
@@ -84,14 +90,13 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             label='Start date'
                             title='Start date'
                             onChange={([val]) => {
-                                updateTopicField(topic.id, 'startDate', val.toDate());
+                                updateTopicField(topic, 'startDate', val.toDate());
                                 return val;
                             }}
                             defaultValue={topic.startDate}
+                            value={topic.startDate}
                             disabled={userType === UserRole.STUDENT}
                         />
-                        {/*
-                        // @ts-ignore */}
                         <Controller 
                             style={{
                                 marginLeft: '10px'
@@ -107,9 +112,10 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             }}
                             onAccept={(date: MaterialUiPickersDate) => {
                                 if (!date) return;
-                                updateTopicField(topic.id, 'endDate', date.toDate());
+                                updateTopicField(topic, 'endDate', date.toDate());
                             }}
                             defaultValue={topic.endDate}
+                            value={topic.endDate}
                             inputVariant='outlined'
                             disabled={userType === UserRole.STUDENT}
                             // Below are some options that would be useful for limiting how
@@ -128,12 +134,10 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             defaultChecked={!moment(topic.endDate).isSame(moment(topic.deadDate))}
                             onChange={(newValue: boolean) => {
                                 if (!newValue) {
-                                    updateTopicField(topic.id, 'deadDate', topic.endDate);
+                                    updateTopicField(topic, 'deadDate', topic.endDate);
                                 }
                             }}
                         >
-                            {/*
-                            // @ts-ignore */}
                             <Controller 
                                 style={{
                                     marginLeft: '10px'
@@ -149,9 +153,10 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                 }}
                                 onAccept={(date: MaterialUiPickersDate) => {
                                     if (!date) return;
-                                    updateTopicField(topic.id, 'deadDate', date.toDate());
+                                    updateTopicField(topic, 'deadDate', date.toDate());
                                 }}
                                 defaultValue={topic.deadDate}
+                                value={topic.deadDate}
                                 inputVariant='outlined'
                                 disabled={userType === UserRole.STUDENT}
                                 // Below are some options that would be useful for limiting how
