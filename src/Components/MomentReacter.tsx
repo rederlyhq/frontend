@@ -66,7 +66,7 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
                 // We need to mod by the intervalInMillis because this number can be greater
                 // For example let's say we want to run this every minute on the half minute
                 // intervalInMillis = 60000, offsetInMillis = 30000
-                // There is 45 seconds until the next minute, ad the 30 and your at a minute and 15 seconds
+                // There is 45 seconds until the next minute, add the 30 and you're at a minute and 15 seconds
                 // but you really want to run in 15 seconds
                 timeoutTime = (intervalInMillis - (currentMoment.toDate().getTime() % intervalInMillis) + (offsetInMillis ?? 0)) % intervalInMillis;
             }
