@@ -264,7 +264,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             [name]: val
         };
 
-        if (name === 'endDate' && val.isAfter(topicMetadata.deadDate)) {
+        if (name === 'endDate' && (val.isAfter(moment(topicMetadata.deadDate)) || moment(topicMetadata.deadDate).isSame(moment(topicMetadata.endDate)))) {
             updates.deadDate = val;
         }
 
@@ -288,7 +288,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             [name]: val
         };
 
-        if (name === 'endDate' && val.isAfter(topicMetadata.deadDate)) {
+        if (name === 'endDate' && (val.isAfter(moment(topicMetadata.deadDate)) || moment(topicMetadata.deadDate).isSame(moment(topicMetadata.endDate)))) {
             updates.deadDate = val;
         }
 

@@ -38,7 +38,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
         };
 
         if (field === nameof<NewCourseTopicObj>('endDate')) {
-            if (moment(newData).isAfter(topic.deadDate)) {
+            if (moment(newData).isAfter(moment(topic.deadDate)) || moment(topic.deadDate).isSame(moment(topic.endDate))) {
                 updates[nameof<NewCourseTopicObj>('deadDate')] = newData;
             }
         }
