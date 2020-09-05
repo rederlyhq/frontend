@@ -11,8 +11,8 @@ import { useForm, Controller } from 'react-hook-form';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { UserRole, getUserRole } from '../Enums/UserRole';
-import { nameof } from '../Utilities/TypescriptUtils';
 import { CheckboxHider } from '../Components/CheckboxHider';
+import moment from 'moment';
 
 interface TopicsListProps {
     listOfTopics: Array<NewCourseTopicObj>;
@@ -125,6 +125,12 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                 marginLeft: '10px'
                             }}
                             labelText='Partial Credit?'
+                            defaultChecked={!moment(topic.endDate).isSame(moment(topic.deadDate))}
+                            onChange={(newValue: boolean) => {
+                                if (!newValue) {
+                                    updateTopicField(topic.id, 'deadDate', topic.endDate);
+                                }
+                            }}
                         >
                             {/*
                             // @ts-ignore */}
