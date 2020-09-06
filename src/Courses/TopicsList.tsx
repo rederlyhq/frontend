@@ -162,10 +162,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
             </ListGroupItem>
         );
     };
-    
-    if(listOfTopics.length === 0) {
-        return <p>There are no active topics in this course</p>;
-    }
+
 
     return (
         <>
@@ -178,13 +175,16 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                     >
-                        {listOfTopics.map((topic, index) => {
-                            return (
-                                <Draggable draggableId={`topic-${topic.id}`} index={index} key={`topic${topic.id}`} isDragDisabled={!showEditTopic}>
-                                    {getDraggableTopic}
-                                </Draggable>
-                            );
-                        })}
+                        {
+                            listOfTopics.length > 0 ? listOfTopics.map((topic, index) => {
+                                return (
+                                    <Draggable draggableId={`topic-${topic.id}`} index={index} key={`topic${topic.id}`} isDragDisabled={!showEditTopic}>
+                                        {getDraggableTopic}
+                                    </Draggable>
+                                );
+                            }) :
+                            <p>There are no active topics in this unit</p>
+                        }
                         {provided.placeholder}
                     </ListGroup>
                 )}

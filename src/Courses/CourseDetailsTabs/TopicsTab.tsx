@@ -352,7 +352,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             return;
         }
 
-        if (result.destination.index === result.source.index) {
+        if (result.destination.index === result.source.index && result.destination.droppableId === result.source.droppableId) {
             return;
         }
 
