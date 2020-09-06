@@ -407,36 +407,39 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 headerContent={<h5>Confirm delete</h5>}
                 bodyContent={`Are you sure you want to remove ${confirmationParamters.identifierText}?`}
             />
-            {userType !== UserRole.STUDENT && (
-                <Row>
-                    <Row style={{ marginLeft: 'auto' }}>
-                        {/* <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} > */}
-                        {
-                            inEditMode &&
-                            <span
-                                role="button"
-                                tabIndex={0}
-                                style={{
-                                    padding: '20px'
-                                }}
-                                onClick={_.partial(addUnitClick, _, course.id)}
-                                onKeyPress={_.partial(addUnitClick, _, course.id)}
-                            >
-                                <FaPlusCircle color='#00AA00' />
-                            </span>
-                        }
-                        <EditToggleButton
-                            selectedState={inEditMode}
-                            onClick={() => { setInEditMode(!inEditMode); }}
-                            style={{
-                                padding: '20px'
-                            }}
-                        />
-                    </Row>
-                </Row>
-            )}
             {error && <Alert variant="danger">{error.message}</Alert>}
-            <h4>Units</h4>
+            <Row style={{padding: '0.5em'}}>
+                <Col md={1}><h4>Units</h4></Col>
+                <Col md={{span: 2, offset: 9}}>
+                    {userType !== UserRole.STUDENT && (
+                        <Row style={{justifyContent: 'end', paddingRight: '1em'}}>
+                            {/* <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} > */}
+                            <Col md={1}>
+                                {
+                                    inEditMode &&
+                                    <span
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={_.partial(addUnitClick, _, course.id)}
+                                        onKeyPress={_.partial(addUnitClick, _, course.id)}
+                                    >
+                                        <FaPlusCircle color='#00AA00' />
+                                    </span>
+                                }
+                            </Col>
+                            <Col md={1}>
+                                <EditToggleButton
+                                    selectedState={inEditMode}
+                                    onClick={() => { setInEditMode(!inEditMode); }}
+                                    // style={{
+                                    //     padding: '20px'
+                                    // }}
+                                />
+                            </Col>
+                        </Row>
+                    )}
+                </Col>
+            </Row>
             <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId='unitsList' type='UNIT'>
                     {
