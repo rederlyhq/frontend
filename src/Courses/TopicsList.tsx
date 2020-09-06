@@ -59,17 +59,17 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
             {/* TODO: Hide for Professor? */}
             {(showEditTopic && removeTopic) ? (
                 <>
-                    <Col md={10}>{topic.name}</Col>
-                    <Col md={1}>
-                        <Button onClick={(e: any) => showEditTopic(e, topic.id)}>
-                            <BsPencilSquare/> Edit
-                        </Button>
-                    </Col>
-                    <Col md={1}>
-                        <Button variant='danger' onClick={(e: any) => removeTopic(e, topic.id)}>
-                            <BsTrash />
-                            Delete
-                        </Button>
+                    <Col md={8}>{topic.name}</Col>
+                    <Col>
+                        <Row style={{justifyContent: 'end'}}>
+                            <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} onClick={(e: any) => showEditTopic(e, topic.id)}>
+                                <BsPencilSquare/> Edit
+                            </Button>
+                            <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} variant='danger' onClick={(e: any) => removeTopic(e, topic.id)}>
+                                <BsTrash />
+                                Delete
+                            </Button>
+                        </Row>
                     </Col>
                 </>
             ) : (
