@@ -59,17 +59,17 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
             {/* TODO: Hide for Professor? */}
             {(showEditTopic && removeTopic) ? (
                 <>
-                    <Col md={10}>{topic.name}</Col>
-                    <Col md={1}>
-                        <Button onClick={(e: any) => showEditTopic(e, topic.id)}>
-                            <BsPencilSquare/> Edit
-                        </Button>
-                    </Col>
-                    <Col md={1}>
-                        <Button variant='danger' onClick={(e: any) => removeTopic(e, topic.id)}>
-                            <BsTrash />
-                            Delete
-                        </Button>
+                    <Col md={8}>{topic.name}</Col>
+                    <Col>
+                        <Row style={{justifyContent: 'end'}}>
+                            <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} onClick={(e: any) => showEditTopic(e, topic.id)}>
+                                <BsPencilSquare/> Edit
+                            </Button>
+                            <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} variant='danger' onClick={(e: any) => removeTopic(e, topic.id)}>
+                                <BsTrash />
+                                Delete
+                            </Button>
+                        </Row>
                     </Col>
                 </>
             ) : (
@@ -162,10 +162,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
             </ListGroupItem>
         );
     };
-    
-    if(listOfTopics.length === 0) {
-        return <p>There are no active topics in this course</p>;
-    }
+
 
     return (
         <>
@@ -178,13 +175,16 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                     >
-                        {listOfTopics.map((topic, index) => {
-                            return (
-                                <Draggable draggableId={`topic-${topic.id}`} index={index} key={`topic${topic.id}`} isDragDisabled={!showEditTopic}>
-                                    {getDraggableTopic}
-                                </Draggable>
-                            );
-                        })}
+                        {
+                            listOfTopics.length > 0 ? listOfTopics.map((topic, index) => {
+                                return (
+                                    <Draggable draggableId={`topic-${topic.id}`} index={index} key={`topic${topic.id}`} isDragDisabled={!showEditTopic}>
+                                        {getDraggableTopic}
+                                    </Draggable>
+                                );
+                            }) :
+                            <p>There are no active topics in this unit</p>
+                        }
                         {provided.placeholder}
                     </ListGroup>
                 )}
