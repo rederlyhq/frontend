@@ -3,10 +3,13 @@ import { ProblemObject } from '../Courses/CourseInterfaces';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import _ from 'lodash';
 import { Spinner } from 'react-bootstrap';
+import * as qs from 'querystring';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
     setProblemStudentGrade: (val: any) => void;
+    workbookId?: number;
+    readonly?: boolean;
 }
 
 /**
@@ -16,7 +19,12 @@ interface ProblemIframeProps {
  * with further work on the JSON data.
  * Important reference: https://medium.com/the-thinkmill/how-to-safely-inject-html-in-react-using-an-iframe-adc775d458bc
  */
-export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblemStudentGrade}) => {
+export const ProblemIframe: React.FC<ProblemIframeProps> = ({
+    problem,
+    setProblemStudentGrade,
+    workbookId,
+    readonly = false
+}) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
@@ -33,7 +41,14 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({problem, setProblem
         setRenderedHTML('');
         (async () => {
             try {
-                const res = await AxiosRequest.get(`/courses/question/${problem.id}`);
+                let queryString = qs.stringify(_({
+                    workbookId,
+                    readonly
+                }).omitBy(_.isUndefined).value());
+                if (!_.isEmpty(queryString)) {
+                    queryString = `?${queryString}`;
+                }
+                const res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
                 // TODO: Error handling.
                 setRenderedHTML(res.data.data.rendererData.renderedHTML);
             } catch (e) {
