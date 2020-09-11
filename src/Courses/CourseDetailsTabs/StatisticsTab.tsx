@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import React, { useState, forwardRef, useEffect } from 'react';
-import { Nav } from 'react-bootstrap';
+import { Col, Nav } from 'react-bootstrap';
 import MaterialTable, { Column } from 'material-table';
 // import { MdSearch, MdFirstPage, MdLastPage, MdClear, MdFilterList, MdChevronRight, MdChevronLeft, MdArrowDownward, MdFileDownload} from 'react-icons/md';
 import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from '@material-ui/icons';
@@ -25,17 +25,17 @@ enum StatisticsView {
 }
 
 const gradeCols = [
-    {title: 'Name', field: 'name'},
-    {title: 'Average number of attempts', field: 'averageAttemptedCount'},
-    {title: 'Average grade', field: 'averageScore'},
-    {title: '% Completed', field: 'completionPercent'},
+    { title: 'Name', field: 'name' },
+    { title: 'Average number of attempts', field: 'averageAttemptedCount' },
+    { title: 'Average grade', field: 'averageScore' },
+    { title: '% Completed', field: 'completionPercent' },
 ];
 
 const attemptCols: Array<Column<any>> = [
-    {title: 'Result', field: 'result', defaultSort: 'asc'},
+    { title: 'Result', field: 'result', defaultSort: 'asc' },
     {
         title: 'Attempt Time',
-        field: 'time', 
+        field: 'time',
         // These options don't seem to work.
         // defaultSort: 'desc',
         // defaultGroupSort: 'desc',
@@ -69,20 +69,32 @@ const icons = {
 };
 
 
+interface BreadCrumbFilter {
+    id: number;
+    displayName: string;
+}
+
+type EnumDictionary<T extends string | symbol | number, U> = {
+    [K in T]?: U;
+};
+
+type BreadCrumbFilters = EnumDictionary<StatisticsView, BreadCrumbFilter>;
+
 /**
  * When a professor wishes to see a student's view, they pass in the student's userId.
  * When they wish to see overall course statistics, they do not pass any userId.
  */
-export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) => {
-    const [view, setView] = useState<string>(StatisticsView.UNITS);
+export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) => {
+    const [view, setView] = useState<StatisticsView>(StatisticsView.UNITS);
     const [idFilter, setIdFilter] = useState<number | null>(null);
+    const [breadcrumbFilter, setBreadcrumbFilters] = useState<BreadCrumbFilters>({});
     const [rowData, setRowData] = useState<Array<any>>([]);
     const userType: UserRole = getUserRole();
 
     useEffect(() => {
         console.log('Rerunning useEffect');
         if (course?.id === 0) return;
-    
+
         let url = '/courses/statistics';
         let filterParam: string = '';
         let idFilterLocal = idFilter;
@@ -103,7 +115,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
         default:
             url = `${url}/units?`;
             filterParam = '';
-            if(idFilterLocal !== null) {
+            if (idFilterLocal !== null) {
                 console.error('This should be null for units');
                 idFilterLocal = null;
             }
@@ -124,12 +136,12 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
                 let data = res.data.data;
 
                 const formatNumberString = (val: string, percentage: boolean = false) => {
-                    if(_.isNil(val)) return null;
+                    if (_.isNil(val)) return null;
                     if (percentage) return `${(parseFloat(val) * 100).toFixed(1)}%`;
-                    
+
                     return parseFloat(val).toFixed(2);
                 };
-                
+
                 if (view === StatisticsView.ATTEMPTS) {
                     let grades = data.grades.filter((grade: any) => {
                         const hasAttempts = grade.numAttempts > 0;
@@ -147,7 +159,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
                         }))
                     ));
                     data = _.flatten(data);
-                    data = data.sort((a: any, b: any)=>moment(b.time).diff(moment(a.time)));
+                    data = data.sort((a: any, b: any) => moment(b.time).diff(moment(a.time)));
                 } else {
                     data = data.map((d: any) => ({
                         ...d,
@@ -165,17 +177,51 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
     }, [course.id, view, idFilter, userId, userType]);
 
     const renderProblemPreview = (rowData: any) => {
-        return <ProblemIframe problem={new ProblemObject({id: rowData.problemId})} setProblemStudentGrade={() => {}} workbookId={rowData.id} readonly={true} />;
+        return <ProblemIframe problem={new ProblemObject({ id: rowData.problemId })} setProblemStudentGrade={() => { }} workbookId={rowData.id} readonly={true} />;
+    };
+
+    const resetBreadCrumbs = (selectedKey: string, newBreadcrumb?: BreadCrumbFilter) => {
+        let key: StatisticsView = StatisticsView.UNITS;
+        let lastFilter: number | null = null;
+        const newBreadcrumbFilter: EnumDictionary<StatisticsView, BreadCrumbFilter> = {};
+        // used to break the loop after one extra iteration (or 0 if it reaches the end)
+        let breakLoop = false;
+        for((key as string) in StatisticsView) {
+            // now that key is the correct value (1 after the selected) break the loop
+            if (breakLoop) {
+                break;
+            }
+            newBreadcrumbFilter[key] = breadcrumbFilter[key];
+            lastFilter = newBreadcrumbFilter[key]?.id || null;
+            // I want key to increment once more, so using a boolean to break at the start of the next iteration
+            if (key === selectedKey) {
+                breakLoop = true;
+                if (!_.isNil(newBreadcrumb)) {
+                    newBreadcrumbFilter[key] = newBreadcrumb;
+                }
+            }
+        }
+        setBreadcrumbFilters(newBreadcrumbFilter);
+        return {
+            lastFilter,
+            nextKey: key
+        };
     };
 
     const nextView = (event: any, rowData: any, togglePanel: any) => {
+        const newBreadcrumb = {
+            id: rowData.id,
+            displayName: rowData.name
+        };
         switch (view) {
         case StatisticsView.UNITS:
             setIdFilter(rowData.id);
+            resetBreadCrumbs(view, newBreadcrumb);
             setView(StatisticsView.TOPICS);
             break;
         case StatisticsView.TOPICS:
             setIdFilter(rowData.id);
+            resetBreadCrumbs(view, newBreadcrumb);
             setView(StatisticsView.PROBLEMS);
             break;
         case StatisticsView.PROBLEMS:
@@ -183,6 +229,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
             if (userId !== undefined) {
                 setIdFilter(rowData.id);
                 console.log('Switching to Attempts');
+                resetBreadCrumbs(view, newBreadcrumb);
                 setView(StatisticsView.ATTEMPTS);
             } else {
                 console.log('Showing a panel.');
@@ -194,50 +241,64 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
             break;
         default:
             break;
-        }   
+        }
     };
-    
-    const hasDetailPanel = userId !== undefined ? 
+
+    const getTitle = (): string => {
+        let result = course.name;
+        Object.keys(StatisticsView).forEach((key: string) => {
+            result = breadcrumbFilter[key as StatisticsView]?.displayName ?? result;
+        });
+        return result;
+    };
+
+    const hasDetailPanel = userId !== undefined ?
         view === StatisticsView.ATTEMPTS :
         view === StatisticsView.PROBLEMS;
-    
-    let seeMoreActions: Array<any> | undefined = hasDetailPanel ? undefined : [{
-        icon: () => <ChevronRight/>,
-        tooltip: 'See More',
-        onClick: _.curryRight(nextView)(()=>{}),
-    }];
 
+    let seeMoreActions: Array<any> | undefined = hasDetailPanel ? undefined : [{
+        icon: () => <ChevronRight />,
+        tooltip: 'See More',
+        onClick: _.curryRight(nextView)(() => { }),
+    }];
     return (
         <>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
-                setView(selectedKey);
+                setView(selectedKey as StatisticsView);
+                setBreadcrumbFilters({});
                 setIdFilter(null);
             }}>
-                <Nav.Item>
-                    <Nav.Link eventKey={StatisticsView.UNITS}>
-                        Units
-                    </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link eventKey={StatisticsView.TOPICS}>
-                        Topics
-                    </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                    <Nav.Link eventKey={StatisticsView.PROBLEMS}>
-                        Problems
-                    </Nav.Link>
-                </Nav.Item>
-                {userId !== undefined && <Nav.Item>
-                    <Nav.Link eventKey={StatisticsView.ATTEMPTS}>
-                        Attempts
-                    </Nav.Link>
-                </Nav.Item>}
+                {Object.keys(StatisticsView).map((key: string) => (
+                    (key !== StatisticsView.ATTEMPTS || userId !== undefined) &&
+                    <Col key={`global-${key}`}>
+                        <Nav.Item>
+                            <Nav.Link eventKey={key} >
+                                {_.capitalize(key)}
+                            </Nav.Link>
+                        </Nav.Item>
+                    </Col>
+                ))}
             </Nav>
-            <div style={{maxWidth: '100%'}}>
+            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
+                const { nextKey, lastFilter } = resetBreadCrumbs(selectedKey);
+                setView(nextKey);
+                setIdFilter(lastFilter);
+            }}>
+                {Object.keys(StatisticsView).map((key: string) => (
+                    (key !== StatisticsView.ATTEMPTS || userId !== undefined) &&
+                    <Col key={`filtered-${key}`}>
+                        <Nav.Item>
+                            <Nav.Link eventKey={key} className={`${_.isNil(breadcrumbFilter[key as StatisticsView]) ? 'invisible' : ''}`} >
+                                {breadcrumbFilter[key as StatisticsView]?.displayName}
+                            </Nav.Link>
+                        </Nav.Item>
+                    </Col>
+                ))}
+            </Nav>
+            <div style={{ maxWidth: '100%' }}>
                 <MaterialTable
                     icons={icons}
-                    title={course.name}
+                    title={getTitle()}
                     columns={view === StatisticsView.ATTEMPTS ? attemptCols : gradeCols}
                     data={rowData}
                     actions={seeMoreActions}
@@ -247,10 +308,10 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({course, userId}) =>
                         sorting: true
                     }}
                     detailPanel={hasDetailPanel ? [{
-                        icon: () => <ChevronRight/>,
+                        icon: () => <ChevronRight />,
                         render: renderProblemPreview
                     }] : undefined}
-                    localization={{header: { actions: '' }}}
+                    localization={{ header: { actions: '' } }}
                 />
             </div>
         </>
