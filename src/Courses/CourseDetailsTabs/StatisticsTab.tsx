@@ -12,6 +12,8 @@ import * as qs from 'querystring';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import moment from 'moment';
 
+const FILTERED_STRING = '_FILTERED';
+
 interface StatisticsTabProps {
     course: CourseObject;
     userId?: number;
@@ -23,6 +25,22 @@ enum StatisticsView {
     PROBLEMS = 'PROBLEMS',
     ATTEMPTS = 'ATTEMPTS',
 }
+
+enum StatisticsViewFilter {
+    UNITS_FILTERED = 'UNITS_FILTERED',
+    TOPICS_FILTERED = 'TOPICS_FILTERED',
+    PROBLEMS_FILTERED = 'PROBLEMS_FILTERED',
+    ATTEMPTS_FILTERED = 'ATTEMPTS_FILTERED',
+}
+
+type StatisticsViewAll = StatisticsView | StatisticsViewFilter;
+
+const statisticsViewFromAllStatisticsViewFilter = (view: StatisticsViewAll): StatisticsView => {
+    if (view.endsWith('_FILTERED')) {
+        return view.slice(0, view.length - FILTERED_STRING.length) as StatisticsView;
+    }
+    return view as StatisticsView;
+};
 
 const gradeCols = [
     { title: 'Name', field: 'name' },
@@ -85,11 +103,13 @@ type BreadCrumbFilters = EnumDictionary<StatisticsView, BreadCrumbFilter>;
  * When they wish to see overall course statistics, they do not pass any userId.
  */
 export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) => {
-    const [view, setView] = useState<StatisticsView>(StatisticsView.UNITS);
+    const [view, setView] = useState<StatisticsViewAll>(StatisticsView.UNITS);
     const [idFilter, setIdFilter] = useState<number | null>(null);
     const [breadcrumbFilter, setBreadcrumbFilters] = useState<BreadCrumbFilters>({});
     const [rowData, setRowData] = useState<Array<any>>([]);
     const userType: UserRole = getUserRole();
+
+    const globalView = statisticsViewFromAllStatisticsViewFilter(view);
 
     useEffect(() => {
         console.log('Rerunning useEffect');
@@ -98,21 +118,9 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         let url = '/courses/statistics';
         let filterParam: string = '';
         let idFilterLocal = idFilter;
+
         switch (view) {
-        case StatisticsView.TOPICS:
-            url = `${url}/topics?`;
-            filterParam = 'courseUnitContentId';
-            break;
-        case StatisticsView.PROBLEMS:
-            url = `${url}/questions?`;
-            filterParam = 'courseTopicContentId';
-            break;
-        case StatisticsView.ATTEMPTS:
-            url = `/users/${userId}?includeGrades=WITH_ATTEMPTS&`;
-            // TODO: This should be removed when a similar call as the others is supported.
-            idFilterLocal = null;
-            break;
-        default:
+        case StatisticsView.UNITS:
             url = `${url}/units?`;
             filterParam = '';
             if (idFilterLocal !== null) {
@@ -120,12 +128,31 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 idFilterLocal = null;
             }
             break;
+        case StatisticsViewFilter.UNITS_FILTERED:
+        case StatisticsView.TOPICS:
+            url = `${url}/topics?`;
+            filterParam = 'courseUnitContentId';
+            break;
+        case StatisticsViewFilter.TOPICS_FILTERED:
+        case StatisticsView.PROBLEMS:
+            url = `${url}/questions?`;
+            filterParam = 'courseTopicContentId';
+            break;
+        case StatisticsViewFilter.PROBLEMS_FILTERED:
+        case StatisticsView.ATTEMPTS:
+            url = `/users/${userId}?includeGrades=WITH_ATTEMPTS&`;
+            // TODO: This should be removed when a similar call as the others is supported.
+            idFilterLocal = null;
+            break;
+        default:
+            console.error('You should not havea  view that is not the views or filtered views');
+            break;
         }
 
         const queryString = qs.stringify(_({
             courseId: course.id,
             [filterParam]: idFilterLocal,
-            userId: view !== StatisticsView.ATTEMPTS ? userId : null,
+            userId: (view !== StatisticsView.ATTEMPTS && view !== StatisticsViewFilter.PROBLEMS_FILTERED) ? userId : null,
         }).omitBy(_.isNil).value() as any).toString();
 
         url = `${url}${queryString}`;
@@ -142,7 +169,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     return parseFloat(val).toFixed(2);
                 };
 
-                if (view === StatisticsView.ATTEMPTS) {
+                if (view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) {
                     let grades = data.grades.filter((grade: any) => {
                         const hasAttempts = grade.numAttempts > 0;
                         const satisfiesIdFilter = idFilter ? grade.courseWWTopicQuestionId === idFilter : true;
@@ -174,13 +201,14 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 return;
             }
         })();
-    }, [course.id, view, idFilter, userId, userType]);
+    }, [course.id, globalView, idFilter, userId, userType]);
 
     const renderProblemPreview = (rowData: any) => {
         return <ProblemIframe problem={new ProblemObject({ id: rowData.problemId })} setProblemStudentGrade={() => { }} workbookId={rowData.id} readonly={true} />;
     };
 
     const resetBreadCrumbs = (selectedKey: string, newBreadcrumb?: BreadCrumbFilter) => {
+        let globalSelectedKey: StatisticsView = statisticsViewFromAllStatisticsViewFilter(selectedKey as StatisticsViewAll);
         let key: StatisticsView = StatisticsView.UNITS;
         let lastFilter: number | null = null;
         const newBreadcrumbFilter: EnumDictionary<StatisticsView, BreadCrumbFilter> = {};
@@ -194,7 +222,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             newBreadcrumbFilter[key] = breadcrumbFilter[key];
             lastFilter = newBreadcrumbFilter[key]?.id || null;
             // I want key to increment once more, so using a boolean to break at the start of the next iteration
-            if (key === selectedKey) {
+            if (key === globalSelectedKey) {
                 breakLoop = true;
                 if (!_.isNil(newBreadcrumb)) {
                     newBreadcrumbFilter[key] = newBreadcrumb;
@@ -216,27 +244,30 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         switch (view) {
         case StatisticsView.UNITS:
             setIdFilter(rowData.id);
-            resetBreadCrumbs(view, newBreadcrumb);
-            setView(StatisticsView.TOPICS);
+            resetBreadCrumbs(StatisticsView.UNITS, newBreadcrumb);
+            setView(StatisticsViewFilter.UNITS_FILTERED);
             break;
+        case StatisticsViewFilter.UNITS_FILTERED:
         case StatisticsView.TOPICS:
             setIdFilter(rowData.id);
-            resetBreadCrumbs(view, newBreadcrumb);
-            setView(StatisticsView.PROBLEMS);
+            resetBreadCrumbs(StatisticsView.TOPICS, newBreadcrumb);
+            setView(StatisticsViewFilter.TOPICS_FILTERED);
             break;
+        case StatisticsViewFilter.TOPICS_FILTERED:
         case StatisticsView.PROBLEMS:
             console.log(userId);
             if (userId !== undefined) {
                 setIdFilter(rowData.id);
                 console.log('Switching to Attempts');
-                resetBreadCrumbs(view, newBreadcrumb);
-                setView(StatisticsView.ATTEMPTS);
+                resetBreadCrumbs(StatisticsView.PROBLEMS, newBreadcrumb);
+                setView(StatisticsViewFilter.PROBLEMS_FILTERED);
             } else {
                 console.log('Showing a panel.');
                 togglePanel();
             }
             break;
         case StatisticsView.ATTEMPTS:
+        case StatisticsViewFilter.PROBLEMS_FILTERED:
             togglePanel();
             break;
         default:
@@ -253,8 +284,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     };
 
     const hasDetailPanel = userId !== undefined ?
-        view === StatisticsView.ATTEMPTS :
-        view === StatisticsView.PROBLEMS;
+        (view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED):
+        (view === StatisticsView.PROBLEMS || view === StatisticsViewFilter.TOPICS_FILTERED);
 
     let seeMoreActions: Array<any> | undefined = hasDetailPanel ? undefined : [{
         icon: () => <ChevronRight />,
@@ -264,13 +295,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     return (
         <>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
-                setView(selectedKey as StatisticsView);
+                setView(selectedKey as StatisticsViewAll);
                 setBreadcrumbFilters({});
                 setIdFilter(null);
             }}>
                 {Object.keys(StatisticsView).map((key: string) => (
                     (key !== StatisticsView.ATTEMPTS || userId !== undefined) &&
-                    <Col key={`global-${key}`}>
+                    <Col key={`global-${key}`} className="p-0" >
                         <Nav.Item>
                             <Nav.Link eventKey={key} >
                                 {_.capitalize(key)}
@@ -281,25 +312,28 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             </Nav>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
                 const { nextKey, lastFilter } = resetBreadCrumbs(selectedKey);
-                setView(nextKey);
+                setView(selectedKey as StatisticsViewFilter);
                 setIdFilter(lastFilter);
             }}>
-                {Object.keys(StatisticsView).map((key: string) => (
-                    (key !== StatisticsView.ATTEMPTS || userId !== undefined) &&
-                    <Col key={`filtered-${key}`}>
-                        <Nav.Item>
-                            <Nav.Link eventKey={key} className={`${_.isNil(breadcrumbFilter[key as StatisticsView]) ? 'invisible' : ''}`} >
-                                {breadcrumbFilter[key as StatisticsView]?.displayName}
-                            </Nav.Link>
-                        </Nav.Item>
-                    </Col>
-                ))}
+                {Object.keys(StatisticsViewFilter).map((key: string) => {
+                    const globalKey = statisticsViewFromAllStatisticsViewFilter(key as StatisticsViewFilter);
+                    return (
+                        (key !== StatisticsViewFilter.ATTEMPTS_FILTERED || userId !== undefined) &&
+                        <Col key={`filtered-${key}`} className="p-0" >
+                            <Nav.Item>
+                                <Nav.Link eventKey={key} className={`${_.isNil(breadcrumbFilter[globalKey as StatisticsView]) ? 'invisible' : ''}`} >
+                                    {breadcrumbFilter[globalKey]?.displayName}
+                                </Nav.Link>
+                            </Nav.Item>
+                        </Col>
+                    );
+                })}
             </Nav>
             <div style={{ maxWidth: '100%' }}>
                 <MaterialTable
                     icons={icons}
                     title={getTitle()}
-                    columns={view === StatisticsView.ATTEMPTS ? attemptCols : gradeCols}
+                    columns={(view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) ? attemptCols : gradeCols}
                     data={rowData}
                     actions={seeMoreActions}
                     onRowClick={nextView}
