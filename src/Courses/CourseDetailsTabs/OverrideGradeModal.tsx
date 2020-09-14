@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Form, FormControl, FormGroup, FormLabel, Modal } from 'react-bootstrap';
 import _ from 'lodash';
 import { StudentGrade } from '../CourseInterfaces';
@@ -6,7 +6,8 @@ import { StudentGrade } from '../CourseInterfaces';
 enum OverrideGradePhase {
     PROMPT = 'PROMPT',
     CONFIRM = 'CONFIRM',
-    LOCK = 'LOCK'
+    LOCK = 'LOCK',
+    LOCK_CONFIRM = 'LOCK_CONFIRM',
 }
 interface OverrideGradeModalProps {
     show: boolean;
@@ -24,9 +25,20 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
     const [loading, setLoading] = useState<boolean>(false);
     const displayCurrentScore = (grade.effectiveScore * 100).toFixed(1);
     const [newScorePercentInput, setNewScorePercentInput] = useState<string>(displayCurrentScore);
+
+    useEffect(() => {
+        setNewScorePercentInput(displayCurrentScore);
+    }, [displayCurrentScore]);
+
     const onHide = () => {
         onHideProp();
-        setOverrideGradePhase(OverrideGradePhase.PROMPT);
+        // There is a small flicker while it animates that setTimeout hides
+        setTimeout(() => {
+            setOverrideGradePhase(OverrideGradePhase.PROMPT);
+            setValidated(false);
+            setLoading(false);
+            // setNewScorePercentInput should be updated in setEffect because it value should default to the student grade
+        });
     };
 
     const onNewScoreChange = (ev: React.ChangeEvent<HTMLInputElement>): void => setNewScorePercentInput(ev.target.value);
@@ -48,6 +60,15 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
         } else {
             onHide();
         }
+    };
+
+    const lockSubmit = () => {
+        setOverrideGradePhase(OverrideGradePhase.LOCK_CONFIRM);
+    };
+
+    const lockConfirm = () => {
+        // TODO api call to lock
+        onHide();
     };
 
     const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -109,6 +130,11 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                         </p>
                     }
 
+                    {overrideGradePhase === OverrideGradePhase.LOCK_CONFIRM &&
+                        <p>
+                            Are you sure you want to lock the student&apos;s grade? The student will no longer be able to update their grade until unlocked.
+                        </p>
+                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={onHide}>
@@ -130,8 +156,15 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                     }
                     {overrideGradePhase === OverrideGradePhase.LOCK &&
                     <>
-                        <Button variant="danger">
+                        <Button variant="danger" onClick={lockSubmit}>
                             Lock
+                        </Button>
+                    </>
+                    }
+                    {overrideGradePhase === OverrideGradePhase.LOCK_CONFIRM &&
+                    <>
+                        <Button variant="primary" onClick={lockConfirm}>
+                            Confirm
                         </Button>
                     </>
                     }
