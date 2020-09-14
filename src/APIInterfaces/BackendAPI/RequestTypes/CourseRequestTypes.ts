@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject, NewCourseUnitObj } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject, NewCourseUnitObj, StudentGrade } from '../../../Courses/CourseInterfaces';
 
 /* *************** *************** */
 /* *********** Courses *********** */
@@ -51,6 +51,11 @@ export interface DeleteCourseTopicOptions {
 export interface PutCourseTopicQuestionOptions {
     id: number;
     data: Partial<ProblemObject>;
+}
+
+export interface PutQuestionGradeOptions {
+    id: number;
+    data: Partial<StudentGrade>;
 }
 
 export interface DeleteCourseTopicQuestionOptions {

@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject, StudentGrade } from '../../../Courses/CourseInterfaces';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 
 /* *************** *************** */
@@ -34,16 +34,21 @@ interface PutCourseTopicUpdates {
 
 export type PutCourseTopicUpdatesResponse = BackendAPIResponse<PutCourseTopicUpdates>;
 
-interface PutCourseTopicQuestionUpdates {
-    updatesResult: Partial<ProblemObject>[]
-}
-
 /* *************** *************** */
 /* ********** Questions ********** */
 /* *************** *************** */
 export type CreateQuestionResponse = BackendAPIResponse<Partial<NewProblemObject>>;
 
+interface PutCourseTopicQuestionUpdates {
+    updatesResult: Partial<ProblemObject>[]
+}
+
 export type PutCourseTopicQuestionUpdatesResponse = BackendAPIResponse<PutCourseTopicQuestionUpdates>;
+
+interface PutQuestionGrade {
+    updatesResult: Partial<StudentGrade>[]
+}
+export type PutQuestionGradeResponse = BackendAPIResponse<PutQuestionGrade>;
 
 interface PostDefFile {
     newQuestions: ProblemObject[]
