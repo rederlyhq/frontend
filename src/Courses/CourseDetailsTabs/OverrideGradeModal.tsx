@@ -25,8 +25,8 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
     const displayCurrentScore = (grade.effectiveScore * 100).toFixed(1);
     const [newScorePercentInput, setNewScorePercentInput] = useState<string>(displayCurrentScore);
     const onHide = () => {
-        setOverrideGradePhase(OverrideGradePhase.PROMPT);
         onHideProp();
+        setOverrideGradePhase(OverrideGradePhase.PROMPT);
     };
 
     const onNewScoreChange = (ev: React.ChangeEvent<HTMLInputElement>): void => setNewScorePercentInput(ev.target.value);
@@ -35,6 +35,8 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
         const newScore = parseInt(newScorePercentInput, 10) / 100;
         if (newScore === grade.effectiveScore) {
             onHide();
+        } else {
+            setOverrideGradePhase(OverrideGradePhase.CONFIRM);
         }
     };
 
@@ -62,23 +64,31 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
             <Form noValidate validated={validated} onSubmit={onSubmit}>
 
                 <Modal.Body>
-                    <p>The student currently has a score of <strong>{displayCurrentScore}</strong> on this problem.</p>
-                    <FormGroup controlId='override-score'>
-                        <FormLabel>
-                                New score:
-                        </FormLabel>
-                        <FormControl
-                            required
-                            value={newScorePercentInput}
-                            size='lg'
-                            readOnly={loading}
-                            type='number'
-                            min={0}
-                            max={100}
-                            onChange={onNewScoreChange}
-                        />
-                        <Form.Control.Feedback type="invalid">{<span>The new score must be a postive number between 0 and 100</span>}</Form.Control.Feedback>
-                    </FormGroup>
+                    {overrideGradePhase === OverrideGradePhase.PROMPT &&
+                    <>
+                        <p>The student currently has a score of <strong>{displayCurrentScore}</strong> on this problem.</p>
+                        <FormGroup controlId='override-score'>
+                            <FormLabel>
+                                    New score:
+                            </FormLabel>
+                            <FormControl
+                                required
+                                value={newScorePercentInput}
+                                size='lg'
+                                readOnly={loading}
+                                type='number'
+                                min={0}
+                                max={100}
+                                onChange={onNewScoreChange}
+                            />
+                            <Form.Control.Feedback type="invalid">{<span>The new score must be a postive number between 0 and 100</span>}</Form.Control.Feedback>
+                        </FormGroup>
+                    </>
+                    }
+                    
+                    {overrideGradePhase === OverrideGradePhase.CONFIRM &&
+                        <p>Are you sure you want to update the student&apos;s grade from <strong>{displayCurrentScore}</strong> to <strong>{newScorePercentInput}</strong>.</p>
+                    }
 
                 </Modal.Body>
                 <Modal.Footer>
@@ -89,6 +99,13 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                     <>
                         <Button variant="primary" type="submit">
                             Submit
+                        </Button>
+                    </>
+                    }
+                    {overrideGradePhase === OverrideGradePhase.CONFIRM &&
+                    <>
+                        <Button variant="primary">
+                            Confirm
                         </Button>
                     </>
                     }
