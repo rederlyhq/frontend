@@ -15,12 +15,14 @@ interface OverrideGradeModalProps {
     show: boolean;
     onHide: () => void;
     grade: StudentGrade;
+    onSuccess: (newGrade: Partial<StudentGrade>) => void;
 }
 
 export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
     show,
     onHide: onHideProp,
-    grade
+    grade,
+    onSuccess
 }) => {
     const [alertState, setAlertState] = useAlertState();
     const [overrideGradePhase, setOverrideGradePhase] = useState<OverrideGradePhase>(OverrideGradePhase.PROMPT);
@@ -66,13 +68,13 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
             if (_.isNil(grade.id)) {
                 throw new Error('Application error: grade missing');
             }
-            // Do we want to do anything with the response
-            await putQuestionGrade({
+            const result = await putQuestionGrade({
                 id: grade.id,
                 data: {
                     effectiveScore: newScore
                 }
             });
+            onSuccess(result.data.data.updatesResult.updatedRecords[0]);
         } catch (e) {
             setAlertState({
                 variant: 'danger',
@@ -99,13 +101,13 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
             if (_.isNil(grade.id)) {
                 throw new Error('Application error: grade missing');
             }
-            // Do we want to do anything with the response
-            await putQuestionGrade({
+            const result = await putQuestionGrade({
                 id: grade.id,
                 data: {
                     locked: true
                 }
             });
+            onSuccess(result.data.data.updatesResult.updatedRecords[0]);
         } catch (e) {
             setAlertState({
                 variant: 'danger',

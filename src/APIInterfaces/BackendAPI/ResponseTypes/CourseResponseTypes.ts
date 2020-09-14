@@ -46,8 +46,11 @@ interface PutCourseTopicQuestionUpdates {
 export type PutCourseTopicQuestionUpdatesResponse = BackendAPIResponse<PutCourseTopicQuestionUpdates>;
 
 interface PutQuestionGrade {
-    updatesResult: Partial<StudentGrade>[]
+    updatesResult: {
+        updatedRecords: Partial<StudentGrade>[]
+    }
 }
+
 export type PutQuestionGradeResponse = BackendAPIResponse<PutQuestionGrade>;
 
 interface PostDefFile {

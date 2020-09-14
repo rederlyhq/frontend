@@ -111,13 +111,11 @@ enum GradesStateView {
 
 interface GradesState {
     view: GradesStateView;
-    grade: StudentGrade | null;
     lockAlert: IAlertModalState | null;
 }
 
 const defaultGradesState: GradesState = {
     view: GradesStateView.NONE,
-    grade: null,
     lockAlert: null
 };
 
@@ -131,6 +129,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [breadcrumbFilter, setBreadcrumbFilters] = useState<BreadCrumbFilters>({});
     const [rowData, setRowData] = useState<Array<any>>([]);
     const [gradesState, setGradesState] = useState<GradesState>(defaultGradesState);
+    const [grade, setGrade] = useState<StudentGrade | null>(null);
     const userType: UserRole = getUserRole();
 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
@@ -200,10 +199,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         return hasAttempts && satisfiesIdFilter;
                     });
 
-                    setGradesState({
-                        ...gradesState,
-                        grade: grades[0]
-                    });
+                    setGrade(grades[0]);
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
                             id: attempt.id,
@@ -217,6 +213,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     data = data.sort((a: any, b: any) => moment(b.time).diff(moment(a.time)));
                 } else {
                     setGradesState(defaultGradesState);
+                    setGrade(null);
                     data = data.map((d: any) => ({
                         ...d,
                         averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
@@ -373,7 +370,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                             >
                                 {getTitle()}
                             </h6>
-                            {!_.isNil(userId) && !_.isNil(gradesState.grade) && (view === StatisticsViewFilter.PROBLEMS_FILTERED) && 
+                            {!_.isNil(userId) && !_.isNil(grade) && (view === StatisticsViewFilter.PROBLEMS_FILTERED) && 
                             <>
                                 <Button
                                     className="ml-3 mr-1"
@@ -388,44 +385,38 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                 </Button>
                                 <OverrideGradeModal
                                     show={gradesState.view === GradesStateView.OVERRIDE}
-                                    onHide={() => setGradesState({
-                                        ...defaultGradesState,
-                                        grade: gradesState.grade
-                                    })}
-                                    grade={gradesState.grade}
+                                    onHide={() => setGradesState(defaultGradesState)}
+                                    grade={grade}
+                                    onSuccess={(newGrade: Partial<StudentGrade>) => setGrade(newGrade as StudentGrade)}
                                 />
 
                                 <Button
-                                    variant={gradesState.grade.locked ? 'warning' : 'danger'}
+                                    variant={grade.locked ? 'warning' : 'danger'}
                                     className="ml-1 mr-1"
                                     onClick={() => setGradesState({
                                         ...gradesState,
                                         view: GradesStateView.LOCK
                                     })}
                                 >
-                                    {gradesState.grade.locked ? <><BsUnlock/> Unlock</> : <><BsLock/> Lock</>}
+                                    {grade.locked ? <><BsUnlock/> Unlock</> : <><BsLock/> Lock</>}
                                 </Button>
                                 <ConfirmationModal
                                     show={gradesState.view === GradesStateView.LOCK}
-                                    onHide={() => setGradesState({
-                                        ...defaultGradesState,
-                                        grade: gradesState.grade
-                                    })}
+                                    onHide={() => setGradesState(defaultGradesState)}
                                     onConfirm={async () => {
                                         try {
-                                            if (_.isNil(gradesState.grade) || _.isNil(gradesState.grade.id)) {
+                                            if (_.isNil(grade) || _.isNil(grade.id)) {
                                                 throw new Error('Application Error: Grade null');
                                             }
-                                            setGradesState({
-                                                ...defaultGradesState,
-                                                grade: gradesState.grade
-                                            });
-                                            await putQuestionGrade({
-                                                id: gradesState.grade.id,
+                                            setGradesState(defaultGradesState);
+                                            const result = await putQuestionGrade({
+                                                id: grade.id,
                                                 data: {
-                                                    locked: !gradesState.grade.locked
+                                                    locked: !grade.locked
                                                 }
                                             });
+                                            setGradesState(defaultGradesState);
+                                            setGrade(result.data.data.updatesResult.updatedRecords[0] as StudentGrade);
                                         } catch (e) {
                                             setGradesState({
                                                 ...gradesState,
@@ -434,20 +425,15 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                                     variant: 'danger'
                                                 }
                                             });
-                                            return;
                                         }
-                                        setGradesState({
-                                            ...defaultGradesState,
-                                            grade: gradesState.grade
-                                        });
                                     }}
                                     confirmText="Confirm"
-                                    headerContent={<h6>{gradesState.grade.locked ? 'Unlock' : 'Lock'} Grade</h6>}
+                                    headerContent={<h6>{grade.locked ? 'Unlock' : 'Lock'} Grade</h6>}
                                     bodyContent={(<>
                                         {gradesState.lockAlert && <Alert variant={gradesState.lockAlert.variant}>{gradesState.lockAlert.message}</Alert>}
-                                        <p>Are you sure you want to {gradesState.grade.locked ? 'unlock' : 'lock'} this grade?</p>
-                                        {gradesState.grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
-                                        {!gradesState.grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
+                                        <p>Are you sure you want to {grade.locked ? 'unlock' : 'lock'} this grade?</p>
+                                        {grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
+                                        {!grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
                                     </>)}
                                 />
                             </>
