@@ -31,12 +31,22 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
 
     const onNewScoreChange = (ev: React.ChangeEvent<HTMLInputElement>): void => setNewScorePercentInput(ev.target.value);
 
-    const overrideGrade = () => {
+    const overrideGradeSubmit = () => {
         const newScore = parseInt(newScorePercentInput, 10) / 100;
         if (newScore === grade.effectiveScore) {
             onHide();
         } else {
             setOverrideGradePhase(OverrideGradePhase.CONFIRM);
+        }
+    };
+
+    const overrideGradeConfirm = () => {
+        // TODO api call to override
+        const newScore = parseInt(newScorePercentInput, 10) / 100;
+        if (newScore < grade.effectiveScore) {
+            setOverrideGradePhase(OverrideGradePhase.LOCK);
+        } else {
+            onHide();
         }
     };
 
@@ -47,7 +57,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
         if (form.checkValidity() === false) {
             event.stopPropagation();
         } else {
-            overrideGrade();
+            overrideGradeSubmit();
         }
   
         setValidated(true);
@@ -78,7 +88,8 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                                 readOnly={loading}
                                 type='number'
                                 min={0}
-                                max={100}
+                                // TODO should we put a max or is it a feature if there is no max
+                                // max={100}
                                 onChange={onNewScoreChange}
                             />
                             <Form.Control.Feedback type="invalid">{<span>The new score must be a postive number between 0 and 100</span>}</Form.Control.Feedback>
@@ -104,14 +115,14 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                     }
                     {overrideGradePhase === OverrideGradePhase.CONFIRM &&
                     <>
-                        <Button variant="primary">
+                        <Button variant="primary" onClick={overrideGradeConfirm}>
                             Confirm
                         </Button>
                     </>
                     }
                     {overrideGradePhase === OverrideGradePhase.LOCK &&
                     <>
-                        <Button variant="danger" type="submit">
+                        <Button variant="danger">
                             Lock
                         </Button>
                     </>
