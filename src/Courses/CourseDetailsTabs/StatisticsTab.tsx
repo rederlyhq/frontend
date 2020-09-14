@@ -11,7 +11,7 @@ import AxiosRequest from '../../Hooks/AxiosRequest';
 import * as qs from 'querystring';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import moment from 'moment';
-import { BsLock, BsPencilSquare } from 'react-icons/bs';
+import { BsLock, BsPencilSquare, BsUnlock } from 'react-icons/bs';
 import { OverrideGradeModal } from './OverrideGradeModal';
 
 const FILTERED_STRING = '_FILTERED';
@@ -389,8 +389,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                     grade={gradesState.grade}
                                 />
 
-                                <Button variant="danger" className="ml-1 mr-1" onClick={() => {}}>
-                                    <BsLock/> Lock
+                                <Button variant={gradesState.grade.locked ? 'warning' : 'danger'} className="ml-1 mr-1" onClick={() => {}}>
+                                    {gradesState.grade.locked ? <><BsUnlock/> Unlock</> : <><BsLock/> Lock</>}
                                 </Button>
                             </>
                             }
