@@ -1,19 +1,24 @@
 import React from 'react';
 import { Button, Modal } from 'react-bootstrap';
 import _ from 'lodash';
+import { StudentGrade } from '../CourseInterfaces';
 
 interface OverrideGradeModalProps {
     show: boolean;
     onHide: () => void;
+    grade: StudentGrade;
 }
+
 export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
     show,
-    onHide: onHideProp
+    onHide: onHideProp,
+    grade
 }) => {
     const onHide = () => {
         onHideProp();
     };
     
+    const displayScore = (grade.effectiveScore * 100).toFixed(1);
     return (
         <Modal
             show={show}
@@ -23,7 +28,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                 <h6>Override Grade</h6>
             </Modal.Header>
             <Modal.Body>
-                Are you sure you would like to override the grade?
+                The student currently has a {displayScore}!
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={onHide}>

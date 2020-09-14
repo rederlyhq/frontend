@@ -4,7 +4,7 @@ import { Button, Col, Nav } from 'react-bootstrap';
 import MaterialTable, { Column } from 'material-table';
 // import { MdSearch, MdFirstPage, MdLastPage, MdClear, MdFilterList, MdChevronRight, MdChevronLeft, MdArrowDownward, MdFileDownload} from 'react-icons/md';
 import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from '@material-ui/icons';
-import { ProblemObject, CourseObject } from '../CourseInterfaces';
+import { ProblemObject, CourseObject, StudentGrade } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import _ from 'lodash';
 import AxiosRequest from '../../Hooks/AxiosRequest';
@@ -107,6 +107,7 @@ enum GradesStateView {
 }
 interface GradesState {
     view: GradesStateView;
+    grade: StudentGrade | null;
 }
 /**
  * When a professor wishes to see a student's view, they pass in the student's userId.
@@ -118,7 +119,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [breadcrumbFilter, setBreadcrumbFilters] = useState<BreadCrumbFilters>({});
     const [rowData, setRowData] = useState<Array<any>>([]);
     const [gradesState, setGradesState] = useState<GradesState>({
-        view: GradesStateView.NONE
+        view: GradesStateView.NONE,
+        grade: null
     });
     const userType: UserRole = getUserRole();
 
@@ -189,6 +191,10 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         return hasAttempts && satisfiesIdFilter;
                     });
 
+                    setGradesState({
+                        ...gradesState,
+                        grade: grades[0]
+                    });
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
                             id: attempt.id,
@@ -201,6 +207,10 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     data = _.flatten(data);
                     data = data.sort((a: any, b: any) => moment(b.time).diff(moment(a.time)));
                 } else {
+                    setGradesState({
+                        view: GradesStateView.NONE,
+                        grade: null
+                    });
                     data = data.map((d: any) => ({
                         ...d,
                         averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
@@ -357,11 +367,12 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                             >
                                 {getTitle()}
                             </h6>
-                            {!_.isNil(userId) && (view === StatisticsViewFilter.PROBLEMS_FILTERED) && 
+                            {!_.isNil(userId) && !_.isNil(gradesState.grade) && (view === StatisticsViewFilter.PROBLEMS_FILTERED) && 
                             <>
                                 <Button
                                     className="ml-3 mr-1"
                                     onClick={() => setGradesState({
+                                        ...gradesState,
                                         view: GradesStateView.OVERRIDE
                                     })}
                                 >
@@ -375,6 +386,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                         ...gradesState,
                                         view: GradesStateView.NONE
                                     })}
+                                    grade={gradesState.grade}
                                 />
 
                                 <Button variant="danger" className="ml-1 mr-1" onClick={() => {}}>
