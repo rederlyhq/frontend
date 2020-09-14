@@ -13,6 +13,7 @@ import { UserRole, getUserRole } from '../../Enums/UserRole';
 import moment from 'moment';
 import { BsLock, BsPencilSquare, BsUnlock } from 'react-icons/bs';
 import { OverrideGradeModal } from './OverrideGradeModal';
+import { ConfirmationModal } from '../../Components/ConfirmationModal';
 
 const FILTERED_STRING = '_FILTERED';
 
@@ -389,9 +390,36 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                     grade={gradesState.grade}
                                 />
 
-                                <Button variant={gradesState.grade.locked ? 'warning' : 'danger'} className="ml-1 mr-1" onClick={() => {}}>
+                                <Button
+                                    variant={gradesState.grade.locked ? 'warning' : 'danger'}
+                                    className="ml-1 mr-1"
+                                    onClick={() => setGradesState({
+                                        ...gradesState,
+                                        view: GradesStateView.LOCK
+                                    })}
+                                >
                                     {gradesState.grade.locked ? <><BsUnlock/> Unlock</> : <><BsLock/> Lock</>}
                                 </Button>
+                                <ConfirmationModal
+                                    show={gradesState.view === GradesStateView.LOCK}
+                                    onHide={() => setGradesState({
+                                        ...gradesState,
+                                        view: GradesStateView.NONE
+                                    })}
+                                    onConfirm={() => {
+                                        setGradesState({
+                                            ...gradesState,
+                                            view: GradesStateView.NONE
+                                        });
+                                    }}
+                                    confirmText="Confirm"
+                                    headerContent={<h6>{gradesState.grade.locked ? 'Unlock' : 'Lock'} Grade</h6>}
+                                    bodyContent={(<>
+                                        <p>Are you sure you want to {gradesState.grade.locked ? 'unlock' : 'lock'} this grade?</p>
+                                        {gradesState.grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
+                                        {!gradesState.grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
+                                    </>)}
+                                />
                             </>
                             }
                         </div>
