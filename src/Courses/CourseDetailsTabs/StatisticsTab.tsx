@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import React, { useState, forwardRef, useEffect } from 'react';
-import { Col, Nav } from 'react-bootstrap';
+import { Button, Col, Nav } from 'react-bootstrap';
 import MaterialTable, { Column } from 'material-table';
 // import { MdSearch, MdFirstPage, MdLastPage, MdClear, MdFilterList, MdChevronRight, MdChevronLeft, MdArrowDownward, MdFileDownload} from 'react-icons/md';
 import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from '@material-ui/icons';
@@ -11,6 +11,8 @@ import AxiosRequest from '../../Hooks/AxiosRequest';
 import * as qs from 'querystring';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import moment from 'moment';
+import { BsLock, BsPencilSquare } from 'react-icons/bs';
+import { OverrideGradeModal } from './OverrideGradeModal';
 
 const FILTERED_STRING = '_FILTERED';
 
@@ -98,6 +100,14 @@ type EnumDictionary<T extends string | symbol | number, U> = {
 
 type BreadCrumbFilters = EnumDictionary<StatisticsView, BreadCrumbFilter>;
 
+enum GradesStateView {
+    LOCK='LOCK',
+    OVERRIDE='OVERRIDE',
+    NONE='NONE'
+}
+interface GradesState {
+    view: GradesStateView;
+}
 /**
  * When a professor wishes to see a student's view, they pass in the student's userId.
  * When they wish to see overall course statistics, they do not pass any userId.
@@ -107,6 +117,9 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [idFilter, setIdFilter] = useState<number | null>(null);
     const [breadcrumbFilter, setBreadcrumbFilters] = useState<BreadCrumbFilters>({});
     const [rowData, setRowData] = useState<Array<any>>([]);
+    const [gradesState, setGradesState] = useState<GradesState>({
+        view: GradesStateView.NONE
+    });
     const userType: UserRole = getUserRole();
 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
@@ -332,7 +345,45 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             <div style={{ maxWidth: '100%' }}>
                 <MaterialTable
                     icons={icons}
-                    title={getTitle()}
+                    title={(
+                        <div className="d-flex">
+                            <h6
+                                style={{
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis'
+                                }}
+                                className="MuiTypography-root MuiTypography-h6"
+                            >
+                                {getTitle()}
+                            </h6>
+                            {!_.isNil(userId) && (view === StatisticsViewFilter.PROBLEMS_FILTERED) && 
+                            <>
+                                <Button
+                                    className="ml-3 mr-1"
+                                    onClick={() => setGradesState({
+                                        view: GradesStateView.OVERRIDE
+                                    })}
+                                >
+                                    <>
+                                        <BsPencilSquare/> Override
+                                    </>
+                                </Button>
+                                <OverrideGradeModal
+                                    show={gradesState.view === GradesStateView.OVERRIDE}
+                                    onHide={() => setGradesState({
+                                        ...gradesState,
+                                        view: GradesStateView.NONE
+                                    })}
+                                />
+
+                                <Button variant="danger" className="ml-1 mr-1" onClick={() => {}}>
+                                    <BsLock/> Lock
+                                </Button>
+                            </>
+                            }
+                        </div>
+                    )}
                     columns={(view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) ? attemptCols : gradeCols}
                     data={rowData}
                     actions={seeMoreActions}
