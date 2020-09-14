@@ -84,7 +84,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
             return;
         }
         setLoading(false);
-        if (newScore < grade.effectiveScore) {
+        if (!grade.locked && newScore < grade.effectiveScore) {
             setOverrideGradePhase(OverrideGradePhase.LOCK);
         } else {
             onHide();
