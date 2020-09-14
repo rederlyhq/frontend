@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Form, FormControl, FormGroup, FormLabel, Modal } from 'react-bootstrap';
+import { Alert, Button, Form, FormControl, FormGroup, FormLabel, Modal } from 'react-bootstrap';
 import _ from 'lodash';
 import { StudentGrade } from '../CourseInterfaces';
+import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import useAlertState from '../../Hooks/useAlertState';
 
 enum OverrideGradePhase {
     PROMPT = 'PROMPT',
@@ -20,6 +22,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
     onHide: onHideProp,
     grade
 }) => {
+    const [alertState, setAlertState] = useAlertState();
     const [overrideGradePhase, setOverrideGradePhase] = useState<OverrideGradePhase>(OverrideGradePhase.PROMPT);
     const [validated, setValidated] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
@@ -52,9 +55,33 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
         }
     };
 
-    const overrideGradeConfirm = () => {
-        // TODO api call to override
+    const overrideGradeConfirm = async () => {
+        setAlertState({
+            variant: 'danger',
+            message: ''
+        });
         const newScore = parseInt(newScorePercentInput, 10) / 100;
+        setLoading(true);
+        try {
+            if (_.isNil(grade.id)) {
+                throw new Error('Application error: grade missing');
+            }
+            // Do we want to do anything with the response
+            await putQuestionGrade({
+                id: grade.id,
+                data: {
+                    effectiveScore: newScore
+                }
+            });
+        } catch (e) {
+            setAlertState({
+                variant: 'danger',
+                message: e.message
+            });
+            setLoading(false);
+            return;
+        }
+        setLoading(false);
         if (newScore < grade.effectiveScore) {
             setOverrideGradePhase(OverrideGradePhase.LOCK);
         } else {
@@ -83,7 +110,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
   
         setValidated(true);
     };
-
+    
     return (
         <Modal
             show={show}
@@ -95,6 +122,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
             <Form noValidate validated={validated} onSubmit={onSubmit}>
 
                 <Modal.Body>
+                    {(alertState.message !== '') && <Alert variant={alertState.variant}>{alertState.message}</Alert>}
                     {overrideGradePhase === OverrideGradePhase.PROMPT &&
                     <>
                         <p>The student currently has a score of <strong>{displayCurrentScore}</strong> on this problem.</p>
