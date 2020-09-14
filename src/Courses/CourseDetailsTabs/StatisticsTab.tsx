@@ -370,7 +370,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                             >
                                 {getTitle()}
                             </h6>
-                            {!_.isNil(userId) && !_.isNil(grade) && (view === StatisticsViewFilter.PROBLEMS_FILTERED) && 
+                            {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) && (view === StatisticsViewFilter.PROBLEMS_FILTERED) && 
                             <>
                                 <Button
                                     className="ml-3 mr-1"
