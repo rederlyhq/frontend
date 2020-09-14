@@ -101,6 +101,14 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                         <p>Are you sure you want to update the student&apos;s grade from <strong>{displayCurrentScore}</strong> to <strong>{newScorePercentInput}</strong>.</p>
                     }
 
+                    {overrideGradePhase === OverrideGradePhase.LOCK &&
+                        <p>
+                            You have reduced the student&apos;s grade from <strong>{displayCurrentScore}</strong> to <strong>{newScorePercentInput}</strong>.
+                            <br/>
+                            Since you have reduced the student&apos;s grade would you like to lock it as well? This will prevent the student from trying again and getting a better grade.
+                        </p>
+                    }
+
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={onHide}>
