@@ -189,7 +189,19 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={onHide}>
-                            Cancel
+                        {(() => {
+                            switch(overrideGradePhase) {
+                            case OverrideGradePhase.PROMPT:
+                            case OverrideGradePhase.CONFIRM:
+                                return 'Cancel';
+                            case OverrideGradePhase.LOCK:
+                                return 'Close';
+                            case OverrideGradePhase.LOCK_CONFIRM:
+                                return 'Cancel Lock';
+                            default:
+                                return 'Exit';
+                            }
+                        })()}
                     </Button>
                     {overrideGradePhase === OverrideGradePhase.PROMPT &&
                     <>
