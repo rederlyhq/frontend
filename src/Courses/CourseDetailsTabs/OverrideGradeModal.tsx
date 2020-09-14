@@ -93,8 +93,28 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
         setOverrideGradePhase(OverrideGradePhase.LOCK_CONFIRM);
     };
 
-    const lockConfirm = () => {
-        // TODO api call to lock
+    const lockConfirm = async () => {
+        setLoading(true);
+        try {
+            if (_.isNil(grade.id)) {
+                throw new Error('Application error: grade missing');
+            }
+            // Do we want to do anything with the response
+            await putQuestionGrade({
+                id: grade.id,
+                data: {
+                    locked: true
+                }
+            });
+        } catch (e) {
+            setAlertState({
+                variant: 'danger',
+                message: e.message
+            });
+            setLoading(false);
+            return;
+        }
+        setLoading(false);
         onHide();
     };
 
