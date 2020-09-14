@@ -158,6 +158,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                                 size='lg'
                                 readOnly={loading}
                                 type='number'
+                                step={0.1}
                                 min={0}
                                 // TODO should we put a max or is it a feature if there is no max
                                 // max={100}
