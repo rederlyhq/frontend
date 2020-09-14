@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import React, { useState, forwardRef, useEffect } from 'react';
-import { Button, Col, Nav } from 'react-bootstrap';
+import { Alert, Button, Col, Nav } from 'react-bootstrap';
 import MaterialTable, { Column } from 'material-table';
 // import { MdSearch, MdFirstPage, MdLastPage, MdClear, MdFilterList, MdChevronRight, MdChevronLeft, MdArrowDownward, MdFileDownload} from 'react-icons/md';
 import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from '@material-ui/icons';
@@ -14,6 +14,8 @@ import moment from 'moment';
 import { BsLock, BsPencilSquare, BsUnlock } from 'react-icons/bs';
 import { OverrideGradeModal } from './OverrideGradeModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
+import { IAlertModalState } from '../../Hooks/useAlertState';
+import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 const FILTERED_STRING = '_FILTERED';
 
@@ -106,10 +108,19 @@ enum GradesStateView {
     OVERRIDE='OVERRIDE',
     NONE='NONE'
 }
+
 interface GradesState {
     view: GradesStateView;
     grade: StudentGrade | null;
+    lockAlert: IAlertModalState | null;
 }
+
+const defaultGradesState: GradesState = {
+    view: GradesStateView.NONE,
+    grade: null,
+    lockAlert: null
+};
+
 /**
  * When a professor wishes to see a student's view, they pass in the student's userId.
  * When they wish to see overall course statistics, they do not pass any userId.
@@ -119,10 +130,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [idFilter, setIdFilter] = useState<number | null>(null);
     const [breadcrumbFilter, setBreadcrumbFilters] = useState<BreadCrumbFilters>({});
     const [rowData, setRowData] = useState<Array<any>>([]);
-    const [gradesState, setGradesState] = useState<GradesState>({
-        view: GradesStateView.NONE,
-        grade: null
-    });
+    const [gradesState, setGradesState] = useState<GradesState>(defaultGradesState);
     const userType: UserRole = getUserRole();
 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
@@ -208,10 +216,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     data = _.flatten(data);
                     data = data.sort((a: any, b: any) => moment(b.time).diff(moment(a.time)));
                 } else {
-                    setGradesState({
-                        view: GradesStateView.NONE,
-                        grade: null
-                    });
+                    setGradesState(defaultGradesState);
                     data = data.map((d: any) => ({
                         ...d,
                         averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
@@ -384,8 +389,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                 <OverrideGradeModal
                                     show={gradesState.view === GradesStateView.OVERRIDE}
                                     onHide={() => setGradesState({
-                                        ...gradesState,
-                                        view: GradesStateView.NONE
+                                        ...defaultGradesState,
+                                        grade: gradesState.grade
                                     })}
                                     grade={gradesState.grade}
                                 />
@@ -403,18 +408,43 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                 <ConfirmationModal
                                     show={gradesState.view === GradesStateView.LOCK}
                                     onHide={() => setGradesState({
-                                        ...gradesState,
-                                        view: GradesStateView.NONE
+                                        ...defaultGradesState,
+                                        grade: gradesState.grade
                                     })}
-                                    onConfirm={() => {
+                                    onConfirm={async () => {
+                                        try {
+                                            if (_.isNil(gradesState.grade) || _.isNil(gradesState.grade.id)) {
+                                                throw new Error('Application Error: Grade null');
+                                            }
+                                            setGradesState({
+                                                ...defaultGradesState,
+                                                grade: gradesState.grade
+                                            });
+                                            await putQuestionGrade({
+                                                id: gradesState.grade.id,
+                                                data: {
+                                                    locked: !gradesState.grade.locked
+                                                }
+                                            });
+                                        } catch (e) {
+                                            setGradesState({
+                                                ...gradesState,
+                                                lockAlert: {
+                                                    message: e.message,
+                                                    variant: 'danger'
+                                                }
+                                            });
+                                            return;
+                                        }
                                         setGradesState({
-                                            ...gradesState,
-                                            view: GradesStateView.NONE
+                                            ...defaultGradesState,
+                                            grade: gradesState.grade
                                         });
                                     }}
                                     confirmText="Confirm"
                                     headerContent={<h6>{gradesState.grade.locked ? 'Unlock' : 'Lock'} Grade</h6>}
                                     bodyContent={(<>
+                                        {gradesState.lockAlert && <Alert variant={gradesState.lockAlert.variant}>{gradesState.lockAlert.message}</Alert>}
                                         <p>Are you sure you want to {gradesState.grade.locked ? 'unlock' : 'lock'} this grade?</p>
                                         {gradesState.grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
                                         {!gradesState.grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
