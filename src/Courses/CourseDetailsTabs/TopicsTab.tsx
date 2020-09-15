@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import TopicsList from '../TopicsList';
-import { Accordion, Card, Row, Col, Modal, Alert } from 'react-bootstrap';
+import { Accordion, Card, Row, Col, Modal, Alert, Button } from 'react-bootstrap';
 import { CourseObject, NewCourseTopicObj, UnitObject } from '../CourseInterfaces';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
@@ -409,33 +409,28 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             />
             {error && <Alert variant="danger">{error.message}</Alert>}
             <Row style={{padding: '0.5em'}}>
-                <Col md={1}><h4>Units</h4></Col>
-                <Col md={{span: 2, offset: 9}}>
+                <Col xs={1} md={1}><h4>Units</h4></Col>
+                <Col>
                     {userType !== UserRole.STUDENT && (
-                        <Row style={{justifyContent: 'end', paddingRight: '1em'}}>
+                        <Row style={{justifyContent: 'flex-end', paddingRight: '1em'}}>
                             {/* <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} > */}
-                            <Col md={1}>
-                                {
-                                    inEditMode &&
-                                    <span
-                                        role="button"
-                                        tabIndex={0}
-                                        onClick={_.partial(addUnitClick, _, course.id)}
-                                        onKeyPress={_.partial(addUnitClick, _, course.id)}
-                                    >
-                                        <FaPlusCircle color='#00AA00' />
-                                    </span>
-                                }
-                            </Col>
-                            <Col md={1}>
-                                <EditToggleButton
-                                    selectedState={inEditMode}
-                                    onClick={() => { setInEditMode(!inEditMode); }}
-                                    // style={{
-                                    //     padding: '20px'
-                                    // }}
-                                />
-                            </Col>
+                            {
+                                inEditMode &&
+                                <Button variant='outline-success'
+                                    tabIndex={0}
+                                    onClick={_.partial(addUnitClick, _, course.id)}
+                                    onKeyPress={_.partial(addUnitClick, _, course.id)}
+                                >
+                                    <FaPlusCircle /> New Unit
+                                </Button>
+                            }
+                            <EditToggleButton
+                                selectedState={inEditMode}
+                                onClick={() => { setInEditMode(!inEditMode); }}
+                                style={{
+                                    padding: '0em 0em 0em 1em'
+                                }}
+                            />
                         </Row>
                     )}
                 </Col>
