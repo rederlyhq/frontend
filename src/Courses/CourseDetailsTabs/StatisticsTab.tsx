@@ -312,12 +312,50 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const hasDetailPanel = userId !== undefined ?
         (view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED):
         (view === StatisticsView.PROBLEMS || view === StatisticsViewFilter.TOPICS_FILTERED);
+    
+    let actions: Array<any> | undefined = [];
+    if(!hasDetailPanel) {
+        actions.push({
+            icon: () => <ChevronRight />,
+            tooltip: 'See More',
+            onClick: _.curryRight(nextView)(() => { }),
+        });
+    }
+    if (!_.isNil(userId) && view === StatisticsViewFilter.TOPICS_FILTERED) {
+        actions.push({
+            icon: () => <BsPencilSquare />,
+            tooltip: 'Override grade',
+            onClick: (_event: any, rowData: any) => {
+                setGrade(rowData.grades[0]);
+                setGradesState({
+                    ...gradesState,
+                    view: GradesStateView.OVERRIDE
+                });
+            }
+        });
 
-    let seeMoreActions: Array<any> | undefined = hasDetailPanel ? undefined : [{
-        icon: () => <ChevronRight />,
-        tooltip: 'See More',
-        onClick: _.curryRight(nextView)(() => { }),
-    }];
+        actions.push((rowData: any) => {
+            if(_.isNil(rowData.grades)) {
+                return;
+            }
+            return {
+                icon: () => rowData.grades[0].locked ? <BsUnlock/> : <BsLock/>,
+                tooltip: 'Lock Grade',
+                onClick: () => {
+                    setGrade(rowData.grades[0]);
+                    setGradesState({
+                        ...gradesState,
+                        view: GradesStateView.LOCK
+                    });
+                }
+            };
+        });
+    }
+
+    if(_.isEmpty(actions)) {
+        actions = undefined;
+    }    
+
     return (
         <>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
@@ -446,7 +484,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     )}
                     columns={(view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) ? attemptCols : gradeCols}
                     data={rowData}
-                    actions={seeMoreActions}
+                    actions={actions}
                     onRowClick={nextView}
                     options={{
                         exportButton: true,
