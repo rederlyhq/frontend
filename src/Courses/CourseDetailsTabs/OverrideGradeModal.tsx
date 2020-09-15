@@ -49,7 +49,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
     const onNewScoreChange = (ev: React.ChangeEvent<HTMLInputElement>): void => setNewScorePercentInput(ev.target.value);
 
     const overrideGradeSubmit = () => {
-        const newScore = parseInt(newScorePercentInput, 10) / 100;
+        const newScore = parseFloat(newScorePercentInput) / 100;
         if (newScore === grade.effectiveScore) {
             onHide();
         } else {
@@ -62,7 +62,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
             variant: 'danger',
             message: ''
         });
-        const newScore = parseInt(newScorePercentInput, 10) / 100;
+        const newScore = parseFloat(newScorePercentInput) / 100;
         setLoading(true);
         try {
             if (_.isNil(grade.id)) {
