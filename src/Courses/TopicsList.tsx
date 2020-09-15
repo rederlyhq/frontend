@@ -61,7 +61,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                 <>
                     <Col md={8}>{topic.name}</Col>
                     <Col>
-                        <Row style={{justifyContent: 'end'}}>
+                        <Row style={{justifyContent: 'flex-end'}}>
                             <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} onClick={(e: any) => showEditTopic(e, topic.id)}>
                                 <BsPencilSquare/> Edit
                             </Button>
