@@ -145,47 +145,55 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
 
                 <Modal.Body>
                     {(alertState.message !== '') && <Alert variant={alertState.variant}>{alertState.message}</Alert>}
-                    {overrideGradePhase === OverrideGradePhase.PROMPT &&
-                    <>
-                        <p>The student currently has a score of <strong>{displayCurrentScore.current}</strong> on this problem.</p>
-                        <FormGroup controlId='override-score'>
-                            <FormLabel>
-                                    New score:
-                            </FormLabel>
-                            <FormControl
-                                required
-                                value={newScorePercentInput}
-                                size='lg'
-                                readOnly={loading}
-                                type='number'
-                                step={0.1}
-                                min={0}
-                                // TODO should we put a max or is it a feature if there is no max
-                                // max={100}
-                                onChange={onNewScoreChange}
-                            />
-                            <Form.Control.Feedback type="invalid">{<span>The new score must be a postive number between 0 and 100</span>}</Form.Control.Feedback>
-                        </FormGroup>
-                    </>
-                    }
-                    
-                    {overrideGradePhase === OverrideGradePhase.CONFIRM &&
-                        <p>Are you sure you want to update the student&apos;s grade from <strong>{displayCurrentScore.current}</strong> to <strong>{newScorePercentInput}</strong>.</p>
-                    }
+                    {(() => {
+                        switch(overrideGradePhase) {
+                        case OverrideGradePhase.PROMPT:
+                            return (
+                                <>
+                                    <p>The student currently has a score of <strong>{displayCurrentScore.current}</strong> on this problem.</p>
+                                    <FormGroup controlId='override-score'>
+                                        <FormLabel>
+                                                New score:
+                                        </FormLabel>
+                                        <FormControl
+                                            required
+                                            value={newScorePercentInput}
+                                            size='lg'
+                                            readOnly={loading}
+                                            type='number'
+                                            step={0.1}
+                                            min={0}
+                                            // TODO should we put a max or is it a feature if there is no max
+                                            // max={100}
+                                            onChange={onNewScoreChange}
+                                        />
+                                        <Form.Control.Feedback type="invalid">{<span>The new score must be a postive number between 0 and 100</span>}</Form.Control.Feedback>
+                                    </FormGroup>
+                                </>
+                            );
+                        case OverrideGradePhase.CONFIRM:
+                            return (
+                                <p>Are you sure you want to update the student&apos;s grade from <strong>{displayCurrentScore.current}</strong> to <strong>{newScorePercentInput}</strong>.</p>
+                            );
+                        case OverrideGradePhase.LOCK:
+                            return (
+                                <p>
+                                    You have reduced the student&apos;s grade from <strong>{displayCurrentScore.current}</strong> to <strong>{newScorePercentInput}</strong>.
+                                    <br/>
+                                    Since you have reduced the student&apos;s grade would you like to lock it as well? This will prevent the student from trying again and getting a better grade.
+                                </p>
+                            );
+                        case OverrideGradePhase.LOCK_CONFIRM:
+                            return (
+                                <p>
+                                    Are you sure you want to lock the student&apos;s grade? The student will no longer be able to update their grade until unlocked.
+                                </p>
+                            );
+                        default:
+                            console.error(`APPLICAION ERROR: no body for OverrideGradePhase ${overrideGradePhase}`);
+                        }
 
-                    {overrideGradePhase === OverrideGradePhase.LOCK &&
-                        <p>
-                            You have reduced the student&apos;s grade from <strong>{displayCurrentScore.current}</strong> to <strong>{newScorePercentInput}</strong>.
-                            <br/>
-                            Since you have reduced the student&apos;s grade would you like to lock it as well? This will prevent the student from trying again and getting a better grade.
-                        </p>
-                    }
-
-                    {overrideGradePhase === OverrideGradePhase.LOCK_CONFIRM &&
-                        <p>
-                            Are you sure you want to lock the student&apos;s grade? The student will no longer be able to update their grade until unlocked.
-                        </p>
-                    }
+                    })()}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={onHide}>
@@ -199,38 +207,42 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                             case OverrideGradePhase.LOCK_CONFIRM:
                                 return 'Cancel Lock';
                             default:
+                                console.error(`APPLICAION ERROR: no cancel for OverrideGradePhase ${overrideGradePhase}`);
                                 return 'Exit';
                             }
                         })()}
                     </Button>
-                    {overrideGradePhase === OverrideGradePhase.PROMPT &&
-                    <>
-                        <Button variant="primary" type="submit">
-                            Submit
-                        </Button>
-                    </>
-                    }
-                    {overrideGradePhase === OverrideGradePhase.CONFIRM &&
-                    <>
-                        <Button variant="primary" onClick={overrideGradeConfirm}>
-                            Confirm
-                        </Button>
-                    </>
-                    }
-                    {overrideGradePhase === OverrideGradePhase.LOCK &&
-                    <>
-                        <Button variant="danger" onClick={lockSubmit}>
-                            Lock
-                        </Button>
-                    </>
-                    }
-                    {overrideGradePhase === OverrideGradePhase.LOCK_CONFIRM &&
-                    <>
-                        <Button variant="primary" onClick={lockConfirm}>
-                            Confirm
-                        </Button>
-                    </>
-                    }
+                    {(() => {
+                        switch(overrideGradePhase) {
+                        case OverrideGradePhase.PROMPT:
+                            return (
+                                <Button variant="primary" type="submit">
+                                        Submit
+                                </Button>        
+                            );
+                        case OverrideGradePhase.CONFIRM:
+                            return (
+                                <Button variant="primary" onClick={overrideGradeConfirm}>
+                                    Confirm
+                                </Button>
+                            );
+                        case OverrideGradePhase.LOCK:
+                            return (
+                                <Button variant="danger" onClick={lockSubmit}>
+                                    Lock
+                                </Button>
+                            );
+                        case OverrideGradePhase.LOCK_CONFIRM:
+                            return (
+                                <Button variant="primary" onClick={lockConfirm}>
+                                    Confirm
+                                </Button>
+                            );
+                        default:
+                            console.error(`APPLICAION ERROR: no body for OverrideGradePhase ${overrideGradePhase}`);
+                            return;
+                        }
+                    })()}
                 </Modal.Footer>
             </Form>
         </Modal>
