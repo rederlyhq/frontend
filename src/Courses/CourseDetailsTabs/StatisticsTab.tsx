@@ -356,6 +356,52 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 })}
             </Nav>
             <div style={{ maxWidth: '100%' }}>
+                {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) && 
+                <>
+                    <OverrideGradeModal
+                        show={gradesState.view === GradesStateView.OVERRIDE}
+                        onHide={() => setGradesState(defaultGradesState)}
+                        grade={grade}
+                        onSuccess={(newGrade: Partial<StudentGrade>) => setGrade(newGrade as StudentGrade)}
+                    />
+
+                    <ConfirmationModal
+                        show={gradesState.view === GradesStateView.LOCK}
+                        onHide={() => setGradesState(defaultGradesState)}
+                        onConfirm={async () => {
+                            try {
+                                if (_.isNil(grade) || _.isNil(grade.id)) {
+                                    throw new Error('Application Error: Grade null');
+                                }
+                                setGradesState(defaultGradesState);
+                                const result = await putQuestionGrade({
+                                    id: grade.id,
+                                    data: {
+                                        locked: !grade.locked
+                                    }
+                                });
+                                setGradesState(defaultGradesState);
+                                setGrade(result.data.data.updatesResult.updatedRecords[0] as StudentGrade);
+                            } catch (e) {
+                                setGradesState({
+                                    ...gradesState,
+                                    lockAlert: {
+                                        message: e.message,
+                                        variant: 'danger'
+                                    }
+                                });
+                            }
+                        }}
+                        confirmText="Confirm"
+                        headerContent={<h6>{grade.locked ? 'Unlock' : 'Lock'} Grade</h6>}
+                        bodyContent={(<>
+                            {gradesState.lockAlert && <Alert variant={gradesState.lockAlert.variant}>{gradesState.lockAlert.message}</Alert>}
+                            <p>Are you sure you want to {grade.locked ? 'unlock' : 'lock'} this grade?</p>
+                            {grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
+                            {!grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
+                        </>)}
+                    />
+                </>}
                 <MaterialTable
                     icons={icons}
                     title={(
@@ -383,12 +429,6 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                         <BsPencilSquare/> Override
                                     </>
                                 </Button>
-                                <OverrideGradeModal
-                                    show={gradesState.view === GradesStateView.OVERRIDE}
-                                    onHide={() => setGradesState(defaultGradesState)}
-                                    grade={grade}
-                                    onSuccess={(newGrade: Partial<StudentGrade>) => setGrade(newGrade as StudentGrade)}
-                                />
 
                                 <Button
                                     variant={grade.locked ? 'warning' : 'danger'}
@@ -400,42 +440,6 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                 >
                                     {grade.locked ? <><BsUnlock/> Unlock</> : <><BsLock/> Lock</>}
                                 </Button>
-                                <ConfirmationModal
-                                    show={gradesState.view === GradesStateView.LOCK}
-                                    onHide={() => setGradesState(defaultGradesState)}
-                                    onConfirm={async () => {
-                                        try {
-                                            if (_.isNil(grade) || _.isNil(grade.id)) {
-                                                throw new Error('Application Error: Grade null');
-                                            }
-                                            setGradesState(defaultGradesState);
-                                            const result = await putQuestionGrade({
-                                                id: grade.id,
-                                                data: {
-                                                    locked: !grade.locked
-                                                }
-                                            });
-                                            setGradesState(defaultGradesState);
-                                            setGrade(result.data.data.updatesResult.updatedRecords[0] as StudentGrade);
-                                        } catch (e) {
-                                            setGradesState({
-                                                ...gradesState,
-                                                lockAlert: {
-                                                    message: e.message,
-                                                    variant: 'danger'
-                                                }
-                                            });
-                                        }
-                                    }}
-                                    confirmText="Confirm"
-                                    headerContent={<h6>{grade.locked ? 'Unlock' : 'Lock'} Grade</h6>}
-                                    bodyContent={(<>
-                                        {gradesState.lockAlert && <Alert variant={gradesState.lockAlert.variant}>{gradesState.lockAlert.message}</Alert>}
-                                        <p>Are you sure you want to {grade.locked ? 'unlock' : 'lock'} this grade?</p>
-                                        {grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
-                                        {!grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
-                                    </>)}
-                                />
                             </>
                             }
                         </div>
