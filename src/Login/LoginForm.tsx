@@ -9,6 +9,7 @@ import { ForgotPasswordButtonAndModal } from './ForgotPasswordButtonAndModal';
 import { postLogin } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import BackendAPIError, { isAxiosError } from '../APIInterfaces/BackendAPI/BackendAPIError';
 import ResendVerificationModal from './ResendVerificationModal';
+import LogRocket from 'logrocket';
 
 interface LoginFormProps {
 
@@ -55,6 +56,12 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                 Cookie.set(CookieEnum.USERTYPE, getUserRoleFromServer(resp.data.data.roleId));
                 Cookie.set(CookieEnum.USERID, resp.data.data.userId);
                 Cookie.set(CookieEnum.USERNAME, `${resp.data.data.firstName} ${resp.data.data.lastName}`);
+
+                LogRocket.identify('qdgaa4/rederly', {
+                    name: `${resp.data.data.firstName} ${resp.data.data.lastName}`,
+                    email: formState.email,
+                    id: resp.data.data.userId,
+                });
 
                 history.replace('/common/courses');
             }
