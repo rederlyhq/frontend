@@ -168,28 +168,49 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                     logTag='gradedMessage'
                 >
                     {(currentMoment) => {
-                        if (_.isNil(grade) || _.isNil(problem)) {
-                            return (<></>);
-                        }
-
+                        // TODO move this logic to a utility function that is shared between the backend and front end
+                        // initally I was thinking the backend would send it, however it has to react to the current time so it probably would be better in a shared module
+                        const applicationError = 'An unknown error has occurred and it is unclear if your attempt will be graded.';
                         let message = null;
-                        if (grade.overallBestScore >= 1) {
+                        if (_.isNil(problem)) {
+                            // The user should never see this
+                            // TODO maybe problem shouldn't be able to be null?
+                            message = applicationError;
+                        }
+                        // ******************** NOT RECORDING ********************
+                        else if (_.isNil(grade)) {
+                            if (getUserRole() === UserRole.STUDENT) {
+                                message = 'There is no grade associated with this problem. Your attempts will not be recorded.';
+                            } else {
+                                // Professors will not have a grade so this is an expected result
+                                return (<></>);
+                            }
+                        } else if (grade.overallBestScore >= 1) {
                             message = 'You have completed this problem. Your attempts will no longer be recorded.';
+                        } else if (currentMoment.isAfter(solutionsMoment)) {
+                            // TODO get solutionsMoment from backend
+                            message = 'Solutions are available, your attempts will not be recorded.';
+                        }
+                        // ******************** RECORDING BUT NOT UPDATING GRADE \/\/\/\/********************
+                        else if (grade.locked === true) {
+                            message = 'Your grade on this problem has been locked. Your attempts will be recorded but your grade will not update. Clarify with your professor if you think this is an error.';
                         } else if (problem.maxAttempts > 0 && grade.numAttempts >= problem.maxAttempts) {
                             message = 'You have exceeded the attempt limit. Your attempts on this problem will not be graded but will count toward completion.';
-                        } else if (currentMoment.isBefore(deadDate) && currentMoment.isAfter(endDate)) {
-                            message = 'The topic is past due but partial credit is available. Your attempts will be graded with a penalty.';
-                        } else if (currentMoment.isAfter(solutionsMoment)) {
-                            // TODO get from backend
-                            message = 'Solutions are available, your attempts will not be recorded.';
                         } else if (currentMoment.isBefore(solutionsMoment) && currentMoment.isAfter(deadDate)) {
                             message = 'The topic is past due. Your attempts on this problem will not be graded but will count toward completion.';
+                        }
+                        // ******************** RECORDING AND UPDATING GRADE (PARTIAL CREDIT) \/\/\/\/********************
+                        else if (currentMoment.isBefore(deadDate) && currentMoment.isAfter(endDate)) {
+                            message = 'The topic is past due but partial credit is available. Your attempts will be graded with a penalty.';
+                        // ******************** RECORDING AND UPDATING GRADE \/\/\/\/********************
                         } else if (grade.overallBestScore < 1 && currentMoment.isBefore(endDate) && (grade.numAttempts < problem.maxAttempts || problem.maxAttempts <= INFINITE_MAX_ATTEMPT_VALUE)) {
                             // All of these situations should already be handled, just making it more defensive
                             message = 'Your attempts on this problem will be graded.';
-                        } else {
+                        }
+                        // ******************** APPLICATION ERROR \/\/\/\/********************
+                        else {
                             // TODO remote error logging
-                            message = 'An unknown error has occurred and it is unclear if your attempt will be graded.';
+                            message = applicationError;
                         }
                         return (<>{message}</>);
                     }}
