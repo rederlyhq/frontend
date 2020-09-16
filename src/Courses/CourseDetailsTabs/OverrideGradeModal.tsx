@@ -174,8 +174,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                                             type='number'
                                             step={0.1}
                                             min={0}
-                                            // TODO should we put a max or is it a feature if there is no max
-                                            // max={100}
+                                            max={100}
                                             onChange={onNewScoreChange}
                                         />
                                         <Form.Control.Feedback type="invalid">{<span>The new score must be a postive number between 0 and 100</span>}</Form.Control.Feedback>

@@ -320,34 +320,48 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             onClick: _.curryRight(nextView)(() => { }),
         });
     }
-    if (userType === UserRole.PROFESSOR && !_.isNil(userId) && view === StatisticsViewFilter.TOPICS_FILTERED) {
-        // This doesn't need to be in a function, however if it's not it renders one button before the other
-        actions.push((rowData: any) => {
-            if(_.isNil(rowData.grades)) {
-                return;
-            }
-            return {
-                icon: () => <BsPencilSquare />,
-                tooltip: 'Override grade',
-                onClick: (_event: any, rowData: any) => {
-                    setGrade(rowData.grades[0]);
-                    setGradesState({
-                        ...gradesState,
-                        view: GradesStateView.OVERRIDE,
-                        rowData
-                    });
+    if (!_.isNil(userId) && view === StatisticsViewFilter.TOPICS_FILTERED) {
+        if (userType === UserRole.PROFESSOR) {
+            actions.push((rowData: any) => {
+                // Don't show until the override information is available
+                if(_.isNil(rowData.grades)) {
+                    return;
                 }
-            };
-        });
+                return {
+                    icon: () => <BsPencilSquare />,
+                    tooltip: 'Override grade',
+                    onClick: (_event: any, rowData: any) => {
+                        setGrade(rowData.grades[0]);
+                        setGradesState({
+                            ...gradesState,
+                            view: GradesStateView.OVERRIDE,
+                            rowData
+                        });
+                    }
+                };
+            });
+        }
 
         actions.push((rowData: any) => {
+            // Don't show until the lock information is available
             if(_.isNil(rowData.grades)) {
                 return;
             }
-            return {
-                icon: () => rowData.grades[0].locked ? <BsLock/> : <BsUnlock/>,
-                tooltip: `Grade ${rowData.grades[0].locked ? 'Locked' : 'Unlocked'}`,
-                onClick: () => {
+
+            const { locked } = rowData.grades[0];
+            
+            // Students only see if their grade is "locked"
+            const unlockedIcon = userType === UserRole.PROFESSOR ? <BsUnlock/> : null;
+            const icon = locked ? <BsLock/> : unlockedIcon;
+
+            // If we have decided not to render anything then return
+            if(_.isNil(icon)) {
+                return;
+            }
+
+            // Don't include the onclick event for non professors
+            const onClick = userType === UserRole.PROFESSOR ?
+                () => {
                     setGrade(rowData.grades[0]);
                     setGradesState({
                         ...gradesState,
@@ -355,6 +369,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         rowData
                     });
                 }
+                :
+                null;
+
+            return {
+                icon: () => icon,
+                tooltip: `Grade ${locked ? 'Locked' : 'Unlocked'}`,
+                onClick
             };
         });
     }
