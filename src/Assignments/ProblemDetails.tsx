@@ -180,7 +180,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         // ******************** NOT RECORDING ********************
                         else if (_.isNil(grade)) {
                             if (getUserRole() === UserRole.STUDENT) {
-                                message = 'There is no grade associated with this problem. Your attempts will not be recorded.';
+                                message = 'This problem is not eligible for a grade. Your attempts will not be recorded.';
                             } else {
                                 // Professors will not have a grade so this is an expected result
                                 return (<></>);
