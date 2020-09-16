@@ -16,6 +16,7 @@ import { OverrideGradeModal } from './OverrideGradeModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { IAlertModalState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 
 const FILTERED_STRING = '_FILTERED';
 
@@ -97,10 +98,6 @@ interface BreadCrumbFilter {
     displayName: string;
 }
 
-type EnumDictionary<T extends string | symbol | number, U> = {
-    [K in T]?: U;
-};
-
 type BreadCrumbFilters = EnumDictionary<StatisticsView, BreadCrumbFilter>;
 
 enum GradesStateView {
@@ -170,7 +167,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             idFilterLocal = null;
             break;
         default:
-            console.error('You should not havea  view that is not the views or filtered views');
+            console.error('You should not have a view that is not the views or filtered views');
             break;
         }
 
@@ -323,7 +320,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             onClick: _.curryRight(nextView)(() => { }),
         });
     }
-    if (!_.isNil(userId) && view === StatisticsViewFilter.TOPICS_FILTERED) {
+    if (userType === UserRole.PROFESSOR && !_.isNil(userId) && view === StatisticsViewFilter.TOPICS_FILTERED) {
         // This doesn't need to be in a function, however if it's not it renders one button before the other
         actions.push((rowData: any) => {
             if(_.isNil(rowData.grades)) {
