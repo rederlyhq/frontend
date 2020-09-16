@@ -193,7 +193,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         }
                         // ******************** RECORDING BUT NOT UPDATING GRADE \/\/\/\/********************
                         else if (grade.locked === true) {
-                            message = 'Your grade on this problem has been locked. Your attempts will be recorded but your grade will not update. Clarify with your professor if you think this is an error.';
+                            message = 'Your grade on this problem has been locked. Your attempts will be recorded but your grade will not update. Contact your professor if you think this is an error.';
                         } else if (problem.maxAttempts > 0 && grade.numAttempts >= problem.maxAttempts) {
                             message = 'You have exceeded the attempt limit. Your attempts on this problem will not be graded but will count toward completion.';
                         } else if (currentMoment.isBefore(solutionsMoment) && currentMoment.isAfter(deadDate)) {
