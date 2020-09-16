@@ -413,7 +413,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         onSuccess={(newGrade: Partial<StudentGrade>) => {
                             if(!_.isNil(gradesState.rowData?.grades[0]) && !_.isNil(newGrade.effectiveScore)) {
                                 gradesState.rowData.averageScore = `${(newGrade.effectiveScore * 100).toFixed(1)}%`;
-                                gradesState.rowData.grades[0].locked = newGrade.locked;
+                                gradesState.rowData.grades[0] = newGrade;
                             }
 
                             setGrade(newGrade as StudentGrade);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel, Modal } from 'react-bootstrap';
 import _ from 'lodash';
 import { StudentGrade } from '../CourseInterfaces';
@@ -24,19 +24,27 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
     grade,
     onSuccess
 }) => {
-    const displayCurrentScore = useRef<string | null>(null);
-    if(_.isNull(displayCurrentScore.current)) {
-        displayCurrentScore.current = (grade.effectiveScore * 100).toFixed(1);
-    }
+    const displayCurrentScore = (grade.effectiveScore * 100).toFixed(1);
+    // const displayCurrentScore = useRef<string | null>(null);
     const [alertState, setAlertState] = useAlertState();
     const [overrideGradePhase, setOverrideGradePhase] = useState<OverrideGradePhase>(OverrideGradePhase.PROMPT);
     const [validated, setValidated] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
-    const [newScorePercentInput, setNewScorePercentInput] = useState<string>(displayCurrentScore.current);
+    const [newScorePercentInput, setNewScorePercentInput] = useState<string>(displayCurrentScore);
+
+    useEffect(() => {
+        // This is to handle the case where you change grades that were the same value or you canceled a change and went back in
+        // The grade does not change when hidden, however when it comes back up it should update
+        // Figured while it is hidden when can empty that value
+        if (!show) {
+            setNewScorePercentInput('');
+        } else {
+            setNewScorePercentInput(displayCurrentScore);            
+        }
+    }, [displayCurrentScore, show]);
 
     const onHide = () => {
         onHideProp();
-        displayCurrentScore.current = null;
         // There is a small flicker while it animates that setTimeout hides
         setTimeout(() => {
             setOverrideGradePhase(OverrideGradePhase.PROMPT);
@@ -150,7 +158,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                         case OverrideGradePhase.PROMPT:
                             return (
                                 <>
-                                    <p>The student currently has a score of <strong>{displayCurrentScore.current}</strong> on this problem.</p>
+                                    <p>The student currently has a score of <strong>{displayCurrentScore}</strong> on this problem.</p>
                                     <FormGroup controlId='override-score'>
                                         <FormLabel>
                                                 New score:
@@ -173,12 +181,12 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                             );
                         case OverrideGradePhase.CONFIRM:
                             return (
-                                <p>Are you sure you want to update the student&apos;s grade from <strong>{displayCurrentScore.current}</strong> to <strong>{newScorePercentInput}</strong>.</p>
+                                <p>Are you sure you want to update the student&apos;s grade from <strong>{displayCurrentScore}</strong> to <strong>{newScorePercentInput}</strong>.</p>
                             );
                         case OverrideGradePhase.LOCK:
                             return (
                                 <p>
-                                    You have reduced the student&apos;s grade from <strong>{displayCurrentScore.current}</strong> to <strong>{newScorePercentInput}</strong>.
+                                    You have reduced the student&apos;s grade from <strong>{displayCurrentScore}</strong> to <strong>{newScorePercentInput}</strong>.
                                     <br/>
                                     Since you have reduced the student&apos;s grade would you like to lock it as well? This will prevent the student from trying again and getting a better grade.
                                 </p>
