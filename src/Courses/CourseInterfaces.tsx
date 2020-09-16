@@ -128,6 +128,8 @@ export class StudentGrade {
     effectiveScore: number = 0;
     bestScore: number = 0;
     numAttempts: number = 0;
+    locked: boolean = false;
+    id?: number;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);

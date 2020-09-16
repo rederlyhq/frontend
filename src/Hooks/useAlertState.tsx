@@ -1,7 +1,7 @@
 import { AlertProps } from 'react-bootstrap';
 import { useState } from 'react';
 
-interface IAlertModalState {
+export interface IAlertModalState {
     message: string;
     variant: AlertProps['variant'];
 }

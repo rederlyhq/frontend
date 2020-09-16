@@ -1,16 +1,21 @@
 /* eslint-disable react/display-name */
 import React, { useState, forwardRef, useEffect } from 'react';
-import { Col, Nav } from 'react-bootstrap';
+import { Alert, Button, Col, Nav } from 'react-bootstrap';
 import MaterialTable, { Column } from 'material-table';
 // import { MdSearch, MdFirstPage, MdLastPage, MdClear, MdFilterList, MdChevronRight, MdChevronLeft, MdArrowDownward, MdFileDownload} from 'react-icons/md';
 import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from '@material-ui/icons';
-import { ProblemObject, CourseObject } from '../CourseInterfaces';
+import { ProblemObject, CourseObject, StudentGrade } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import _ from 'lodash';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import * as qs from 'querystring';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import moment from 'moment';
+import { BsLock, BsPencilSquare, BsUnlock } from 'react-icons/bs';
+import { OverrideGradeModal } from './OverrideGradeModal';
+import { ConfirmationModal } from '../../Components/ConfirmationModal';
+import { IAlertModalState } from '../../Hooks/useAlertState';
+import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 const FILTERED_STRING = '_FILTERED';
 
@@ -98,6 +103,24 @@ type EnumDictionary<T extends string | symbol | number, U> = {
 
 type BreadCrumbFilters = EnumDictionary<StatisticsView, BreadCrumbFilter>;
 
+enum GradesStateView {
+    LOCK='LOCK',
+    OVERRIDE='OVERRIDE',
+    NONE='NONE'
+}
+
+interface GradesState {
+    view: GradesStateView;
+    lockAlert: IAlertModalState | null;
+    rowData?: any
+}
+
+const defaultGradesState: GradesState = {
+    view: GradesStateView.NONE,
+    lockAlert: null,
+    rowData: undefined
+};
+
 /**
  * When a professor wishes to see a student's view, they pass in the student's userId.
  * When they wish to see overall course statistics, they do not pass any userId.
@@ -107,6 +130,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [idFilter, setIdFilter] = useState<number | null>(null);
     const [breadcrumbFilter, setBreadcrumbFilters] = useState<BreadCrumbFilters>({});
     const [rowData, setRowData] = useState<Array<any>>([]);
+    const [gradesState, setGradesState] = useState<GradesState>(defaultGradesState);
+    const [grade, setGrade] = useState<StudentGrade | null>(null);
     const userType: UserRole = getUserRole();
 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
@@ -176,6 +201,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         return hasAttempts && satisfiesIdFilter;
                     });
 
+                    setGrade(grades[0]);
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
                             id: attempt.id,
@@ -188,6 +214,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     data = _.flatten(data);
                     data = data.sort((a: any, b: any) => moment(b.time).diff(moment(a.time)));
                 } else {
+                    setGradesState(defaultGradesState);
+                    setGrade(null);
                     data = data.map((d: any) => ({
                         ...d,
                         averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
@@ -286,12 +314,58 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const hasDetailPanel = userId !== undefined ?
         (view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED):
         (view === StatisticsView.PROBLEMS || view === StatisticsViewFilter.TOPICS_FILTERED);
+    
+    let actions: Array<any> | undefined = [];
+    if(!hasDetailPanel) {
+        actions.push({
+            icon: () => <ChevronRight />,
+            tooltip: 'See More',
+            onClick: _.curryRight(nextView)(() => { }),
+        });
+    }
+    if (!_.isNil(userId) && view === StatisticsViewFilter.TOPICS_FILTERED) {
+        // This doesn't need to be in a function, however if it's not it renders one button before the other
+        actions.push((rowData: any) => {
+            if(_.isNil(rowData.grades)) {
+                return;
+            }
+            return {
+                icon: () => <BsPencilSquare />,
+                tooltip: 'Override grade',
+                onClick: (_event: any, rowData: any) => {
+                    setGrade(rowData.grades[0]);
+                    setGradesState({
+                        ...gradesState,
+                        view: GradesStateView.OVERRIDE,
+                        rowData
+                    });
+                }
+            };
+        });
 
-    let seeMoreActions: Array<any> | undefined = hasDetailPanel ? undefined : [{
-        icon: () => <ChevronRight />,
-        tooltip: 'See More',
-        onClick: _.curryRight(nextView)(() => { }),
-    }];
+        actions.push((rowData: any) => {
+            if(_.isNil(rowData.grades)) {
+                return;
+            }
+            return {
+                icon: () => rowData.grades[0].locked ? <BsLock/> : <BsUnlock/>,
+                tooltip: `Grade ${rowData.grades[0].locked ? 'Locked' : 'Unlocked'}`,
+                onClick: () => {
+                    setGrade(rowData.grades[0]);
+                    setGradesState({
+                        ...gradesState,
+                        view: GradesStateView.LOCK,
+                        rowData
+                    });
+                }
+            };
+        });
+    }
+
+    if(_.isEmpty(actions)) {
+        actions = undefined;
+    }    
+
     return (
         <>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
@@ -330,12 +404,110 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 })}
             </Nav>
             <div style={{ maxWidth: '100%' }}>
+                {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) && 
+                <>
+                    <OverrideGradeModal
+                        show={gradesState.view === GradesStateView.OVERRIDE}
+                        onHide={() => setGradesState(defaultGradesState)}
+                        grade={grade}
+                        onSuccess={(newGrade: Partial<StudentGrade>) => {
+                            if(!_.isNil(gradesState.rowData?.grades[0]) && !_.isNil(newGrade.effectiveScore)) {
+                                gradesState.rowData.averageScore = `${(newGrade.effectiveScore * 100).toFixed(1)}%`;
+                                gradesState.rowData.grades[0] = newGrade;
+                            }
+
+                            setGrade(newGrade as StudentGrade);
+                        }}
+                    />
+
+                    <ConfirmationModal
+                        show={gradesState.view === GradesStateView.LOCK}
+                        onHide={() => setGradesState(defaultGradesState)}
+                        onConfirm={async () => {
+                            try {
+                                if (_.isNil(grade) || _.isNil(grade.id)) {
+                                    throw new Error('Application Error: Grade null');
+                                }
+                                setGradesState(defaultGradesState);
+                                const newLockedValue = !grade.locked;
+                                const result = await putQuestionGrade({
+                                    id: grade.id,
+                                    data: {
+                                        locked: newLockedValue
+                                    }
+                                });
+
+                                if(!_.isNil(gradesState.rowData?.grades[0])) {
+                                    gradesState.rowData.grades[0].locked = newLockedValue;
+                                }
+
+                                setGradesState(defaultGradesState);
+                                setGrade(result.data.data.updatesResult.updatedRecords[0] as StudentGrade);
+                            } catch (e) {
+                                setGradesState({
+                                    ...gradesState,
+                                    lockAlert: {
+                                        message: e.message,
+                                        variant: 'danger'
+                                    }
+                                });
+                            }
+                        }}
+                        confirmText="Confirm"
+                        headerContent={<h6>{grade.locked ? 'Unlock' : 'Lock'} Grade</h6>}
+                        bodyContent={(<>
+                            {gradesState.lockAlert && <Alert variant={gradesState.lockAlert.variant}>{gradesState.lockAlert.message}</Alert>}
+                            <p>Are you sure you want to {grade.locked ? 'unlock' : 'lock'} this grade?</p>
+                            {grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
+                            {!grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
+                        </>)}
+                    />
+                </>}
                 <MaterialTable
                     icons={icons}
-                    title={getTitle()}
+                    title={(
+                        <div className="d-flex">
+                            <h6
+                                style={{
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis'
+                                }}
+                                className="MuiTypography-root MuiTypography-h6"
+                            >
+                                {getTitle()}
+                            </h6>
+                            {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) && (view === StatisticsViewFilter.PROBLEMS_FILTERED) && 
+                            <>
+                                <Button
+                                    className="ml-3 mr-1"
+                                    onClick={() => setGradesState({
+                                        ...gradesState,
+                                        view: GradesStateView.OVERRIDE
+                                    })}
+                                >
+                                    <>
+                                        <BsPencilSquare/> Override
+                                    </>
+                                </Button>
+
+                                <Button
+                                    variant={grade.locked ? 'warning' : 'danger'}
+                                    className="ml-1 mr-1"
+                                    onClick={() => setGradesState({
+                                        ...gradesState,
+                                        view: GradesStateView.LOCK
+                                    })}
+                                >
+                                    {grade.locked ? <><BsLock/> Unlock</>: <><BsUnlock/> Lock</>}
+                                </Button>
+                            </>
+                            }
+                        </div>
+                    )}
                     columns={(view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) ? attemptCols : gradeCols}
                     data={rowData}
-                    actions={seeMoreActions}
+                    actions={actions}
                     onRowClick={nextView}
                     options={{
                         exportButton: true,
