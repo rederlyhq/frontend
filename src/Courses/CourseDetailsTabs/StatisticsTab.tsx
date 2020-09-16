@@ -112,11 +112,13 @@ enum GradesStateView {
 interface GradesState {
     view: GradesStateView;
     lockAlert: IAlertModalState | null;
+    rowData?: any
 }
 
 const defaultGradesState: GradesState = {
     view: GradesStateView.NONE,
-    lockAlert: null
+    lockAlert: null,
+    rowData: undefined
 };
 
 /**
@@ -322,16 +324,23 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         });
     }
     if (!_.isNil(userId) && view === StatisticsViewFilter.TOPICS_FILTERED) {
-        actions.push({
-            icon: () => <BsPencilSquare />,
-            tooltip: 'Override grade',
-            onClick: (_event: any, rowData: any) => {
-                setGrade(rowData.grades[0]);
-                setGradesState({
-                    ...gradesState,
-                    view: GradesStateView.OVERRIDE
-                });
+        // This doesn't need to be in a function, however if it's not it renders one button before the other
+        actions.push((rowData: any) => {
+            if(_.isNil(rowData.grades)) {
+                return;
             }
+            return {
+                icon: () => <BsPencilSquare />,
+                tooltip: 'Override grade',
+                onClick: (_event: any, rowData: any) => {
+                    setGrade(rowData.grades[0]);
+                    setGradesState({
+                        ...gradesState,
+                        view: GradesStateView.OVERRIDE,
+                        rowData
+                    });
+                }
+            };
         });
 
         actions.push((rowData: any) => {
@@ -339,13 +348,14 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 return;
             }
             return {
-                icon: () => rowData.grades[0].locked ? <BsUnlock/> : <BsLock/>,
-                tooltip: 'Lock Grade',
+                icon: () => rowData.grades[0].locked ? <BsLock/> : <BsUnlock/>,
+                tooltip: `Grade ${rowData.grades[0].locked ? 'Locked' : 'Unlocked'}`,
                 onClick: () => {
                     setGrade(rowData.grades[0]);
                     setGradesState({
                         ...gradesState,
-                        view: GradesStateView.LOCK
+                        view: GradesStateView.LOCK,
+                        rowData
                     });
                 }
             };
@@ -400,7 +410,14 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         show={gradesState.view === GradesStateView.OVERRIDE}
                         onHide={() => setGradesState(defaultGradesState)}
                         grade={grade}
-                        onSuccess={(newGrade: Partial<StudentGrade>) => setGrade(newGrade as StudentGrade)}
+                        onSuccess={(newGrade: Partial<StudentGrade>) => {
+                            if(!_.isNil(gradesState.rowData?.grades[0]) && !_.isNil(newGrade.effectiveScore)) {
+                                gradesState.rowData.averageScore = `${(newGrade.effectiveScore * 100).toFixed(1)}%`;
+                                gradesState.rowData.grades[0].locked = newGrade.locked;
+                            }
+
+                            setGrade(newGrade as StudentGrade);
+                        }}
                     />
 
                     <ConfirmationModal
@@ -412,12 +429,18 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                     throw new Error('Application Error: Grade null');
                                 }
                                 setGradesState(defaultGradesState);
+                                const newLockedValue = !grade.locked;
                                 const result = await putQuestionGrade({
                                     id: grade.id,
                                     data: {
-                                        locked: !grade.locked
+                                        locked: newLockedValue
                                     }
                                 });
+
+                                if(!_.isNil(gradesState.rowData?.grades[0])) {
+                                    gradesState.rowData.grades[0].locked = newLockedValue;
+                                }
+
                                 setGradesState(defaultGradesState);
                                 setGrade(result.data.data.updatesResult.updatedRecords[0] as StudentGrade);
                             } catch (e) {
@@ -476,7 +499,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                         view: GradesStateView.LOCK
                                     })}
                                 >
-                                    {grade.locked ? <><BsUnlock/> Unlock</> : <><BsLock/> Lock</>}
+                                    {grade.locked ? <><BsLock/> Unlock</>: <><BsUnlock/> Lock</>}
                                 </Button>
                             </>
                             }
