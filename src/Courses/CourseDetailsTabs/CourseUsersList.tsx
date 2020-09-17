@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { ListGroup, ListGroupItem, Row, Col, Form, FormControl, Button } from 'react-bootstrap';
 import { UserObject } from '../CourseInterfaces';
 import _ from 'lodash';
+import { deleteEnrollment } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { courseContext } from '../CourseDetailsPage';
 
 interface CourseUsersListProps {
     users: Array<UserObject>;
@@ -13,6 +15,7 @@ export const CourseUsersList: React.FC<CourseUsersListProps> = ({users, activeUs
     // TODO: This should be refactored into a reusable TwoState button.
     const [selectAllState, setSelectAllState] = useState(false);
     const [searchedUsers, setSearchedUsers] = useState<Array<UserObject>>(users);
+    const course = useContext(courseContext);
 
     useEffect(()=>{
         setSearchedUsers(users);
@@ -77,6 +80,7 @@ export const CourseUsersList: React.FC<CourseUsersListProps> = ({users, activeUs
                         style={{cursor: 'pointer'}}
                     >
                         {user.lastName}, {user.firstName}
+                        <Button variant='danger' onClick={async () => deleteEnrollment({userId: user.id, courseId: course.id})}>Delete</Button>
                     </ListGroupItem>
                 ))}
             </ListGroup>
