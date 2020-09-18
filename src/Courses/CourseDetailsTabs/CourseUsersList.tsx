@@ -4,6 +4,9 @@ import { UserObject } from '../CourseInterfaces';
 import _ from 'lodash';
 import { deleteEnrollment } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { courseContext } from '../CourseDetailsPage';
+import MaterialIcons from '../../Components/MaterialIcons';
+import MaterialTable from 'material-table';
+import { DeleteOutlined } from '@material-ui/icons';
 
 interface CourseUsersListProps {
     users: Array<UserObject>;
@@ -28,6 +31,15 @@ export const CourseUsersList: React.FC<CourseUsersListProps> = ({users, activeUs
             setActive([activeUsers[0]]);
         } else {
             setActive([activeUsers[0].add(id)]);
+        }
+    };
+
+    const onDropStudent = (userId: number, courseId: number) => {
+        try {
+            deleteEnrollment({userId, courseId});
+        } catch (e) {
+            // TODO: display errors to user.
+            console.error(e);
         }
     };
 
@@ -71,19 +83,35 @@ export const CourseUsersList: React.FC<CourseUsersListProps> = ({users, activeUs
                     </Col>
                 </Row>
             </Form.Group>
-            <ListGroup>
-                {searchedUsers.map(user => (
-                    <ListGroupItem
-                        key={`user${user.id}`} 
-                        active={activeUsers[0].has(user.id)} 
-                        onClick={() => onClickStudent(user.id)}
-                        style={{cursor: 'pointer'}}
-                    >
-                        {user.lastName}, {user.firstName}
-                        <Button variant='danger' onClick={async () => deleteEnrollment({userId: user.id, courseId: course.id})}>Delete</Button>
-                    </ListGroupItem>
-                ))}
-            </ListGroup>
+            <div style={{maxWidth: '100%'}}>
+                <MaterialTable
+                    icons={MaterialIcons}
+                    title={course.name}
+                    columns={[
+                        {title: 'First Name', field: 'firstName'},
+                        {title: 'Last Name', field: 'lastName'},
+                    ]}
+                    data={searchedUsers}
+                    onRowClick={(e: any, user: any) => onClickStudent(user.id)}
+                    options={{
+                        exportButton: true,
+                        actionsColumnIndex: -1,
+                        rowStyle: unit => ({
+                            backgroundColor: activeUsers[0].has(unit.id) ? '#EEE' : '#FFF'
+                        }),
+                        pageSize: 10,
+                        pageSizeOptions: [10, 15, 20]
+                    }}
+                    actions={[
+                        {
+                            // eslint-disable-next-line react/display-name
+                            icon: () => <DeleteOutlined style={{color: 'red'}} />,
+                            tooltip: 'Drop student from course',
+                            onClick: (event: any, user: any) => onDropStudent(user.id, course.id)
+                        }
+                    ]}
+                />
+            </div>
         </Form>
     );
 };
