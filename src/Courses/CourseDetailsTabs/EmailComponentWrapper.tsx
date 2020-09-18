@@ -63,6 +63,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                         pageSizeOptions: [10, 15, 20],
                         selection: userType !== UserRole.STUDENT,
                         showTextRowsSelected: false,
+                        emptyRowsWhenPaging: false,
                     }}
                     actions={userType !== UserRole.STUDENT ? [
                         {
