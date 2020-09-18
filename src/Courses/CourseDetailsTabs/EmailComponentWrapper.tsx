@@ -10,6 +10,7 @@ import { TiUserDelete } from 'react-icons/ti';
 import MaterialIcons from '../../Components/MaterialIcons';
 import { deleteEnrollment } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { courseContext } from '../CourseDetailsPage';
+import { ConfirmationModal } from '../../Components/ConfirmationModal';
 
 interface EmailComponentWrapperProps {
     users: Array<UserObject>;
@@ -22,6 +23,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
     const [users, setUsers] = useState(propUsers);
     const [selectedStudents, setSelectedStudents] = useState<UserObject[]>([]);
     const [showModal, setShowModal] = useState(false);
+    const [showConfirmDelete, setShowConfirmDelete] = useState<{state: boolean, user: UserObject | null}>({state: false, user: null});
     const userType: UserRole = getUserRole();
     const course = useContext(courseContext);
 
@@ -42,6 +44,30 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
     return (
         <>
             <EmailModal show={showModal} setClose={() => setShowModal(false)} users={selectedStudents} />
+            <ConfirmationModal 
+                show={showConfirmDelete.state}
+                onHide={() => setShowConfirmDelete({state: false, user: null})}
+                onConfirm={() => {
+                    if (_.isNull(showConfirmDelete.user)) {
+                        console.error('Tried deleting a null user!');
+                        return;
+                    }
+                    onDropStudent(showConfirmDelete.user.id, course.id);
+                    setShowConfirmDelete({state: false, user: null});
+                }}
+                confirmText={`Drop ${showConfirmDelete.user?.firstName} from ${course.sectionCode}`}
+                confirmVariant='danger'
+                headerContent={<h4>Drop Student</h4>}
+                bodyContent={(
+                    <div className='text-center'>
+                        <p>Are you sure you want to drop <br/>
+                            <b>{showConfirmDelete.user?.firstName} {showConfirmDelete.user?.lastName}</b><br/>
+                        from the course <br/>
+                            <b>{course.sectionCode} {course.semesterCode}{course.semesterCodeYear}</b>?</p>
+                        <p>This action cannot be undone.</p>
+                    </div>
+                )}
+            />
             <div style={{maxWidth: '100%'}}>
                 <MaterialTable
                     icons={MaterialIcons}
@@ -70,7 +96,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                             // eslint-disable-next-line react/display-name
                             icon: () => <TiUserDelete style={{color: 'red'}} />,
                             tooltip: 'Drop student from course',
-                            onClick: (event: any, user: any) => onDropStudent(user.id, course.id),
+                            onClick: (event: any, user: any) => setShowConfirmDelete({state: true, user}),
                             position: 'row'
                         },
                         {
