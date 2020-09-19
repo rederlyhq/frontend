@@ -34,7 +34,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const [error, setError] = useState('');
     const [height, setHeight] = useState('100vh');
 
-    const { setLastSavedAt, setLastSubmittedAt} = useCurrentProblemState();
+    const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
     useEffect(()=>{
         setLoading(true);
@@ -100,8 +100,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         if(typeof submitAction === 'function') submitAction(); // this is a global function from renderer - prepares form field for submit
 
         let formData = new FormData(problemForm);
-        if (_.isNil(problem.grades)) {return;}
+        if (_.isNil(problem.grades)) {return;} // just for typescript
+        if (_.isNil(problem.grades[0])) {return;} // not enrolled
         if (_.isNil(problem.grades[0].id)) {
+            // PANIC -- should not happen
             setError(`No grades id for problem #${problem.id}`);
             return;
         }
@@ -160,7 +162,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             return;
         }
 
-        console.log('problem form found!');
         problemForm.addEventListener('submit', _.debounce((event: { preventDefault: () => void; }) => {
             event.preventDefault();
             if (_.isNil(problemForm)) {
@@ -185,7 +186,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 setError('An error occurred');
                 return;
             }
-            console.log('preparing formdata and submitting!');
             prepareAndSubmit(problemForm);
         }, 2000));
     }
