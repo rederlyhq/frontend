@@ -4,12 +4,19 @@ import AxiosRequest from '../Hooks/AxiosRequest';
 import _ from 'lodash';
 import { Spinner } from 'react-bootstrap';
 import * as qs from 'querystring';
+import { postQuestionSubmission, putQuestionGrade } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import moment from 'moment';
+import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
     setProblemStudentGrade: (val: any) => void;
     workbookId?: number;
     readonly?: boolean;
+    // lastSavedAt?: moment.Moment|null;
+    // lastSubmittedAt?: moment.Moment|null;
+    // setLastSavedAt?: (val: moment.Moment) => void;
+    // setLastSubmittedAt?: (val: moment.Moment) => void;
 }
 
 /**
@@ -23,13 +30,19 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     problem,
     setProblemStudentGrade,
     workbookId,
-    readonly = false
+    readonly = false,
+    // lastSavedAt,
+    // lastSubmittedAt,
+    // setLastSavedAt,
+    // setLastSubmittedAt,
 }) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [height, setHeight] = useState('100vh');
+
+    const { setLastSavedAt, setLastSubmittedAt} = useCurrentProblemState();
 
     useEffect(()=>{
         setLoading(true);
@@ -57,6 +70,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 setLoading(false);
             }
         })();
+        setLastSubmittedAt?.(null);
+        setLastSavedAt?.(null);
     }, [problem.id]);
 
     const recalculateHeight = () => {
@@ -80,75 +95,103 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             } else {
                 if(!_.isArray(object[pair[0]])) {
                     object[pair[0]] = [object[pair[0]]];
-        }
+                }
                 object[pair[0]].push(pair[1]);
             }
         }
         return object;
     };
 
-    function prepareAndSubmit(problemForm: HTMLFormElement, clickedButton?: HTMLButtonElement) {
+    async function prepareAndSubmit(problemForm: HTMLFormElement, clickedButton?: HTMLButtonElement) {
         const submitAction = (window as any).submitAction;
-        let method = 'post';
         if(typeof submitAction === 'function') submitAction(); // this is a global function from renderer - prepares form field for submit
 
-            let formData = new FormData(problemForm);
-        let reqBody:any = formData;
+        let formData = new FormData(problemForm);
         if (_.isNil(problem.grades)) {return;}
         if (_.isNil(problem.grades[0].id)) {
             setError(`No grades id for problem #${problem.id}`);
-                return;
-            }
-        const submiturl = _.isNil(clickedButton) ? `/backend-api/courses/question/grade/${problem.grades[0].id}` : problemForm.getAttribute('action');
-            if(_.isNil(submiturl)) {
-                setError('An error occurred');
-                console.error('Hijacker: Couldn\'t find the submit URL');
-                return;
-            }
-        if (!_.isNil(clickedButton)) {
-            reqBody.set(clickedButton.name, clickedButton.value);
-        } else {
-            method = 'put';
-            // do we need to worry about access to `fromEntries`
-            reqBody = {
-                currentProblemState: formDataToObject(formData)
-            };
-            reqBody = JSON.stringify(reqBody);
+            return;
         }
-        // formData.forEach((v,k)=>{console.log(k+' => '+v)});
-            const submit_params = {
-            headers: {
-                'content-type': 'application/json',
-            },
-            body: reqBody,
-            method,
-            };
-        // replace with AxiosRequest
-            fetch(submiturl, submit_params).then( function(response) {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error('Could not submit your answers: ' + response.statusText);
-                }
-            }).then( function(res) {
+        const submiturl = _.isNil(clickedButton) ? `/backend-api/courses/question/grade/${problem.grades[0].id}` : problemForm.getAttribute('action');
+        if(_.isNil(submiturl)) {
+            setError('An error occurred');
+            console.error('Hijacker: Couldn\'t find the submit URL');
+            return;
+        }
+        if (!_.isNil(clickedButton)) {
+            formData.set(clickedButton.name, clickedButton.value);
+            try {
+                const result = await postQuestionSubmission({
+                    id: problem.id,
+                    data: formData,
+                });
                 if(_.isNil(iframeRef?.current)) {
                     console.error('Hijacker: Could not find the iframe ref');
                     setError('An error occurred');
                     return;
                 }
-            if (!_.isNil(clickedButton)) {
-                setRenderedHTML(res.data.rendererData.renderedHTML);
-                setProblemStudentGrade(res.data.studentGrade);
-                // update submittedAt
-                console.log('update submittedAt');
-            } else {
-                // update savedAt
-                console.log('update savedAt');
-            }
-            }).catch( function(e) {
-                console.error(e);
+                setRenderedHTML(result.data.data.rendererData.renderedHTML);
+                setProblemStudentGrade(result.data.data.studentGrade);
+                setLastSubmittedAt?.(moment());
+                console.log('submitted at '+moment().toString());
+            } catch (e) {
                 setError(e.message);
-            });
+                return;
+            }
+            // submit response
+        } else {
+            // do we need to worry about access to `fromEntries`
+            const reqBody = {
+                currentProblemState: formDataToObject(formData)
+            };
+            //reqBody = JSON.stringify(reqBody);
+            // putQuestionGrade
+            try {
+                const result = await putQuestionGrade({
+                    id: problem.grades[0].id, 
+                    data: reqBody
+                });
+                setLastSavedAt?.(moment());
+                console.log('saved at '+moment().toString());
+            } catch (e) {
+                setError(e.message);
+                return;
+            }
+        }
+        // formData.forEach((v,k)=>{console.log(k+' => '+v)});
+        //const submit_params = {
+        //    headers: {
+        //        'content-type': 'application/json',
+        //    },
+        //    body: reqBody,
+        //    method,
+        //};
+        // replace with AxiosRequest
+        //fetch(submiturl, submit_params).then( function(response) {
+        //    if (response.ok) {
+        //        return response.json();
+        //    } else {
+        //        throw new Error('Could not submit your answers: ' + response.statusText);
+        //    }
+        //}).then( function(res) {
+        //    if(_.isNil(iframeRef?.current)) {
+        //        console.error('Hijacker: Could not find the iframe ref');
+        //        setError('An error occurred');
+        //        return;
+        //    }
+        //    if (!_.isNil(clickedButton)) {
+        //        setRenderedHTML(res.data.rendererData.renderedHTML);
+        //        setProblemStudentGrade(res.data.studentGrade);
+        //        // update submittedAt
+        //        console.log('update submittedAt');
+        //    } else {
+        //        // update savedAt
+        //        console.log('update savedAt');
+        //    }
+        //}).catch( function(e) {
+        //    console.error(e);
+        //    setError(e.message);
+        //});
     }
 
     function insertListener() {
@@ -163,6 +206,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             return;
         }
 
+        console.log('problem form found!');
         problemForm.addEventListener('submit', _.debounce((event: { preventDefault: () => void; }) => {
             event.preventDefault();
             if (_.isNil(problemForm)) {
@@ -178,9 +222,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             }
             console.log('preparing formdata and submitting!');
             prepareAndSubmit(problemForm, clickedButton);
-        }, 2000));
+        }, 4000, {leading: true, trailing:false}));
 
-        problemForm.addEventListener('change', _.debounce((event: { preventDefault: () => void; }) => {
+        problemForm.addEventListener('input', _.debounce((event: { preventDefault: () => void; }) => {
             event.preventDefault();
             if (_.isNil(problemForm)) {
                 console.error('Hijacker: Could not find the form when submitting the form');

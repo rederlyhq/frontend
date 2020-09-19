@@ -66,6 +66,11 @@ export interface PostCourseTopicQuestionOptions {
     data: Partial<NewProblemObject>;
 }
 
+export interface PostQuestionSubmissionOptions {
+    id: number;
+    data: FormData;
+}
+
 export interface PostDefFileOptions {
     acceptedFiles: any;
     courseTopicId: number;
