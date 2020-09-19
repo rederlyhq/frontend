@@ -272,4 +272,4 @@ export const getQuestions = async ({
     } catch (e) {
         throw new BackendAPIError(e);
     }
-}
+};

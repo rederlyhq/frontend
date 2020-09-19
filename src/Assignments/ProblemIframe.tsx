@@ -133,7 +133,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 setRenderedHTML(result.data.data.rendererData.renderedHTML);
                 setProblemStudentGrade(result.data.data.studentGrade);
                 setLastSubmittedAt?.(moment());
-                console.log('submitted at '+moment().toString());
             } catch (e) {
                 setError(e.message);
                 return;
@@ -152,7 +151,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     data: reqBody
                 });
                 setLastSavedAt?.(moment());
-                console.log('saved at '+moment().toString());
             } catch (e) {
                 setError(e.message);
                 return;
