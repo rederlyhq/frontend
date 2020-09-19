@@ -71,42 +71,59 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setHeight(`${scrollHeight}px`);
     };
 
-    function insertListener() {
-        // assuming global problemiframe - too sloppy?
-        let problemForm = iframeRef?.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
-        // don't croak when the empty iframe is first loaded
-        // problably not an issue for rederly/frontend
-        if (_.isNil(problemForm)) {
-            // This will happen, if you set error then it will never be true and breaks the page
-            // setError('An error occurred');
-            // console.error('Hijacker: Could not find the form to insert the listener');
-            return;
+    const formDataToObject = (formData: FormData) => {
+        let object:any = {};
+        // @ts-ignore
+        for(let pair of formData.entries()) {
+            if (_.isUndefined(object[pair[0]])) {
+                object[pair[0]] = pair[1];
+            } else {
+                if(!_.isArray(object[pair[0]])) {
+                    object[pair[0]] = [object[pair[0]]];
         }
-        problemForm.addEventListener('submit', (event: { preventDefault: () => void; }) => {
-            event.preventDefault();
-            if (_.isNil(problemForm)) {
-                console.error('Hijacker: Could not find the form when submitting the form');
-                setError('An error occurred');
-                return;
+                object[pair[0]].push(pair[1]);
             }
+        }
+        return object;
+    };
+
+    function prepareAndSubmit(problemForm: HTMLFormElement, clickedButton?: HTMLButtonElement) {
+        const submitAction = (window as any).submitAction;
+        let method = 'post';
+        if(typeof submitAction === 'function') submitAction(); // this is a global function from renderer - prepares form field for submit
+
             let formData = new FormData(problemForm);
-            let clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
-            if (_.isNil(clickedButton)) {
-                setError('Hijacker: An error occurred');
-                console.error('Could not find the button that submitted the form');
+        let reqBody:any = formData;
+        if (_.isNil(problem.grades)) {return;}
+        if (_.isNil(problem.grades[0].id)) {
+            setError(`No grades id for problem #${problem.id}`);
                 return;
             }
-            formData.set(clickedButton.name, clickedButton.value);
-            const submiturl = problemForm.getAttribute('action');
+        const submiturl = _.isNil(clickedButton) ? `/backend-api/courses/question/grade/${problem.grades[0].id}` : problemForm.getAttribute('action');
             if(_.isNil(submiturl)) {
                 setError('An error occurred');
                 console.error('Hijacker: Couldn\'t find the submit URL');
                 return;
             }
-            const submit_params = {
-                body: formData,
-                method: 'post',
+        if (!_.isNil(clickedButton)) {
+            reqBody.set(clickedButton.name, clickedButton.value);
+        } else {
+            method = 'put';
+            // do we need to worry about access to `fromEntries`
+            reqBody = {
+                currentProblemState: formDataToObject(formData)
             };
+            reqBody = JSON.stringify(reqBody);
+        }
+        // formData.forEach((v,k)=>{console.log(k+' => '+v)});
+            const submit_params = {
+            headers: {
+                'content-type': 'application/json',
+            },
+            body: reqBody,
+            method,
+            };
+        // replace with AxiosRequest
             fetch(submiturl, submit_params).then( function(response) {
                 if (response.ok) {
                     return response.json();
@@ -119,13 +136,60 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     setError('An error occurred');
                     return;
                 }
+            if (!_.isNil(clickedButton)) {
                 setRenderedHTML(res.data.rendererData.renderedHTML);
                 setProblemStudentGrade(res.data.studentGrade);
+                // update submittedAt
+                console.log('update submittedAt');
+            } else {
+                // update savedAt
+                console.log('update savedAt');
+            }
             }).catch( function(e) {
                 console.error(e);
                 setError(e.message);
             });
-        });
+    }
+
+    function insertListener() {
+        // assuming global problemiframe - too sloppy?
+        let problemForm = iframeRef?.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
+        // don't croak when the empty iframe is first loaded
+        // problably not an issue for rederly/frontend
+        if (_.isNil(problemForm)) {
+            // This will happen, if you set error then it will never be true and breaks the page
+            // setError('An error occurred');
+            // console.error('Hijacker: Could not find the form to insert the listener');
+            return;
+        }
+
+        problemForm.addEventListener('submit', _.debounce((event: { preventDefault: () => void; }) => {
+            event.preventDefault();
+            if (_.isNil(problemForm)) {
+                console.error('Hijacker: Could not find the form when submitting the form');
+                setError('An error occurred');
+                return;
+            }
+            let clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
+            if (_.isNil(clickedButton)) {
+                setError('Hijacker: An error occurred');
+                console.error('Could not find the button that submitted the form');
+                return;
+            }
+            console.log('preparing formdata and submitting!');
+            prepareAndSubmit(problemForm, clickedButton);
+        }, 2000));
+
+        problemForm.addEventListener('change', _.debounce((event: { preventDefault: () => void; }) => {
+            event.preventDefault();
+            if (_.isNil(problemForm)) {
+                console.error('Hijacker: Could not find the form when submitting the form');
+                setError('An error occurred');
+                return;
+            }
+            console.log('preparing formdata and submitting!');
+            prepareAndSubmit(problemForm);
+        }, 2000));
     }
 
     const onLoadHandlers = () => {
