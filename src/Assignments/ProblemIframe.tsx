@@ -13,10 +13,6 @@ interface ProblemIframeProps {
     setProblemStudentGrade: (val: any) => void;
     workbookId?: number;
     readonly?: boolean;
-    // lastSavedAt?: moment.Moment|null;
-    // lastSubmittedAt?: moment.Moment|null;
-    // setLastSavedAt?: (val: moment.Moment) => void;
-    // setLastSubmittedAt?: (val: moment.Moment) => void;
 }
 
 /**
@@ -31,10 +27,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     setProblemStudentGrade,
     workbookId,
     readonly = false,
-    // lastSavedAt,
-    // lastSubmittedAt,
-    // setLastSavedAt,
-    // setLastSubmittedAt,
 }) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
@@ -70,6 +62,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 setLoading(false);
             }
         })();
+        // when problem changes, reset lastsubmitted and lastsaved
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
     }, [problem.id]);
@@ -139,12 +132,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             }
             // submit response
         } else {
-            // do we need to worry about access to `fromEntries`
             const reqBody = {
                 currentProblemState: formDataToObject(formData)
             };
-            //reqBody = JSON.stringify(reqBody);
-            // putQuestionGrade
             try {
                 const result = await putQuestionGrade({
                     id: problem.grades[0].id, 
@@ -156,40 +146,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 return;
             }
         }
-        // formData.forEach((v,k)=>{console.log(k+' => '+v)});
-        //const submit_params = {
-        //    headers: {
-        //        'content-type': 'application/json',
-        //    },
-        //    body: reqBody,
-        //    method,
-        //};
-        // replace with AxiosRequest
-        //fetch(submiturl, submit_params).then( function(response) {
-        //    if (response.ok) {
-        //        return response.json();
-        //    } else {
-        //        throw new Error('Could not submit your answers: ' + response.statusText);
-        //    }
-        //}).then( function(res) {
-        //    if(_.isNil(iframeRef?.current)) {
-        //        console.error('Hijacker: Could not find the iframe ref');
-        //        setError('An error occurred');
-        //        return;
-        //    }
-        //    if (!_.isNil(clickedButton)) {
-        //        setRenderedHTML(res.data.rendererData.renderedHTML);
-        //        setProblemStudentGrade(res.data.studentGrade);
-        //        // update submittedAt
-        //        console.log('update submittedAt');
-        //    } else {
-        //        // update savedAt
-        //        console.log('update savedAt');
-        //    }
-        //}).catch( function(e) {
-        //    console.error(e);
-        //    setError(e.message);
-        //});
     }
 
     function insertListener() {

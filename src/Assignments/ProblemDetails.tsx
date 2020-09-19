@@ -12,19 +12,11 @@ const INFINITE_MAX_ATTEMPT_VALUE = 0;
 interface ProblemDetailsProps {
     problem: ProblemObject;
     topic: NewCourseTopicObj | null;
-    // lastSavedAt?: moment.Moment|null;
-    // lastSubmittedAt?: moment.Moment|null;
-    // setLastSavedAt?: (val: moment.Moment) => void;
-    // setLastSubmittedAt?: (val: moment.Moment) => void;
 }
 
 export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     problem,
     topic,
-    // lastSavedAt,
-    // lastSubmittedAt,
-    // setLastSavedAt,
-    // setLastSubmittedAt,
 }) => {
     const startDate = moment(topic?.startDate);
     const endDate = moment(topic?.endDate);

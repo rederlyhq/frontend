@@ -17,12 +17,6 @@ export const ProblemStateProvider = ({ children }: Props) => {
     const [lastSavedAt, setLastSavedAt] = useState<moment.Moment|null>(null);
     const [lastSubmittedAt, setLastSubmittedAt] = useState<moment.Moment|null>(null);
 
-    React.useEffect(() => {
-        // initialize with historical data? Still might be null
-        // setLastSavedAt(get updatedAt from grades);
-        // setLastSubmittedAt(get createdAt from latest workbook);
-    }, []);
-
     return (
         <ProblemStateContext.Provider value={{ 
             lastSavedAt, 

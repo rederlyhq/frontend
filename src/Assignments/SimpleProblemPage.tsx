@@ -26,8 +26,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    // const [lastSavedAt, setLastSavedAt] = useState<moment.Moment|null>(null);
-    // const [lastSubmittedAt, setLastSubmittedAt] = useState<moment.Moment|null>(null);
 
     useEffect(()=>{
         setLoading(true);
@@ -143,20 +141,12 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                             <ProblemDetails
                                 problem={problems[selectedProblemId]}
                                 topic={topic}
-                                // lastSavedAt={lastSavedAt} 
-                                // lastSubmittedAt={lastSubmittedAt} 
-                                // setLastSavedAt={setLastSavedAt} 
-                                // setLastSubmittedAt={setLastSubmittedAt} 
                             />
                             {/* Temporarily disabled for release.  */}
                             {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
                                 <Button className='float-right'>Ask for help</Button>
                             </a>)}
                             {<ProblemIframe 
-                                // lastSavedAt={lastSavedAt} 
-                                // lastSubmittedAt={lastSubmittedAt} 
-                                // setLastSavedAt={setLastSavedAt} 
-                                // setLastSubmittedAt={setLastSubmittedAt} 
                                 problem={problems[selectedProblemId]} 
                                 setProblemStudentGrade={setProblemStudentGrade}
                             />}
