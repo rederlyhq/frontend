@@ -58,6 +58,7 @@ interface PutQuestionGrade {
     updatesResult: {
         updatedRecords: Partial<StudentGrade>[]
     }
+    updatesCount: number;
 }
 
 export type PutQuestionGradeResponse = BackendAPIResponse<PutQuestionGrade>;

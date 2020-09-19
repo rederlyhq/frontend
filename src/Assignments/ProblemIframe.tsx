@@ -142,7 +142,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     id: problem.grades[0].id, 
                     data: reqBody
                 });
-                setLastSavedAt?.(moment());
+                if (result.data.data.updatesCount > 0) {
+                    setLastSavedAt?.(moment());
+                }
             } catch (e) {
                 setError(e.message);
                 return;
