@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ProblemObject, NewCourseTopicObj } from '../Courses/CourseInterfaces';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
@@ -8,6 +7,7 @@ import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
 import { ProblemDoneState } from '../Enums/AssignmentEnums';
 import _ from 'lodash';
 import { getQuestions } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { ProblemDetails } from './ProblemDetails';
 
 interface SimpleProblemPageProps {
 }
@@ -74,7 +74,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         if (_.isNil(problem.grades) || _.isNil(problem.grades[0]) || problem.grades[0].numAttempts === 0) {
             // Do nothing but skip everything else
         } else if(problem.grades[0].overallBestScore === 1) {
-            doneState = ProblemDoneState.CORRECT;
+            doneState = ProblemDoneState.COMPLETE;
         } else if (problem.grades[0].overallBestScore === 0) {
             doneState = ProblemDoneState.INCORRECT;
         } else if (problem.grades[0].overallBestScore < 1) {
@@ -82,8 +82,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         }
     
         switch (doneState) {
-        case ProblemDoneState.CORRECT:
-            return (<> CORRECT <BsCheckCircle className='text-success' role='status'/></>);
+        case ProblemDoneState.COMPLETE:
+            return (<> COMPLETE <BsCheckCircle className='text-success' role='status'/></>);
         case ProblemDoneState.INCORRECT:
             return (<> INCORRECT <BsXCircle className='text-danger' role='status'/></>);
         case ProblemDoneState.PARTIAL:
@@ -108,7 +108,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     return (
         <>
-            {topic && <h3>{topic.name}</h3>}
             <Container fluid>
                 <Row>
                     <Col md={3}>
@@ -123,8 +122,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                             key={`problemNavLink${prob.id}`} 
                                             onSelect={() => {setSelectedProblemId(prob.id);}}
                                             role='link'
+                                            style={{
+                                                fontStyle: prob.optional ? 'italic' : undefined
+                                            }}
                                         >
-                                            {`Problem ${prob.problemNumber} (ID#${prob.id})`}
+                                            {`Problem ${prob.problemNumber} (${prob.weight} Point${prob.weight === 1 ? '' : 's'})`}
                                             <span className='float-right'>{renderDoneStateIcon(prob)}</span>
                                         </NavLink>
                                     );
@@ -134,6 +136,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         </Nav>
                     </Col>
                     <Col md={9}>
+                        <ProblemDetails
+                            problem={problems[selectedProblemId]}
+                            topic={topic}
+                        />
                         {/* Temporarily disabled for release.  */}
                         {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
                             <Button className='float-right'>Ask for help</Button>

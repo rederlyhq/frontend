@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Row, Col } from 'react-bootstrap';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import useAlertState from '../Hooks/useAlertState';
 import { useHistory } from 'react-router-dom';
 import Cookie from 'js-cookie';

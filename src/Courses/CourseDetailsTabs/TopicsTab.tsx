@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import TopicsList from '../TopicsList';
-import { Accordion, Card, Row, Col, Modal, Alert } from 'react-bootstrap';
+import { Accordion, Card, Row, Col, Modal, Alert, Button } from 'react-bootstrap';
 import { CourseObject, NewCourseTopicObj, UnitObject } from '../CourseInterfaces';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
@@ -352,7 +352,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             return;
         }
 
-        if (result.destination.index === result.source.index) {
+        if (result.destination.index === result.source.index && result.destination.droppableId === result.source.droppableId) {
             return;
         }
 
@@ -407,36 +407,34 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 headerContent={<h5>Confirm delete</h5>}
                 bodyContent={`Are you sure you want to remove ${confirmationParamters.identifierText}?`}
             />
-            {userType !== UserRole.STUDENT && (
-                <Row>
-                    <Row style={{ marginLeft: 'auto' }}>
-                        {/* <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} > */}
-                        {
-                            inEditMode &&
-                            <span
-                                role="button"
-                                tabIndex={0}
-                                style={{
-                                    padding: '20px'
-                                }}
-                                onClick={_.partial(addUnitClick, _, course.id)}
-                                onKeyPress={_.partial(addUnitClick, _, course.id)}
-                            >
-                                <FaPlusCircle color='#00AA00' />
-                            </span>
-                        }
-                        <EditToggleButton
-                            selectedState={inEditMode}
-                            onClick={() => { setInEditMode(!inEditMode); }}
-                            style={{
-                                padding: '20px'
-                            }}
-                        />
-                    </Row>
-                </Row>
-            )}
             {error && <Alert variant="danger">{error.message}</Alert>}
-            <h4>Units</h4>
+            <Row style={{padding: '0.5em'}}>
+                <Col xs={1} md={1}><h4>Units</h4></Col>
+                <Col>
+                    {userType !== UserRole.STUDENT && (
+                        <Row style={{justifyContent: 'flex-end', paddingRight: '1em'}}>
+                            {/* <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} > */}
+                            {
+                                inEditMode &&
+                                <Button variant='outline-success'
+                                    tabIndex={0}
+                                    onClick={_.partial(addUnitClick, _, course.id)}
+                                    onKeyPress={_.partial(addUnitClick, _, course.id)}
+                                >
+                                    <FaPlusCircle /> New Unit
+                                </Button>
+                            }
+                            <EditToggleButton
+                                selectedState={inEditMode}
+                                onClick={() => { setInEditMode(!inEditMode); }}
+                                style={{
+                                    padding: '0em 0em 0em 1em'
+                                }}
+                            />
+                        </Row>
+                    )}
+                </Col>
+            </Row>
             <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId='unitsList' type='UNIT'>
                     {
