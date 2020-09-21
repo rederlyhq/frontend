@@ -21,8 +21,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) =
 
     const onSendEmail = async () => {
         try {
-            const res = await AxiosRequest.post('/course/email', {subject, body, users: Array.from(users)});
-            console.log(res);
+            const res = await AxiosRequest.post('/users/email', {subject, content: body, userIds: Array.from(users)});
             const msg = res.data?.data?.msg || 'Success';
             setSendEmailRespMsg({message: msg, variant: 'success'});
         } catch (e) {
@@ -53,7 +52,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) =
                         <FormControl 
                             as='textarea' 
                             size='sm' style={{height: '200px'}}
-                            autocomplete='off'
+                            autoComplete='off'
                             onChange={(e: any) => setBody(e.target.value)}
                         />
                     </FormGroup>
