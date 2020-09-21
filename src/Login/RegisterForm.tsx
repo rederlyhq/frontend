@@ -153,7 +153,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
                 required
                 defaultValue=''
                 name="registerPasswordConf" 
-                autocomplete="new-password"
+                autoComplete="new-password"
                 type="password"
                 onChange={handleNamedChange('registerPasswordConf')}
                 placeholder="******"

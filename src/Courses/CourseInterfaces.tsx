@@ -125,13 +125,17 @@ const newProblemUniqueGen = uniqueGen();
 
 export class StudentGrade {
     overallBestScore: number = 0;
+    effectiveScore: number = 0;
     bestScore: number = 0;
     numAttempts: number = 0;
+    locked: boolean = false;
+    id?: number;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
     }
 }
+
 export class ProblemObject implements IProblemObject {
     id: number = 0;
     problemNumber: number = 1;
