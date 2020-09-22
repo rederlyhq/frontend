@@ -229,7 +229,22 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     }, [course.id, globalView, idFilter, userId, userType]);
 
     const renderProblemPreview = (rowData: any) => {
-        return <ProblemIframe problem={new ProblemObject({ id: rowData.problemId })} setProblemStudentGrade={() => { }} workbookId={rowData.id} readonly={true} />;
+        switch (view) {
+        case StatisticsViewFilter.TOPICS_FILTERED:
+        case StatisticsView.PROBLEMS:
+            // Expand for problem
+            return <ProblemIframe problem={new ProblemObject({ id: rowData.id })} setProblemStudentGrade={() => { }} readonly={true} />;
+        case StatisticsViewFilter.PROBLEMS_FILTERED:
+        case StatisticsView.ATTEMPTS:
+            // Expand for attempt
+            if (_.isNil(rowData.problemId)) {
+                console.error('rowData.problemId cannot be nil!');
+            }
+            return <ProblemIframe problem={new ProblemObject({ id: rowData.problemId })} setProblemStudentGrade={() => { }} workbookId={rowData.id} readonly={true} />;
+        default:
+            console.error('Problem preview can only happen for problems or attempts');
+            return <>An application error has occurred</>;
+        }
     };
 
     const resetBreadCrumbs = (selectedKey: string, newBreadcrumb?: BreadCrumbFilter) => {
