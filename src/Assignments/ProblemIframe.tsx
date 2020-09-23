@@ -7,6 +7,7 @@ import * as qs from 'querystring';
 import { postQuestionSubmission, putQuestionGrade } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import moment from 'moment';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
+import { xRayVision } from '../Utilities/NakedPromise';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
@@ -14,36 +15,6 @@ interface ProblemIframeProps {
     workbookId?: number;
     readonly?: boolean;
 }
-
-class NakedPromise<T> {
-    public promise: Promise<T>;
-    public reject!: (() => void);
-    public resolve!: (() => void);
-
-    constructor() {
-        this.promise = new Promise((resolve, reject) => {
-            this.resolve = resolve;
-            this.reject = reject;
-        });
-    }
-}
-
-const xRayVision = (f: any) => {
-    const nakedPromise = new NakedPromise();
-    return {
-        dressedFunction: function () {
-            try {
-                // down level iteration
-                //@ts-ignore
-                f(...arguments);
-            } catch (e) {
-                console.error('error occurred in parameter function', e);
-            }
-            nakedPromise.resolve();
-        }, 
-        nakedPromise,
-    };
-};
 
 /**
  * The most important part- rendering the problem.
