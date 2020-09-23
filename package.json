@@ -1,6 +1,6 @@
 {
   "name": "webwork-react-ts",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "private": true,
   "dependencies": {
     "@date-io/moment": "^1.3.13",
@@ -23,7 +23,7 @@
     "bootstrap": "^4.4.1",
     "chart.js": "^2.9.3",
     "framer-motion": "^1.10.3",
-    "from-form-submit": "^0.4.0",
+    "iframe-resizer-react": "^1.0.4",
     "jquery": "^3.5.1",
     "js-cookie": "^2.2.1",
     "lodash": "^4.17.15",

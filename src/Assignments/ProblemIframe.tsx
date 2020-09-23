@@ -8,6 +8,7 @@ import { postQuestionSubmission, putQuestionGrade } from '../APIInterfaces/Backe
 import moment from 'moment';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import { xRayVision } from '../Utilities/NakedPromise';
+import IframeResizer, { IFrameComponent } from 'iframe-resizer-react';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
@@ -29,7 +30,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     workbookId,
     readonly = false,
 }) => {
-    const iframeRef = useRef<HTMLIFrameElement>(null);
+    const iframeRef = useRef<IFrameComponent>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -187,8 +188,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             return;
         }
 
-        body.onresize = recalculateHeight;
-
         // HTMLCollectionOf is not iterable by default in Typescript.
         // const forms = iframeDoc.getElementsByTagName('form');
         // _.forEach(forms, form => form.addEventListener('submit', hijackFormSubmit));
@@ -241,13 +240,24 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         <>
             { loading && <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>}
             {error && <div>{error}</div>}
-            <iframe
+            <IframeResizer
+                // Using onInit instead of ref because:
+                // ref never get's set and a warning saying to use `forwardRef` comes up in the console
+                // Using forwardRef does not give you access to the iframe, rather it gives you access to 3 or 4 methods and properties (like `sendMessage`)
+                onInit={(iframe: IFrameComponent) => {
+                    // TODO do we need to unset the iframeref? As of right now it should not be required since it is always present within the component
+                    // If using dom elements the useRef is "Read Only", however I want control!
+                    (iframeRef as any).current = iframe;
+                    // On first load onLoadHandlers is called before the reference is set
+                    onLoadHandlers();
+                }}
                 title='Problem Frame'
-                ref={iframeRef}
                 style={{width: '100%', height: height, border: 'none', minHeight: '350px', visibility: (loading || error) ? 'hidden' : 'visible'}}
                 sandbox='allow-same-origin allow-forms allow-scripts allow-popups'
                 srcDoc={renderedHTML}
                 onLoad={onLoadHandlers}
+                checkOrigin={false}
+                scrolling={false}
             />
         </>
     );
