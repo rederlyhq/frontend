@@ -144,6 +144,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 // ref never get's set and a warning saying to use `forwardRef` comes up in the console
                 // Using forwardRef does not give you access to the iframe, rather it gives you access to 3 or 4 methods and properties (like `sendMessage`)
                 onInit={(iframe: IFrameComponent) => {
+                    // TODO do we need to unset the iframeref? As of right now it should not be required since it is always present within the component
                     // If using dom elements the useRef is "Read Only", however I want control!
                     (iframeRef as any).current = iframe;
                     // On first load onLoadHandlers is called before the reference is set
