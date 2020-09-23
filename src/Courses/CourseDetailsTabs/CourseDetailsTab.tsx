@@ -14,7 +14,7 @@ interface CourseDetailsTabProps {
     course?: CourseObject;
     loading: boolean;
     error: string | null;
-    setCourse?: (course: CourseObject) => void;
+    setCourse?: React.Dispatch<React.SetStateAction<CourseObject>>;
 }
 
 export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, loading, error, setCourse} ) => {

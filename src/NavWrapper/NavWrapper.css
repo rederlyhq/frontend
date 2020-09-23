@@ -18,9 +18,13 @@
 }
 
 /* 0.8 passes the Accessibility contrast test. */
-.navbar-dark a.dropdown-toggle.nav-link {
+.navbar-dark.footer, .navbar-dark a.dropdown-toggle.nav-link {
     color: rgba(255, 255, 255, 0.8);
 }
 .navbar-dark a.dropdown-toggle.nav-link:hover {
     color: rgba(255, 255, 255, 0.9);
+}
+
+.footer {
+    font-size: 0.8em;
 }
