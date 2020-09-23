@@ -34,7 +34,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [height, setHeight] = useState('100vh');
+    const height = '100vh';
 
     const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
@@ -165,7 +165,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }
 
     const onLoadHandlers = async () => {
-        debugger;
         const iframeDoc = iframeRef.current?.contentDocument;
         const iframeWindow = iframeRef?.current?.contentWindow as any | null | undefined;
 
