@@ -69,18 +69,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setLastSavedAt?.(null);
     }, [problem.id]);
 
-    const recalculateHeight = () => {
-        console.log('onresize was called from the iframe');
-        const iframeDoc = iframeRef.current?.contentDocument;
-        const scrollHeight = iframeDoc?.body.scrollHeight;
-        if (!scrollHeight) {
-            console.log('Problem iframe did not return a valid height on load.');
-            return;
-        }
-        console.log(`Setting Height to ${scrollHeight}`);
-        setHeight(`${scrollHeight}px`);
-    };
-
     const formDataToObject = (formData: FormData) => {
         let object:any = {};
         // downstream iterator error
@@ -106,6 +94,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         if (!_.isNil(clickedButton)) {
             formData.set(clickedButton.name, clickedButton.value);
             try {
+                // TODO: do we want to check that the submit url is accurate?
                 const result = await postQuestionSubmission({
                     id: problem.id,
                     data: formData,
@@ -176,11 +165,11 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }
 
     const onLoadHandlers = async () => {
-        if (_.isEmpty(renderedHTML)) return; // don't hang around on first visit
+        debugger;
         const iframeDoc = iframeRef.current?.contentDocument;
         const iframeWindow = iframeRef?.current?.contentWindow as any | null | undefined;
 
-        if (!iframeDoc) return;
+        if (!iframeDoc) return; // this will prevent empty renderedHTML
 
         const body = iframeDoc?.body;
         if (body === undefined) {
@@ -196,18 +185,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             insertListener(problemForm);
         } else {
             console.error('this problem has no problemMainForm'); // should NEVER happen in WW
-        }
-
-        console.log('Checking MathJax...');
-        const MathJax = iframeWindow?.MathJax;
-        if (MathJax !== undefined) {
-            console.log('Found MathJax!');
-            MathJax.Hub?.Register?.StartupHook('End', function () {
-                console.log('Recalculating because MathJax has finished computing.');
-                recalculateHeight();
-            });
-        } else {
-            console.log('Couldn\'t find MathJax!');
         }
 
         const ww_applet_list = iframeWindow?.ww_applet_list;
@@ -248,6 +225,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     // TODO do we need to unset the iframeref? As of right now it should not be required since it is always present within the component
                     // If using dom elements the useRef is "Read Only", however I want control!
                     (iframeRef as any).current = iframe;
+                    console.log('loaded iframeRef');
                     // On first load onLoadHandlers is called before the reference is set
                     onLoadHandlers();
                 }}
