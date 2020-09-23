@@ -129,7 +129,7 @@ export class StudentGrade {
     bestScore: number = 0;
     numAttempts: number = 0;
     locked: boolean = false;
-    currentProblemState?: JSON;
+    currentProblemState?: unknown;
     id?: number;
 
     public constructor(init?:Partial<ProblemObject>) {

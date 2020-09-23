@@ -15,6 +15,36 @@ interface ProblemIframeProps {
     readonly?: boolean;
 }
 
+class NakedPromise<T> {
+    public promise: Promise<T>;
+    public reject!: (() => void);
+    public resolve!: (() => void);
+
+    constructor() {
+        this.promise = new Promise((resolve, reject) => {
+            this.resolve = resolve;
+            this.reject = reject;
+        });
+    }
+}
+
+const xRayVision = (f: any) => {
+    const nakedPromise = new NakedPromise();
+    return {
+        dressedFunction: function () {
+            try {
+                // down level iteration
+                //@ts-ignore
+                f(...arguments);
+            } catch (e) {
+                console.error('error occurred in parameter function', e);
+            }
+            nakedPromise.resolve();
+        }, 
+        nakedPromise,
+    };
+};
+
 /**
  * The most important part- rendering the problem.
  * We used the document.write strategy before for backwards compatibility, but modern browsers now block it.
@@ -81,6 +111,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
     const formDataToObject = (formData: FormData) => {
         let object:any = {};
+        // downstream iterator error
         // @ts-ignore
         for(let pair of formData.entries()) {
             if (_.isUndefined(object[pair[0]])) {
@@ -100,19 +131,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         if(typeof submitAction === 'function') submitAction(); // this is a global function from renderer - prepares form field for submit
 
         let formData = new FormData(problemForm);
-        if (_.isNil(problem.grades)) {return;} // just for typescript
-        if (_.isNil(problem.grades[0])) {return;} // not enrolled
-        if (_.isNil(problem.grades[0].id)) {
-            // PANIC -- should not happen
-            setError(`No grades id for problem #${problem.id}`);
-            return;
-        }
-        const submiturl = _.isNil(clickedButton) ? `/backend-api/courses/question/grade/${problem.grades[0].id}` : problemForm.getAttribute('action');
-        if(_.isNil(submiturl)) {
-            setError('An error occurred');
-            console.error('Hijacker: Couldn\'t find the submit URL');
-            return;
-        }
         if (!_.isNil(clickedButton)) {
             formData.set(clickedButton.name, clickedButton.value);
             try {
@@ -132,8 +150,14 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 setError(e.message);
                 return;
             }
-            // submit response
         } else {
+            if (_.isNil(problem.grades)) {return;} // TODO: impossi-log console.error()
+            if (_.isNil(problem.grades[0])) {return;} // not enrolled - do not save
+            if (_.isNil(problem.grades[0].id)) {
+                // TODO: impossi-log console.error()
+                setError(`No grades id for problem #${problem.id}`);
+                return;
+            }    
             const reqBody = {
                 currentProblemState: formDataToObject(formData)
             };
@@ -152,18 +176,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         }
     }
 
-    function insertListener() {
-        // assuming global problemiframe - too sloppy?
-        let problemForm = iframeRef?.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
-        // don't croak when the empty iframe is first loaded
-        // problably not an issue for rederly/frontend
-        if (_.isNil(problemForm)) {
-            // This will happen, if you set error then it will never be true and breaks the page
-            // setError('An error occurred');
-            // console.error('Hijacker: Could not find the form to insert the listener');
-            return;
-        }
-
+    function insertListener(problemForm: HTMLFormElement) {
         problemForm.addEventListener('submit', _.debounce((event: { preventDefault: () => void; }) => {
             event.preventDefault();
             if (_.isNil(problemForm)) {
@@ -177,12 +190,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 console.error('Could not find the button that submitted the form');
                 return;
             }
-            console.log('preparing formdata and submitting!');
             prepareAndSubmit(problemForm, clickedButton);
         }, 4000, {leading: true, trailing:false}));
 
-        problemForm.addEventListener('input', _.debounce((event: { preventDefault: () => void; }) => {
-            event.preventDefault();
+        problemForm.addEventListener('input', _.debounce(() => {
             if (_.isNil(problemForm)) {
                 console.error('Hijacker: Could not find the form when submitting the form');
                 setError('An error occurred');
@@ -192,8 +203,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         }, 2000));
     }
 
-    const onLoadHandlers = () => {
+    const onLoadHandlers = async () => {
+        if (_.isEmpty(renderedHTML)) return; // don't hang around on first visit
         const iframeDoc = iframeRef.current?.contentDocument;
+        const iframeWindow = iframeRef?.current?.contentWindow as any | null | undefined;
 
         if (!iframeDoc) return;
 
@@ -208,10 +221,15 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         // HTMLCollectionOf is not iterable by default in Typescript.
         // const forms = iframeDoc.getElementsByTagName('form');
         // _.forEach(forms, form => form.addEventListener('submit', hijackFormSubmit));
-        insertListener();
+        let problemForm = iframeWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
+        if (!_.isNil(problemForm)) {
+            insertListener(problemForm);
+        } else {
+            console.error('this problem has no problemMainForm'); // should NEVER happen in WW
+        }
 
         console.log('Checking MathJax...');
-        const MathJax = (iframeRef.current?.contentWindow as any)?.MathJax;
+        const MathJax = iframeWindow?.MathJax;
         if (MathJax !== undefined) {
             console.log('Found MathJax!');
             MathJax.Hub?.Register?.StartupHook('End', function () {
@@ -220,6 +238,29 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             });
         } else {
             console.log('Couldn\'t find MathJax!');
+        }
+
+        const ww_applet_list = iframeWindow?.ww_applet_list;
+        if (!_.isNil(ww_applet_list)) {
+    
+            const promises = Object.keys(ww_applet_list).map( async (key: string) => {
+                const initFunctionName = ww_applet_list[key].onInit;
+                // stash original ggbOnInit, then spy on it with a Promise
+                const onInitOriginal = iframeWindow?.[initFunctionName];
+                const { dressedFunction: dressedInit, nakedPromise } = xRayVision(onInitOriginal);
+                iframeWindow[initFunctionName] = dressedInit;
+
+                // getApplet(key) will not resolve until after ggbOnInit runs
+                await nakedPromise.promise;
+
+                const {getApplet} = iframeWindow;
+                // null check getApplet
+                getApplet(key).registerUpdateListener?.(_.debounce(()=>{
+                    ww_applet_list[key].submitAction();
+                    problemForm.dispatchEvent(new Event('input'));
+                },3000));
+            }); 
+            await Promise.all(promises);       
         }
 
         setLoading(false);
