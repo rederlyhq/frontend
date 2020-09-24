@@ -221,12 +221,16 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 // ref never get's set and a warning saying to use `forwardRef` comes up in the console
                 // Using forwardRef does not give you access to the iframe, rather it gives you access to 3 or 4 methods and properties (like `sendMessage`)
                 onInit={(iframe: IFrameComponent) => {
-                    // TODO do we need to unset the iframeref? As of right now it should not be required since it is always present within the component
-                    // If using dom elements the useRef is "Read Only", however I want control!
-                    (iframeRef as any).current = iframe;
-                    console.log('loaded iframeRef');
-                    // On first load onLoadHandlers is called before the reference is set
-                    onLoadHandlers();
+                    if (iframeRef.current !== iframe) {
+                        // TODO do we need to unset the iframeref? As of right now it should not be required since it is always present within the component
+                        // If using dom elements the useRef is "Read Only", however I want control!
+                        (iframeRef as any).current = iframe;
+                        // On first load onLoadHandlers is called before the reference is set
+                        onLoadHandlers();
+                    } else {
+                        // TODO I would like a logging framework that stripped these
+                        // console.debug('Reference did not change, do not call on load, that is a workaround for first load anyway');
+                    }
                 }}
                 title='Problem Frame'
                 style={{width: '100%', height: height, border: 'none', minHeight: '350px', visibility: (loading || error) ? 'hidden' : 'visible'}}
