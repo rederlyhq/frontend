@@ -94,7 +94,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         if (!_.isNil(clickedButton)) {
             formData.set(clickedButton.name, clickedButton.value);
             try {
-                // TODO: do we want to check that the submit url is accurate?
                 const result = await postQuestionSubmission({
                     id: problem.id,
                     data: formData,
@@ -181,6 +180,14 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         // _.forEach(forms, form => form.addEventListener('submit', hijackFormSubmit));
         let problemForm = iframeWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
         if (!_.isNil(problemForm)) {
+            // check that the submit url is accurate
+            const submitUrl = problemForm.getAttribute('action');
+            const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
+            if (checkId && parseInt(checkId[1],10) != problem.id) {
+                console.error('Something went wrong. This problem is reporting an ID that is incorrect');
+                setError('This problem ID is out of sync.');
+                return;
+            }
             insertListener(problemForm);
         } else {
             console.error('this problem has no problemMainForm'); // should NEVER happen in WW
