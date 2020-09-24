@@ -1,4 +1,4 @@
-import { Drawer } from '@material-ui/core';
+import { Drawer, Grid } from '@material-ui/core';
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import MaterialTriSelect from '../../Components/MaterialTriSelect';
@@ -9,7 +9,7 @@ interface SettingsPageProps {
 }
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({}) => {
-    const {course, setter: setCourse} = useCourseContext();
+    const {course, setCourse, users, setUsers} = useCourseContext();
 
     return (
         <Container>
@@ -18,14 +18,18 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({}) => {
                     <h1>Course/Individual Settings</h1>
                 </Col>
             </Row>
-            <MaterialTriSelect course={course} />
+            <MaterialTriSelect course={course} users={users} />
             <Drawer 
                 anchor='bottom' 
                 open={true} 
                 onClose={()=>{}}
                 variant="persistent"
             >
-                TODO.
+                <Grid container>
+                    <Grid item>
+                        TODO
+                    </Grid>
+                </Grid>
             </Drawer>
         </Container>
     );

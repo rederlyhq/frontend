@@ -1,14 +1,30 @@
 import { Grid } from '@material-ui/core';
-import React, { useState } from 'react';
-import { CourseObject, UnitObject } from '../Courses/CourseInterfaces';
+import { AnimatePresence, motion } from 'framer-motion';
+import _ from 'lodash';
+import React, { useEffect, useState } from 'react';
+import { CourseObject, UnitObject, UserObject, TopicObject, ProblemObject, SettingsComponentType } from '../Courses/CourseInterfaces';
 import MultiSelectCardList from './MultiSelectCardList';
 
 interface MaterialTriSelectProps {
     course: CourseObject;
+    users: UserObject[];
 }
 
-export const MaterialTriSelect: React.FC<MaterialTriSelectProps> = ({course}) => {
-    const [courseWithSelection, setCourseWithSelection] = useState<CourseObject>(course);
+export const MaterialTriSelect: React.FC<MaterialTriSelectProps> = ({course, users}) => {
+    const [selected, setSelected] = useState<{
+        unit: UnitObject | undefined, topic: TopicObject | undefined, problem: ProblemObject | undefined, user: UserObject | undefined
+    }>({unit: undefined, topic: undefined, problem: undefined, user: undefined});
+
+    const onItemClick = (type: SettingsComponentType) => {
+        if (type instanceof UnitObject)
+            setSelected({unit: type, topic: undefined, problem: undefined, user: selected.user});
+        else if (type instanceof TopicObject)
+            setSelected({unit: selected.unit, topic: type, problem: undefined, user: selected.user});
+        else if (type instanceof ProblemObject)
+            setSelected({unit: selected.unit, topic: selected.topic, problem: type, user: selected.user});
+        else if (type instanceof UserObject)
+            setSelected({unit: selected.unit, topic: selected.topic, problem: selected.problem, user: type});
+    };
 
     return (
         <Grid container justify="center" spacing={3} wrap="nowrap">
@@ -16,28 +32,48 @@ export const MaterialTriSelect: React.FC<MaterialTriSelectProps> = ({course}) =>
                 <MultiSelectCardList 
                     title='Units'
                     listItems={course.units} 
-                    onItemClick={()=>{}}    
+                    onItemClick={onItemClick}
+                    selected={selected.unit}
                 />
             </Grid>
-            <Grid item md={3}>
-                <MultiSelectCardList 
-                    title='Topics'
-                    listItems={[new UnitObject({id: 1, name: 'Topic 1'}), new UnitObject({id: 2, name: 'Topic 2'})]} 
-                    onItemClick={()=>{}}    
-                />
-            </Grid>
-            <Grid item md={3}>
-                <MultiSelectCardList 
-                    title='Problems'
-                    listItems={[new UnitObject({id: 1, name: 'Problem 1'}), new UnitObject({id: 2, name: 'Problem 2'})]} 
-                    onItemClick={()=>{}}    
-                />
-            </Grid>
+            <AnimatePresence>
+                {selected.unit !== undefined && <Grid item md={3}>
+                    <motion.div
+                        initial={{scale: 0}}
+                        animate={{scale: 1}}
+                        exit={{scale: 0}}
+                    >
+                        <MultiSelectCardList 
+                            title='Topics'
+                            listItems={selected.unit.topics} 
+                            onItemClick={onItemClick}
+                            selected={selected.topic}
+                        />
+                    </motion.div>
+                </Grid>}
+            </AnimatePresence>
+            <AnimatePresence>
+                {selected.topic !== undefined && <Grid item md={3}>
+                    <motion.div
+                        initial={{scale: 0}}
+                        animate={{scale: 1}}
+                        exit={{scale: 0}}
+                    >
+                        <MultiSelectCardList 
+                            title='Problems'
+                            listItems={selected.topic.questions} 
+                            onItemClick={onItemClick}
+                            selected={selected.problem}
+                        />
+                    </motion.div>
+                </Grid>}
+            </AnimatePresence>
             <Grid item md={3}>
                 <MultiSelectCardList 
                     title='Users'
-                    listItems={[new UnitObject({id: 1, name: 'User 1'}), new UnitObject({id: 2, name: 'User 2'})]} 
-                    onItemClick={()=>{}}    
+                    listItems={users} 
+                    onItemClick={onItemClick}
+                    selected={selected.user}
                 />
             </Grid>
         </Grid>

@@ -1,8 +1,9 @@
 import { Backdrop, CircularProgress } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { getUsersForCourse } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import AxiosRequest from '../Hooks/AxiosRequest';
-import { CourseObject } from './CourseInterfaces';
+import { CourseObject, UserObject } from './CourseInterfaces';
 
 interface CourseProviderProps {
     children: React.ReactNode
@@ -10,12 +11,16 @@ interface CourseProviderProps {
 
 const CourseContext = React.createContext<{
         course: CourseObject, 
-        setter: React.Dispatch<React.SetStateAction<CourseObject>> | undefined,
-        error: string | null
+        setCourse: React.Dispatch<React.SetStateAction<CourseObject>> | undefined,
+        error: string | null,
+        users: UserObject[],
+        setUsers: React.Dispatch<React.SetStateAction<UserObject[]>> | undefined,
     }>({
         course: new CourseObject(), 
-        setter: undefined,
+        setCourse: undefined,
         error: null,
+        users: [],
+        setUsers: undefined,
     });
 
 export const useCourseContext = () => React.useContext(CourseContext);
@@ -23,6 +28,7 @@ export const useCourseContext = () => React.useContext(CourseContext);
 export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
     const { courseId } = useParams<{courseId: string | undefined}>();
     const [course, setCourse] = useState<CourseObject>(new CourseObject());
+    const [users, setUsers] = useState<UserObject[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -32,9 +38,18 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
             setLoading(true);
             setError(null);
             try {
-                const courseResp = await AxiosRequest.get(`/courses/${courseId}`);
-                const fetchedCourse = new CourseObject(courseResp.data.data);
-                setCourse(fetchedCourse);
+                const courseRespPromise = AxiosRequest.get(`/courses/${courseId}`);
+                const userRespPromise = getUsersForCourse({courseId: parseInt(courseId, 10)});
+
+                const [courseResp, userResp] = await Promise.all([courseRespPromise, userRespPromise]);
+                setCourse(new CourseObject(courseResp.data.data));
+
+                const usersArr = [];
+                for (let user of userResp.data.data) {
+                    usersArr.push(new UserObject(user));
+                }
+
+                setUsers(usersArr);
             } catch (e) {
                 setError(e.response.data.message);
                 console.error(e);
@@ -44,7 +59,7 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
     }, [courseId]);
 
     return (
-        <CourseContext.Provider value={{course, setter: setCourse, error}}>
+        <CourseContext.Provider value={{course, setCourse, error, users, setUsers}}>
             <Backdrop open={loading}>
                 <CircularProgress/>
             </Backdrop>

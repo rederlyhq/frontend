@@ -21,3 +21,7 @@ export interface PostLoginOptions {
 export interface PostResendVerificationOptions {
     email: string;
 }
+
+export interface GetUsersOptions {
+    courseId: number;
+}

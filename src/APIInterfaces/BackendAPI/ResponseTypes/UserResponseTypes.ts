@@ -15,3 +15,6 @@ export type PostLoginResponse = AxiosResponse<PostLogin>;
 
 type PostResendVerification = any;
 export type PostResendVerificationResponse = AxiosResponse<PostResendVerification>;
+
+type GetUser = any;
+export type GetUserResponse = AxiosResponse<GetUser>;

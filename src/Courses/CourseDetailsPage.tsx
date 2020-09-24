@@ -32,7 +32,7 @@ export const courseContext = React.createContext(new CourseObject());
  *
  */
 export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
-    const {course, setter: setCourse, error} = useCourseContext();
+    const {course, setCourse, error} = useCourseContext();
     const [activeTab, setActiveTab] = useState<CourseDetailsTabs>(CourseDetailsTabs.DETAILS);
     const userType: UserRole = getUserRole();
     const userId: number = getUserId();
@@ -64,7 +64,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                         <TopicsTab course={course} setCourse={setCourse} />
                     </Tab>
                     <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
-                        <EnrollmentsTab courseId={course.id} courseCode={course.code} />
+                        <EnrollmentsTab />
                     </Tab>
                     <Tab eventKey={CourseDetailsTabs.GRADES} title={CourseDetailsTabs.GRADES}>
                         {/* Students' Grades view is really the statisics view. */}
