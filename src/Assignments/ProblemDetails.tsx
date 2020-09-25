@@ -141,16 +141,26 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                             if (_.isNil(problem)) {
                                 return null;
                             }
-
-                            let message = null;
                             if (problem.weight > 0) {
                                 // has weight (and maybe optional)
-                                message = `This problem is worth ${problem.weight}${problem.optional ? ' extra credit' : ''} point${problem.weight === 1 ? '' : 's'}.`;
+                                return `This problem is worth ${problem.weight}${problem.optional ? ' extra credit' : ''} point${problem.weight === 1 ? '' : 's'}.`;
                             } else if (problem.optional) {
                                 // optional and no weight
-                                message = 'This problem is optional.';
+                                return 'This problem is optional.';
+                            } 
+                        })()}
+                    </div>
+                    <div className="d-flex">
+                        {(() => {
+                            if (maxAttempts <= INFINITE_MAX_ATTEMPT_VALUE) {
+                                return 'This question does not have an attempt limit.';
+                            } else {
+                                if (_.isNil(usedAttempts)) {
+                                    return `This problem allows ${maxAttempts} attempt${maxAttempts === 1 ? '' : 's'}.`;
+                                }
+                                const remainingAttempts = maxAttempts - usedAttempts;
+                                return `You have ${Math.max(remainingAttempts, 0)} graded attempt${remainingAttempts === 1 ? '' : 's'} remaining.`;
                             }
-                            return message;
                         })()}
                     </div>
                     {_.isNil(grade) ? null : (

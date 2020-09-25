@@ -128,6 +128,7 @@ export class StudentGrade {
     effectiveScore: number = 0;
     bestScore: number = 0;
     numAttempts: number = 0;
+    numLegalAttempts: number = 0;
     locked: boolean = false;
     currentProblemState?: unknown;
     id?: number;
