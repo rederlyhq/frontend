@@ -126,7 +126,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                     return `This problem allows ${maxAttempts} attempt${maxAttempts === 1 ? '' : 's'}.`;
                                 }
                                 const remainingAttempts = maxAttempts - usedAttempts;
-                                return `You have ${remainingAttempts} graded attempt${remainingAttempts === 1 ? '' : 's'} remaining.`;
+                                return `You have ${Math.max(remainingAttempts, 0)} graded attempt${remainingAttempts === 1 ? '' : 's'} remaining.`;
                             }
                         })()}
                     </div>
