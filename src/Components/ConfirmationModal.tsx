@@ -9,6 +9,23 @@ interface ComponentToggleButtonProps {
     onConfirm: () => unknown;
     confirmText?: string;
     cancelText?: string;
+    confirmVariant?: | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'danger'
+    | 'warning'
+    | 'info'
+    | 'dark'
+    | 'light'
+    | 'link'
+    | 'outline-primary'
+    | 'outline-secondary'
+    | 'outline-success'
+    | 'outline-danger'
+    | 'outline-warning'
+    | 'outline-info'
+    | 'outline-dark'
+    | 'outline-light';
 }
 
 export const ConfirmationModal: React.FC<ComponentToggleButtonProps> = ({
@@ -18,6 +35,7 @@ export const ConfirmationModal: React.FC<ComponentToggleButtonProps> = ({
     bodyContent = 'Are you sure?',
     confirmText = 'Confirm',
     cancelText = 'Cancel',
+    confirmVariant = 'primary',
     onConfirm
 }) => {
     return (
@@ -35,7 +53,7 @@ export const ConfirmationModal: React.FC<ComponentToggleButtonProps> = ({
                 <Button variant="secondary" onClick={onHide}>
                     {cancelText}
                 </Button>
-                <Button variant="primary" onClick={onConfirm}>
+                <Button variant={confirmVariant} onClick={onConfirm}>
                     {confirmText}
                 </Button>
             </Modal.Footer>

@@ -1,4 +1,4 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
@@ -14,6 +14,7 @@ const COURSE_QUESTION_PATH = url.resolve(COURSE_PATH, 'question/');
 const COURSE_QUESTION_GRADE_PATH = url.resolve(COURSE_QUESTION_PATH, 'grade/');
 const COURSE_QUESTIONS_PATH = url.resolve(COURSE_PATH, 'questions/');
 const COURSE_DEF_PATH = url.resolve(COURSE_PATH, 'def/');
+const COURSE_ENROLL_PATH = url.resolve(COURSE_PATH, 'enroll/');
 
 /* *************** *************** */
 /* *********** Courses *********** */
@@ -252,6 +253,23 @@ export const getQuestions = async ({
                 courseTopicContentId
             }
         });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const deleteEnrollment = async ({
+    userId, courseId
+}: DeleteEnrollmentOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.delete(
+            COURSE_ENROLL_PATH,
+            {
+                data: {
+                    userId, courseId
+                }
+            }
+        );
     } catch (e) {
         throw new BackendAPIError(e);
     }

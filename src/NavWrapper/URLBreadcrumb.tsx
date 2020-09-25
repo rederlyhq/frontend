@@ -43,7 +43,7 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
             const to = `/${pathnames.slice(0, i + 1).join('/')}`;
             arr.push((<span style={{padding: '0em 1em 0em 1em' }}>/</span>));
             arr.push((
-                <MaterialLink component={Link} to={to}>
+                <MaterialLink key={`Link${to}`} component={Link} to={to}>
                     {/* {pathnames[i] ? `${m} ${pathnames[i]}` : m} */}
                     {m}
                 </MaterialLink>
@@ -54,7 +54,7 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
 
     return (
         <Breadcrumb aria-label='breadcrumb'>
-            <MaterialLink component={Link} to='/common/courses'>
+            <MaterialLink key='Link/common/courses' component={Link} to='/common/courses'>
                 My Courses
             </MaterialLink>
             { genStatefulCrumbs() }
