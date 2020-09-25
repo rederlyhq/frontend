@@ -8,22 +8,26 @@ import MultiSelectCardList from './MultiSelectCardList';
 interface MaterialTriSelectProps {
     course: CourseObject;
     users: UserObject[];
+    selected: {unit: UnitObject | undefined, topic: TopicObject | undefined, problem: ProblemObject | undefined, user: UserObject | undefined};
+    setSelected: React.Dispatch<React.SetStateAction<{
+        unit: UnitObject | undefined;
+        topic: TopicObject | undefined;
+        problem: ProblemObject | undefined;
+        user: UserObject | undefined;
+    }>>
 }
 
-export const MaterialTriSelect: React.FC<MaterialTriSelectProps> = ({course, users}) => {
-    const [selected, setSelected] = useState<{
-        unit: UnitObject | undefined, topic: TopicObject | undefined, problem: ProblemObject | undefined, user: UserObject | undefined
-    }>({unit: undefined, topic: undefined, problem: undefined, user: undefined});
-
+export const MaterialTriSelect: React.FC<MaterialTriSelectProps> = ({course, users, selected, setSelected}) => {
     const onItemClick = (type: SettingsComponentType) => {
-        if (type instanceof UnitObject)
+        if (type instanceof UnitObject) {
             setSelected({unit: type, topic: undefined, problem: undefined, user: selected.user});
-        else if (type instanceof TopicObject)
+        } else if (type instanceof TopicObject) {
             setSelected({unit: selected.unit, topic: type, problem: undefined, user: selected.user});
-        else if (type instanceof ProblemObject)
+        } else if (type instanceof ProblemObject) {
             setSelected({unit: selected.unit, topic: selected.topic, problem: type, user: selected.user});
-        else if (type instanceof UserObject)
+        } else if (type instanceof UserObject) {
             setSelected({unit: selected.unit, topic: selected.topic, problem: selected.problem, user: type});
+        }
     };
 
     return (

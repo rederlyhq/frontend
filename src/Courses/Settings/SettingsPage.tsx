@@ -1,8 +1,12 @@
 import { Drawer, Grid } from '@material-ui/core';
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import MaterialTriSelect from '../../Components/MaterialTriSelect';
 import { useCourseContext } from '../CourseProvider';
+import { OverridesForm } from './OverridesForm';
+import { CourseObject, UnitObject, UserObject, TopicObject, ProblemObject, SettingsComponentType } from '../CourseInterfaces';
+
+import './SettingsPage.css';
 
 interface SettingsPageProps {
 
@@ -10,6 +14,9 @@ interface SettingsPageProps {
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({}) => {
     const {course, setCourse, users, setUsers} = useCourseContext();
+    const [selected, setSelected] = useState<{
+        unit: UnitObject | undefined, topic: TopicObject | undefined, problem: ProblemObject | undefined, user: UserObject | undefined
+    }>({unit: undefined, topic: undefined, problem: undefined, user: undefined});
 
     return (
         <Container>
@@ -18,16 +25,17 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({}) => {
                     <h1>Course/Individual Settings</h1>
                 </Col>
             </Row>
-            <MaterialTriSelect course={course} users={users} />
+            <MaterialTriSelect course={course} users={users} selected={selected} setSelected={setSelected} />
             <Drawer 
                 anchor='bottom' 
-                open={true} 
+                open={!!(selected.user && selected.unit)} 
                 onClose={()=>{}}
                 variant="persistent"
+                SlideProps={{style: {height: '20rem', backgroundColor: 'rgb(52, 58, 64)', color: 'rgba(255, 255, 255, 0.8)'}}}
             >
                 <Grid container>
-                    <Grid item>
-                        TODO
+                    <Grid container item>
+                        <OverridesForm />
                     </Grid>
                 </Grid>
             </Drawer>
