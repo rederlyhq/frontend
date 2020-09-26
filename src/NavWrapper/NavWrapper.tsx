@@ -83,7 +83,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
             <Container fluid role='main'>
                 <Provider value={{userType: getUserRole()}}>    
                     <AnimatePresence exitBeforeEnter initial={false}>
-                        <URLBreadcrumb/>
+                        <URLBreadcrumb key='URLBreadcrumb' />
                         <Switch>
                             <Route exact path={`${path}/account`}>
                                 <AccountWrapper />

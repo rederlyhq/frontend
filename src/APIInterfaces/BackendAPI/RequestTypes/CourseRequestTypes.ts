@@ -80,3 +80,8 @@ export interface GetQuestionsOptions {
     userId: number | 'me';
     courseTopicContentId: number;
 }
+
+export interface DeleteEnrollmentOptions {
+    userId: number;
+    courseId: number;
+}
