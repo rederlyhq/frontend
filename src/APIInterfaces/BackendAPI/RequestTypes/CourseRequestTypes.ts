@@ -1,4 +1,5 @@
 import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject, NewCourseUnitObj, StudentGrade } from '../../../Courses/CourseInterfaces';
+import { Moment } from 'moment';
 
 /* *************** *************** */
 /* *********** Courses *********** */
@@ -43,6 +44,12 @@ export interface PutCourseTopicOptions {
 
 export interface DeleteCourseTopicOptions {
     id: number;
+}
+
+export interface ExtendCourseTopicForUser {
+    courseTopicContentId: number;
+    userId: number;
+    extensions: {startDate: Moment, endDate: Moment, deadDate: Moment};
 }
 
 /* *************** *************** */

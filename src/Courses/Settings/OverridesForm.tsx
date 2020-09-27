@@ -1,25 +1,35 @@
-import { Grid, TextField } from '@material-ui/core';
+import { Grid, TextField, Button } from '@material-ui/core';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import MomentUtils from '@date-io/moment';
-import moment from 'moment';
+import moment, { Moment } from 'moment';
+import { extendTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 type Inputs = {
-  example: string,
-  exampleRequired: string,
+    startDate: Moment;
+    endDate: Moment;
+    deadDate: Moment;
 };
 
 interface OverridesFormProps {
-
+    courseTopicContentId: number;
+    userId: number;
 }
 
-export const OverridesForm: React.FC<OverridesFormProps> = ({}) => {
+export const OverridesForm: React.FC<OverridesFormProps> = ({courseTopicContentId, userId}) => {
     const { register, handleSubmit, watch, errors, control } = useForm<Inputs>();
-    const onSubmit = (data: any) => console.log(data);
-  
-    console.log(watch('startDate')); // watch input value by passing the name of it
+
+    const onSubmit = async (extensions: {startDate: Moment, endDate: Moment, deadDate: Moment}) => {
+        console.log(extensions);
+        try {
+            const res = await extendTopic({courseTopicContentId, userId, extensions});
+            console.log(res)
+        } catch (e) {
+            console.error(e);
+        }
+    };
   
     return (
         <form onSubmit={handleSubmit(onSubmit)} style={{width: '100%'}}>
@@ -88,7 +98,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({}) => {
                     </MuiPickersUtilsProvider>
                 </Grid>
             
-                <input type="submit" />
+                <Button type="submit">Confirm Extension</Button>
             </Grid>
         </form>
     );
