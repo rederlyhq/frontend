@@ -130,6 +130,7 @@ export class StudentGrade {
     numAttempts: number = 0;
     numLegalAttempts: number = 0;
     locked: boolean = false;
+    currentProblemState?: unknown;
     id?: number;
 
     public constructor(init?:Partial<ProblemObject>) {
