@@ -6,6 +6,7 @@ import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import MomentUtils from '@date-io/moment';
 import moment, { Moment } from 'moment';
 import { extendTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import _ from 'lodash';
 
 type Inputs = {
     startDate: Moment;
@@ -14,91 +15,111 @@ type Inputs = {
 };
 
 interface OverridesFormProps {
-    courseTopicContentId: number;
     userId: number;
+    courseTopicContentId?: number;
 }
 
 export const OverridesForm: React.FC<OverridesFormProps> = ({courseTopicContentId, userId}) => {
     const { register, handleSubmit, watch, errors, control } = useForm<Inputs>();
+    const drawerFontSize = '1.4em';
+
+    const updateTopic = async (courseTopicContentId: number, userId: number, extensions: {startDate: Moment, endDate: Moment, deadDate: Moment}) => {
+        try {
+            const res = await extendTopic({courseTopicContentId, userId, extensions});
+            console.log(res);
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    };
 
     const onSubmit = async (extensions: {startDate: Moment, endDate: Moment, deadDate: Moment}) => {
         console.log(extensions);
-        try {
-            const res = await extendTopic({courseTopicContentId, userId, extensions});
-            console.log(res)
-        } catch (e) {
-            console.error(e);
+        if (!_.isNil(courseTopicContentId)) {
+            updateTopic(courseTopicContentId, userId, extensions);
         }
     };
   
     return (
-        <form onSubmit={handleSubmit(onSubmit)} style={{width: '100%'}}>
-            <Grid container>
-                {/* <Grid item>
-                    <TextField inputRef={register} name="Max Attempt"/>
-                </Grid> */}
-
-                <Grid item md={4}>
-                    <MuiPickersUtilsProvider utils={MomentUtils}>
-                        <Controller
-                            as={<KeyboardDatePicker value="" onChange={() => {}} />}
-                            name="startDate"
-                            control={control}
-                            defaultValue={moment()}
-                            autoOk
-                            variant="inline"
-                            format="MM/DD/yyyy"
-                            KeyboardButtonProps={{
-                                'aria-label': 'change date',
-                            }}
-                            fullWidth={true}
-                            InputLabelProps={{ shrink: false, color: 'rgba(255, 255, 255, 0.8)' }}
-                            inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)' } }}
-                        />
-                    </MuiPickersUtilsProvider>
+        <form onSubmit={handleSubmit(onSubmit)} style={{width: '100%', marginTop: '1.5rem'}}>
+            <Grid container justify='center'>
+                <Grid container item md={6} spacing={2}>
+                    {/* <Grid item>
+                        <TextField inputRef={register} name="Max Attempt"/>
+                    </Grid> */}
+    
+                    <Grid item md={12}>
+                        <MuiPickersUtilsProvider utils={MomentUtils}>
+                            <Controller
+                                as={<KeyboardDatePicker value="" onChange={() => {}} />}
+                                name="startDate"
+                                control={control}
+                                defaultValue={moment()}
+                                autoOk
+                                variant="inline"
+                                format="MM/DD/yyyy"
+                                KeyboardButtonProps={{
+                                    'aria-label': 'change date',
+                                }}
+                                fullWidth={true}
+                                label='Start Date'
+                                InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
+                                inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
+                            />
+                        </MuiPickersUtilsProvider>
+                    </Grid>
+    
+                    <Grid item md={12}>
+                        <MuiPickersUtilsProvider utils={MomentUtils}>
+                            <Controller
+                                as={<KeyboardDatePicker value="" onChange={() => {}} />}
+                                name="endDate"
+                                control={control}
+                                defaultValue={moment()}
+                                autoOk
+                                variant="inline"
+                                format="MM/DD/yyyy"
+                                KeyboardButtonProps={{
+                                    'aria-label': 'change date',
+                                }}
+                                fullWidth={true}
+                                label='End Date'
+                                InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
+                                inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
+                                // minDate={}
+                            />
+                        </MuiPickersUtilsProvider>
+                    </Grid>
+                
+                    <Grid item md={12}>
+                        <MuiPickersUtilsProvider utils={MomentUtils}>
+                            <Controller
+                                as={<KeyboardDatePicker value="" onChange={() => {}} />}
+                                name="deadDate"
+                                control={control}
+                                defaultValue={moment()}
+                                autoOk
+                                variant="inline"
+                                format="MM/DD/yyyy"
+                                KeyboardButtonProps={{
+                                    'aria-label': 'change date',
+                                }}
+                                fullWidth={true}
+                                label='Dead Date'
+                                InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
+                                inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
+                                // minDate={}
+                            />
+                        </MuiPickersUtilsProvider>
+                    </Grid>
+                    
+                    <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
+                        <Grid item>
+                            <Button variant="contained" color='primary' type="submit" style={{fontSize: '1.2em'}}>Confirm Extension</Button>
+                        </Grid>
+                    
+                    </Grid>
                 </Grid>
-
-                <Grid item md={4}>
-                    <MuiPickersUtilsProvider utils={MomentUtils}>
-                        <Controller
-                            as={<KeyboardDatePicker value="" onChange={() => {}} />}
-                            name="endDate"
-                            control={control}
-                            defaultValue={moment()}
-                            autoOk
-                            variant="inline"
-                            format="MM/DD/yyyy"
-                            KeyboardButtonProps={{
-                                'aria-label': 'change date',
-                            }}
-                            fullWidth={true}
-                            InputLabelProps={{ shrink: false, color: 'rgba(255, 255, 255, 0.8)' }}
-                            inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)' } }}
-                        />
-                    </MuiPickersUtilsProvider>
-                </Grid>
-            
-                <Grid item md={4}>
-                    <MuiPickersUtilsProvider utils={MomentUtils}>
-                        <Controller
-                            as={<KeyboardDatePicker value="" onChange={() => {}} />}
-                            name="deadDate"
-                            control={control}
-                            defaultValue={moment()}
-                            autoOk
-                            variant="inline"
-                            format="MM/DD/yyyy"
-                            KeyboardButtonProps={{
-                                'aria-label': 'change date',
-                            }}
-                            fullWidth={true}
-                            InputLabelProps={{ shrink: false, color: 'rgba(255, 255, 255, 0.8)' }}
-                            inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)' } }}
-                        />
-                    </MuiPickersUtilsProvider>
-                </Grid>
-            
-                <Button type="submit">Confirm Extension</Button>
             </Grid>
         </form>
     );

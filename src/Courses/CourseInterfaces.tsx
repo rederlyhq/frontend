@@ -107,6 +107,7 @@ export class NewCourseTopicObj extends TopicObject {
     endDate: Date = new Date();
     deadDate: Date = new Date();
     partialExtend: boolean = false;
+    studentTopicOverride: any[] = [];
 
     public constructor(init?:Partial<NewCourseTopicObj>) {
         super(init);

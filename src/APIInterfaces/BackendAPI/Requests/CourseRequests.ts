@@ -10,7 +10,6 @@ import { BackendAPIResponse } from '../BackendAPIResponse';
 const COURSE_PATH = '/courses/';
 const COURSE_UNIT_PATH = url.resolve(COURSE_PATH, 'unit/');
 const COURSE_TOPIC_PATH = url.resolve(COURSE_PATH, 'topic/');
-const COURSE_TOPIC_EXTEND_PATH = url.resolve(COURSE_TOPIC_PATH, 'extend/');
 const COURSE_QUESTION_PATH = url.resolve(COURSE_PATH, 'question/');
 const COURSE_QUESTION_GRADE_PATH = url.resolve(COURSE_QUESTION_PATH, 'grade/');
 const COURSE_QUESTIONS_PATH = url.resolve(COURSE_PATH, 'questions/');
@@ -156,16 +155,13 @@ export const extendTopic = async ({
     extensions
 }: ExtendCourseTopicForUser): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
-        return await AxiosRequest.post(
-            url.resolve(
-                COURSE_TOPIC_EXTEND_PATH,
-                `courseTopicContentId=${courseTopicContentId}&userId=${userId}`
-            ), extensions
-        )
+        return await AxiosRequest.put(
+            `${COURSE_TOPIC_PATH}/extend?courseTopicContentId=${courseTopicContentId}&userId=${userId}`, extensions
+        );
     } catch (e) {
         throw new BackendAPIError(e);
     }
-}
+};
 
 /* *************** *************** */
 /* ********** Questions ********** */

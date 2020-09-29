@@ -15,7 +15,7 @@ const renderCard = (item: SettingsComponentType) => {
         const pgPathArr = item.webworkQuestionPath.split('/');
         const pgPath = pgPathArr[pgPathArr.length-1];
         return (
-            `Problem ${item.problemNumber} (${pgPath})`
+            <span title={pgPath}>{`Problem ${item.problemNumber} (${item.id})`}</span>
         );
     }
     return item.name;

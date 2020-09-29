@@ -27,15 +27,18 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({}) => {
             </Row>
             <MaterialTriSelect course={course} users={users} selected={selected} setSelected={setSelected} />
             <Drawer 
+                className='black-drawer'
                 anchor='bottom' 
-                open={!!(selected.user && selected.unit)} 
+                open={!!(selected.user && selected.topic)} 
                 onClose={()=>{}}
                 variant="persistent"
                 SlideProps={{style: {height: '20rem', backgroundColor: 'rgb(52, 58, 64)', color: 'rgba(255, 255, 255, 0.8)'}}}
             >
                 <Grid container>
                     <Grid container item>
-                        <OverridesForm />
+                        { selected.user && (
+                            <OverridesForm courseTopicContentId={selected?.topic?.id} userId={selected.user.id} />
+                        )}
                     </Grid>
                 </Grid>
             </Drawer>
