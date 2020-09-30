@@ -185,7 +185,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 let data = res.data.data;
 
                 const formatNumberString = (val: string, percentage: boolean = false) => {
-                    if (_.isNil(val)) return null;
+                    if (_.isNil(val)) return '--';
                     if (percentage) return `${(parseFloat(val) * 100).toFixed(1)}%`;
 
                     return parseFloat(val).toFixed(2);
