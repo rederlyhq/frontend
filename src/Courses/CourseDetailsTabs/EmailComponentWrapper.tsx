@@ -1,16 +1,18 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { UserObject } from '../CourseInterfaces';
-import { Button } from 'react-bootstrap';
+import { useRouteMatch, Link } from 'react-router-dom';
 import EmailModal from './EmailModal';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { Email } from '@material-ui/icons';
 import _ from 'lodash';
 import MaterialTable from 'material-table';
 import { TiUserDelete } from 'react-icons/ti';
+import { MdLaunch } from 'react-icons/md';
 import MaterialIcons from '../../Components/MaterialIcons';
 import { deleteEnrollment } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { courseContext } from '../CourseDetailsPage';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
+import { useHistory } from 'react-router-dom';
 
 interface EmailComponentWrapperProps {
     users: Array<UserObject>;
@@ -24,8 +26,10 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
     const [selectedStudents, setSelectedStudents] = useState<UserObject[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState<{state: boolean, user: UserObject | null}>({state: false, user: null});
+    const history = useHistory();
     const userType: UserRole = getUserRole();
     const course = useContext(courseContext);
+    const { path } = useRouteMatch();
 
     useEffect(()=>{
         setUsers(propUsers);
@@ -101,6 +105,13 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                         },
                         {
                             // eslint-disable-next-line react/display-name
+                            icon: () => <Link to={(loc: any) => ({...loc, pathname: `${loc.pathname}/settings`})}><MdLaunch style={{color: 'black'}} /></Link>,
+                            tooltip: 'Go to Extensions',
+                            onClick: (event: any, user: any) => null,
+                            position: 'row'
+                        },
+                        {
+                            // eslint-disable-next-line react/display-name
                             icon: () => <span><Email style={{color: '#007bff'}}/> Email</span>,
                             // isFreeAction: true,
                             tooltip: 'Email selected students',
@@ -108,7 +119,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                             position: 'toolbarOnSelect'
                         }
                     ] : undefined}
-                    localization={{header: { actions: 'Drop Student'}}}
+                    localization={{header: { actions: 'Actions'}}}
                 />
             </div>
         </>
