@@ -4,7 +4,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 import MaterialTriSelect from '../../Components/MaterialTriSelect';
 import { useCourseContext } from '../CourseProvider';
 import { OverridesForm } from './OverridesForm';
-import { CourseObject, UnitObject, UserObject, TopicObject, ProblemObject, SettingsComponentType } from '../CourseInterfaces';
+import { CourseObject, UnitObject, UserObject, NewCourseTopicObj, ProblemObject, SettingsComponentType } from '../CourseInterfaces';
 
 import './SettingsPage.css';
 
@@ -15,7 +15,7 @@ interface SettingsPageProps {
 export const SettingsPage: React.FC<SettingsPageProps> = ({}) => {
     const {course, setCourse, users, setUsers} = useCourseContext();
     const [selected, setSelected] = useState<{
-        unit: UnitObject | undefined, topic: TopicObject | undefined, problem: ProblemObject | undefined, user: UserObject | undefined
+        unit: UnitObject | undefined, topic: NewCourseTopicObj | undefined, problem: ProblemObject | undefined, user: UserObject | undefined
     }>({unit: undefined, topic: undefined, problem: undefined, user: undefined});
 
     return (
@@ -37,7 +37,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({}) => {
                 <Grid container>
                     <Grid container item>
                         { selected.user && (
-                            <OverridesForm courseTopicContentId={selected?.topic?.id} userId={selected.user.id} />
+                            <OverridesForm topic={selected?.topic} userId={selected.user.id} problem={selected?.problem} />
                         )}
                     </Grid>
                 </Grid>

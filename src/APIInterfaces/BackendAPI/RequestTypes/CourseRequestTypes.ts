@@ -33,6 +33,11 @@ export interface DeleteCourseUnitOptions {
 /* *************** *************** */
 /* *********** Topics  *********** */
 /* *************** *************** */
+export interface GetCourseTopicOptions {
+    id: number;
+    userId: number | undefined;
+}
+
 export interface PostCourseTopicOptions {
     data: Partial<NewCourseTopicObj>;
 }
@@ -78,6 +83,11 @@ export interface PostDefFileOptions {
     courseTopicId: number;
 }
 
+export interface GetQuestionOptions {
+    id: number;
+    userId?: number;
+}
+
 export interface GetQuestionsOptions {
     userId: number | 'me';
     courseTopicContentId: number;
@@ -86,4 +96,10 @@ export interface GetQuestionsOptions {
 export interface DeleteEnrollmentOptions {
     userId: number;
     courseId: number;
+}
+
+export interface ExtendCourseTopicQuestionsForUser {
+    courseTopicQuestionId: number;
+    userId: number;
+    extensions: {maxAttempts: number};
 }

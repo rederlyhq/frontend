@@ -168,6 +168,7 @@ export class ProblemObject implements IProblemObject {
     optional: boolean = false;
     unique: number = newProblemUniqueGen.next().value || 0;
     grades?: StudentGrade[];
+    studentTopicQuestionOverride: any[] = [];
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
@@ -178,4 +179,4 @@ export class NewProblemObject extends ProblemObject {
     courseTopicContentId: number = 0;
 }
 
-export type SettingsComponentType = UnitObject | UserObject | TopicObject | ProblemObject;
+export type SettingsComponentType = UnitObject | UserObject | NewCourseTopicObj | ProblemObject;
