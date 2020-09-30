@@ -62,8 +62,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
         if (_.isEmpty(topic.studentTopicOverride)) return [];
 
         const activeExtensions: any[] = topic.studentTopicOverride.reduce((accum, extension) => {
-            console.log(extension);
-            if (now.isAfter(extension.startDate) && now.isSameOrBefore(extension.deadDate)) {
+            if (now.isBetween(extension.startDate, extension.deadDate, 'day', '[]')) {
                 accum.push(extension);
             }
             return accum;
@@ -205,14 +204,16 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                     </>
                 )}
             </div>
-        )};
+        );};
 
     const getDraggableTopic = (provided: any, snapshot: any, rubric: any) => {
         if (rubric.source.index >= listOfTopics.length) {
             console.error(`Tried moving ${rubric.source.index} which exceed list length ${listOfTopics.length}`);
             return <div/>;
         }
+        
         const topic = listOfTopics[rubric.source.index];
+
         return (
             <ListGroupItem {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
                 {renderSingleTopic(topic)}
