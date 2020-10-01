@@ -22,7 +22,7 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
         // Would include this in above mapping, however using ternary operated resulted in an empty column in questions
         safeGrades = safeGrades.map(obj => ({
             ...obj,
-            average: _.isNil(obj.average) ? '--' : (obj.average * 100).toFixed(1)
+            average: _.isNil(obj.average) ? '--' : `${(obj.average * 100).toFixed(1)}%`
         }));
     }
 
