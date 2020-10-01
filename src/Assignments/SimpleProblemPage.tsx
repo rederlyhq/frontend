@@ -40,18 +40,30 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     courseTopicContentId: parseInt(params.topicId, 10)
                 });
                 const problems: Array<ProblemObject> = res.data.data.questions;
+                
                 const topic = res.data.data.topic;
+                console.log(topic);
+                if (topic.studentTopicOverride?.length > 0) {
+                    _.assign(topic, topic.studentTopicOverride[0]);
+                }
                 setTopic(topic);
 
                 if (!_.isEmpty(problems)) {
                     const problemDictionary = _.chain(problems)
-                        .map(prob => new ProblemObject(prob))
+                        .map(prob => {
+                            let probWithExtensions = _.isEmpty(prob.studentTopicQuestionOverride) ? 
+                                prob : 
+                                _.assign(prob, prob.studentTopicQuestionOverride[0]);
+                            return new ProblemObject(probWithExtensions);
+                        })
                         .keyBy('id')
                         .value();
                     console.log(problemDictionary);
                     setProblems(problemDictionary);
                     setSelectedProblemId(problems[0].id);
+                    console.log(problems, problemDictionary, topic);
                 }
+
 
                 setLoading(false);
             } catch (e) {
