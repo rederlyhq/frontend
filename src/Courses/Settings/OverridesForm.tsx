@@ -39,7 +39,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
         setDefaultProblem(problem);
         setIsSubmitSuccesful(false);
         reset();
-    }, [topic, problem]);
+    }, [topic, problem, userId]);
 
     // Get Topic Override information
     useEffect(()=>{
