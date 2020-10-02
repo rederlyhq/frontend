@@ -1,7 +1,7 @@
 import { Grid, TextField, Button, CircularProgress } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
+import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import MomentUtils from '@date-io/moment';
 import moment, { Moment } from 'moment';
@@ -22,15 +22,29 @@ interface OverridesFormProps {
 }
 
 export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, problem}) => {
-    const { register, handleSubmit, watch, errors, control, setValue } = useForm<Inputs>();
+    const { register, handleSubmit, getValues, errors, control, setValue, watch, formState, reset } = useForm<Inputs>({mode: 'onSubmit', shouldFocusError: true });
     const [formLoading, setFormLoading] = useState<boolean>(false);
-    const [submitLoading, setSubmitLoading] = useState<boolean>(false);
+    const [submitError, setSubmitError] = useState<string>('');
     const drawerFontSize = '1.4em';
+    const { startDate, endDate, deadDate } = watch();
+    const [defaultTopic, setDefaultTopic] = useState<NewCourseTopicObj | undefined>(topic);
+    const [defaultProblem, setDefaultProblem] = useState<ProblemObject | undefined>(problem);
+    // TODO: This should be provided by react-hook-forms
+    const [ isSubmitSuccessful, setIsSubmitSuccesful] = useState<boolean>(false);
+    const { /* isSubmitSuccessful,*/ isSubmitting  } = formState;
+
+    useEffect(()=>{
+        setDefaultTopic(topic);
+        setDefaultProblem(problem);
+        setIsSubmitSuccesful(false);
+        reset();
+    }, [topic, problem]);
 
     // Get Topic Override information
     useEffect(()=>{
         if (!topic || problem !== undefined) return;
         setFormLoading(true);
+        setSubmitError('');
 
         (async () => {
             try {
@@ -42,11 +56,10 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                     _.assign(topicData, topicData.studentTopicOverride[0]);
                 }
 
-                setValue('startDate', moment(topicData.startDate));
-                setValue('endDate', moment(topicData.endDate));
-                setValue('deadDate', moment(topicData.deadDate));
+                setDefaultTopic(new NewCourseTopicObj(topicData));
             } catch (e) {
                 console.error(`Topic ${topic.id} or User ${userId} does not exist!`, e);
+                setSubmitError(e);
             } finally {
                 setFormLoading(false);
             }
@@ -56,6 +69,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
     // Get Question Override information
     useEffect(()=>{
         if (!problem) return;
+        setSubmitError('');
 
         (async () => {
             try {
@@ -68,9 +82,10 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                     _.assign(questionData, questionData.studentTopicQuestionOverride[0]);
                 }
 
-                setValue('maxAttempts', questionData.maxAttempts);
+                setDefaultProblem(new ProblemObject(questionData));
             } catch (e) {
                 console.error(`Question ${problem.id} or User ${userId} does not exist!`, e);
+                setSubmitError(e.data);
             } finally {
                 setFormLoading(false);
             }
@@ -99,22 +114,26 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
     };
 
     const onSubmit = async (extensions: {startDate: Moment, endDate: Moment, deadDate: Moment} | {maxAttempts: number}) => {
-        setSubmitLoading(true);
-        console.log(extensions);
-        if (problem) {
-            await updateQuestions(problem.id, userId, extensions as {maxAttempts: number});
-        } else if (topic) {
-            await updateTopic(topic.id, userId, extensions as {startDate: Moment, endDate: Moment, deadDate: Moment});
-        } else {
-            console.error('Unhandled override case.');
+        setSubmitError('');
+        setIsSubmitSuccesful(false);
+        try {
+            if (problem) {
+                await updateQuestions(problem.id, userId, extensions as {maxAttempts: number});
+            } else if (topic) {
+                await updateTopic(topic.id, userId, extensions as {startDate: Moment, endDate: Moment, deadDate: Moment});
+            } else {
+                console.error('Unhandled override case.');
+            }
+            setIsSubmitSuccesful(true);
+        } catch (e) {
+            setSubmitError(e);
         }
-        setSubmitLoading(false);
     };
 
     const renderQuestionOverrideForm = (question: ProblemObject) => (
         <Grid item container md={12} alignItems='flex-start' justify="center">
             <Grid item md={4}>
-                <TextField inputRef={register} name="maxAttempts" defaultValue={question.maxAttempts} label='Max Attempts' />
+                <TextField inputRef={register} name="maxAttempts" defaultValue={defaultProblem?.maxAttempts || question.maxAttempts} label='Max Attempts' />
             </Grid>
         </Grid>
     );
@@ -122,22 +141,34 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
     const renderTopicOverrideForm = (topic: NewCourseTopicObj) => (
         <>
             <Grid item md={12}>
+                {isSubmitSuccessful && (submitError ? <p style={{color: 'red'}}>{submitError}</p> : <p style={{color: 'green'}}>Successfully updated</p>)}
+                {_.values(errors).map(data => <p key={(data as any)?.type} style={{color: 'red'}}>{(data as any)?.message}</p>)}
+            </Grid>
+
+            <Grid item md={12}>
                 <MuiPickersUtilsProvider utils={MomentUtils}>
                     <Controller
-                        as={<KeyboardDatePicker value="" onChange={() => {}} />}
+                        as={<DateTimePicker value="" onChange={() => {}} />}
                         name="startDate"
                         control={control}
                         defaultValue={moment(topic.startDate)}
                         autoOk
                         variant="inline"
-                        format="MM/DD/yyyy"
-                        KeyboardButtonProps={{
-                            'aria-label': 'change date',
-                        }}
                         fullWidth={true}
                         label='Start Date'
                         InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
                         inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
+                        maxDate={endDate || moment(topic.endDate)}
+                        rules={{
+                            required: true,
+                            validate: {
+                                isDate: (data: any) => moment(data).isValid() || 'Invalid date',
+                                isEarliest: (startDate: Moment) => {
+                                    const { endDate, deadDate } = getValues();
+                                    return startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate) || 'Start date cannot be after End or Dead dates';
+                                }
+                            }
+                        }}
                     />
                 </MuiPickersUtilsProvider>
             </Grid>
@@ -145,21 +176,24 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
             <Grid item md={12}>
                 <MuiPickersUtilsProvider utils={MomentUtils}>
                     <Controller
-                        as={<KeyboardDatePicker value="" onChange={() => {}} />}
+                        as={<DateTimePicker value="" onChange={() => {}} />}
                         name="endDate"
                         control={control}
                         defaultValue={moment(topic.endDate)}
                         autoOk
                         variant="inline"
-                        format="MM/DD/yyyy"
-                        KeyboardButtonProps={{
-                            'aria-label': 'change date',
-                        }}
                         fullWidth={true}
                         label='End Date'
                         InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
                         inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                        // minDate={}
+                        minDate={startDate || moment(topic.startDate)}
+                        maxDate={deadDate || moment(topic.deadDate)}
+                        rules={{
+                            required: true,
+                            validate: {
+                                isDate: (data: any) => moment(data).isValid() || 'Invalid date',
+                            }
+                        }}
                     />
                 </MuiPickersUtilsProvider>
             </Grid>
@@ -167,21 +201,17 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
             <Grid item md={12}>
                 <MuiPickersUtilsProvider utils={MomentUtils}>
                     <Controller
-                        as={<KeyboardDatePicker value="" onChange={() => {}} />}
+                        as={<DateTimePicker value="" onChange={() => {}} />}
                         name="deadDate"
                         control={control}
                         defaultValue={moment(topic.deadDate)}
                         autoOk
                         variant="inline"
-                        format="MM/DD/yyyy"
-                        KeyboardButtonProps={{
-                            'aria-label': 'change date',
-                        }}
                         fullWidth={true}
                         label='Dead Date'
                         InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
                         inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                        // minDate={}
+                        minDate={endDate || moment(topic.endDate)}
                     />
                 </MuiPickersUtilsProvider>
             </Grid>
@@ -198,9 +228,9 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                     ) : (
                         <>
                             {/* TODO: Ternary with problem overrides */}
-                            {problem ? 
-                                renderQuestionOverrideForm(problem) :
-                                (topic && renderTopicOverrideForm(topic))
+                            {defaultProblem ? 
+                                renderQuestionOverrideForm(defaultProblem) :
+                                (defaultTopic && renderTopicOverrideForm(defaultTopic))
                             }
                         </>
                     )
@@ -208,7 +238,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
             
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
                         <Grid item>
-                            {submitLoading ? 
+                            {isSubmitting ? 
                                 (<Button 
                                     variant="contained" 
                                     color='secondary'

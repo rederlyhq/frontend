@@ -51,7 +51,7 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
 
                 setUsers(usersArr);
             } catch (e) {
-                setError(e.response.data.message);
+                setError(e?.response?.data?.message || e);
                 console.error(e);
             }
             setLoading(false);

@@ -12,7 +12,7 @@ interface SettingsPageProps {
 
 }
 
-export const SettingsPage: React.FC<SettingsPageProps> = ({}) => {
+export const SettingsPage: React.FC<SettingsPageProps> = () => {
     const {course, setCourse, users, setUsers} = useCourseContext();
     const [selected, setSelected] = useState<{
         unit: UnitObject | undefined, topic: NewCourseTopicObj | undefined, problem: ProblemObject | undefined, user: UserObject | undefined

@@ -38,7 +38,7 @@
     "react-contenteditable": "^3.3.5",
     "react-dom": "^16.13.1",
     "react-dropzone": "^11.0.1",
-    "react-hook-form": "^5.7.2",
+    "react-hook-form": "^6.8.6",
     "react-icons": "^3.10.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.1",
@@ -71,6 +71,7 @@
     ]
   },
   "devDependencies": {
+    "@hookform/devtools": "^2.2.1",
     "@typescript-eslint/eslint-plugin": "^2.27.0",
     "@typescript-eslint/parser": "^2.27.0",
     "create-polyfill-service-url": "^2.2.0",
@@ -79,6 +80,6 @@
     "eslint-plugin-react": "^7.19.0",
     "http-proxy-middleware": "^1.0.5",
     "react-axe": "^3.4.1",
-    "react-hook-form-devtools": "^1.2.0"
+    "react-hook-form-devtools": "^2.2.1"
   }
 }
