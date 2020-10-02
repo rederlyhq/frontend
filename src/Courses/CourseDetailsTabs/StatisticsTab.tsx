@@ -544,6 +544,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     onRowClick={nextView}
                     options={{
                         exportButton: true,
+                        exportAllData: true,
                         sorting: true
                     }}
                     detailPanel={hasDetailPanel ? [{

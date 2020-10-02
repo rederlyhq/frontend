@@ -81,6 +81,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                     onSelectionChange={(rows: UserObject[]) => setSelectedStudents(rows)}
                     options={{
                         exportButton: userType !== UserRole.STUDENT,
+                        exportAllData: true,
                         actionsColumnIndex: -1,
                         rowStyle: unit => ({
                             backgroundColor: _.includes(selectedStudents, unit.id) ? '#EEE' : '#FFF'
