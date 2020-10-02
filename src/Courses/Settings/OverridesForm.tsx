@@ -8,6 +8,7 @@ import moment, { Moment } from 'moment';
 import { extendQuestion, extendTopic, getQuestion, getQuestions, getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
 import { NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
+import { Alert } from 'react-bootstrap';
 
 type Inputs = {
     startDate: Moment;
@@ -133,18 +134,22 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
     const renderQuestionOverrideForm = (question: ProblemObject) => (
         <Grid item container md={12} alignItems='flex-start' justify="center">
             <Grid item md={4}>
-                <TextField inputRef={register} name="maxAttempts" defaultValue={defaultProblem?.maxAttempts || question.maxAttempts} label='Max Attempts' />
+                <TextField 
+                    name="maxAttempts" 
+                    inputRef={register({
+                        required: true, 
+                        min: -1
+                    })}
+                    defaultValue={question.maxAttempts} 
+                    label='Max Attempts'
+                    type='number'
+                />
             </Grid>
         </Grid>
     );
 
     const renderTopicOverrideForm = (topic: NewCourseTopicObj) => (
         <>
-            <Grid item md={12}>
-                {isSubmitSuccessful && (submitError ? <p style={{color: 'red'}}>{submitError}</p> : <p style={{color: 'green'}}>Successfully updated</p>)}
-                {_.values(errors).map(data => <p key={(data as any)?.type} style={{color: 'red'}}>{(data as any)?.message}</p>)}
-            </Grid>
-
             <Grid item md={12}>
                 <MuiPickersUtilsProvider utils={MomentUtils}>
                     <Controller
@@ -222,6 +227,13 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
         <form onSubmit={handleSubmit(onSubmit)} style={{width: '100%', marginTop: '1.5rem'}}>
             <Grid container justify='center'>
                 <Grid container item md={6} spacing={2}>
+                    <Grid item md={12}>
+                        {isSubmitSuccessful && (submitError ? 
+                            <Alert variant='danger'>{submitError}</Alert> : 
+                            <Alert variant='success'>Successfully updated</Alert>)}
+                        {_.values(errors).map(data => <Alert variant='danger' key={(data as any)?.type}>{(data as any)?.message || 'Please enter an appropriate value'}</Alert>)}
+                    </Grid>
+
                     {/* TODO: Use AnimatePresence for a better UX than the flicker or delay. */}
                     {formLoading ? (
                         <CircularProgress />
