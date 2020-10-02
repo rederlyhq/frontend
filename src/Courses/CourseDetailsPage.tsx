@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Container, Tabs, Tab } from 'react-bootstrap';
 import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
 import TopicsTab from './CourseDetailsTabs/TopicsTab';
-import { useParams } from 'react-router-dom';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import GradesTab from './CourseDetailsTabs/GradesTab';
 import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
 import { CourseObject } from './CourseInterfaces';
@@ -58,6 +56,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                         setStudentNameAndId(null);
                     }}>
                     <Tab eventKey={CourseDetailsTabs.DETAILS} title={CourseDetailsTabs.DETAILS}  style={{marginBottom:'10px'}}>
+                        {/* TODO: pass loading state between CourseProvider */}
                         <CourseDetailsTab course={course} error={error} loading={false} setCourse={setCourse} />
                     </Tab>
                     <Tab eventKey={CourseDetailsTabs.TOPICS} title={CourseDetailsTabs.TOPICS}>

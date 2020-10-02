@@ -42,7 +42,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 const problems: Array<ProblemObject> = res.data.data.questions;
                 
                 const topic = res.data.data.topic;
-                console.log(topic);
+
                 if (topic.studentTopicOverride?.length > 0) {
                     _.assign(topic, topic.studentTopicOverride[0]);
                 }
@@ -58,10 +58,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         })
                         .keyBy('id')
                         .value();
-                    console.log(problemDictionary);
                     setProblems(problemDictionary);
                     setSelectedProblemId(problems[0].id);
-                    console.log(problems, problemDictionary, topic);
                 }
 
 

@@ -1,7 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { UserObject } from '../CourseInterfaces';
+import React, { useRef } from 'react';
 import EmailComponentWrapper from './EmailComponentWrapper';
-import AxiosRequest from '../../Hooks/AxiosRequest';
 import { Row, FormLabel, InputGroup, FormControl, Button, Col } from 'react-bootstrap';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { useCourseContext } from '../CourseProvider';
@@ -54,7 +52,7 @@ export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = () => {
                             aria-label="Enrollment link"
                             aria-describedby="basic-addon2"
                             ref={textAreaRef}
-                            value={`https://${enrollUrl}`}
+                            value={`${window.location.protocol}//${enrollUrl}`}
                         />
                         <InputGroup.Append>
                             <Button variant="outline-secondary" onClick={copyToClipboard}>Copy to Clipboard</Button>

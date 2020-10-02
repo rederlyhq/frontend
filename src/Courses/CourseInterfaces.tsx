@@ -55,11 +55,13 @@ export class UserObject {
     firstName?: string;
     lastName?: string;
     id: number = -1;
-    name: string;
+
+    get name(): string {
+        return `${this.firstName} ${this.lastName}`;
+    }
 
     public constructor(init?:Partial<UserObject>) {
         Object.assign(this, init);
-        this.name = `${this.firstName} ${this.lastName}`;
     }
 }
 

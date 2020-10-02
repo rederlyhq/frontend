@@ -57,7 +57,6 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
     };
 
     const getActiveExtensions = (topic: NewCourseTopicObj): Array<any> => {
-        // console.log('Getting active extensions for ', topic);
         const now = moment();
         if (_.isEmpty(topic.studentTopicOverride)) return [];
 
@@ -67,7 +66,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
             }
             return accum;
         }, []);
-        console.log('Active Extensions: ', activeExtensions, topic.name);
+
         return activeExtensions;
     };
 

@@ -2,7 +2,7 @@ import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCo
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
-import Axios, { AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, GetTopicResponse, GetQuestionResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
@@ -111,8 +111,8 @@ export const getTopic = async ({
 }: GetCourseTopicOptions): Promise<AxiosResponse<GetTopicResponse>> => {
     try {
         return await AxiosRequest.get(
-            `${COURSE_TOPIC_PATH}/${id}?userId=${userId}`
-        )
+            url.resolve(COURSE_TOPIC_PATH, `${id}?${qs.stringify({userId})}`)
+        );
     } catch (e) {
         throw new BackendAPIError(e);
     }
@@ -169,7 +169,7 @@ export const extendTopic = async ({
 }: ExtendCourseTopicForUser): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
         return await AxiosRequest.put(
-            `${COURSE_TOPIC_PATH}/extend?courseTopicContentId=${courseTopicContentId}&userId=${userId}`, extensions
+            url.resolve(COURSE_TOPIC_PATH, `extend?${qs.stringify({courseTopicContentId, userId})}`), extensions
         );
     } catch (e) {
         throw new BackendAPIError(e);

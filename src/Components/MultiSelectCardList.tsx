@@ -38,7 +38,7 @@ export const MultiSelectCardList: React.FC<MultiSelectCardListProps> = ({listIte
             <ListSubheader><h3>{title}</h3></ListSubheader>
             <AnimatePresence>
                 {
-                    listItems.map(((item: any, i: number) => (
+                    listItems.map(((item: SettingsComponentType, i: number) => (
                         <motion.div 
                             layoutTransition
                             initial={'invisible'}

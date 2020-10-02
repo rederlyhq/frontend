@@ -11,10 +11,10 @@ interface CourseProviderProps {
 
 const CourseContext = React.createContext<{
         course: CourseObject, 
-        setCourse: React.Dispatch<React.SetStateAction<CourseObject>> | undefined,
+        setCourse?: React.Dispatch<React.SetStateAction<CourseObject>>,
         error: string | null,
         users: UserObject[],
-        setUsers: React.Dispatch<React.SetStateAction<UserObject[]>> | undefined,
+        setUsers?: React.Dispatch<React.SetStateAction<UserObject[]>>,
     }>({
         course: new CourseObject(), 
         setCourse: undefined,
@@ -26,7 +26,7 @@ const CourseContext = React.createContext<{
 export const useCourseContext = () => React.useContext(CourseContext);
 
 export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
-    const { courseId } = useParams<{courseId: string | undefined}>();
+    const { courseId } = useParams<{courseId?: string}>();
     const [course, setCourse] = useState<CourseObject>(new CourseObject());
     const [users, setUsers] = useState<UserObject[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -51,8 +51,7 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
 
                 setUsers(usersArr);
             } catch (e) {
-                setError(e?.response?.data?.message || e);
-                console.error(e);
+                setError(e.message);
             }
             setLoading(false);
         })();

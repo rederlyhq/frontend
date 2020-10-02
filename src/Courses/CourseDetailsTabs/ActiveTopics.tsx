@@ -21,7 +21,7 @@ export const ActiveTopics: React.FC<ActiveTopicsProps> = ({course}) => {
             console.log(res.data.data);
             let activeTopics = res.data?.data?.map((topic: any) => new NewCourseTopicObj(topic));
 
-            // Currently, the backend returns topics that have extensions for any users.
+            // TODO: Currently, the backend returns topics that have extensions for any users.
             // This filters out those topics and hides them.
             if (userType === UserRole.STUDENT) {
                 activeTopics = activeTopics.filter((topic: NewCourseTopicObj) => {

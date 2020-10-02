@@ -59,7 +59,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                 setDefaultTopic(new NewCourseTopicObj(topicData));
             } catch (e) {
                 console.error(`Topic ${topic.id} or User ${userId} does not exist!`, e);
-                setSubmitError(e);
+                setSubmitError(e.message);
             } finally {
                 setFormLoading(false);
             }
@@ -75,7 +75,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
             try {
                 const res = await getQuestion({id: problem.id, userId});
                 const questionData = res.data.data;
-                console.log(questionData);
+
                 // If there are overrides for the selected user, overwrite the default dates in the object.
                 // Right now, we expect only one override per topic to be returned.
                 if (questionData.studentTopicQuestionOverride?.length === 1) {
@@ -227,7 +227,6 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                         <CircularProgress />
                     ) : (
                         <>
-                            {/* TODO: Ternary with problem overrides */}
                             {defaultProblem ? 
                                 renderQuestionOverrideForm(defaultProblem) :
                                 (defaultTopic && renderTopicOverrideForm(defaultTopic))

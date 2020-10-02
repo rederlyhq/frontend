@@ -8,25 +8,30 @@ import MultiSelectCardList from './MultiSelectCardList';
 interface MaterialTriSelectProps {
     course: CourseObject;
     users: UserObject[];
-    selected: {unit: UnitObject | undefined, topic: NewCourseTopicObj | undefined, problem: ProblemObject | undefined, user: UserObject | undefined};
+    selected: {
+        unit?: UnitObject, 
+        topic?: NewCourseTopicObj, 
+        problem?: ProblemObject, 
+        user?: UserObject
+    };
     setSelected: React.Dispatch<React.SetStateAction<{
-        unit: UnitObject | undefined;
-        topic: NewCourseTopicObj | undefined;
-        problem: ProblemObject | undefined;
-        user: UserObject | undefined;
+        unit?: UnitObject;
+        topic?: NewCourseTopicObj;
+        problem?: ProblemObject;
+        user?: UserObject;
     }>>
 }
 
 export const MaterialTriSelect: React.FC<MaterialTriSelectProps> = ({course, users, selected, setSelected}) => {
     const onItemClick = (type: SettingsComponentType) => {
         if (type instanceof UnitObject) {
-            setSelected({unit: type, topic: undefined, problem: undefined, user: selected.user});
+            setSelected(selected => ({unit: type, user: selected.user}));
         } else if (type instanceof NewCourseTopicObj) {
-            setSelected({unit: selected.unit, topic: type, problem: undefined, user: selected.user});
+            setSelected(selected => ({unit: selected.unit, topic: type, user: selected.user}));
         } else if (type instanceof ProblemObject) {
-            setSelected({unit: selected.unit, topic: selected.topic, problem: type, user: selected.user});
+            setSelected(selected => ({unit: selected.unit, topic: selected.topic, problem: type, user: selected.user}));
         } else if (type instanceof UserObject) {
-            setSelected({unit: selected.unit, topic: selected.topic, problem: selected.problem, user: type});
+            setSelected(selected => ({unit: selected.unit, topic: selected.topic, problem: selected.problem, user: type}));
         }
     };
 

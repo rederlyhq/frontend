@@ -113,7 +113,7 @@ export const getUsersForCourse = async ({
     courseId
 }: GetUsersOptions): Promise<GetUserResponse> => {
     try {
-        return await AxiosRequest.get(`${USER_PATH}?courseId=${courseId}`);
+        return await AxiosRequest.get(USER_PATH, {params: { courseId }});
     } catch (e) {
         throw new BackendAPIError(e);
     }
