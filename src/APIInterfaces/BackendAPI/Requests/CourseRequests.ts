@@ -1,9 +1,9 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 
@@ -105,6 +105,19 @@ export const deleteUnit = async ({
 /* *************** *************** */
 /* *********** Topics  *********** */
 /* *************** *************** */
+export const getTopic = async ({
+    id,
+    userId
+}: GetCourseTopicOptions): Promise<AxiosResponse<GetTopicResponse>> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(COURSE_TOPIC_PATH, `${id}?${qs.stringify({userId})}`)
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
 export const postTopic = async ({
     data
 }: PostCourseTopicOptions): Promise<AxiosResponse<PostTopicResponse>> => {
@@ -144,6 +157,19 @@ export const deleteTopic = async ({
                 COURSE_TOPIC_PATH,
                 `${id}/`
             )
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const extendTopic = async ({
+    courseTopicContentId, userId,
+    extensions
+}: ExtendCourseTopicForUser): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.put(
+            url.resolve(COURSE_TOPIC_PATH, `extend?${qs.stringify({courseTopicContentId, userId})}`), extensions
         );
     } catch (e) {
         throw new BackendAPIError(e);
@@ -259,6 +285,21 @@ export const postDefFile = async ({
     }
 };
 
+export const getQuestion = async ({
+    id, 
+    userId
+}: GetQuestionOptions): Promise<AxiosResponse<GetQuestionResponse>> => {
+    try {
+        return await AxiosRequest.get(`${COURSE_QUESTION_PATH}/${id}`, {
+            params: {
+                userId,
+            }
+        });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
 export const getQuestions = async ({
     userId,
     courseTopicContentId
@@ -270,6 +311,25 @@ export const getQuestions = async ({
                 courseTopicContentId
             }
         });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const extendQuestion = async ({
+    courseTopicQuestionId, 
+    userId,
+    extensions
+}: ExtendCourseTopicQuestionsForUser): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.put(
+            `${COURSE_QUESTION_PATH}/extend`, extensions, {
+                params: {
+                    userId,
+                    courseTopicQuestionId,
+                }
+            }
+        );
     } catch (e) {
         throw new BackendAPIError(e);
     }

@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Container, Tabs, Tab } from 'react-bootstrap';
 import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
 import TopicsTab from './CourseDetailsTabs/TopicsTab';
-import { useParams } from 'react-router-dom';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import GradesTab from './CourseDetailsTabs/GradesTab';
 import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
 import { CourseObject } from './CourseInterfaces';
 import { UserRole, getUserRole, getUserId } from '../Enums/UserRole';
 import { CourseDetailsTab } from './CourseDetailsTabs/CourseDetailsTab';
+import { useCourseContext } from './CourseProvider';
 
 interface CourseDetailsPageProps {
 
@@ -31,38 +30,19 @@ export const courseContext = React.createContext(new CourseObject());
  *
  */
 export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
-    const { courseId } = useParams();
-    const [course, setCourse] = useState<CourseObject>(new CourseObject());
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+    const {course, setCourse, error} = useCourseContext();
     const [activeTab, setActiveTab] = useState<CourseDetailsTabs>(CourseDetailsTabs.DETAILS);
     const userType: UserRole = getUserRole();
     const userId: number = getUserId();
     const [studentNameAndId, setStudentNameAndId] = useState<{name: string, userId: number} | null>(null);
     const { Provider } = courseContext;
 
-    useEffect(() => {
-        (async () => {
-            if (!courseId) return;
-            setLoading(true);
-            setError(null);
-            try {
-                const courseResp = await AxiosRequest.get(`/courses/${courseId}`);
-                const fetchedCourse = new CourseObject(courseResp.data.data);
-                setCourse(fetchedCourse);
-            } catch (e) {
-                setError(e.response.data.message);
-            }
-            setLoading(false);
-        })();
-    }, [courseId]);
-
     const setStudentGradesTab = (studentName: string, studentId: number) => {
         setStudentNameAndId({name: studentName, userId: studentId});
         setActiveTab(CourseDetailsTabs.STUDENT_GRADES);
     };
 
-    if (!courseId) return <div>Please return to login.</div>;
+    if (course.id <= 0) return <Container>Loading your course...</Container>;
 
     return (
         <Container>
@@ -76,13 +56,14 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                         setStudentNameAndId(null);
                     }}>
                     <Tab eventKey={CourseDetailsTabs.DETAILS} title={CourseDetailsTabs.DETAILS}  style={{marginBottom:'10px'}}>
-                        <CourseDetailsTab course={course} error={error} loading={loading} setCourse={setCourse} />
+                        {/* TODO: pass loading state between CourseProvider */}
+                        <CourseDetailsTab course={course} error={error} loading={false} setCourse={setCourse} />
                     </Tab>
                     <Tab eventKey={CourseDetailsTabs.TOPICS} title={CourseDetailsTabs.TOPICS}>
                         <TopicsTab course={course} setCourse={setCourse} />
                     </Tab>
                     <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
-                        <EnrollmentsTab courseId={parseInt(courseId, 10)} courseCode={course.code} />
+                        <EnrollmentsTab />
                     </Tab>
                     <Tab eventKey={CourseDetailsTabs.GRADES} title={CourseDetailsTabs.GRADES}>
                         {/* Students' Grades view is really the statisics view. */}
