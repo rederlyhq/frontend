@@ -35,7 +35,8 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
                 data={safeGrades || []}
                 onRowClick={onRowClick}
                 options={{
-                    exportButton: true
+                    exportButton: true,
+                    exportAllData: true,
                 }}
             />
         </div>
