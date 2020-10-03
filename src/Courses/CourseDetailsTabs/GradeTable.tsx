@@ -22,7 +22,7 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
         // Would include this in above mapping, however using ternary operated resulted in an empty column in questions
         safeGrades = safeGrades.map(obj => ({
             ...obj,
-            average: obj.average.toFixed(2)
+            average: _.isNil(obj.average) ? '--' : `${(obj.average * 100).toFixed(1)}%`
         }));
     }
 
@@ -35,7 +35,8 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
                 data={safeGrades || []}
                 onRowClick={onRowClick}
                 options={{
-                    exportButton: true
+                    exportButton: true,
+                    exportAllData: true,
                 }}
             />
         </div>
