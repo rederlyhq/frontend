@@ -82,6 +82,6 @@
     "eslint-plugin-react": "^7.19.0",
     "http-proxy-middleware": "^1.0.5",
     "react-axe": "^3.4.1",
-    "react-hook-form-devtools": "^2.2.1"
+    "react-hook-form-devtools": "^1.2.0"
   }
 }
