@@ -48,13 +48,6 @@ const statisticsViewFromAllStatisticsViewFilter = (view: StatisticsViewAll): Sta
     return view as StatisticsView;
 };
 
-const gradeCols = [
-    { title: 'Name', field: 'name' },
-    { title: 'Average number of attempts', field: 'averageAttemptedCount' },
-    { title: 'Average grade', field: 'averageScore' },
-    { title: '% Completed', field: 'completionPercent' },
-];
-
 const attemptCols: Array<Column<any>> = [
     { title: 'Result', field: 'result', defaultSort: 'asc' },
     {
@@ -130,6 +123,15 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [gradesState, setGradesState] = useState<GradesState>(defaultGradesState);
     const [grade, setGrade] = useState<StudentGrade | null>(null);
     const userType: UserRole = getUserRole();
+
+    const aggregateTitlePrefix = _.isNil(userId) ? 'Average ' : '';
+    const gradeCols = [
+        { title: 'Name', field: 'name' },
+        { title: _.capitalize(`${aggregateTitlePrefix}number of attempts`), field: 'averageAttemptedCount' },
+        { title: _.capitalize(`${aggregateTitlePrefix}grade`), field: 'averageScore' },
+        { title: _.capitalize(`${aggregateTitlePrefix}mastered`), field: 'completionPercent' },
+    ];
+
 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
 
