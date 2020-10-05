@@ -2,10 +2,9 @@ import { Grid, TextField, Button, CircularProgress } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
-import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import MomentUtils from '@date-io/moment';
 import moment, { Moment } from 'moment';
-import { extendQuestion, extendTopic, getQuestion, getQuestions, getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { extendQuestion, extendTopic, getQuestion, getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
 import { NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
 import { Alert } from 'react-bootstrap';
@@ -14,6 +13,7 @@ type Inputs = {
     startDate: Moment;
     endDate: Moment;
     deadDate: Moment;
+    maxAttempts: number;
 };
 
 interface OverridesFormProps {
@@ -23,7 +23,18 @@ interface OverridesFormProps {
 }
 
 export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, problem}) => {
-    const { register, handleSubmit, getValues, errors, control, setValue, watch, formState, reset } = useForm<Inputs>({mode: 'onSubmit', shouldFocusError: true });
+    const { register, handleSubmit, getValues, errors, control, watch, formState, reset } = useForm<Inputs>(
+        {
+            mode: 'onSubmit', 
+            shouldFocusError: true,
+            defaultValues: {
+                startDate: moment(),
+                endDate: moment(),
+                deadDate: moment(),
+                maxAttempts: -1,
+            }
+        }
+    );
     const [formLoading, setFormLoading] = useState<boolean>(false);
     const [submitError, setSubmitError] = useState<string>('');
     const drawerFontSize = '1.4em';
@@ -57,6 +68,11 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                     _.assign(topicData, topicData.studentTopicOverride[0]);
                 }
 
+                reset({
+                    startDate: moment(topicData.startDate),
+                    endDate: moment(topicData.endDate),
+                    deadDate: moment(topicData.deadDate),
+                });
                 setDefaultTopic(new NewCourseTopicObj(topicData));
             } catch (e) {
                 console.error(`Topic ${topic.id} or User ${userId} does not exist!`, e);
@@ -83,6 +99,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                     _.assign(questionData, questionData.studentTopicQuestionOverride[0]);
                 }
 
+                reset({maxAttempts: questionData.maxAttempts});
                 setDefaultProblem(new ProblemObject(questionData));
             } catch (e) {
                 console.error(`Question ${problem.id} or User ${userId} does not exist!`, e);

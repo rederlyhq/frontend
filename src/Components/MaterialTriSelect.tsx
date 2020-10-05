@@ -1,7 +1,6 @@
 import { Grid } from '@material-ui/core';
 import { AnimatePresence, motion } from 'framer-motion';
-import _ from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { CourseObject, UnitObject, UserObject, NewCourseTopicObj, ProblemObject, SettingsComponentType } from '../Courses/CourseInterfaces';
 import MultiSelectCardList from './MultiSelectCardList';
 
