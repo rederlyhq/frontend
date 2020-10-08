@@ -31,6 +31,13 @@ export const ActiveTopics: React.FC<ActiveTopicsProps> = ({course}) => {
                     } else {
                         return _.find(topic.studentTopicOverride, ['userId', userId]) !== undefined;
                     }
+                }).map((topic: NewCourseTopicObj) => {
+                    const override = _.find(topic.studentTopicOverride, ['userId', userId]);
+                    if (!_.isNil(override)) {
+                        delete override.id;
+                        _.assign(topic, override);
+                    }
+                    return topic;
                 });
             }
 

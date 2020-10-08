@@ -52,10 +52,12 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 if (!_.isEmpty(problems)) {
                     const problemDictionary = _.chain(problems)
                         .map(prob => {
-                            let probWithExtensions = _.isEmpty(prob.studentTopicQuestionOverride) ? 
-                                prob : 
-                                _.assign(prob, prob.studentTopicQuestionOverride[0]);
-                            return new ProblemObject(probWithExtensions);
+                            const override = prob.studentTopicQuestionOverride?.[0];
+                            if (!_.isNil(override)) {
+                                delete override.id;
+                                _.assign(prob, override);
+                            }
+                            return new ProblemObject(prob);
                         })
                         .keyBy('id')
                         .value();
