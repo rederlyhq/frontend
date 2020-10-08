@@ -1,7 +1,7 @@
 import { Grid } from '@material-ui/core';
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
-import { CourseObject, UnitObject, UserObject, NewCourseTopicObj, ProblemObject, SettingsComponentType } from '../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, UserObject, ProblemObject, SettingsComponentType, TopicObject } from '../Courses/CourseInterfaces';
 import MultiSelectCardList from './MultiSelectCardList';
 
 interface MaterialTriSelectProps {

@@ -23,32 +23,32 @@ interface ExamSettings {
 }
 
 const boolFields = [
-    'hardCutoff',
-    'hideHints',
-    'showItemizedResults',
-    'showTotalGradeImmediately',
-    'hideProblemsAfterFinish',
-    'randomizeOrder',
+    {name: 'hardCutoff'},
+    {name: 'hideHints'},
+    {name: 'showItemizedResults'},
+    {name: 'showTotalGradeImmediately'},
+    {name: 'hideProblemsAfterFinish'},
+    {name: 'randomizeOrder'},
 ];
 
 const numericFields = [
-    'duration',
-    'maxGradedAttemptsPerRandomization',
-    'maxReRandomizations',
-    'randomizationDelay',
+    {name: 'duration', min: 20,},
+    {name: 'maxGradedAttemptsPerRandomization', min: 1,},
+    {name: 'maxReRandomizations', min: 1,},
+    {name: 'randomizationDelay', min: 1,},
 ];
 
 export const ExamSettings: React.FC<ExamSettingsProps> = ({register, control, watch}) => {
     return (
         <Grid container item md={12} spacing={3}>
-            <Grid item container md={12}><h1 style={{margin: '0 auto'}}>Exam Settings</h1></Grid>
+            <Grid item container md={12}><h1>Exam Settings</h1></Grid>
             <Grid container item md={6}>
-                {boolFields.map((f: string) => (
-                    <Grid item md={6} key={f}>
+                {boolFields.map((f: any) => (
+                    <Grid item md={6} key={f.name}>
                         <FormControlLabel
-                            name={f}
+                            name={f.name}
                             inputRef={register()}
-                            label={_.startCase(f)}
+                            label={_.startCase(f.name)}
                             labelPlacement='start' 
                             control={
                                 <Switch color='primary'/>
@@ -58,12 +58,12 @@ export const ExamSettings: React.FC<ExamSettingsProps> = ({register, control, wa
                 ))}
             </Grid>
             <Grid container item md={6}>
-                {numericFields.map((f: string) => (
-                    <Grid item md={12} key={f}>
+                {numericFields.map((f: any) => (
+                    <Grid item md={12} key={f.name}>
                         <FormControlLabel
-                            name={f}
+                            name={f.name}
                             inputRef={register()}
-                            label={_.startCase(f)}
+                            label={_.startCase(f.name)}
                             labelPlacement='start' 
                             control={
                                 <TextField type='number' />

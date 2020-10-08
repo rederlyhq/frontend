@@ -73,7 +73,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                     endDate: moment(topicData.endDate),
                     deadDate: moment(topicData.deadDate),
                 });
-                setDefaultTopic(new NewCourseTopicObj(topicData));
+                setDefaultTopic(new TopicObject(topicData));
             } catch (e) {
                 console.error(`Topic ${topic.id} or User ${userId} does not exist!`, e);
                 setSubmitError(e.message);

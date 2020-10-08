@@ -20,19 +20,28 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
     const { isExam } = watch();
     return (
         <Grid container item md={12} spacing={3}>
-            <Grid item container md={12}><h1 style={{margin: '0 auto'}}>Core Topic Settings</h1></Grid>
+            <Grid item container md={12}><h1>Core Topic Settings</h1></Grid>
             <Grid item md={12}>
                 <TextField 
                     fullWidth 
                     name='name' 
                     inputRef={register()} 
-                    label='Topic Title' 
-                    InputLabelProps={{style: {fontSize: '1.2em'}}} 
-                    inputProps={{style: {textAlign: 'center', fontSize: '1.6em'}}} 
+                    label='Topic Title'
+                />
+            </Grid>
+            <Grid item md={12}>
+                <FormControlLabel 
+                    name='partialExtend'
+                    inputRef={register()} 
+                    label={'Allow Partial Extensions'} 
+                    labelPlacement='end' 
+                    control={
+                        <Switch color='primary'/>
+                    } 
                 />
             </Grid>
             <Grid item container md={12} alignItems='center'>
-                <Grid item container md={4}>
+                <Grid item container>
                     <Controller
                         as={<DateTimePicker value="" onChange={() => {}} />}
                         name="startDate"
@@ -41,8 +50,6 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                         variant="inline"
                         fullWidth={false}
                         label='Start Date'
-                        style={{margin: '0 auto'}}
-                        inputProps={{style: {textAlign: 'center'}}}
                         rules={{
                             required: true,
                             validate: {
@@ -64,8 +71,6 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                         variant="inline"
                         fullWidth={false}
                         label='End Date'
-                        style={{margin: '0 auto'}}
-                        inputProps={{style: {textAlign: 'center'}}}
                         rules={{
                             required: true,
                             validate: {
@@ -87,9 +92,6 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                         variant='inline'
                         fullWidth={false}
                         label='Dead Date'
-                        style={{margin: '0 auto'}}
-                        inputProps={{style: {textAlign: 'center'}}}
-                        // TextFieldComponent={<TextField style={{textAlign: 'center'}} />}
                         rules={{
                             required: true,
                             validate: {
@@ -103,13 +105,12 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                     />
                 </Grid>
             </Grid>
-            <Grid container item md={12}>
+            <Grid item md={12}>
                 <FormControlLabel 
-                    name='isExam' 
-                    style={{margin: '0 auto'}}
+                    name='isExam'
                     inputRef={register()} 
                     label={isExam ? 'This is a Exam Topic' : 'This is an Homework Topic'} 
-                    labelPlacement='start' 
+                    labelPlacement='end' 
                     control={
                         <Switch color='primary'/>
                     } 
