@@ -19,7 +19,7 @@ type ForgotPasswordFormData = {
 
 // TODO: Use Axios.Request JSX to selectively render success or failure.
 export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps> = () => {
-    const { uid } = useParams();
+    const { uid } = useParams<{uid?: string}>();
     const [formState, setFormState] = useState<ForgotPasswordFormData>({
         email: '',
         password: '',

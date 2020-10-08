@@ -4,7 +4,7 @@ import { Nav } from 'react-bootstrap';
 import GradeTable from './GradeTable';
 import _ from 'lodash';
 import SubObjectDropdown from '../../Components/SubObjectDropdown';
-import { UnitObject, NewCourseTopicObj, ProblemObject, CourseObject } from '../CourseInterfaces';
+import { UnitObject, TopicObject, ProblemObject, CourseObject } from '../CourseInterfaces';
 import { CookieEnum } from '../../Enums/CookieEnum';
 import Cookies from 'js-cookie';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
@@ -23,7 +23,7 @@ enum GradesView {
 
 interface IDropdownCascade {
     unit?: UnitObject,
-    topic?: NewCourseTopicObj,
+    topic?: TopicObject,
     problem?: ProblemObject
 }
 

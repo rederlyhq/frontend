@@ -6,7 +6,7 @@ import AxiosRequest from '../../Hooks/AxiosRequest';
 import { useParams } from 'react-router-dom';
 import TopicCreationModal from './TopicCreationModal';
 import _ from 'lodash';
-import { CourseObject, UnitObject, NewCourseUnitObj, NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
+import { CourseObject, UnitObject, NewCourseUnitObj, TopicObject, ProblemObject } from '../CourseInterfaces';
 import moment from 'moment';
 import { useHistory } from 'react-router-dom';
 import MomentUtils from '@date-io/moment';
@@ -31,7 +31,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState<CourseObject>(new CourseObject());
     const history = useHistory();
-    const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unitIndex: number, existingTopic?: NewCourseTopicObj | undefined}>({show: false, unitIndex: -1});
+    const [showTopicCreation, setShowTopicCreation] = useState<{show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined}>({show: false, unitIndex: -1});
     const [showLoadingSpinner, setShowLoadingSpinner] = useState<boolean>(false);
     const [createCourseError, setCreateCourseError] = useState<string>('');
     const [progress, setProgress] = useState({curr: 0, total: 100});
@@ -47,7 +47,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 console.log(course.data.data);
                 const courseData = course.data.data;
                 courseData.units = courseData.units.map((unit: any) => {
-                    unit.topics = unit.topics.map((t: any) => new NewCourseTopicObj(t));
+                    unit.topics = unit.topics.map((t: any) => new TopicObject(t));
                     return new UnitObject(unit);
                 });
                 setCourse(new CourseObject(courseData));
@@ -79,7 +79,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
     // Adds a topic to the selected unit.
     // unitIndex is the index of the unit in the current course.
-    const addTopic = (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => {
+    const addTopic = (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
         console.log('Adding Topic', unitIndex, existingTopic, topic);
         if (topic.questions.length <= 0) {
             // TODO: Render validation!
@@ -108,7 +108,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             // Otherwise, concatenate this object onto the existing array.
             // topic.contentOrder = unit.topics.length;
             topic.contentOrder = Math.max(...unit.topics.map(topic => topic.contentOrder), 0) + 1;
-            unit.topics = _.concat(unit.topics, new NewCourseTopicObj(topic));
+            unit.topics = _.concat(unit.topics, new TopicObject(topic));
         }
 
         setCourse(newCourse);
@@ -157,9 +157,9 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             await Promise.all(unit.topics.map((createTopicForUnit as any)));
         };
         
-        const createTopic = async (topic: NewCourseTopicObj, courseUnitContentId: number) => {
+        const createTopic = async (topic: TopicObject, courseUnitContentId: number) => {
 
-            let newTopic = new NewCourseTopicObj(topic);
+            let newTopic = new TopicObject(topic);
             newTopic.courseUnitContentId = courseUnitContentId;
             const newTopicFields = [ 
                 'courseUnitContentId', 'topicTypeId', 'name', 'startDate', 'endDate', 'deadDate', 'partialExtend', 'contentOrder'

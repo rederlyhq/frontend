@@ -9,13 +9,13 @@ interface MaterialTriSelectProps {
     users: UserObject[];
     selected: {
         unit?: UnitObject, 
-        topic?: NewCourseTopicObj, 
+        topic?: TopicObject, 
         problem?: ProblemObject, 
         user?: UserObject
     };
     setSelected: React.Dispatch<React.SetStateAction<{
         unit?: UnitObject;
-        topic?: NewCourseTopicObj;
+        topic?: TopicObject;
         problem?: ProblemObject;
         user?: UserObject;
     }>>
@@ -25,7 +25,7 @@ export const MaterialTriSelect: React.FC<MaterialTriSelectProps> = ({course, use
     const onItemClick = (type: SettingsComponentType) => {
         if (type instanceof UnitObject) {
             setSelected(selected => ({unit: type, user: selected.user}));
-        } else if (type instanceof NewCourseTopicObj) {
+        } else if (type instanceof TopicObject) {
             setSelected(selected => ({unit: selected.unit, topic: type, user: selected.user}));
         } else if (type instanceof ProblemObject) {
             setSelected(selected => ({unit: selected.unit, topic: selected.topic, problem: type, user: selected.user}));

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProblemObject, NewCourseTopicObj, StudentGrade } from '../Courses/CourseInterfaces';
+import { ProblemObject, TopicObject, StudentGrade } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
 import moment from 'moment';
 import { OverlayTrigger, Tooltip, Badge } from 'react-bootstrap';
@@ -11,7 +11,7 @@ const INFINITE_MAX_ATTEMPT_VALUE = 0;
 
 interface ProblemDetailsProps {
     problem: ProblemObject;
-    topic: NewCourseTopicObj | null;
+    topic: TopicObject | null;
 }
 
 export const ProblemDetails: React.FC<ProblemDetailsProps> = ({

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ProblemObject, NewCourseTopicObj } from '../Courses/CourseInterfaces';
+import { ProblemObject, TopicObject } from '../Courses/CourseInterfaces';
 import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
@@ -22,7 +22,7 @@ interface SimpleProblemPageLocationParams {
 export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const params = useParams<SimpleProblemPageLocationParams>();
     const [problems, setProblems] = useState<Record<number, ProblemObject> | null>(null);
-    const [topic, setTopic] = useState<NewCourseTopicObj | null>(null);
+    const [topic, setTopic] = useState<TopicObject | null>(null);
     const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -62,7 +62,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     setProblems(problemDictionary);
                     setSelectedProblemId(problems[0].id);
                 }
-
 
                 setLoading(false);
             } catch (e) {

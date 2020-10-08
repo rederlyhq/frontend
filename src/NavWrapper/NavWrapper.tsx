@@ -21,6 +21,7 @@ import URLBreadcrumb from './URLBreadcrumb';
 import SettingsPage from '../Courses/Settings/SettingsPage';
 import { version } from '../../package.json';
 import CourseProvider from '../Courses/CourseProvider';
+import TopicSettingsPage from '../Courses/TopicSettings/TopicSettingsPage';
 
 interface NavWrapperProps {
 
@@ -85,7 +86,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
             {/* Routing for the page content */}
             <Container fluid role='main'>
                 <Provider value={{userType: getUserRole()}}>    
-                    <AnimatePresence exitBeforeEnter initial={false}>
+                    <AnimatePresence initial={false}>
                         <URLBreadcrumb key='URLBreadcrumb' />
                         <Switch>
                             <Route exact path={`${path}/account`}>
@@ -109,14 +110,21 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             <Route path={`${path}/courses/enroll/:enrollCode`}>
                                 <EnrollUserPage />
                             </Route>
-                            <Route path={`${path}/courses/:courseId/topic/:topicId`}>
-                                <SimpleProblemPage />
-                            </Route>
                             <Route path={`${path}/courses/:courseId`}>
                                 <CourseProvider>
                                     <Switch>
-                                        <Route path={`${path}/courses/:courseId/settings`}><SettingsPage /></Route>
-                                        <Route path={`${path}/`}><CourseDetailsPage /></Route>
+                                        <Route path={`${path}/courses/:courseId/topic/:topicId/settings`}>
+                                            <TopicSettingsPage />
+                                        </Route>
+                                        <Route path={`${path}/courses/:courseId/topic/:topicId`}>
+                                            <SimpleProblemPage />
+                                        </Route>
+                                        <Route path={`${path}/courses/:courseId/settings`}>
+                                            <SettingsPage />
+                                        </Route>
+                                        <Route path={`${path}/`}>
+                                            <CourseDetailsPage />
+                                        </Route>
                                     </Switch>
                                 </CourseProvider>
                             </Route>

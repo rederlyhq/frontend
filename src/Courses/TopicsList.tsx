@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ListGroup, ListGroupItem, Row, Col, Button } from 'react-bootstrap';
-import { NewCourseTopicObj } from './CourseInterfaces';
+import { TopicObject } from './CourseInterfaces';
 import { BsPencilSquare, BsTrash } from 'react-icons/bs';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
@@ -16,7 +16,7 @@ import moment from 'moment';
 import { nameof } from '../Utilities/TypescriptUtils';
 
 interface TopicsListProps {
-    listOfTopics: Array<NewCourseTopicObj>;
+    listOfTopics: Array<TopicObject>;
     flush?: boolean;
     showEditTopic?: _.CurriedFunction2<any, number, void>;
     removeTopic?: _.CurriedFunction2<any, number, void>;
@@ -33,15 +33,15 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
     
     const { control } = useForm();
     
-    const updateTopicField = async (topic: NewCourseTopicObj, field: keyof NewCourseTopicObj, newData: Date) => {
+    const updateTopicField = async (topic: TopicObject, field: keyof TopicObject, newData: Date) => {
         console.log(`Updating Topic ${topic.id} to ${field} = ${newData}`);
         const updates = {
             [field]: newData
         };
 
-        if (field === nameof<NewCourseTopicObj>('endDate')) {
+        if (field === nameof<TopicObject>('endDate')) {
             if (moment(newData).isAfter(moment(topic.deadDate)) || moment(topic.deadDate).isSame(moment(topic.endDate))) {
-                updates[nameof<NewCourseTopicObj>('deadDate')] = newData;
+                updates[nameof<TopicObject>('deadDate')] = newData;
             }
         }
 
@@ -56,7 +56,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
         }
     };
 
-    const getActiveExtensions = (topic: NewCourseTopicObj): Array<any> => {
+    const getActiveExtensions = (topic: TopicObject): Array<any> => {
         const now = moment();
         if (_.isEmpty(topic.studentTopicOverride)) return [];
 
@@ -70,7 +70,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
         return activeExtensions;
     };
 
-    const renderSingleTopic = (topic: NewCourseTopicObj) => {
+    const renderSingleTopic = (topic: TopicObject) => {
         const activeExtensions = getActiveExtensions(topic);
         return (
             <div className='d-flex'>
