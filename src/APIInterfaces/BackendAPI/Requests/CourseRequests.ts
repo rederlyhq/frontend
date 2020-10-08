@@ -323,12 +323,8 @@ export const extendQuestion = async ({
 }: ExtendCourseTopicQuestionsForUser): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
         return await AxiosRequest.put(
-            `${COURSE_QUESTION_PATH}/extend`, extensions, {
-                params: {
-                    userId,
-                    courseTopicQuestionId,
-                }
-            }
+            url.resolve(COURSE_QUESTION_PATH, `extend?${qs.stringify({courseTopicQuestionId, userId})}`), 
+            extensions
         );
     } catch (e) {
         throw new BackendAPIError(e);
