@@ -23,7 +23,7 @@ interface OverridesFormProps {
 }
 
 export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, problem}) => {
-    const { register, handleSubmit, getValues, errors, control, watch, formState, reset } = useForm<Inputs>(
+    const { register, handleSubmit, getValues, errors, control, watch, formState, reset, setError } = useForm<Inputs>(
         {
             mode: 'onSubmit', 
             shouldFocusError: true,
@@ -36,19 +36,15 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
         }
     );
     const [formLoading, setFormLoading] = useState<boolean>(false);
-    const [submitError, setSubmitError] = useState<string>('');
     const drawerFontSize = '1.4em';
     const { startDate, endDate, deadDate } = watch();
     const [defaultTopic, setDefaultTopic] = useState<NewCourseTopicObj | undefined>(topic);
     const [defaultProblem, setDefaultProblem] = useState<ProblemObject | undefined>(problem);
-    // TODO: This should be provided by react-hook-forms
-    const [ isSubmitSuccessful, setIsSubmitSuccesful] = useState<boolean>(false);
-    const { /* isSubmitSuccessful,*/ isSubmitting  } = formState;
+    const { isSubmitSuccessful, isSubmitting  } = formState;
 
     useEffect(()=>{
         setDefaultTopic(topic);
         setDefaultProblem(problem);
-        setIsSubmitSuccesful(false);
         reset();
     }, [topic, problem, userId]);
 
@@ -56,7 +52,6 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
     useEffect(()=>{
         if (!topic || problem !== undefined) return;
         setFormLoading(true);
-        setSubmitError('');
 
         (async () => {
             try {
@@ -76,7 +71,10 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                 setDefaultTopic(new NewCourseTopicObj(topicData));
             } catch (e) {
                 console.error(`Topic ${topic.id} or User ${userId} does not exist!`, e);
-                setSubmitError(e.message);
+                setError('server', {
+                    type: 'manual',
+                    message: e.message,
+                });
             } finally {
                 setFormLoading(false);
             }
@@ -86,7 +84,6 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
     // Get Question Override information
     useEffect(()=>{
         if (!problem) return;
-        setSubmitError('');
 
         (async () => {
             try {
@@ -103,7 +100,10 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                 setDefaultProblem(new ProblemObject(questionData));
             } catch (e) {
                 console.error(`Question ${problem.id} or User ${userId} does not exist!`, e);
-                setSubmitError(e.data);
+                setError('server', {
+                    type: 'manual',
+                    message: e.message,
+                });
             } finally {
                 setFormLoading(false);
             }
@@ -112,28 +112,14 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
     }, [problem, userId]);
 
     const updateTopic = async (courseTopicContentId: number, userId: number, extensions: {startDate: Moment, endDate: Moment, deadDate: Moment}) => {
-        try {
-            const res = await extendTopic({courseTopicContentId, userId, extensions});
-            console.log(res);
-        } catch (e) {
-            console.error(e);
-            throw e;
-        }
+        await extendTopic({courseTopicContentId, userId, extensions});
     };
 
     const updateQuestions = async (courseTopicQuestionId: number, userId: number, extensions: {maxAttempts: number}) => {
-        try {
-            const res = await extendQuestion({courseTopicQuestionId, userId, extensions});
-            console.log(res);
-        } catch (e) {
-            console.error(e);
-            throw e;
-        }
+        await extendQuestion({courseTopicQuestionId, userId, extensions});
     };
 
     const onSubmit = async (extensions: {startDate: Moment, endDate: Moment, deadDate: Moment} | {maxAttempts: number}) => {
-        setSubmitError('');
-        setIsSubmitSuccesful(false);
         try {
             if (problem) {
                 await updateQuestions(problem.id, userId, extensions as {maxAttempts: number});
@@ -142,9 +128,11 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
             } else {
                 console.error('Unhandled override case.');
             }
-            setIsSubmitSuccesful(true);
         } catch (e) {
-            setSubmitError(e);
+            setError('server', {
+                type: 'manual',
+                message: e.message,
+            });
         }
     };
 
@@ -245,9 +233,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
             <Grid container justify='center'>
                 <Grid container item md={6} spacing={2}>
                     <Grid item md={12}>
-                        {isSubmitSuccessful && (submitError ? 
-                            <Alert variant='danger'>{submitError}</Alert> : 
-                            <Alert variant='success'>Successfully updated</Alert>)}
+                        {isSubmitSuccessful && <Alert variant='success'>Successfully updated</Alert>}
                         {_.values(errors).map(data => <Alert variant='danger' key={(data as any)?.type}>{(data as any)?.message || 'Please enter an appropriate value'}</Alert>)}
                     </Grid>
 

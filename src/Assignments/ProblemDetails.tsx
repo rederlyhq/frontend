@@ -130,7 +130,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                             return `This problem allows ${maxAttempts} attempt${maxAttempts === 1 ? '' : 's'}.`;
                                         }
                                         const remainingAttempts = maxAttempts - usedAttempts;
-                                        return `You have ${remainingAttempts} graded attempt${remainingAttempts === 1 ? '' : 's'} remaining.`;
+                                        return `You have ${Math.max(remainingAttempts, 0)} graded attempt${remainingAttempts === 1 ? '' : 's'} remaining.`;
                                     }
                                 })()}
                             </div>
@@ -148,19 +148,6 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                 // optional and no weight
                                 return 'This problem is optional.';
                             } 
-                        })()}
-                    </div>
-                    <div className="d-flex">
-                        {(() => {
-                            if (maxAttempts <= INFINITE_MAX_ATTEMPT_VALUE) {
-                                return 'This question does not have an attempt limit.';
-                            } else {
-                                if (_.isNil(usedAttempts)) {
-                                    return `This problem allows ${maxAttempts} attempt${maxAttempts === 1 ? '' : 's'}.`;
-                                }
-                                const remainingAttempts = maxAttempts - usedAttempts;
-                                return `You have ${Math.max(remainingAttempts, 0)} graded attempt${remainingAttempts === 1 ? '' : 's'} remaining.`;
-                            }
                         })()}
                     </div>
                     {_.isNil(grade) ? null : (
