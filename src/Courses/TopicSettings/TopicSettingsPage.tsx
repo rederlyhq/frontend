@@ -43,7 +43,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
 
     return (
         <MuiPickersUtilsProvider utils={MomentUtils}>
-            <Grid container spacing={2}>
+            <Grid container spacing={5} style={{margin: '0rem 5rem 0rem 5rem'}}>
                 {/* Sidebar */}
                 <TopicSettingsSidebar 
                     topic={topic || new TopicObject()} 
@@ -51,7 +51,9 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
                     setSelectedProblemId={setSelectedProblemId} 
                 />
                 {/* Problem List */}
-                <SettingsForm />
+                <SettingsForm 
+                    selectedProblemId={selectedProblemId} 
+                />
             </Grid>
         </MuiPickersUtilsProvider>
     );

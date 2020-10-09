@@ -1,5 +1,5 @@
 import MomentUtils from '@date-io/moment';
-import { FormControlLabel, Grid, Switch, TextField } from '@material-ui/core';
+import { Button, FormControlLabel, Grid, Switch, TextField } from '@material-ui/core';
 import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
 import moment, { Moment } from 'moment';
 import React from 'react';
@@ -10,14 +10,16 @@ interface CommonSettingsProps {
     register: any;
     control: any;
     watch: any;
+    getValues: any;
 }
 
 /**
  * This component renders settings that are common to all Topic objects.
  * 
  */
-export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control, watch}) => {
-    const { isExam } = watch();
+export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control, watch, getValues}) => {
+    const { isExam, partialExtend } = watch();
+
     return (
         <Grid container item md={12} spacing={3}>
             <Grid item container md={12}><h1>Core Topic Settings</h1></Grid>
@@ -40,8 +42,8 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                     } 
                 />
             </Grid>
-            <Grid item container md={12} alignItems='center'>
-                <Grid item container>
+            <Grid item container md={12} spacing={3}>
+                <Grid item>
                     <Controller
                         as={<DateTimePicker value="" onChange={() => {}} />}
                         name="startDate"
@@ -54,15 +56,15 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                             required: true,
                             validate: {
                                 isDate: (data: any) => moment(data).isValid() || 'Invalid date',
-                                // isEarliest: (startDate: Moment) => {
-                                //     const { endDate, deadDate } = getValues();
-                                //     return startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate) || 'Start date cannot be after End or Dead dates';
-                                // }
+                                isEarliest: (startDate: Moment) => {
+                                    const { endDate, deadDate } = getValues();
+                                    return startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate) || 'Start date cannot be after End or Dead dates';
+                                }
                             }
                         }}
                     />
                 </Grid>
-                <Grid item container md={4}>
+                <Grid item>
                     <Controller
                         as={<DateTimePicker value="" onChange={() => {}} />}
                         name="endDate"
@@ -83,7 +85,8 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                         }}
                     />
                 </Grid>
-                <Grid item container md={4}>
+                <Grid item>
+                    {partialExtend && 
                     <Controller
                         as={<DateTimePicker value="" onChange={() => {}} />}
                         name="deadDate"
@@ -102,7 +105,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                                 // }
                             }
                         }}
-                    />
+                    />}
                 </Grid>
             </Grid>
             <Grid item md={12}>
