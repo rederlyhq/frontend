@@ -7,6 +7,7 @@ import ExamSettings from './ExamSettings';
 import moment from 'moment';
 import { Button, Grid } from '@material-ui/core';
 import ProblemSettings from './ProblemSettings';
+import { TopicTypeId } from '../../Enums/TopicType';
 
 interface SettingsFormProps {
     selectedProblemId: number | 'topic';
@@ -17,7 +18,7 @@ interface Inputs {
     startDate: Moment;
     endDate: Moment;
     deadDate: Moment;
-    isExam: boolean;
+    isExam: TopicTypeId;
 }
 
 /**
@@ -32,7 +33,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({selectedProblemId}) =
             startDate: moment(),
             endDate: moment(),
             deadDate: moment(),
-            isExam: false,
+            isExam: TopicTypeId.HOMEWORK,
         }
     });
     const { register, handleSubmit, getValues, errors, control, setValue, watch, formState, reset } = formObject;
@@ -49,7 +50,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({selectedProblemId}) =
                     {selectedProblemId === 'topic' ? (
                         <>
                             <CommonSettings formObject={formObject} />
-                            {isExam && <ExamSettings register={register} control={control} watch={watch} />}
+                            {isExam === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
                         </>
                     ) : (
                         <>

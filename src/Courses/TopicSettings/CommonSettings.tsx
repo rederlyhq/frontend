@@ -3,6 +3,7 @@ import { Button, FormControl, FormControlLabel, FormLabel, Grid, Radio, RadioGro
 import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
 import moment, { Moment } from 'moment';
 import { Controller } from 'react-hook-form';
+import { TopicTypeId } from '../../Enums/TopicType';
 
 interface CommonSettingsProps {
     // This is the register function from react-hook-forms.
@@ -18,7 +19,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
     const { isExam, partialExtend } = watch();
 
     useEffect(()=>{
-        if (isExam) {
+        if (isExam === TopicTypeId.EXAM) {
             setValue('partialExtend', false);
         }
     }, [isExam]);
@@ -35,7 +36,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                 />
             </Grid>
             {/* This is a workaround because setValue doesn't seem to cause a UI rerender. */}
-            <Grid item md={12} style={{display: isExam ? 'none' : undefined}}>
+            <Grid item md={12} style={{display: isExam === 'exam' ? 'none' : undefined}}>
                 {/* ${partialCreditScore} = ((${gradeCandidate}- ${legalScore}) * ${topicLateScalar}) + ${legalScore} */}
                 Allow students to receive partial credit after the end date of this topic. Partial credit is scaled for up to half the original weight of the topic.<br/>
                 <FormControlLabel 
@@ -43,7 +44,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                     inputRef={register()} 
                     label={'Allow Partial Extensions'} 
                     labelPlacement='end' 
-                    disabled={isExam}
+                    disabled={isExam === TopicTypeId.EXAM}
                     control={
                         <Switch color='primary' />
                     } 
@@ -121,9 +122,9 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
             <Grid item md={12}>
                 <FormControl component="fieldset">
                     <FormLabel component="legend">Topic Type</FormLabel>
-                    <RadioGroup aria-label="Topic Type" name="isExam" ref={register()}>
-                        <FormControlLabel value="homework" control={<Radio />} label="Homework" />
-                        <FormControlLabel value="exam" control={<Radio />} label="Exam" />
+                    <RadioGroup row aria-label="Topic Type" name="isExam">
+                        <FormControlLabel inputRef={register()} labelPlacement='top' value={TopicTypeId.HOMEWORK} control={<Radio />} label="Homework" />
+                        <FormControlLabel inputRef={register()} labelPlacement='top' value={TopicTypeId.EXAM} control={<Radio />} label="Exam" />
                     </RadioGroup>
                 </FormControl>
             </Grid>
