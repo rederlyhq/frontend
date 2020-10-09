@@ -22,7 +22,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = () => {
     }>({});
 
     return (
-        <Container>
+        <Container style={{marginBottom: (selected.user && selected.topic) ? '25rem' : undefined}}>
             <Row>
                 <Col className='text-center'>
                     <h1>Course/Individual Settings</h1>
