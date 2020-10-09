@@ -26,6 +26,8 @@ export type PutCourseUnitUpdatesResponse = BackendAPIResponse<PutCourseUnitUpdat
 /* *************** *************** */
 /* *********** Topics  *********** */
 /* *************** *************** */
+export type GetTopicResponse = BackendAPIResponse<Partial<NewCourseTopicObj>>;
+
 export type PostTopicResponse = BackendAPIResponse<Partial<NewCourseTopicObj>>;
 
 interface PutCourseTopicUpdates {
@@ -39,6 +41,15 @@ export type PutCourseTopicUpdatesResponse = BackendAPIResponse<PutCourseTopicUpd
 /* *************** *************** */
 export type CreateQuestionResponse = BackendAPIResponse<Partial<NewProblemObject>>;
 
+interface PostQuestionSubmission {
+    studentGrade: Partial<StudentGrade>;
+    rendererData: {
+        renderedHTML: string;
+    }
+}
+
+export type PostQuestionSubmissionResponse = BackendAPIResponse<PostQuestionSubmission>;
+
 interface PutCourseTopicQuestionUpdates {
     updatesResult: Partial<ProblemObject>[]
 }
@@ -49,6 +60,7 @@ interface PutQuestionGrade {
     updatesResult: {
         updatedRecords: Partial<StudentGrade>[]
     }
+    updatesCount: number;
 }
 
 export type PutQuestionGradeResponse = BackendAPIResponse<PutQuestionGrade>;
@@ -64,3 +76,5 @@ interface GetQuestions {
     topic: NewCourseTopicObj
 }
 export type GetQuestionsResponse = BackendAPIResponse<GetQuestions>;
+
+export type GetQuestionResponse = BackendAPIResponse<Partial<ProblemObject>>;

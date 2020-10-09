@@ -2,7 +2,7 @@ import React from 'react';
 import { Switch, Route, useRouteMatch, Redirect, useHistory, Link } from 'react-router-dom';
 import CoursePage from '../Courses/CoursePage';
 import Cookies from 'js-cookie';
-import { Container, Navbar, NavbarBrand, Nav, NavDropdown } from 'react-bootstrap';
+import { Container, Navbar, NavbarBrand, Nav, NavDropdown, Row, Col } from 'react-bootstrap';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import CourseDetailsPage from '../Courses/CourseDetailsPage';
 import { AnimatePresence } from 'framer-motion';
@@ -18,6 +18,9 @@ import { ProvideFeedback } from './ProvideFeedback';
 import AccountWrapper from '../Account/AccountWrapper';
 import { CookieEnum } from '../Enums/CookieEnum';
 import URLBreadcrumb from './URLBreadcrumb';
+import SettingsPage from '../Courses/Settings/SettingsPage';
+import { version } from '../../package.json';
+import CourseProvider from '../Courses/CourseProvider';
 
 interface NavWrapperProps {
 
@@ -83,7 +86,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
             <Container fluid role='main'>
                 <Provider value={{userType: getUserRole()}}>    
                     <AnimatePresence exitBeforeEnter initial={false}>
-                        <URLBreadcrumb/>
+                        <URLBreadcrumb key='URLBreadcrumb' />
                         <Switch>
                             <Route exact path={`${path}/account`}>
                                 <AccountWrapper />
@@ -97,6 +100,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             <Route exact path={`${path}/courses/new`}>
                                 <CourseCreationPage />
                             </Route>
+                            <Route path={`${path}/courses/settings/:courseId`}>
+                                <SettingsPage />
+                            </Route>
                             <Route path={`${path}/courses/edit/:courseId`}>
                                 <CourseEditPage />
                             </Route>
@@ -107,7 +113,12 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                 <SimpleProblemPage />
                             </Route>
                             <Route path={`${path}/courses/:courseId`}>
-                                <CourseDetailsPage />
+                                <CourseProvider>
+                                    <Switch>
+                                        <Route path={`${path}/courses/:courseId/settings`}><SettingsPage /></Route>
+                                        <Route path={`${path}/`}><CourseDetailsPage /></Route>
+                                    </Switch>
+                                </CourseProvider>
                             </Route>
                             <Route path="/">
                                 {/* <NoPage/> */}
@@ -116,6 +127,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                         </Switch>
                     </AnimatePresence>
                 </Provider>
+                <Navbar fixed="bottom" variant='dark' bg='dark' className='footer'>
+                    <Row><Col>You&apos;re using v{version} of Rederly!</Col></Row>
+                </Navbar>
             </Container>
         </Container>
     );

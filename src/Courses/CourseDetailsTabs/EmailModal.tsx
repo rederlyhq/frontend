@@ -3,9 +3,10 @@ import { Modal, ModalTitle, ModalBody, Form, Button, ModalFooter, FormGroup, For
 import ModalHeader from 'react-bootstrap/ModalHeader';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import useAlertState from '../../Hooks/useAlertState';
+import { UserObject } from '../CourseInterfaces';
 
 interface EmailModalProps {
-    users: Set<number>;     // The number of users this message is going out to.
+    users: UserObject[];     // The number of users this message is going out to.
     show: boolean;
     setClose: () => void;
 }
@@ -38,7 +39,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) =
             <ModalBody>
                 <Form>
                     <Alert variant={sendEmailRespAlertType} show={sendEmailRespMsg.length > 0}>{sendEmailRespMsg}</Alert>
-                    <div>You are sending an email to {users.size} students.</div>
+                    <div>You are sending an email to {users.length} students.</div>
                     <FormGroup controlId='Subject'>
                         <FormLabel>Subject: </FormLabel>
                         <FormControl 

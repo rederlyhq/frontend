@@ -26,6 +26,11 @@ export class CourseObject {
     
     public constructor(init?:Partial<CourseObject>) {
         Object.assign(this, init);
+
+        if (!_.isNull(init?.units)) {
+            this.units = init?.units?.map(unit => new UnitObject(unit)) || [];
+        }
+
         if(_.isNil(init?.semesterCodeYear) && !_.isNil(init?.semesterCode)) {
             const semesterCodeRegex = /^(.*?)(\d+)$/;
             // init cannot be nil from the if statement above
@@ -50,6 +55,10 @@ export class UserObject {
     firstName?: string;
     lastName?: string;
     id: number = -1;
+
+    get name(): string {
+        return `${this.firstName} ${this.lastName}`;
+    }
 
     public constructor(init?:Partial<UserObject>) {
         Object.assign(this, init);
@@ -87,6 +96,10 @@ export class TopicObject {
     
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
+      
+        if (!_.isNull(init?.questions)) {
+            this.questions = init?.questions?.map(question => new ProblemObject(question)) || [];
+        }
     }
 }
 
@@ -96,10 +109,15 @@ export class NewCourseTopicObj extends TopicObject {
     endDate: Date = new Date();
     deadDate: Date = new Date();
     partialExtend: boolean = false;
+    studentTopicOverride: any[] = [];
 
     public constructor(init?:Partial<NewCourseTopicObj>) {
-        super();
+        super(init);
         Object.assign(this, init);
+        
+        if (!_.isNull(init?.questions)) {
+            this.questions = init?.questions?.map(question => new ProblemObject(question)) || [];
+        }
     }
 }
 
@@ -111,14 +129,18 @@ export class UnitObject {
     topics: Array<NewCourseTopicObj> = [];
     unique: number = newUnitUniqueGen.next().value || 0;
     contentOrder: number = 0;
+    courseId: number = 0;
     
     public constructor(init?:Partial<UnitObject>) {
         Object.assign(this, init);
+                        
+        if (!_.isNull(init?.topics)) {
+            this.topics = init?.topics?.map(topic => new NewCourseTopicObj(topic)) || [];
+        }
     }
 }
 
 export class NewCourseUnitObj extends UnitObject {
-    courseId: number = 0;
 }
 
 const newProblemUniqueGen = uniqueGen();
@@ -128,7 +150,9 @@ export class StudentGrade {
     effectiveScore: number = 0;
     bestScore: number = 0;
     numAttempts: number = 0;
+    numLegalAttempts: number = 0;
     locked: boolean = false;
+    currentProblemState?: unknown;
     id?: number;
 
     public constructor(init?:Partial<ProblemObject>) {
@@ -147,6 +171,7 @@ export class ProblemObject implements IProblemObject {
     optional: boolean = false;
     unique: number = newProblemUniqueGen.next().value || 0;
     grades?: StudentGrade[];
+    studentTopicQuestionOverride: any[] = [];
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
@@ -156,3 +181,5 @@ export class ProblemObject implements IProblemObject {
 export class NewProblemObject extends ProblemObject {
     courseTopicContentId: number = 0;
 }
+
+export type SettingsComponentType = UnitObject | UserObject | NewCourseTopicObj | ProblemObject;

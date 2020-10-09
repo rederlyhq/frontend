@@ -8,6 +8,7 @@ import { ProblemDoneState } from '../Enums/AssignmentEnums';
 import _ from 'lodash';
 import { getQuestions } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { ProblemDetails } from './ProblemDetails';
+import { ProblemStateProvider } from '../Contexts/CurrentProblemState';
 
 interface SimpleProblemPageProps {
 }
@@ -40,18 +41,30 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     courseTopicContentId: parseInt(params.topicId, 10)
                 });
                 const problems: Array<ProblemObject> = res.data.data.questions;
+                
                 const topic = res.data.data.topic;
+
+                if (topic.studentTopicOverride?.length > 0) {
+                    _.assign(topic, topic.studentTopicOverride[0]);
+                }
                 setTopic(topic);
 
                 if (!_.isEmpty(problems)) {
                     const problemDictionary = _.chain(problems)
-                        .map(prob => new ProblemObject(prob))
+                        .map(prob => {
+                            const override = prob.studentTopicQuestionOverride?.[0];
+                            if (!_.isNil(override)) {
+                                delete override.id;
+                                _.assign(prob, override);
+                            }
+                            return new ProblemObject(prob);
+                        })
                         .keyBy('id')
                         .value();
-                    console.log(problemDictionary);
                     setProblems(problemDictionary);
                     setSelectedProblemId(problems[0].id);
                 }
+
 
                 setLoading(false);
             } catch (e) {
@@ -136,15 +149,20 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         </Nav>
                     </Col>
                     <Col md={9}>
-                        <ProblemDetails
-                            problem={problems[selectedProblemId]}
-                            topic={topic}
-                        />
-                        {/* Temporarily disabled for release.  */}
-                        {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
-                            <Button className='float-right'>Ask for help</Button>
-                        </a>)}
-                        {<ProblemIframe problem={problems[selectedProblemId]} setProblemStudentGrade={setProblemStudentGrade}/>}
+                        <ProblemStateProvider>
+                            <ProblemDetails
+                                problem={problems[selectedProblemId]}
+                                topic={topic}
+                            />
+                            {/* Temporarily disabled for release.  */}
+                            {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
+                                <Button className='float-right'>Ask for help</Button>
+                            </a>)}
+                            {<ProblemIframe 
+                                problem={problems[selectedProblemId]} 
+                                setProblemStudentGrade={setProblemStudentGrade}
+                            />}
+                        </ProblemStateProvider>
                     </Col>
                 </Row>
             </Container>

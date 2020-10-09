@@ -1,0 +1,15 @@
+.black-drawer, .black-drawer .MuiDrawer-root.MuiDrawer-docked .MuiPaper-root .MuiIconButton-root, .black-drawer .MuiInputBase-root {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.black-drawer .MuiButton-root, .black-drawer .MuiFormLabel-root {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.black-drawer .MuiInputBase-root.MuiInput-underline::before {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6)  !important;
+}
+
+.black-drawer .MuiInputBase-root.MuiInput-underline::after {
+	border-bottom: 1px solid rgba(255, 255, 255, 0.8)  !important;
+}

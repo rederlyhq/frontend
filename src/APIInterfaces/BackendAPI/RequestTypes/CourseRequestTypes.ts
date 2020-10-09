@@ -1,4 +1,5 @@
 import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject, NewCourseUnitObj, StudentGrade } from '../../../Courses/CourseInterfaces';
+import { Moment } from 'moment';
 
 /* *************** *************** */
 /* *********** Courses *********** */
@@ -32,6 +33,11 @@ export interface DeleteCourseUnitOptions {
 /* *************** *************** */
 /* *********** Topics  *********** */
 /* *************** *************** */
+export interface GetCourseTopicOptions {
+    id: number;
+    userId: number | undefined;
+}
+
 export interface PostCourseTopicOptions {
     data: Partial<NewCourseTopicObj>;
 }
@@ -43,6 +49,12 @@ export interface PutCourseTopicOptions {
 
 export interface DeleteCourseTopicOptions {
     id: number;
+}
+
+export interface ExtendCourseTopicForUser {
+    courseTopicContentId: number;
+    userId: number;
+    extensions: {startDate: Moment, endDate: Moment, deadDate: Moment};
 }
 
 /* *************** *************** */
@@ -66,12 +78,33 @@ export interface PostCourseTopicQuestionOptions {
     data: Partial<NewProblemObject>;
 }
 
+export interface PostQuestionSubmissionOptions {
+    id: number;
+    data: FormData;
+}
+
 export interface PostDefFileOptions {
     acceptedFiles: any;
     courseTopicId: number;
 }
 
+export interface GetQuestionOptions {
+    id: number;
+    userId?: number;
+}
+
 export interface GetQuestionsOptions {
     userId: number | 'me';
     courseTopicContentId: number;
+}
+
+export interface DeleteEnrollmentOptions {
+    userId: number;
+    courseId: number;
+}
+
+export interface ExtendCourseTopicQuestionsForUser {
+    courseTopicQuestionId: number;
+    userId: number;
+    extensions: {maxAttempts: number};
 }

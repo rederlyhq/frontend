@@ -4,6 +4,10 @@ import AxiosRequest from '../Hooks/AxiosRequest';
 import _ from 'lodash';
 import { Spinner } from 'react-bootstrap';
 import * as qs from 'querystring';
+import { postQuestionSubmission, putQuestionGrade } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import moment from 'moment';
+import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
+import { xRayVision } from '../Utilities/NakedPromise';
 import IframeResizer, { IFrameComponent } from 'iframe-resizer-react';
 
 interface ProblemIframeProps {
@@ -24,13 +28,15 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     problem,
     setProblemStudentGrade,
     workbookId,
-    readonly = false
+    readonly = false,
 }) => {
     const iframeRef = useRef<IFrameComponent>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [height, setHeight] = useState('100vh');
+    const height = '100vh';
+
+    const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
     useEffect(()=>{
         setLoading(true);
@@ -58,69 +64,122 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 setLoading(false);
             }
         })();
+        // when problem changes, reset lastsubmitted and lastsaved
+        setLastSubmittedAt?.(null);
+        setLastSavedAt?.(null);
     }, [problem.id]);
 
-    function insertListener() {
-        // assuming global problemiframe - too sloppy?
-        let problemForm = iframeRef?.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
-        // don't croak when the empty iframe is first loaded
-        // problably not an issue for rederly/frontend
-        if (_.isNil(problemForm)) {
-            // This will happen, if you set error then it will never be true and breaks the page
-            // setError('An error occurred');
-            // console.error('Hijacker: Could not find the form to insert the listener');
-            return;
-        }
-        problemForm.addEventListener('submit', (event: { preventDefault: () => void; }) => {
-            event.preventDefault();
-            if (_.isNil(problemForm)) {
-                console.error('Hijacker: Could not find the form when submitting the form');
-                setError('An error occurred');
-                return;
-            }
-            let formData = new FormData(problemForm);
-            let clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
-            if (_.isNil(clickedButton)) {
-                setError('Hijacker: An error occurred');
-                console.error('Could not find the button that submitted the form');
-                return;
-            }
-            formData.set(clickedButton.name, clickedButton.value);
-            const submiturl = problemForm.getAttribute('action');
-            if(_.isNil(submiturl)) {
-                setError('An error occurred');
-                console.error('Hijacker: Couldn\'t find the submit URL');
-                return;
-            }
-            const submit_params = {
-                body: formData,
-                method: 'post',
-            };
-            fetch(submiturl, submit_params).then( function(response) {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error('Could not submit your answers: ' + response.statusText);
+    const formDataToObject = (formData: FormData) => {
+        let object:any = {};
+        // downstream iterator error
+        // @ts-ignore
+        for(let pair of formData.entries()) {
+            if (_.isUndefined(object[pair[0]])) {
+                object[pair[0]] = pair[1];
+            } else {
+                if(!_.isArray(object[pair[0]])) {
+                    object[pair[0]] = [object[pair[0]]];
                 }
-            }).then( function(res) {
+                object[pair[0]].push(pair[1]);
+            }
+        }
+        return object;
+    };
+
+    async function prepareAndSubmit(problemForm: HTMLFormElement, clickedButton?: HTMLButtonElement) {
+        const submitAction = (window as any).submitAction;
+        if(typeof submitAction === 'function') submitAction(); // this is a global function from renderer - prepares form field for submit
+
+        let formData = new FormData(problemForm);
+        if (!_.isNil(clickedButton)) {
+            formData.set(clickedButton.name, clickedButton.value);
+            try {
+                const result = await postQuestionSubmission({
+                    id: problem.id,
+                    data: formData,
+                });
                 if(_.isNil(iframeRef?.current)) {
                     console.error('Hijacker: Could not find the iframe ref');
                     setError('An error occurred');
                     return;
                 }
-                setRenderedHTML(res.data.rendererData.renderedHTML);
-                setProblemStudentGrade(res.data.studentGrade);
-            }).catch( function(e) {
-                console.error(e);
+                setRenderedHTML(result.data.data.rendererData.renderedHTML);
+                if (clickedButton.name === 'submitAnswers'){
+                    setProblemStudentGrade(result.data.data.studentGrade);
+                    setLastSubmittedAt?.(moment());
+                }
+            } catch (e) {
                 setError(e.message);
-            });
-        });
+                return;
+            }
+        } else {
+            if (_.isNil(problem.grades)) {return;} // TODO: impossi-log console.error()
+            if (_.isNil(problem.grades[0])) {return;} // not enrolled - do not save
+            if (_.isNil(problem.grades[0].id)) {
+                // TODO: impossi-log console.error()
+                setError(`No grades id for problem #${problem.id}`);
+                return;
+            }    
+            const reqBody = {
+                currentProblemState: formDataToObject(formData)
+            };
+            try {
+                const result = await putQuestionGrade({
+                    id: problem.grades[0].id, 
+                    data: reqBody
+                });
+                if (result.data.data.updatesCount > 0) {
+                    setLastSavedAt?.(moment());
+                }
+            } catch (e) {
+                setError(e.message);
+                return;
+            }
+        }
     }
 
-    const onLoadHandlers = () => {
-        const iframeDoc = iframeRef.current?.contentDocument;
+    function insertListener(problemForm: HTMLFormElement) {
+        const submitHandler = (clickedButton: HTMLButtonElement) => {
+            if (_.isNil(problemForm)) {
+                console.error('Hijacker: Could not find the form when submitting the form');
+                setError('An error occurred');
+                return;
+            }
+            if (_.isNil(clickedButton)) {
+                setError('Hijacker: An error occurred');
+                console.error('Could not find the button that submitted the form');
+                return;
+            }
+            prepareAndSubmit(problemForm, clickedButton);
+        };
+        const debouncedSubmitHandler = _.debounce(submitHandler, 4000, { leading: true, trailing: false });
 
-        if (!iframeDoc) return;
+        problemForm.addEventListener('submit', (event: { preventDefault: () => void; }) => {
+            event.preventDefault();
+            const clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
+            const shouldSubmit = (clickedButton.name === 'submitAnswers');
+            if (shouldSubmit) {
+                debouncedSubmitHandler(clickedButton);
+            } else {
+                submitHandler(clickedButton);
+            }
+        });
+
+        problemForm.addEventListener('input', _.debounce(() => {
+            if (_.isNil(problemForm)) {
+                console.error('Hijacker: Could not find the form when submitting the form');
+                setError('An error occurred');
+                return;
+            }
+            prepareAndSubmit(problemForm);
+        }, 2000));
+    }
+
+    const onLoadHandlers = async () => {
+        const iframeDoc = iframeRef.current?.contentDocument;
+        const iframeWindow = iframeRef?.current?.contentWindow as any | null | undefined;
+
+        if (!iframeDoc) return; // this will prevent empty renderedHTML
 
         const body = iframeDoc?.body;
         if (body === undefined) {
@@ -131,7 +190,44 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         // HTMLCollectionOf is not iterable by default in Typescript.
         // const forms = iframeDoc.getElementsByTagName('form');
         // _.forEach(forms, form => form.addEventListener('submit', hijackFormSubmit));
-        insertListener();
+        let problemForm = iframeWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
+        if (!_.isNil(problemForm)) {
+            // check that the submit url is accurate
+            const submitUrl = problemForm.getAttribute('action');
+            const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
+            if (checkId && parseInt(checkId[1],10) != problem.id) {
+                console.error('Something went wrong. This problem is reporting an ID that is incorrect');
+                setError('This problem ID is out of sync.');
+                return;
+            }
+            insertListener(problemForm);
+        } else {
+            console.error('this problem has no problemMainForm'); // should NEVER happen in WW
+        }
+
+        const ww_applet_list = iframeWindow?.ww_applet_list;
+        if (!_.isNil(ww_applet_list)) {
+    
+            const promises = Object.keys(ww_applet_list).map( async (key: string) => {
+                const initFunctionName = ww_applet_list[key].onInit;
+                // stash original ggbOnInit, then spy on it with a Promise
+                const onInitOriginal = iframeWindow?.[initFunctionName];
+                const { dressedFunction: dressedInit, nakedPromise } = xRayVision(onInitOriginal);
+                iframeWindow[initFunctionName] = dressedInit;
+
+                // getApplet(key) will not resolve until after ggbOnInit runs
+                await nakedPromise.promise;
+
+                const {getApplet} = iframeWindow;
+                // null check getApplet
+                getApplet(key).registerUpdateListener?.(_.debounce(()=>{
+                    ww_applet_list[key].submitAction();
+                    problemForm.dispatchEvent(new Event('input'));
+                },3000));
+            }); 
+            await Promise.all(promises);       
+        }
+
         setLoading(false);
     };
 

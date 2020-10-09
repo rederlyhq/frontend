@@ -48,13 +48,6 @@ const statisticsViewFromAllStatisticsViewFilter = (view: StatisticsViewAll): Sta
     return view as StatisticsView;
 };
 
-const gradeCols = [
-    { title: 'Name', field: 'name' },
-    { title: 'Average number of attempts', field: 'averageAttemptedCount' },
-    { title: 'Average grade', field: 'averageScore' },
-    { title: '% Completed', field: 'completionPercent' },
-];
-
 const attemptCols: Array<Column<any>> = [
     { title: 'Result', field: 'result', defaultSort: 'asc' },
     {
@@ -131,6 +124,15 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [grade, setGrade] = useState<StudentGrade | null>(null);
     const userType: UserRole = getUserRole();
 
+    const aggregateTitlePrefix = _.isNil(userId) ? 'Average ' : '';
+    const gradeCols = [
+        { title: 'Name', field: 'name' },
+        { title: _.capitalize(`${aggregateTitlePrefix}number of attempts`), field: 'averageAttemptedCount' },
+        { title: _.capitalize(`${aggregateTitlePrefix}grade`), field: 'averageScore' },
+        { title: _.capitalize(`${aggregateTitlePrefix}mastered`), field: 'completionPercent' },
+    ];
+
+
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
 
     useEffect(() => {
@@ -185,7 +187,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 let data = res.data.data;
 
                 const formatNumberString = (val: string, percentage: boolean = false) => {
-                    if (_.isNil(val)) return null;
+                    if (_.isNil(val)) return '--';
                     if (percentage) return `${(parseFloat(val) * 100).toFixed(1)}%`;
 
                     return parseFloat(val).toFixed(2);
@@ -544,6 +546,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     onRowClick={nextView}
                     options={{
                         exportButton: true,
+                        exportAllData: true,
                         sorting: true
                     }}
                     detailPanel={hasDetailPanel ? [{
