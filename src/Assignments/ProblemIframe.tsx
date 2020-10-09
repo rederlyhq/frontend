@@ -81,12 +81,13 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         submitButtons.forEach((button: HTMLButtonElement) => {
             if (isClean) {
                 button.disabled = true;
+                // invisibly stash the button's label (in case there are multiple submit buttons)
                 button.textContent = button.value;
                 button.value = 'Submitted';
             } else {
                 button.removeAttribute('disabled');
-                console.log(button.value, 'replaced by', button.innerText);
                 if (!_.isNil(button.textContent) && button.textContent != '') {
+                    // put it back and clear the stash - just in case
                     button.value = button.textContent;
                     button.textContent = '';
                 }
@@ -180,13 +181,12 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             }
             prepareAndSubmit(problemForm, clickedButton);
         };
-        const debouncedSubmitHandler = _.debounce(submitHandler, 4000, { leading: true, trailing: false });
+        const debouncedSubmitHandler = _.debounce(submitHandler, 2000, { leading: true, trailing: false });
 
         problemForm.addEventListener('submit', (event: { preventDefault: () => void; }) => {
             event.preventDefault();
             const clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
-            const shouldSubmit = (clickedButton.name === 'submitAnswers');
-            if (shouldSubmit) {
+            if (clickedButton.name === 'submitAnswers') {
                 debouncedSubmitHandler(clickedButton);
             } else {
                 submitHandler(clickedButton);
