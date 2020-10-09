@@ -290,11 +290,12 @@ export const getQuestion = async ({
     userId
 }: GetQuestionOptions): Promise<AxiosResponse<GetQuestionResponse>> => {
     try {
-        return await AxiosRequest.get(`${COURSE_QUESTION_PATH}/${id}`, {
-            params: {
-                userId,
-            }
-        });
+        return await AxiosRequest.get(
+            url.resolve(COURSE_QUESTION_PATH, `${id}`), {
+                params: {
+                    userId,
+                }
+            });
     } catch (e) {
         throw new BackendAPIError(e);
     }
