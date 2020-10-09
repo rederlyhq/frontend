@@ -104,8 +104,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     return;
                 }
                 setRenderedHTML(result.data.data.rendererData.renderedHTML);
-                setProblemStudentGrade(result.data.data.studentGrade);
-                setLastSubmittedAt?.(moment());
+                if (clickedButton.name === 'submitAnswers'){
+                    setProblemStudentGrade(result.data.data.studentGrade);
+                    setLastSubmittedAt?.(moment());
+                }
             } catch (e) {
                 setError(e.message);
                 return;
@@ -137,21 +139,31 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }
 
     function insertListener(problemForm: HTMLFormElement) {
-        problemForm.addEventListener('submit', _.debounce((event: { preventDefault: () => void; }) => {
-            event.preventDefault();
+        const submitHandler = (clickedButton: HTMLButtonElement) => {
             if (_.isNil(problemForm)) {
                 console.error('Hijacker: Could not find the form when submitting the form');
                 setError('An error occurred');
                 return;
             }
-            let clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
             if (_.isNil(clickedButton)) {
                 setError('Hijacker: An error occurred');
                 console.error('Could not find the button that submitted the form');
                 return;
             }
             prepareAndSubmit(problemForm, clickedButton);
-        }, 4000, {leading: true, trailing:false}));
+        };
+        const debouncedSubmitHandler = _.debounce(submitHandler, 4000, { leading: true, trailing: false });
+
+        problemForm.addEventListener('submit', (event: { preventDefault: () => void; }) => {
+            event.preventDefault();
+            const clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
+            const shouldSubmit = (clickedButton.name === 'submitAnswers');
+            if (shouldSubmit) {
+                debouncedSubmitHandler(clickedButton);
+            } else {
+                submitHandler(clickedButton);
+            }
+        });
 
         problemForm.addEventListener('input', _.debounce(() => {
             if (_.isNil(problemForm)) {
