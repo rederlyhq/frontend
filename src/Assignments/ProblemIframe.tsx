@@ -34,7 +34,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [lastSubmission, setLastSubmission] = useState({});
     const height = '100vh';
+    let isClean = false;
 
     const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
@@ -67,7 +69,30 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         // when problem changes, reset lastsubmitted and lastsaved
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
+        setLastSubmission({});
+        updateSubmitActive(false);
     }, [problem.id]);
+
+    const updateSubmitActive = (incomingIsClean: boolean | undefined) => {
+        if (_.isNil(incomingIsClean)) {return;}
+        isClean = incomingIsClean;
+        const submitButtons = iframeRef.current?.contentWindow?.document.getElementsByName('submitAnswers') as NodeListOf<HTMLButtonElement>;
+        if (_.isNil(submitButtons)) {return;}
+        submitButtons.forEach((button: HTMLButtonElement) => {
+            if (isClean) {
+                button.disabled = true;
+                button.textContent = button.value;
+                button.value = 'Submitted';
+            } else {
+                button.removeAttribute('disabled');
+                console.log(button.value, 'replaced by', button.innerText);
+                if (!_.isNil(button.textContent) && button.textContent != '') {
+                    button.value = button.textContent;
+                    button.textContent = '';
+                }
+            }
+        });
+    };
 
     const formDataToObject = (formData: FormData) => {
         let object:any = {};
@@ -92,6 +117,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
         let formData = new FormData(problemForm);
         if (!_.isNil(clickedButton)) {
+            setLastSubmission(formDataToObject(formData));
             formData.set(clickedButton.name, clickedButton.value);
             try {
                 const result = await postQuestionSubmission({
@@ -107,6 +133,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 if (clickedButton.name === 'submitAnswers'){
                     setProblemStudentGrade(result.data.data.studentGrade);
                     setLastSubmittedAt?.(moment());
+                    updateSubmitActive(true);
                 }
             } catch (e) {
                 setError(e.message);
@@ -119,7 +146,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 // TODO: impossi-log console.error()
                 setError(`No grades id for problem #${problem.id}`);
                 return;
-            }    
+            }
+            updateSubmitActive(_.isEqual(formDataToObject(formData), lastSubmission));
             const reqBody = {
                 currentProblemState: formDataToObject(formData)
             };
@@ -201,6 +229,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 return;
             }
             insertListener(problemForm);
+            let formData = new FormData(problemForm);
+            updateSubmitActive(_.isEqual(formDataToObject(formData), lastSubmission));
         } else {
             console.error('this problem has no problemMainForm'); // should NEVER happen in WW
         }
