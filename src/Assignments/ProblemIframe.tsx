@@ -104,8 +104,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     return;
                 }
                 setRenderedHTML(result.data.data.rendererData.renderedHTML);
-                setProblemStudentGrade(result.data.data.studentGrade);
-                setLastSubmittedAt?.(moment());
+                if (clickedButton.name === 'submitAnswers'){
+                    setProblemStudentGrade(result.data.data.studentGrade);
+                    setLastSubmittedAt?.(moment());
+                }
             } catch (e) {
                 setError(e.message);
                 return;
@@ -137,8 +139,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }
 
     function insertListener(problemForm: HTMLFormElement) {
-        problemForm.addEventListener('submit', _.debounce((event: { preventDefault: () => void; }) => {
-            event.preventDefault();
+        problemForm.addEventListener('submit', (e) => { e.preventDefault();});
+        problemForm.addEventListener('submit', _.debounce(() => {
+            // event.preventDefault();
             if (_.isNil(problemForm)) {
                 console.error('Hijacker: Could not find the form when submitting the form');
                 setError('An error occurred');
