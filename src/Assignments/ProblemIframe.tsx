@@ -141,7 +141,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     function insertListener(problemForm: HTMLFormElement) {
         problemForm.addEventListener('submit', (e) => { e.preventDefault();});
         problemForm.addEventListener('submit', _.debounce(() => {
-            // event.preventDefault();
             if (_.isNil(problemForm)) {
                 console.error('Hijacker: Could not find the form when submitting the form');
                 setError('An error occurred');
