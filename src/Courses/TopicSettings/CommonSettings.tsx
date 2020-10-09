@@ -1,29 +1,32 @@
-import MomentUtils from '@date-io/moment';
-import { Button, FormControlLabel, Grid, Switch, TextField } from '@material-ui/core';
+import React, { useEffect } from 'react';
+import { Button, FormControl, FormControlLabel, FormLabel, Grid, Radio, RadioGroup, Switch, TextField } from '@material-ui/core';
 import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
 import moment, { Moment } from 'moment';
-import React from 'react';
 import { Controller } from 'react-hook-form';
 
 interface CommonSettingsProps {
     // This is the register function from react-hook-forms.
-    register: any;
-    control: any;
-    watch: any;
-    getValues: any;
+    formObject: any
 }
 
 /**
  * This component renders settings that are common to all Topic objects.
  * 
  */
-export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control, watch, getValues}) => {
+export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
+    const { register, getValues, errors, control, setValue, watch, formState, reset } = formObject;
     const { isExam, partialExtend } = watch();
+
+    useEffect(()=>{
+        if (isExam) {
+            setValue('partialExtend', false);
+        }
+    }, [isExam]);
 
     return (
         <Grid container item md={12} spacing={3}>
             <Grid item container md={12}><h1>Core Topic Settings</h1></Grid>
-            <Grid item md={12}>
+            <Grid item md={8}>
                 <TextField 
                     fullWidth 
                     name='name' 
@@ -31,14 +34,18 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                     label='Topic Title'
                 />
             </Grid>
-            <Grid item md={12}>
+            {/* This is a workaround because setValue doesn't seem to cause a UI rerender. */}
+            <Grid item md={12} style={{display: isExam ? 'none' : undefined}}>
+                {/* ${partialCreditScore} = ((${gradeCandidate}- ${legalScore}) * ${topicLateScalar}) + ${legalScore} */}
+                Allow students to receive partial credit after the end date of this topic. Partial credit is scaled for up to half the original weight of the topic.<br/>
                 <FormControlLabel 
                     name='partialExtend'
                     inputRef={register()} 
                     label={'Allow Partial Extensions'} 
                     labelPlacement='end' 
+                    disabled={isExam}
                     control={
-                        <Switch color='primary'/>
+                        <Switch color='primary' />
                     } 
                 />
             </Grid>
@@ -46,10 +53,11 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                 <Grid item>
                     <Controller
                         as={<DateTimePicker value="" onChange={() => {}} />}
-                        name="startDate"
+                        name='startDate'
                         control={control}
                         autoOk
-                        variant="inline"
+                        variant='inline'
+                        inputVariant='outlined'
                         fullWidth={false}
                         label='Start Date'
                         rules={{
@@ -71,6 +79,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                         control={control}
                         autoOk
                         variant="inline"
+                        inputVariant='outlined'
                         fullWidth={false}
                         label='End Date'
                         rules={{
@@ -93,6 +102,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                         control={control}
                         autoOk
                         variant='inline'
+                        inputVariant='outlined'
                         fullWidth={false}
                         label='Dead Date'
                         rules={{
@@ -109,15 +119,13 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({register, control
                 </Grid>
             </Grid>
             <Grid item md={12}>
-                <FormControlLabel 
-                    name='isExam'
-                    inputRef={register()} 
-                    label={isExam ? 'This is a Exam Topic' : 'This is an Homework Topic'} 
-                    labelPlacement='end' 
-                    control={
-                        <Switch color='primary'/>
-                    } 
-                />
+                <FormControl component="fieldset">
+                    <FormLabel component="legend">Topic Type</FormLabel>
+                    <RadioGroup aria-label="Topic Type" name="isExam" ref={register()}>
+                        <FormControlLabel value="homework" control={<Radio />} label="Homework" />
+                        <FormControlLabel value="exam" control={<Radio />} label="Exam" />
+                    </RadioGroup>
+                </FormControl>
             </Grid>
         </Grid>
     );

@@ -24,7 +24,7 @@ interface Inputs {
  * This component hosts the React-Hook-Forms element and passes down props to subcomponents to render the form.
  */
 export const SettingsForm: React.FC<SettingsFormProps> = ({selectedProblemId}) => {
-    const { register, handleSubmit, getValues, errors, control, setValue, watch, formState, reset } = useForm<Inputs>({
+    const formObject = useForm<Inputs>({
         mode: 'onSubmit', 
         shouldFocusError: true,
         defaultValues: {
@@ -35,17 +35,20 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({selectedProblemId}) =
             isExam: false,
         }
     });
+    const { register, handleSubmit, getValues, errors, control, setValue, watch, formState, reset } = formObject;
 
     const { isExam } = watch();
+
+    const onSubmit = console.log;
 
     return (        
         <Grid container item md={9}>
             <DevTool control={control} />
-            <form>
+            <form onChange={(e: any) => {console.log('form onchange recv');}} onSubmit={handleSubmit(onSubmit)}>
                 <Grid container item md={12} spacing={3}>
                     {selectedProblemId === 'topic' ? (
                         <>
-                            <CommonSettings register={register} control={control} watch={watch} getValues={getValues} />
+                            <CommonSettings formObject={formObject} />
                             {isExam && <ExamSettings register={register} control={control} watch={watch} />}
                         </>
                     ) : (

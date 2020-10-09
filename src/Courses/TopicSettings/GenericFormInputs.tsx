@@ -36,6 +36,7 @@ export const ProblemWeight = (register: any) => (
         name='weight' 
         inputRef={register()} 
         label='Weight'
+        type='number'
         inputProps={{min: 0}}
     />
 );
@@ -44,7 +45,7 @@ export const ProblemOptional = (register: any) => (
     <FormControlLabel 
         name='optional'
         inputRef={register()} 
-        label={'Optional'} 
+        label={'Optional'}
         labelPlacement='end' 
         control={
             <Switch color='primary'/>
