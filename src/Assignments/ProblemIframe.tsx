@@ -139,8 +139,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }
 
     function insertListener(problemForm: HTMLFormElement) {
-        problemForm.addEventListener('submit', (e) => { e.preventDefault();});
-        problemForm.addEventListener('submit', _.debounce(() => {
+        const submitHandler = _.debounce( () => {
             if (_.isNil(problemForm)) {
                 console.error('Hijacker: Could not find the form when submitting the form');
                 setError('An error occurred');
@@ -153,7 +152,12 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 return;
             }
             prepareAndSubmit(problemForm, clickedButton);
-        }, 4000, {leading: true, trailing:false}));
+        }, 4000, { leading: true, trailing: false });
+
+        problemForm.addEventListener('submit', (e: Event) => {
+            e.preventDefault();
+            submitHandler();
+        });
 
         problemForm.addEventListener('input', _.debounce(() => {
             if (_.isNil(problemForm)) {
