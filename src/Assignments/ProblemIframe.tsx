@@ -73,29 +73,41 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }, [problem.id]);
 
     const updateSubmitActive = _.throttle(() => {
-        const submitButtons = iframeRef.current?.contentWindow?.document.getElementsByName('submitAnswers') as NodeListOf<HTMLButtonElement>;
-        const problemForm = iframeRef.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
-        // called only onLoad or after interaction with already loaded srcdoc - so form will exist, unless bad problemPath
-        // no console.error because exam problems (and static problems) will not have 'submitAnswers'
-        if (_.isNil(submitButtons) || _.isNil(problemForm)) {return;}
+        setTimeout(() => {
+            console.log('drew:'+new Date());
+            const submitButtons = iframeRef.current?.contentWindow?.document.getElementsByName('submitAnswers') as NodeListOf<HTMLButtonElement>;
+            const problemForm = iframeRef.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
+            // called only onLoad or after interaction with already loaded srcdoc - so form will exist, unless bad problemPath
+            // no console.error because exam problems (and static problems) will not have 'submitAnswers'
+            if (_.isNil(submitButtons) || _.isNil(problemForm)) {return;}
 
-        const isClean = _.isEqual(formDataToObject(new FormData(problemForm)), lastSubmission);
+            const currentState = formDataToObject(new FormData(problemForm));
+            const isClean = _.isEqual(currentState, lastSubmission);
+            console.log(currentState, lastSubmission);
 
-        submitButtons.forEach((button: HTMLButtonElement) => {
-            if (isClean) {
-                button.setAttribute('disabled','true');
-                // invisibly stash the button's label (in case there are multiple submit buttons)
-                button.setAttribute('textContent', button.value);
-                button.setAttribute('value', 'Submitted');
-            } else {
-                button.removeAttribute('disabled');
-                if (button.textContent) {
-                    // put it back and clear the stash - just in case
-                    button.setAttribute('value', button.textContent);
-                    button.removeAttribute('textContent');
+            submitButtons.forEach((button: HTMLButtonElement) => {
+                const valueStashAttributeName = 'value-stash';
+                const valueStashAttributeContents = button.getAttribute(valueStashAttributeName);
+                const valueContents = button.getAttribute('value');
+                if (isClean) {
+                    button.setAttribute('disabled','true');
+                    // invisibly stash the button's label (in case there are multiple submit buttons)
+                    if (valueContents){
+                        button.setAttribute(valueStashAttributeName, valueContents);
+                        button.setAttribute('value', 'Submitted');
+                    } else {
+                        console.error('Inconceivable! Submit button has no value contents.');
+                    }
+                } else {
+                    button.removeAttribute('disabled');
+                    if (valueStashAttributeContents) {
+                        // put it back and clear the stash - just in case
+                        button.setAttribute('value', valueStashAttributeContents);
+                        button.removeAttribute(valueStashAttributeName);
+                    }
                 }
-            }
-        });
+            });
+        }, 0);
     }, 1000, {leading:true, trailing:true});
 
     const formDataToObject = (formData: FormData) => {
