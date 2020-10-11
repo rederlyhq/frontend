@@ -70,30 +70,29 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
         setLastSubmission({});
-        updateSubmitActive();
     }, [problem.id]);
 
     const updateSubmitActive = _.throttle(() => {
         const submitButtons = iframeRef.current?.contentWindow?.document.getElementsByName('submitAnswers') as NodeListOf<HTMLButtonElement>;
         const problemForm = iframeRef.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
-        // shouldn't happen - called only onLoad or after interaction with already loaded srcdoc
-        // console.error()?
-        if (_.isNil(submitButtons) || _.isNil(problemForm)) { return; }
+        // called only onLoad or after interaction with already loaded srcdoc - so form will exist, unless bad problemPath
+        // no console.error because exam problems (and static problems) will not have 'submitAnswers'
+        if (_.isNil(submitButtons) || _.isNil(problemForm)) {return;}
 
         const isClean = _.isEqual(formDataToObject(new FormData(problemForm)), lastSubmission);
 
         submitButtons.forEach((button: HTMLButtonElement) => {
             if (isClean) {
-                button.disabled = true;
+                button.setAttribute('disabled','true');
                 // invisibly stash the button's label (in case there are multiple submit buttons)
-                button.textContent = button.value;
-                button.value = 'Submitted';
+                button.setAttribute('textContent', button.value);
+                button.setAttribute('value', 'Submitted');
             } else {
                 button.removeAttribute('disabled');
-                if (!_.isNil(button.textContent) && button.textContent != '') {
+                if (button.textContent) {
                     // put it back and clear the stash - just in case
-                    button.value = button.textContent;
-                    button.textContent = '';
+                    button.setAttribute('value', button.textContent);
+                    button.removeAttribute('textContent');
                 }
             }
         });
@@ -123,7 +122,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         let formData = new FormData(problemForm);
         if (!_.isNil(clickedButton)) {
             // current state will never match submission unless we save it before including clickedButton
-            setLastSubmission(formDataToObject(formData)); 
+            // but we only want to save the current state if the button was 'submitAnswers'
+            const saveMeLater = formDataToObject(formData); 
             formData.set(clickedButton.name, clickedButton.value);
             try {
                 const result = await postQuestionSubmission({
@@ -138,6 +138,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 setRenderedHTML(result.data.data.rendererData.renderedHTML);
                 if (clickedButton.name === 'submitAnswers'){
                     setProblemStudentGrade(result.data.data.studentGrade);
+                    setLastSubmission(saveMeLater);
                     setLastSubmittedAt?.(moment());
                 }
             } catch (e) {
@@ -171,21 +172,14 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }
 
     function insertListeners(problemForm: HTMLFormElement) {
-        const throttledSubmitHandler = _.throttle(prepareAndSubmit, 2000, { leading: true, trailing: true });
         const debouncedSubmitHandler = _.debounce(prepareAndSubmit, 2000, { leading: false, trailing: true });
 
         // submission of problems will trigger updateSubmitActive @onLoad
         // because re-submission of identical answers is blocked, we expect srcdoc to change
-        // even if our assumption fails, 'actual' submission is throttled
         problemForm.addEventListener('submit', (event: { preventDefault: () => void; }) => {
             event.preventDefault();
             const clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
-            if (clickedButton.name === 'submitAnswers') {
-                // submission is blocked until contents change - throttle will suffice
-                throttledSubmitHandler(problemForm, clickedButton);
-            } else {
-                prepareAndSubmit(problemForm, clickedButton);
-            }
+            prepareAndSubmit(problemForm, clickedButton);
         });
 
         problemForm.addEventListener('input', () => {
@@ -213,7 +207,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             // check that the submit url is accurate
             const submitUrl = problemForm.getAttribute('action');
             const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
-            if (checkId && parseInt(checkId[1],10) != problem.id) {
+            if (checkId && parseInt(checkId[1],10) !== problem.id) {
                 console.error('Something went wrong. This problem is reporting an ID that is incorrect');
                 setError('This problem ID is out of sync.');
                 return;
