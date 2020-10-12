@@ -36,6 +36,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const [error, setError] = useState('');
     const [lastSubmission, setLastSubmission] = useState({});
     const height = '100vh';
+    const currentMutationObserver = useRef<MutationObserver> (null);
 
     const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
@@ -72,6 +73,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setLastSubmission({});
     }, [problem.id]);
 
+    const isPrevious = (_value: any, key: string): boolean => {
+        return /^previous_/.test(key);
+    };
+
     const updateSubmitActive = _.throttle(() => {
         const submitButtons = iframeRef.current?.contentWindow?.document.getElementsByName('submitAnswers') as NodeListOf<HTMLButtonElement>;
         const problemForm = iframeRef.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
@@ -79,24 +84,37 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         // no console.error because exam problems (and static problems) will not have 'submitAnswers'
         if (_.isNil(submitButtons) || _.isNil(problemForm)) {return;}
 
-        const isClean = _.isEqual(formDataToObject(new FormData(problemForm)), lastSubmission);
+        const currentState = _.omitBy(formDataToObject(new FormData(problemForm)), isPrevious);
+        const previousState = _.omitBy(lastSubmission, isPrevious);
+        const isClean = _.isEqual(currentState, previousState);
 
         submitButtons.forEach((button: HTMLButtonElement) => {
+            const valueStashAttributeName = 'value-stash';
+            const valueStashAttributeContents = button.getAttribute(valueStashAttributeName);
+            const valueContents = button.getAttribute('value');
             if (isClean) {
-                button.setAttribute('disabled','true');
-                // invisibly stash the button's label (in case there are multiple submit buttons)
-                button.setAttribute('textContent', button.value);
-                button.setAttribute('value', 'Submitted');
+                if (!button.disabled) {
+                    button.setAttribute('disabled','true');
+                    // invisibly stash the button's label (in case there are multiple submit buttons)
+                    if (valueContents){
+                        button.setAttribute(valueStashAttributeName, valueContents);
+                        button.setAttribute('value', 'Submitted');
+                    } else {
+                        console.error('Inconceivable! Submit button has no value contents.');
+                    }
+                }
             } else {
-                button.removeAttribute('disabled');
-                if (button.textContent) {
-                    // put it back and clear the stash - just in case
-                    button.setAttribute('value', button.textContent);
-                    button.removeAttribute('textContent');
+                if (button.disabled) {
+                    button.removeAttribute('disabled');
+                    if (valueStashAttributeContents) {
+                        // put it back and clear the stash - just in case
+                        button.setAttribute('value', valueStashAttributeContents);
+                        button.removeAttribute(valueStashAttributeName);
+                    } 
                 }
             }
         });
-    }, 1000, {leading:true, trailing:true});
+    }, 250, {leading:true, trailing:true});
 
     const formDataToObject = (formData: FormData) => {
         let object:any = {};
@@ -188,6 +206,21 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             // we don't want to save while edits are in progress, so debounce
             debouncedSubmitHandler(problemForm);
         });
+
+        // TODO: remove once MathQuill events properly bubble
+        // solves two issues - backspace nor mq-menu buttons trigger input/update
+        // fires too often, onFocus etc - throttle handles it
+        const iframeWindow = iframeRef?.current?.contentWindow as any | null | undefined;
+        currentMutationObserver.current?.disconnect();
+        (currentMutationObserver.current as any) = new MutationObserver(updateSubmitActive);
+        iframeWindow.jQuery('#problemMainForm span.mq-root-block').each( (_index: number, subElm: HTMLSpanElement) => {
+            currentMutationObserver.current?.observe(subElm, {
+                childList: true,
+                subtree: false,
+                attributes: false,
+                characterData: false
+            });
+        });
     }
 
     const onLoadHandlers = async () => {
@@ -198,7 +231,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
         const body = iframeDoc?.body;
         if (body === undefined) {
-            console.log('Couldn\'t access body of iframe');
+            console.error('Couldn\'t access body of iframe');
             return;
         }
 
