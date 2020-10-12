@@ -34,18 +34,20 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [lastSubmission, setLastSubmission] = useState({});
     const height = '100vh';
 
     const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
     useEffect(()=>{
-        setLoading(true);
         // We need to reset the error state since a new call means no error
         setError('');
         // If you don't reset the rendered html you won't get the load event
         // Thus if you go to an error state and back to the success state
         // The rendered html will never call load handler which will never stop loading
         setRenderedHTML('');
+        // srcdoc='' triggers onLoad with setLoading(false) so setLoading(true) isn't effective until now
+        setLoading(true); 
         (async () => {
             try {
                 let queryString = qs.stringify(_({
@@ -67,7 +69,34 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         // when problem changes, reset lastsubmitted and lastsaved
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
+        setLastSubmission({});
     }, [problem.id]);
+
+    const updateSubmitActive = _.throttle(() => {
+        const submitButtons = iframeRef.current?.contentWindow?.document.getElementsByName('submitAnswers') as NodeListOf<HTMLButtonElement>;
+        const problemForm = iframeRef.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
+        // called only onLoad or after interaction with already loaded srcdoc - so form will exist, unless bad problemPath
+        // no console.error because exam problems (and static problems) will not have 'submitAnswers'
+        if (_.isNil(submitButtons) || _.isNil(problemForm)) {return;}
+
+        const isClean = _.isEqual(formDataToObject(new FormData(problemForm)), lastSubmission);
+
+        submitButtons.forEach((button: HTMLButtonElement) => {
+            if (isClean) {
+                button.setAttribute('disabled','true');
+                // invisibly stash the button's label (in case there are multiple submit buttons)
+                button.setAttribute('textContent', button.value);
+                button.setAttribute('value', 'Submitted');
+            } else {
+                button.removeAttribute('disabled');
+                if (button.textContent) {
+                    // put it back and clear the stash - just in case
+                    button.setAttribute('value', button.textContent);
+                    button.removeAttribute('textContent');
+                }
+            }
+        });
+    }, 1000, {leading:true, trailing:true});
 
     const formDataToObject = (formData: FormData) => {
         let object:any = {};
@@ -92,6 +121,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
         let formData = new FormData(problemForm);
         if (!_.isNil(clickedButton)) {
+            // current state will never match submission unless we save it before including clickedButton
+            // but we only want to save the current state if the button was 'submitAnswers'
+            const saveMeLater = formDataToObject(formData); 
             formData.set(clickedButton.name, clickedButton.value);
             try {
                 const result = await postQuestionSubmission({
@@ -106,6 +138,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 setRenderedHTML(result.data.data.rendererData.renderedHTML);
                 if (clickedButton.name === 'submitAnswers'){
                     setProblemStudentGrade(result.data.data.studentGrade);
+                    setLastSubmission(saveMeLater);
                     setLastSubmittedAt?.(moment());
                 }
             } catch (e) {
@@ -119,7 +152,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 // TODO: impossi-log console.error()
                 setError(`No grades id for problem #${problem.id}`);
                 return;
-            }    
+            }
             const reqBody = {
                 currentProblemState: formDataToObject(formData)
             };
@@ -138,41 +171,23 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         }
     }
 
-    function insertListener(problemForm: HTMLFormElement) {
-        const submitHandler = (clickedButton: HTMLButtonElement) => {
-            if (_.isNil(problemForm)) {
-                console.error('Hijacker: Could not find the form when submitting the form');
-                setError('An error occurred');
-                return;
-            }
-            if (_.isNil(clickedButton)) {
-                setError('Hijacker: An error occurred');
-                console.error('Could not find the button that submitted the form');
-                return;
-            }
-            prepareAndSubmit(problemForm, clickedButton);
-        };
-        const debouncedSubmitHandler = _.debounce(submitHandler, 4000, { leading: true, trailing: false });
+    function insertListeners(problemForm: HTMLFormElement) {
+        const debouncedSubmitHandler = _.debounce(prepareAndSubmit, 2000, { leading: false, trailing: true });
 
+        // submission of problems will trigger updateSubmitActive @onLoad
+        // because re-submission of identical answers is blocked, we expect srcdoc to change
         problemForm.addEventListener('submit', (event: { preventDefault: () => void; }) => {
             event.preventDefault();
             const clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
-            const shouldSubmit = (clickedButton.name === 'submitAnswers');
-            if (shouldSubmit) {
-                debouncedSubmitHandler(clickedButton);
-            } else {
-                submitHandler(clickedButton);
-            }
+            prepareAndSubmit(problemForm, clickedButton);
         });
 
-        problemForm.addEventListener('input', _.debounce(() => {
-            if (_.isNil(problemForm)) {
-                console.error('Hijacker: Could not find the form when submitting the form');
-                setError('An error occurred');
-                return;
-            }
-            prepareAndSubmit(problemForm);
-        }, 2000));
+        problemForm.addEventListener('input', () => {
+            // updating submit button is throttled - so don't worry onInput spam
+            updateSubmitActive();
+            // we don't want to save while edits are in progress, so debounce
+            debouncedSubmitHandler(problemForm);
+        });
     }
 
     const onLoadHandlers = async () => {
@@ -187,20 +202,18 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             return;
         }
 
-        // HTMLCollectionOf is not iterable by default in Typescript.
-        // const forms = iframeDoc.getElementsByTagName('form');
-        // _.forEach(forms, form => form.addEventListener('submit', hijackFormSubmit));
         let problemForm = iframeWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
         if (!_.isNil(problemForm)) {
             // check that the submit url is accurate
             const submitUrl = problemForm.getAttribute('action');
             const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
-            if (checkId && parseInt(checkId[1],10) != problem.id) {
+            if (checkId && parseInt(checkId[1],10) !== problem.id) {
                 console.error('Something went wrong. This problem is reporting an ID that is incorrect');
                 setError('This problem ID is out of sync.');
                 return;
             }
-            insertListener(problemForm);
+            insertListeners(problemForm);
+            updateSubmitActive();
         } else {
             console.error('this problem has no problemMainForm'); // should NEVER happen in WW
         }
@@ -219,11 +232,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 await nakedPromise.promise;
 
                 const {getApplet} = iframeWindow;
-                // null check getApplet
                 getApplet(key).registerUpdateListener?.(_.debounce(()=>{
                     ww_applet_list[key].submitAction();
                     problemForm.dispatchEvent(new Event('input'));
-                },3000));
+                },2000));
             }); 
             await Promise.all(promises);       
         }
