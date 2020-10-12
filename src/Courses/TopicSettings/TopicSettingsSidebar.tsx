@@ -1,7 +1,7 @@
 import { Chip, FormControlLabel, Grid, Switch, TextField } from '@material-ui/core';
 import _ from 'lodash';
 import React, { useState } from 'react';
-import { Draggable, DragDropContext, Droppable } from 'react-beautiful-dnd';
+import { Draggable, DragDropContext, Droppable, DraggableProvided } from 'react-beautiful-dnd';
 import { Nav, NavLink } from 'react-bootstrap';
 import { MdAdd, MdDragHandle } from 'react-icons/md';
 import { TopicObject, CourseTopicAssessmentInfo } from '../CourseInterfaces';
@@ -13,10 +13,11 @@ interface TopicSettingsSidebarProps {
     selectedProblemId: number | 'topic';
     setSelectedProblemId: React.Dispatch<React.SetStateAction<number | 'topic'>>;
     addNewProblem: () => void;
+    handleDrag: (result: any) => Promise<void>;
 }
 
 // This is a sidebar that shows the settings for a topic as a single list.
-export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic, selectedProblemId, setSelectedProblemId}) => {
+export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic, selectedProblemId, setSelectedProblemId, addNewProblem, handleDrag}) => {
 
     return (
         <Grid item md={3}>
@@ -33,7 +34,7 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                     </NavLink>
 
                     {/* List of Draggable problems, for reordering */}
-                    <DragDropContext onDragEnd={()=>{}}>
+                    <DragDropContext onDragEnd={handleDrag}>
                         <Droppable droppableId='problemsList'>
                             {
                                 (provided) => (
@@ -44,8 +45,8 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                 .map((prob, index) => {
                                                     return (
                                                         <Draggable draggableId={`problemRow${prob.id}`} index={index} key={`problem-row-${prob.id}`}>
-                                                            {(provided) => (
-                                                                <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                                            {(dragProvided: DraggableProvided) => (
+                                                                <div ref={dragProvided.innerRef} {...dragProvided.draggableProps} {...dragProvided.dragHandleProps}>
                                                                     <NavLink 
                                                                         eventKey={prob.id} 
                                                                         key={`problemNavLink${prob.id}`} 
@@ -68,13 +69,14 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                 })
                                                 .value()
                                         }
+                                        {provided.placeholder}
                                     </div>)}
                         </Droppable>
                     </DragDropContext>
 
                     {/* Unselectable button for adding new problems */}
                     <NavLink
-                        onClick={()=>{}}
+                        onClick={addNewProblem}
                         className='additiveNave'
                     >
                         <span className='icon-container'><MdAdd /> Add Problem</span>

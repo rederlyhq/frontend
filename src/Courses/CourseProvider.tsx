@@ -55,7 +55,7 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
             }
             setLoading(false);
         })();
-    }, [courseId]);
+    }, []);
 
     return (
         <CourseContext.Provider value={{course, setCourse, error, users, setUsers}}>
