@@ -110,9 +110,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                         // put it back and clear the stash - just in case
                         button.setAttribute('value', valueStashAttributeContents);
                         button.removeAttribute(valueStashAttributeName);
-                    } else {
-                        console.error('Inconceivable! No value stashed.');
-                    }
+                    } 
                 }
             }
         });
