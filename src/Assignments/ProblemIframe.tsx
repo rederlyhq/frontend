@@ -114,7 +114,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 }
             }
         });
-    }, 250, {leading:true, trailing:true});
+    }, 100, {leading:true, trailing:true});
 
     const formDataToObject = (formData: FormData) => {
         let object:any = {};
@@ -265,10 +265,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 await nakedPromise.promise;
 
                 const {getApplet} = iframeWindow;
-                getApplet(key).registerUpdateListener?.(_.debounce(()=>{
+                getApplet(key).registerUpdateListener?.(_.throttle(()=>{
                     ww_applet_list[key].submitAction();
                     problemForm.dispatchEvent(new Event('input'));
-                },2000));
+                }, 100, {leading:true, trailing:true}));
             }); 
             await Promise.all(promises);       
         }
