@@ -190,21 +190,22 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }
 
     function insertListeners(problemForm: HTMLFormElement) {
-        const debouncedSubmitHandler = _.debounce(prepareAndSubmit, 2000, { leading: false, trailing: true });
+        const debouncedSaveHandler = _.debounce(prepareAndSubmit, 2000, { leading: false, trailing: true });
+        const debouncedSubmitHandler = _.debounce(prepareAndSubmit, 300, { leading: true, trailing: false });
 
         // submission of problems will trigger updateSubmitActive @onLoad
         // because re-submission of identical answers is blocked, we expect srcdoc to change
         problemForm.addEventListener('submit', (event: { preventDefault: () => void; }) => {
             event.preventDefault();
             const clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
-            prepareAndSubmit(problemForm, clickedButton);
+            debouncedSubmitHandler(problemForm, clickedButton);
         });
 
         problemForm.addEventListener('input', () => {
             // updating submit button is throttled - so don't worry onInput spam
             updateSubmitActive();
             // we don't want to save while edits are in progress, so debounce
-            debouncedSubmitHandler(problemForm);
+            debouncedSaveHandler(problemForm);
         });
 
         // TODO: remove once MathQuill events properly bubble
