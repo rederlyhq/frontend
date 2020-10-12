@@ -12,6 +12,7 @@ interface TopicSettingsSidebarProps {
     topic: TopicObject | CourseTopicAssessmentInfo;
     selectedProblemId: number | 'topic';
     setSelectedProblemId: React.Dispatch<React.SetStateAction<number | 'topic'>>;
+    addNewProblem: () => void;
 }
 
 // This is a sidebar that shows the settings for a topic as a single list.
