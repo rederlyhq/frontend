@@ -6,6 +6,7 @@ import { AxiosResponse } from 'axios';
 import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
+import _ from 'lodash';
 
 const COURSE_PATH = '/courses/';
 const COURSE_UNIT_PATH = url.resolve(COURSE_PATH, 'unit/');
@@ -107,11 +108,12 @@ export const deleteUnit = async ({
 /* *************** *************** */
 export const getTopic = async ({
     id,
-    userId
+    userId,
+    includeQuestions
 }: GetCourseTopicOptions): Promise<AxiosResponse<GetTopicResponse>> => {
     try {
         return await AxiosRequest.get(
-            url.resolve(COURSE_TOPIC_PATH, `${id}?${qs.stringify({userId})}`)
+            url.resolve(COURSE_TOPIC_PATH, `${id}?${qs.stringify(_.omitBy({userId, includeQuestions}, _.isUndefined))}`)
         );
     } catch (e) {
         throw new BackendAPIError(e);

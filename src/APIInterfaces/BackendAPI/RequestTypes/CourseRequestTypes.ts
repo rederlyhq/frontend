@@ -35,7 +35,8 @@ export interface DeleteCourseUnitOptions {
 /* *************** *************** */
 export interface GetCourseTopicOptions {
     id: number;
-    userId: number | undefined;
+    userId?: number;
+    includeQuestions?: boolean;
 }
 
 export interface PostCourseTopicOptions {

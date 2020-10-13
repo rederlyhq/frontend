@@ -4,29 +4,29 @@ import React, { useState } from 'react';
 import { Draggable, DragDropContext, Droppable, DraggableProvided } from 'react-beautiful-dnd';
 import { Nav, NavLink } from 'react-bootstrap';
 import { MdAdd, MdDragHandle } from 'react-icons/md';
-import { TopicObject, CourseTopicAssessmentInfo } from '../CourseInterfaces';
+import { TopicObject, CourseTopicAssessmentInfo, ProblemObject } from '../CourseInterfaces';
 
 import './TopicSettings.css';
 
 interface TopicSettingsSidebarProps {
     topic: TopicObject | CourseTopicAssessmentInfo;
-    selectedProblemId: number | 'topic';
-    setSelectedProblemId: React.Dispatch<React.SetStateAction<number | 'topic'>>;
+    selected: TopicObject | ProblemObject;
+    setSelected: React.Dispatch<React.SetStateAction<TopicObject | ProblemObject>>;
     addNewProblem: () => void;
     handleDrag: (result: any) => Promise<void>;
 }
 
 // This is a sidebar that shows the settings for a topic as a single list.
-export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic, selectedProblemId, setSelectedProblemId, addNewProblem, handleDrag}) => {
+export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic, selected, setSelected, addNewProblem, handleDrag}) => {
 
     return (
         <Grid item md={3}>
             <form>
-                <Nav variant='pills' className='flex-column' defaultActiveKey={selectedProblemId}>
+                <Nav variant='pills' className='flex-column' defaultActiveKey={(selected instanceof TopicObject) ? 'topic' : `${selected.id}`}>
                     {/* Settings for the entire topic */}
                     <NavLink
                         eventKey={'topic'}
-                        onSelect={() => {setSelectedProblemId('topic');}}
+                        onSelect={() => {setSelected(topic);}}
                         role='link'
                         style={{}}
                     >
@@ -50,7 +50,7 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                                     <NavLink 
                                                                         eventKey={prob.id} 
                                                                         key={`problemNavLink${prob.id}`} 
-                                                                        onSelect={() => {setSelectedProblemId(prob.id);}}
+                                                                        onSelect={() => {setSelected(prob);}}
                                                                         role='link'
                                                                         style={{
                                                                             fontStyle: prob.optional ? 'italic' : undefined

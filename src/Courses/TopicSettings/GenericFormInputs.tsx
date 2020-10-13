@@ -1,5 +1,7 @@
 import React from 'react';
 import { FormControlLabel, Switch, TextField } from '@material-ui/core';
+import _ from 'lodash';
+import { Controller } from 'react-hook-form';
 
 // TODO: Clean up typing here. Probably needs a generic <T>.
 export interface NestedFormInterface {
@@ -50,5 +52,78 @@ export const ProblemOptional = (register: any) => (
         control={
             <Switch color='primary'/>
         } 
+    />
+);
+
+/* EXAM SETTINGS */
+
+const examFieldNamePrefix = 'topicAssessmentInfo';
+
+export const durationField = (register: any) => (
+    <FormControlLabel
+        name={`${examFieldNamePrefix}.duration`}
+        inputRef={register()}
+        label={'Duration'}
+        labelPlacement='start' 
+        control={
+            <TextField type='number' />
+        }
+    />
+);
+
+export const maxGradedAttemptsPerRandomizationField = (register: any) => (
+    <FormControlLabel
+        name={`${examFieldNamePrefix}.maxGradedAttemptsPerRandomization`}
+        inputRef={register()}
+        label={'Max Graded Attempts Per Randomization'}
+        labelPlacement='start' 
+        control={
+            <TextField type='number' />
+        }
+    />
+);
+
+export const maxReRandomizationsField = (register: any) => (
+    <FormControlLabel
+        name={`${examFieldNamePrefix}.maxReRandomizations`}
+        inputRef={register()}
+        label={'Max ReRandomizations'}
+        labelPlacement='start' 
+        control={
+            <TextField type='number' />
+        }
+    />
+);
+
+export const randomizationDelayField = (register: any) => (
+    <FormControlLabel
+        name={`${examFieldNamePrefix}.randomizationDelay`}
+        inputRef={register()}
+        label={'Randomization Delay'}
+        labelPlacement='start' 
+        control={
+            <TextField type='number' />
+        }
+    />
+);
+
+export const generateSwitchField = (control: any, name: string) => (
+    <Controller 
+        name={`${examFieldNamePrefix}.${name}`}
+        control={control} 
+        defaultValue={false}
+        // label={'Allow Partial Extensions'} 
+        // labelPlacement='end' 
+        // disabled={topicTypeId === TopicTypeId.EXAM}
+        render={({ onChange, onBlur, value, name }) => (
+            <Switch 
+                onBlur={onBlur}
+                onChange={e => onChange(e.target.checked)}
+                color='primary'
+                checked={value}
+                value={value}
+                name={name}
+            />
+        )} 
     />
 );

@@ -1,6 +1,6 @@
 import { FormControlLabel, Grid, Switch } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
-import { CourseTopicAssessmentInfo, ProblemObject, TopicObject, UnitObject } from '../CourseInterfaces';
+import { CourseTopicAssessmentInfo, ProblemObject, TopicAssessmentFields, TopicObject, UnitObject, ExamSettingsFields } from '../CourseInterfaces';
 import MomentUtils from '@date-io/moment';
 import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
 import TopicSettingsSidebar from './TopicSettingsSidebar';
@@ -8,17 +8,32 @@ import { useCourseContext } from '../CourseProvider';
 import { useParams } from 'react-router-dom';
 import _ from 'lodash';
 import SettingsForm from './SettingsForm';
-import { postQuestion, putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { getTopic, postQuestion, putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { Moment } from 'moment';
+import { TopicTypeId } from '../../Enums/TopicType';
 
 interface TopicSettingsPageProps {
 
 }
 
+export interface TopicSettingsInputs extends ExamSettingsFields {
+    name?: string;
+    startDate?: Moment;
+    endDate?: Moment;
+    deadDate?: Moment;
+    topicTypeId?: TopicTypeId;
+}
+
+export interface ProblemSettingsInputs {
+    webworkQuestionPath?: string;
+    maxAttempts?: number;
+    weight?: number;
+    optional?: boolean;
+}
 
 export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
-    const [selectedProblemId, setSelectedProblemId] = useState<number | 'topic'>('topic');
+    const [selected, setSelected] = useState<ProblemObject | TopicObject>(new TopicObject());
     const [topic, setTopic] = useState<TopicObject | null>(null);
-    
     const {course, setCourse, error} = useCourseContext();
     const { topicId: topicIdStr } = useParams<{topicId?: string}>();
     const topicId = topicIdStr ? parseInt(topicIdStr, 10) : null;
@@ -29,19 +44,16 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
             return;
         }
 
-        let topicObj;
-        for (let unit of course.units) {
-            if (!topic) {
-                topicObj = _.find(unit.topics, ['id', topicId]);
-                setTopic(new TopicObject(topicObj));
-                break;
+        (async ()=>{
+            try {
+                const res = await getTopic({id: topicId, includeQuestions: true});
+                const topicData = res.data.data;
+                setTopic(new TopicObject(topicData));
+                setSelected(new TopicObject(topicData));
+            } catch (e) {
+                console.error('Failed to load Topic', e);
             }
-        }
-
-        if (_.isNil(topicObj)) {
-            console.error(`No Topic found with ${topicId}`);
-            return;
-        }
+        })();
     }, [course]);
 
     const addNewProblem = async () => {
@@ -66,7 +78,6 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
             console.error('Failed to create a new problem with default settings.', e);
         }
     };
-
 
     const handleDrag = async (result: any) => {
         try {
@@ -132,18 +143,19 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
     
     return (
         <MuiPickersUtilsProvider utils={MomentUtils}>
-            <Grid container spacing={5} style={{margin: '0rem 5rem 0rem 5rem'}}>
+            <Grid container spacing={5} style={{margin: '0rem 5rem 0rem 0rem'}}>
                 {/* Sidebar */}
                 <TopicSettingsSidebar 
                     topic={topic || new TopicObject()} 
-                    selectedProblemId={selectedProblemId} 
-                    setSelectedProblemId={setSelectedProblemId}
+                    selected={selected} 
+                    setSelected={setSelected}
                     addNewProblem={addNewProblem}
                     handleDrag={handleDrag}
                 />
                 {/* Problem List */}
                 <SettingsForm 
-                    selectedProblemId={selectedProblemId} 
+                    selected={selected}
+                    setTopic={setTopic}
                 />
             </Grid>
         </MuiPickersUtilsProvider>

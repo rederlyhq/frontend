@@ -84,6 +84,34 @@ enum TopicTypeId {
     EXAM = 2
 }
 
+export class TopicAssessmentFields {
+    duration?: number;
+    hardCutoff?: boolean;
+    maxGradedAttemptsPerRandomization?: number;
+    maxReRandomizations?: number;
+    randomizationDelay?: number;
+    hideHints?: boolean;
+    showItemizedResults?: boolean;
+    showTotalGradeImmediately?: boolean;
+    hideProblemsAfterFinish?: boolean;
+    randomizeOrder?: boolean;
+    // courseTopicContentId: number = -1;
+    // duration: number = 60; // enforce IN MINUTES
+    // hardCutoff: boolean = false;
+    // maxGradedAttemptsPerRandomization: number = 1;
+    // maxReRandomizations: number = 0;
+    // randomizationDelay: number = 0; // for consistency do we also force MINUTES here?
+    // hideHints: boolean = false;
+    // showItemizedResults: boolean = false;
+    // showTotalGradeImmediately: boolean = false;
+    // hideProblemsAfterFinish: boolean = false;
+    // randomizeOrder: boolean = false;
+
+    public constructor(init?:Partial<TopicAssessmentFields>) {
+        Object.assign(this, init);
+    }
+}
+
 const newTopicUniqueGen = uniqueGen();
 export class TopicObject {
     name: string = '';
@@ -99,6 +127,7 @@ export class TopicObject {
     deadDate: Date = new Date();
     partialExtend: boolean = false;
     studentTopicOverride: any[] = [];
+    topicAssessmentInfo: TopicAssessmentFields = new TopicAssessmentFields();
     
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
@@ -182,10 +211,25 @@ export class CourseTopicAssessmentInfo extends TopicObject {
     showItemizedResults?: boolean;
     showTotalGradeImmediately?: boolean;
     hideProblemsAfterFinish?: boolean;
-    randomizeOrder?: number;
+    randomizeOrder?: boolean;
     
     public constructor(init?:Partial<ProblemObject>) {
         super(init);
         Object.assign(this, init);
     }
+}
+
+export interface ExamSettingsFields {
+    topicAssessmentInfo?: {
+        hardCutoff?: boolean;
+        hideHints?: boolean;
+        showItemizedResults?: boolean;
+        showTotalGradeImmediately?: boolean;
+        hideProblemsAfterFinish?: boolean;
+        duration?: number;
+        maxGradedAttemptsPerRandomization?: number;
+        maxReRandomizations?: number;
+        randomizationDelay?: number;
+        randomizeOrder?: boolean;
+    },
 }
