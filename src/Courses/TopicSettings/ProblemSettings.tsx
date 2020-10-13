@@ -1,16 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button, Grid } from '@material-ui/core';
-import { NestedFormInterface, ProblemMaxAttempts, ProblemOptional, ProblemPath, ProblemWeight } from './GenericFormInputs';
+import { OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight } from './GenericFormInputs';
 import { Link } from 'react-router-dom';
-import { ProblemObject } from '../CourseInterfaces';
+import { ProblemObject, TopicObject } from '../CourseInterfaces';
 import { ProblemSettingsInputs } from './TopicSettingsPage';
 import { useForm } from 'react-hook-form';
+import { putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import _ from 'lodash';
+import useAlertState from '../../Hooks/useAlertState';
+import { Alert } from 'react-bootstrap';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
+    setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
+    topic: TopicObject;
 }
 
-export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected}) => {
+export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setTopic, topic}) => {
     const topicForm = useForm<ProblemSettingsInputs>({
         mode: 'onSubmit', 
         shouldFocusError: true,
@@ -20,14 +26,45 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected}) => {
     });
     const { register, handleSubmit, getValues, errors, control, setValue, watch, formState, reset } = topicForm;
     const { optional } = watch();
+    const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
 
-    const onSubmit = (data: ProblemSettingsInputs, e: any) => {
+    useEffect(()=>{
+        reset({
+            ...selected,
+        });
+        setUpdateAlert({message: '', variant: 'warning'});
+    }, [selected]);
 
+    const onSubmit = async (data: ProblemSettingsInputs, e: any) => {
+        if (_.isNil(selected)) {
+            console.error('Tried to submit while problem was blank!');
+            return;
+        }
+
+        try {
+            const res = await putQuestion({
+                id: selected.id,
+                data
+            });
+
+            console.log(res);
+            setUpdateAlert({message: 'Successfully updated', variant: 'success'});
+
+            // Overwrite fields from the original object. This resets the state object when clicking between options.
+            const newTopic = new TopicObject({...topic});
+            const newQuestion = _.find(newTopic.questions, ['id', selected.id]);
+            _.assign(newQuestion, data);
+            setTopic(newTopic);
+        } catch (e) {
+            console.error('Error updating topic.', e);
+            setUpdateAlert({message: e.message, variant: 'danger'});
+        }
     };
 
     return (
-        <form onChange={() => {}} onSubmit={handleSubmit(onSubmit)}>
+        <form onChange={() => {setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
             <Grid container item md={12} spacing={3}>
+                {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
                 <Grid container item md={12} spacing={3}>
                     <Grid item container md={12}><h1>Problem Settings</h1></Grid>
                     <Grid item md={8}>
@@ -44,7 +81,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected}) => {
                         {ProblemWeight(register)}
                     </Grid><Grid item md={12}>
                 This problem is {optional ? 'optional' : 'required'}.<br/>
-                        {ProblemOptional(register)}
+                        {OptionalField(control)}
                     </Grid>
                 </Grid>
                 <Grid container item md={12} alignItems='flex-start' justify="flex-end" >

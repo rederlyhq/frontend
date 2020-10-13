@@ -137,7 +137,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
         }
     };
 
-    if (_.isNil(topicIdStr)) {
+    if (_.isNil(topic)) {
         return null;
     }
     
@@ -156,6 +156,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
                 <SettingsForm 
                     selected={selected}
                     setTopic={setTopic}
+                    topic={topic}
                 />
             </Grid>
         </MuiPickersUtilsProvider>

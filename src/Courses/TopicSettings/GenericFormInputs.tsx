@@ -43,18 +43,6 @@ export const ProblemWeight = (register: any) => (
     />
 );
 
-export const ProblemOptional = (register: any) => (
-    <FormControlLabel 
-        name='optional'
-        inputRef={register()} 
-        label={'Optional'}
-        labelPlacement='end' 
-        control={
-            <Switch color='primary'/>
-        } 
-    />
-);
-
 /* EXAM SETTINGS */
 
 const examFieldNamePrefix = 'topicAssessmentInfo';
@@ -112,6 +100,32 @@ export const generateSwitchField = (control: any, fieldName: string) => (
                     value={value}
                     name={name}
                 />}
+            />
+        )} 
+    />
+);
+
+/* PROBLEM SETTINGS */
+export const OptionalField = (control: any) => (
+    <Controller 
+        name='optional'
+        control={control}
+        defaultValue={false}
+        render={({ onChange, onBlur, value, name }) => (
+            <FormControlLabel 
+                name='optional'
+                label={'Optional'} 
+                labelPlacement='end'
+                control={
+                    <Switch 
+                        onBlur={onBlur}
+                        onChange={e => onChange(e.target.checked)}
+                        color='primary'
+                        checked={value}
+                        value={value}
+                        name={name}
+                    />
+                }
             />
         )} 
     />

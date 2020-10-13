@@ -24,7 +24,7 @@ const boolFields = [
 
 export const ExamSettings: React.FC<ExamSettingsProps> = ({register, control, watch}) => {
     return (
-        <Grid container item md={12} spacing={3}>
+        <Grid container item md={8} spacing={3}>
             <Grid item container md={12}><h2>Exam Settings</h2></Grid>
             <Grid container item md={12} spacing={1}>
                 <Grid md={4} item>{durationField(register)}</Grid>

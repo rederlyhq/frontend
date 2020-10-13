@@ -12,12 +12,13 @@ import TopicSettings from './TopicSettings';
 interface SettingsFormProps {
     selected: TopicObject | ProblemObject;
     setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
+    topic: TopicObject;
 }
 
 /**
  * This component hosts the React-Hook-Forms element and passes down props to subcomponents to render the form.
  */
-export const SettingsForm: React.FC<SettingsFormProps> = ({selected, setTopic}) => {
+export const SettingsForm: React.FC<SettingsFormProps> = ({selected, setTopic, topic}) => {
     return (        
         <Grid container item md={9}>
             {(selected instanceof TopicObject) ? (
@@ -28,6 +29,8 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({selected, setTopic}) 
             ) : (
                 <ProblemSettings 
                     selected={selected}
+                    setTopic={setTopic}
+                    topic={topic}
                 />
             )}
         </Grid>
