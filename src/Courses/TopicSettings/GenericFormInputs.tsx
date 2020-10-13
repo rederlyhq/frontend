@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormControlLabel, Switch, TextField } from '@material-ui/core';
+import { FormControl, FormControlLabel, FormLabel, Switch, TextField } from '@material-ui/core';
 import _ from 'lodash';
 import { Controller } from 'react-hook-form';
 
@@ -60,69 +60,58 @@ export const ProblemOptional = (register: any) => (
 const examFieldNamePrefix = 'topicAssessmentInfo';
 
 export const durationField = (register: any) => (
-    <FormControlLabel
+    <TextField 
         name={`${examFieldNamePrefix}.duration`}
         inputRef={register()}
         label={'Duration'}
-        labelPlacement='start' 
-        control={
-            <TextField type='number' />
-        }
+        type='number'
     />
 );
 
 export const maxGradedAttemptsPerRandomizationField = (register: any) => (
-    <FormControlLabel
+    <TextField 
         name={`${examFieldNamePrefix}.maxGradedAttemptsPerRandomization`}
         inputRef={register()}
         label={'Max Graded Attempts Per Randomization'}
-        labelPlacement='start' 
-        control={
-            <TextField type='number' />
-        }
+        type='number'
     />
 );
 
 export const maxReRandomizationsField = (register: any) => (
-    <FormControlLabel
+    <TextField 
         name={`${examFieldNamePrefix}.maxReRandomizations`}
         inputRef={register()}
-        label={'Max ReRandomizations'}
-        labelPlacement='start' 
-        control={
-            <TextField type='number' />
-        }
+        label={'Max Re-Randomizations'}
+        type='number'
     />
 );
 
 export const randomizationDelayField = (register: any) => (
-    <FormControlLabel
+    <TextField 
         name={`${examFieldNamePrefix}.randomizationDelay`}
-        inputRef={register()}
         label={'Randomization Delay'}
-        labelPlacement='start' 
-        control={
-            <TextField type='number' />
-        }
+        inputRef={register()}
+        type='number'
     />
 );
 
-export const generateSwitchField = (control: any, name: string) => (
+export const generateSwitchField = (control: any, fieldName: string) => (
     <Controller 
-        name={`${examFieldNamePrefix}.${name}`}
+        name={`${examFieldNamePrefix}.${fieldName}`}
         control={control} 
         defaultValue={false}
-        // label={'Allow Partial Extensions'} 
-        // labelPlacement='end' 
-        // disabled={topicTypeId === TopicTypeId.EXAM}
         render={({ onChange, onBlur, value, name }) => (
-            <Switch 
-                onBlur={onBlur}
-                onChange={e => onChange(e.target.checked)}
-                color='primary'
-                checked={value}
-                value={value}
-                name={name}
+            <FormControlLabel
+                label={_.startCase(fieldName)}
+                labelPlacement='start'
+                control={<Switch 
+                    onBlur={onBlur}
+                    onChange={e => onChange(e.target.checked)}
+                    color='primary'
+                    checked={value}
+                    value={value}
+                    name={name}
+                />}
             />
         )} 
     />

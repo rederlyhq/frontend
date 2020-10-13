@@ -47,30 +47,25 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                     name='partialExtend'
                     control={control}
                     defaultValue={false}
-                    // label={'Allow Partial Extensions'} 
-                    // labelPlacement='end' 
-                    // disabled={topicTypeId === TopicTypeId.EXAM}
                     render={({ onChange, onBlur, value, name }) => (
-                        <Switch 
-                            onBlur={onBlur}
-                            onChange={e => onChange(e.target.checked)}
-                            color='primary'
-                            checked={value}
-                            value={value}
-                            name={name}
+                        <FormControlLabel 
+                            name='partialExtend'
+                            label={'Allow Partial Extensions'} 
+                            labelPlacement='end' 
+                            disabled={topicTypeId === TopicTypeId.EXAM}
+                            control={
+                                <Switch 
+                                    onBlur={onBlur}
+                                    onChange={e => onChange(e.target.checked)}
+                                    color='primary'
+                                    checked={value}
+                                    value={value}
+                                    name={name}
+                                />
+                            }
                         />
                     )} 
                 />
-                {/* <FormControlLabel 
-                    name='partialExtend'
-                    inputRef={register()} 
-                    label={'Allow Partial Extensions'} 
-                    labelPlacement='end' 
-                    disabled={topicTypeId === TopicTypeId.EXAM}
-                    control={
-                        <Switch color='primary' inputProps={{type: 'checkbox'}} />
-                    } 
-                /> */}
             </Grid>
             <Grid item container md={12} spacing={3}>
                 <Grid item>
