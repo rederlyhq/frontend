@@ -1,11 +1,6 @@
 import React from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { DevTool } from '@hookform/devtools';
-import moment from 'moment';
-import { Button, Grid } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import ProblemSettings from './ProblemSettings';
-import { TopicTypeId } from '../../Enums/TopicType';
-import { TopicSettingsInputs } from './TopicSettingsPage';
 import { TopicObject, ProblemObject } from '../CourseInterfaces';
 import TopicSettings from './TopicSettings';
 

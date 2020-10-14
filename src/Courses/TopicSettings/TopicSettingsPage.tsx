@@ -1,8 +1,8 @@
-import { FormControlLabel, Grid, Switch } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import React, { useCallback, useEffect, useState } from 'react';
-import { CourseTopicAssessmentInfo, ProblemObject, TopicAssessmentFields, TopicObject, UnitObject, ExamSettingsFields } from '../CourseInterfaces';
+import { ProblemObject, TopicObject, ExamSettingsFields } from '../CourseInterfaces';
 import MomentUtils from '@date-io/moment';
-import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import TopicSettingsSidebar from './TopicSettingsSidebar';
 import { useCourseContext } from '../CourseProvider';
 import { useParams } from 'react-router-dom';
@@ -35,7 +35,7 @@ export interface ProblemSettingsInputs {
 export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
     const [selected, setSelected] = useState<ProblemObject | TopicObject>(new TopicObject());
     const [topic, setTopic] = useState<TopicObject | null>(null);
-    const {course, setCourse, error} = useCourseContext();
+    const {course} = useCourseContext();
     const { topicId: topicIdStr } = useParams<{topicId?: string}>();
     const topicId = topicIdStr ? parseInt(topicIdStr, 10) : null;
     
@@ -133,6 +133,9 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
             });
 
             setTopic(newTopic);
+            if (selected instanceof ProblemObject) {
+                setSelected(selected => new ProblemObject({...selected}));
+            }
         } catch (e) {
             console.error('Drag/Drop error:', e);
         }
@@ -162,7 +165,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
             }
         })();
     }, [topic]);
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+    const { getRootProps, isDragActive } = useDropzone({ onDrop });
 
 
     if (_.isNil(topic)) {

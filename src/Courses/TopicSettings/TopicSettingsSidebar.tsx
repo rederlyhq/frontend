@@ -1,6 +1,6 @@
-import { Chip, FormControlLabel, Grid, Switch, TextField } from '@material-ui/core';
+import { Chip, Grid } from '@material-ui/core';
 import _ from 'lodash';
-import React, { useState } from 'react';
+import React from 'react';
 import { Draggable, DragDropContext, Droppable, DraggableProvided } from 'react-beautiful-dnd';
 import { Nav, NavLink } from 'react-bootstrap';
 import { FaFileUpload } from 'react-icons/fa';
@@ -73,11 +73,12 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                                         onSelect={() => {setSelected(prob);}}
                                                                         role='link'
                                                                         style={{
-                                                                            fontStyle: prob.optional ? 'italic' : undefined
+                                                                            fontStyle: prob.optional ? 'italic' : undefined,
+                                                                            cursor: 'grab',
                                                                         }}
                                                                     >
-                                                                        <span className='icon-container'>
-                                                                            <MdDragHandle /> 
+                                                                        <span className='icon-container' style={{cursor: 'pointer'}}>
+                                                                            <MdDragHandle style={{cursor: 'grab'}} /> 
                                                                             {`Problem ${prob.problemNumber} (${prob.weight} Point${prob.weight === 1 ? '' : 's'})`}
                                                                         </span>
                                                                         <Chip style={{float: 'right'}} size='small' label={prob.id} />

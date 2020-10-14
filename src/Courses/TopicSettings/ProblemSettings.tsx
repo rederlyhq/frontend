@@ -1,14 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Grid } from '@material-ui/core';
 import { OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight } from './GenericFormInputs';
 import { Link } from 'react-router-dom';
 import { ProblemObject, TopicObject } from '../CourseInterfaces';
 import { ProblemSettingsInputs } from './TopicSettingsPage';
 import { useForm } from 'react-hook-form';
-import { putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { deleteQuestion, putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
 import useAlertState from '../../Hooks/useAlertState';
 import { Alert } from 'react-bootstrap';
+import { ConfirmationModal } from '../../Components/ConfirmationModal';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
@@ -24,9 +25,10 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setTo
             ...selected,
         }
     });
-    const { register, handleSubmit, getValues, errors, control, setValue, watch, formState, reset } = topicForm;
+    const { register, handleSubmit, control, watch, reset } = topicForm;
     const { optional } = watch();
     const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
+    const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
     useEffect(()=>{
         reset({
@@ -35,7 +37,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setTo
         setUpdateAlert({message: '', variant: 'warning'});
     }, [selected]);
 
-    const onSubmit = async (data: ProblemSettingsInputs, e: any) => {
+    const onSubmit = async (data: ProblemSettingsInputs) => {
         if (_.isNil(selected)) {
             console.error('Tried to submit while problem was blank!');
             return;
@@ -61,6 +63,28 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setTo
         }
     };
 
+    const onDelete = async () => {
+        // setError(null);
+        try {
+            const problemId = selected.id;
+            await deleteQuestion({
+                id: problemId
+            });    
+            let newProblems = [...topic.questions];
+            const deletedProblem = _.find(newProblems, ['id', problemId]);
+            // Decrement everything after
+            if (!_.isNil(deletedProblem)) {
+                _.filter(newProblems, problem => problem.problemNumber > deletedProblem.problemNumber).forEach(problem => problem.problemNumber--);
+            }
+            newProblems = _.reject(newProblems, ['id', problemId]);
+            const newTopic = new TopicObject(topic);
+            newTopic.questions = newProblems;
+            setTopic(newTopic);
+        } catch (e) {
+            // setError(e);
+        }
+    }
+
     return (
         <form onChange={() => {setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
             <Grid container item md={12} spacing={3}>
@@ -85,7 +109,15 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setTo
                     </Grid>
                 </Grid>
                 <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
-                    <Grid item md={3}>
+                    <Grid item md={4}>
+                        <Button
+                            color='secondary'
+                            variant='contained'
+                            onClick={()=>{setShowConfirmDelete(true);}}
+                            style={{marginRight: '1em'}}
+                        >
+                            Delete
+                        </Button>
                         <Button
                             color='primary'
                             variant='contained'
@@ -96,6 +128,15 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setTo
                     </Grid>
                 </Grid>
             </Grid>
+            <ConfirmationModal
+                onConfirm={() => { onDelete(); setShowConfirmDelete(false); }}
+                onHide={() => {
+                    setShowConfirmDelete(false);
+                }}
+                show={showConfirmDelete}
+                headerContent={<h5>Confirm delete</h5>}
+                bodyContent={`Are you sure you want to remove Problem ${selected.problemNumber}?`}
+            />
         </form>
     );
 };

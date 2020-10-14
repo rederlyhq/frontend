@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormControl, FormControlLabel, FormLabel, Switch, TextField } from '@material-ui/core';
+import { FormControlLabel, Switch, TextField } from '@material-ui/core';
 import _ from 'lodash';
 import { Controller } from 'react-hook-form';
 
@@ -62,6 +62,7 @@ export const maxGradedAttemptsPerRandomizationField = (register: any) => (
         inputRef={register()}
         label={'Max Graded Attempts Per Randomization'}
         type='number'
+        InputLabelProps={{style: {width: 'max-content'}}}
     />
 );
 
