@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ListGroup, ListGroupItem, Row, Col, Button } from 'react-bootstrap';
+import { ListGroup, ListGroupItem, Row, Col, Button, Modal } from 'react-bootstrap';
 import { TopicObject } from './CourseInterfaces';
 import { BsPencilSquare, BsTrash } from 'react-icons/bs';
 import _ from 'lodash';
@@ -13,8 +13,9 @@ import { UserRole, getUserRole, getUserId } from '../Enums/UserRole';
 import { CheckboxHider } from '../Components/CheckboxHider';
 import moment from 'moment';
 import { nameof } from '../Utilities/TypescriptUtils';
-import { Modal } from '@material-ui/core';
 import TopicSettingsPage from './TopicSettings/TopicSettingsPage';
+
+import './TopicList.css';
 
 interface TopicsListProps {
     listOfTopics: Array<TopicObject>;
@@ -249,13 +250,21 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                 )}
             </Droppable>
             <Modal
-                open={showSettingsModal.state}
-                onClose={()=>setShowSettingsModal({state: false, topic: null})}
-                aria-labelledby="topic-settings"
-                aria-describedby="topic-settings"
-                style={{height: '100vh', width: '100vw', backgroundColor: 'white'}}
+                show={showSettingsModal.state}
+                onHide={()=>setShowSettingsModal({state: false, topic: null})}
+                className='fullscreen-modal'
             >
-                <TopicSettingsPage topic={showSettingsModal.topic || undefined} />
+                <Modal.Header closeButton>
+                    Edit Topic
+                </Modal.Header>
+                <Modal.Body>
+                    <TopicSettingsPage topic={showSettingsModal.topic || undefined} />
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant='primary' onClick={()=>setShowSettingsModal({state: false, topic: null})}>
+                        Finish
+                    </Button>
+                </Modal.Footer>
             </Modal>
         </>
     );

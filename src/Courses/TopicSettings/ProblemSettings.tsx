@@ -13,11 +13,13 @@ import { ConfirmationModal } from '../../Components/ConfirmationModal';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
+    // Used to reset the selected bar after a deletion occurs.
+    setSelected: React.Dispatch<React.SetStateAction<TopicObject | ProblemObject>>;
     setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
     topic: TopicObject;
 }
 
-export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setTopic, topic}) => {
+export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSelected, setTopic, topic}) => {
     const topicForm = useForm<ProblemSettingsInputs>({
         mode: 'onSubmit', 
         shouldFocusError: true,
@@ -64,9 +66,10 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setTo
     };
 
     const onDelete = async () => {
-        // setError(null);
+        setUpdateAlert({message: '', variant: 'warning'});
         try {
             const problemId = selected.id;
+            const problemNumber = selected.problemNumber;
             await deleteQuestion({
                 id: problemId
             });    
@@ -80,13 +83,21 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setTo
             const newTopic = new TopicObject(topic);
             newTopic.questions = newProblems;
             setTopic(newTopic);
+            // If the problem we deleted was the last one, reset back to topic.
+            if (newProblems.length === 0) {
+                setSelected(newTopic);
+            } else {
+                setSelected(problemNumber < newTopic.questions.length ? newTopic.questions[problemNumber - 1] : newTopic.questions[problemNumber - 2]);
+            }
+
+            setUpdateAlert({message: 'Successfully deleted question', variant: 'success'});
         } catch (e) {
-            // setError(e);
+            setUpdateAlert({message: e.message, variant: 'danger'});
         }
     };
 
     return (
-        <form onChange={() => {setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
+        <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
             <Grid container item md={12} spacing={3}>
                 {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
                 <Grid container item md={12} spacing={3}>
@@ -109,7 +120,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setTo
                     </Grid>
                 </Grid>
                 <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
-                    <Grid item md={4}>
+                    <Grid container item md={4} spacing={3} justify='flex-end'>
                         <Button
                             color='secondary'
                             variant='contained'

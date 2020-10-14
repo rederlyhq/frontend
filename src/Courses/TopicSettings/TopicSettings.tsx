@@ -9,7 +9,6 @@ import ExamSettings from './ExamSettings';
 import { TopicSettingsInputs } from './TopicSettingsPage';
 import { putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
-import { DevTool } from '@hookform/devtools';
 import { Alert } from 'react-bootstrap';
 import useAlertState from '../../Hooks/useAlertState';
 
@@ -31,7 +30,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             topicTypeId: (selected.topicTypeId === 1) ? TopicTypeId.HOMEWORK : TopicTypeId.EXAM,
         }
     });
-    const { register, handleSubmit, getValues, errors, control, setValue, watch, formState, reset } = topicForm;
+    const { register, handleSubmit, control, watch, reset } = topicForm;
     const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
 
     useEffect(()=>{
@@ -43,11 +42,9 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             // TODO: Fix duplicate enum
             topicTypeId: (selected.topicTypeId === 1) ? TopicTypeId.HOMEWORK : TopicTypeId.EXAM,
         });
-        console.log(selected);
     }, [selected]);
 
-    const onSubmit = async (data: TopicSettingsInputs, event: any) => {
-        console.log(data);
+    const onSubmit = async (data: TopicSettingsInputs) => {
         if (_.isNil(selected)) {
             console.error('Tried to submit while topic was blank!');
             return;
@@ -59,12 +56,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
         obj.topicTypeId = data.topicTypeId === TopicTypeId.HOMEWORK ? 1 : 2;
         
         try {
-            const res = await putTopic({
-                id: selected.id,
-                data: obj
-            });
 
-            console.log(res);
             setUpdateAlert({message: 'Successfully updated', variant: 'success'});
 
             // Overwrite fields from the original object. This resets the state object when clicking between options.
@@ -78,7 +70,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
     const { topicTypeId } = watch();
 
     return (
-        <form onChange={() => {setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
+        <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
             {/* <DevTool control={control} /> */}
             <Grid container item md={12} spacing={3}>
                 {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
@@ -86,7 +78,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                 {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
             </Grid>
             <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
-                <Grid item md={3}>
+                <Grid container item md={3} spacing={3} justify='flex-end'>
                     <Button
                         color='primary'
                         variant='contained'

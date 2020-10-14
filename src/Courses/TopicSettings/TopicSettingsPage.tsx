@@ -167,6 +167,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     }, [topic]);
 
     const { getRootProps, getInputProps, open, isDragActive } = useDropzone({ onDrop,
+        accept: '.def',
         noClick: true,
         noKeyboard: true
     });
@@ -193,6 +194,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 {/* Problem List */}
                 <SettingsForm 
                     selected={selected}
+                    setSelected={setSelected}
                     setTopic={setTopic}
                     topic={topic}
                 />

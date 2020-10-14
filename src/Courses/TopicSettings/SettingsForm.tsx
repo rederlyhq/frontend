@@ -6,6 +6,7 @@ import TopicSettings from './TopicSettings';
 
 interface SettingsFormProps {
     selected: TopicObject | ProblemObject;
+    setSelected: React.Dispatch<React.SetStateAction<TopicObject | ProblemObject>>;
     setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
     topic: TopicObject;
 }
@@ -13,9 +14,9 @@ interface SettingsFormProps {
 /**
  * This component hosts the React-Hook-Forms element and passes down props to subcomponents to render the form.
  */
-export const SettingsForm: React.FC<SettingsFormProps> = ({selected, setTopic, topic}) => {
+export const SettingsForm: React.FC<SettingsFormProps> = ({selected, setTopic, topic, setSelected}) => {
     return (        
-        <Grid container item md={9} style={{overflowY: 'scroll', height: '82vh'}}>
+        <Grid container item md={9} style={{overflowY: 'auto', height: '82vh'}}>
             {(selected instanceof TopicObject) ? (
                 <TopicSettings 
                     selected={selected}
@@ -24,6 +25,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({selected, setTopic, t
             ) : (
                 <ProblemSettings 
                     selected={selected}
+                    setSelected={setSelected}
                     setTopic={setTopic}
                     topic={topic}
                 />

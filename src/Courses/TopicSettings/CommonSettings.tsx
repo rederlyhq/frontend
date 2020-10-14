@@ -26,7 +26,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
 
     return (
         <Grid container item md={12} spacing={3}>
-            <Grid item md={8}>
+            <Grid item md={12}>
                 <TextField 
                     fullWidth 
                     name='name' 

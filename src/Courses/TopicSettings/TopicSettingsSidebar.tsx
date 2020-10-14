@@ -7,6 +7,7 @@ import { FaFileUpload } from 'react-icons/fa';
 import { MdAdd, MdDragHandle } from 'react-icons/md';
 import { GrDrag } from 'react-icons/gr';
 import { TopicObject, CourseTopicAssessmentInfo, ProblemObject } from '../CourseInterfaces';
+import { DropzoneInputProps } from 'react-dropzone';
 
 import './TopicSettings.css';
 
@@ -17,15 +18,15 @@ interface TopicSettingsSidebarProps {
     addNewProblem: () => void;
     handleDrag: (result: any) => Promise<void>;
     isDragActive: boolean;
-    open: any;
-    getInputProps: any;
+    open: () => void;
+    getInputProps: (props?: DropzoneInputProps | undefined) => DropzoneInputProps;
 }
 
 // This is a sidebar that shows the settings for a topic as a single list.
 export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic, selected, setSelected, addNewProblem, handleDrag, isDragActive, getInputProps, open}) => {
 
     return (
-        <Grid item md={3} style={{overflowY: 'scroll', height: '82vh'}}>
+        <Grid item md={3} style={{overflowY: 'auto', height: '82vh'}}>
             <form style={{position: 'relative'}}>
                 {isDragActive && (
                     <div style={{
@@ -86,7 +87,7 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                                         }}
                                                                     >
                                                                         <span className='icon-container' style={{cursor: 'pointer'}}>
-                                                                            <GrDrag style={{cursor: 'grab', marginRight: '0.7em'}} /> 
+                                                                            <GrDrag className='grDragHandle' style={{cursor: 'grab', marginRight: '0.7em'}} /> 
                                                                             {`Problem ${prob.problemNumber} (${prob.weight} Point${prob.weight === 1 ? '' : 's'})`}
                                                                         </span>
                                                                         <Chip style={{float: 'right', cursor: 'pointer'}} size='small' label={prob.id} />
@@ -116,7 +117,7 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                         onClick={open}
                     >
                         <input {...getInputProps()}/>
-                        <span className='icon-container'><FaFileUpload style={{marginRight: '0.7em', color: 'black'}}/> Upload a DEF File</span>
+                        <span className='icon-container' style={{color: 'black'}}><FaFileUpload style={{marginRight: '0.7em', color: 'black'}}/> Upload a DEF File</span>
                     </NavLink>
                 </Nav>
             </form>
