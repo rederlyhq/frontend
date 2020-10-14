@@ -1,10 +1,11 @@
-import { Chip, Grid } from '@material-ui/core';
+import { Button, Chip, Grid } from '@material-ui/core';
 import _ from 'lodash';
 import React from 'react';
 import { Draggable, DragDropContext, Droppable, DraggableProvided } from 'react-beautiful-dnd';
 import { Nav, NavLink } from 'react-bootstrap';
 import { FaFileUpload } from 'react-icons/fa';
 import { MdAdd, MdDragHandle } from 'react-icons/md';
+import { GrDrag } from 'react-icons/gr';
 import { TopicObject, CourseTopicAssessmentInfo, ProblemObject } from '../CourseInterfaces';
 
 import './TopicSettings.css';
@@ -16,13 +17,15 @@ interface TopicSettingsSidebarProps {
     addNewProblem: () => void;
     handleDrag: (result: any) => Promise<void>;
     isDragActive: boolean;
+    open: any;
+    getInputProps: any;
 }
 
 // This is a sidebar that shows the settings for a topic as a single list.
-export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic, selected, setSelected, addNewProblem, handleDrag, isDragActive}) => {
+export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic, selected, setSelected, addNewProblem, handleDrag, isDragActive, getInputProps, open}) => {
 
     return (
-        <Grid item md={3}>
+        <Grid item md={3} style={{overflowY: 'scroll', height: '82vh'}}>
             <form style={{position: 'relative'}}>
                 {isDragActive && (
                     <div style={{
@@ -37,7 +40,7 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                         opacity: 0.9
                     }}>
                         <div style={{position: 'relative', margin: '0 auto', top: '30%', fontSize: '1.3em'}}>
-                            Drop your DEF file here to add to this topic!
+                            Drop your DEF file to add problems to this topic!
                             <FaFileUpload style={{position: 'relative', margin: '0 auto', top: '30%', display: 'block', fontSize: '2em'}}/>
                         </div>
                     </div>
@@ -51,6 +54,11 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                         style={{}}
                     >
                         <h4>Topic Settings</h4>
+                        {/* <Chip style={{float: 'right'}} label={`${topic.questions.reduce((accum, prob)=>!prob.optional ? accum += prob.weight : accum, 0)}/${topic.questions.reduce((accum, prob)=>accum += prob.weight, 0)} Points`}/> */}
+                        <p>
+                            Required Points: {topic.questions.reduce((accum, prob)=>!prob.optional ? accum += prob.weight : accum, 0)}&nbsp;
+                            Total Points: {topic.questions.reduce((accum, prob)=>accum += prob.weight, 0)}
+                        </p>
                     </NavLink>
 
                     {/* List of Draggable problems, for reordering */}
@@ -78,10 +86,10 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                                         }}
                                                                     >
                                                                         <span className='icon-container' style={{cursor: 'pointer'}}>
-                                                                            <MdDragHandle style={{cursor: 'grab'}} /> 
+                                                                            <GrDrag style={{cursor: 'grab', marginRight: '0.7em'}} /> 
                                                                             {`Problem ${prob.problemNumber} (${prob.weight} Point${prob.weight === 1 ? '' : 's'})`}
                                                                         </span>
-                                                                        <Chip style={{float: 'right'}} size='small' label={prob.id} />
+                                                                        <Chip style={{float: 'right', cursor: 'pointer'}} size='small' label={prob.id} />
                                                                     </NavLink>
                                                                 </div>
                                                             )}
@@ -97,10 +105,18 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
 
                     {/* Unselectable button for adding new problems */}
                     <NavLink
+                        // as={Button}
                         onClick={addNewProblem}
                         className='additiveNave'
                     >
-                        <span className='icon-container'><MdAdd /> Add Problem</span>
+                        <span className='icon-container'><MdAdd style={{marginRight: '0.7em'}} /> Add Problem</span>
+                    </NavLink>
+                    <NavLink
+                        // as={Button}
+                        onClick={open}
+                    >
+                        <input {...getInputProps()}/>
+                        <span className='icon-container'><FaFileUpload style={{marginRight: '0.7em', color: 'black'}}/> Upload a DEF File</span>
                     </NavLink>
                 </Nav>
             </form>

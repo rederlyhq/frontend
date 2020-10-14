@@ -83,7 +83,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setTo
         } catch (e) {
             // setError(e);
         }
-    }
+    };
 
     return (
         <form onChange={() => {setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>

@@ -22,8 +22,8 @@ export const ExamSettings: React.FC<ExamSettingsProps> = ({register, control}) =
                         Unsetting it will allow students to have the full duration to submit their exam.
                     </p>
                 </Grid>
-                <Grid md={4} item>{durationField(register)}</Grid>
-                <Grid md={4} item>{generateSwitchField(control, 'hardCutoff')}</Grid>
+                <Grid md={3} item>{durationField(register)}</Grid>
+                <Grid md={3} item>{generateSwitchField(control, 'hardCutoff')}</Grid>
             </Grid>
             <Grid item container md={12} spacing={1}>
                 <Grid md={12} item><h4>Re-Randomization Settings</h4></Grid>
@@ -32,10 +32,10 @@ export const ExamSettings: React.FC<ExamSettingsProps> = ({register, control}) =
                         Re-Randomization allows for students to generate new versions of the exams by shuffling problem order and random seeds.
                     </p>
                 </Grid>
-                <Grid md={4} item>{maxGradedAttemptsPerRandomizationField(register)}</Grid>
-                <Grid md={4} item>{maxReRandomizationsField(register)}</Grid>
-                <Grid md={4} item>{randomizationDelayField(register)}</Grid>
-                <Grid md={4} item>{generateSwitchField(control, 'randomizeOrder')}</Grid>
+                <Grid md={3} item>{maxGradedAttemptsPerRandomizationField(register)}</Grid>
+                <Grid md={3} item>{maxReRandomizationsField(register)}</Grid>
+                <Grid md={3} item>{randomizationDelayField(register)}</Grid>
+                <Grid md={3} item>{generateSwitchField(control, 'randomizeOrder')}</Grid>
             </Grid>
             <Grid item container md={12} spacing={1}>
                 <Grid md={12} item><h4>Post-Submission Settings</h4></Grid>

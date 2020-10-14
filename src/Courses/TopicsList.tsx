@@ -7,13 +7,14 @@ import { Link } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import MomentUtils from '@date-io/moment';
 import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
-import { useForm, Controller } from 'react-hook-form';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { UserRole, getUserRole, getUserId } from '../Enums/UserRole';
 import { CheckboxHider } from '../Components/CheckboxHider';
 import moment from 'moment';
 import { nameof } from '../Utilities/TypescriptUtils';
+import { Modal } from '@material-ui/core';
+import TopicSettingsPage from './TopicSettings/TopicSettingsPage';
 
 interface TopicsListProps {
     listOfTopics: Array<TopicObject>;
@@ -27,11 +28,11 @@ interface TopicsListProps {
  * Lists topics. Clicking into one will go to the problem sets.
  */
 export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, showEditTopic, removeTopic, unitUnique}) => {
-    const [topicFeedback, setTopicFeedback] = useState({topicId: -1, feedback: '', variant: 'danger'});
+    const [, setTopicFeedback] = useState({topicId: -1, feedback: '', variant: 'danger'});
+    const [showSettingsModal, setShowSettingsModal] = useState<{state: boolean, topic: TopicObject | null}>({state: false, topic: null});
     const userType: UserRole = getUserRole();
     const userId: number = getUserId();
     
-    const { control } = useForm();
     
     const updateTopicField = async (topic: TopicObject, field: keyof TopicObject, newData: Date) => {
         console.log(`Updating Topic ${topic.id} to ${field} = ${newData}`);
@@ -86,12 +87,13 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                         </Col>
                         <Col>
                             <Row style={{justifyContent: 'flex-end'}}>
-                                <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} onClick={(e: any) => showEditTopic(e, topic.id)}>
+                                <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} 
+                                    onClick={()=>setShowSettingsModal({state: true, topic: topic})}
+                                >
                                     <BsPencilSquare/> Edit
                                 </Button>
                                 <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} variant='danger' onClick={(e: any) => removeTopic(e, topic.id)}>
-                                    <BsTrash />
-                                Delete
+                                    <BsTrash /> Delete
                                 </Button>
                             </Row>
                         </Col>
@@ -101,15 +103,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                         <Row>
                             <Col>
                                 <Row>
-                                    <Link to={
-                                        loc =>(userType !== UserRole.STUDENT ? {
-                                            pathname: `${loc.pathname}/topic/${topic.id}/settings`, 
-                                        } :
-                                            {
-                                                pathname: `${loc.pathname}/topic/${topic.id}`, 
-                                                state: {problems: topic.questions}
-                                            })}
-                                    >
+                                    <Link to={loc =>({pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}})}>
                                         <Col>
                                             <h5>{topic.name}</h5>
                                         </Col>
@@ -254,6 +248,15 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                     </ListGroup>
                 )}
             </Droppable>
+            <Modal
+                open={showSettingsModal.state}
+                onClose={()=>setShowSettingsModal({state: false, topic: null})}
+                aria-labelledby="topic-settings"
+                aria-describedby="topic-settings"
+                style={{height: '100vh', width: '100vw', backgroundColor: 'white'}}
+            >
+                <TopicSettingsPage topic={showSettingsModal.topic || undefined} />
+            </Modal>
         </>
     );
 };

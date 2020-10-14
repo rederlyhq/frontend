@@ -14,7 +14,7 @@ import { TopicTypeId } from '../../Enums/TopicType';
 import { useDropzone } from 'react-dropzone';
 
 interface TopicSettingsPageProps {
-
+    topic?: TopicObject;
 }
 
 export interface TopicSettingsInputs extends ExamSettingsFields {
@@ -32,12 +32,12 @@ export interface ProblemSettingsInputs {
     optional?: boolean;
 }
 
-export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
+export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topicProp}) => {
     const [selected, setSelected] = useState<ProblemObject | TopicObject>(new TopicObject());
     const [topic, setTopic] = useState<TopicObject | null>(null);
     const {course} = useCourseContext();
     const { topicId: topicIdStr } = useParams<{topicId?: string}>();
-    const topicId = topicIdStr ? parseInt(topicIdStr, 10) : null;
+    const topicId = topicProp?.id || (topicIdStr ? parseInt(topicIdStr, 10) : null);
     
     useEffect(()=>{
         if (!topicId) {
@@ -165,7 +165,11 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
             }
         })();
     }, [topic]);
-    const { getRootProps, isDragActive } = useDropzone({ onDrop });
+
+    const { getRootProps, getInputProps, open, isDragActive } = useDropzone({ onDrop,
+        noClick: true,
+        noKeyboard: true
+    });
 
 
     if (_.isNil(topic)) {
@@ -174,7 +178,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
     
     return (
         <MuiPickersUtilsProvider utils={MomentUtils}>
-            <Grid container spacing={5} style={{margin: '0rem 5rem 0rem 0rem'}} {...getRootProps({refKey: 'innerRef'})}>
+            <Grid container spacing={5} style={{maxWidth: '100%', marginLeft: '0px', maxHeight: '82vh'}} {...getRootProps({refKey: 'innerRef'})}>
                 {/* Sidebar */}
                 <TopicSettingsSidebar 
                     topic={topic || new TopicObject()} 
@@ -183,6 +187,8 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
                     addNewProblem={addNewProblem}
                     handleDrag={handleDrag}
                     isDragActive={isDragActive}
+                    getInputProps={getInputProps}
+                    open={open}
                 />
                 {/* Problem List */}
                 <SettingsForm 

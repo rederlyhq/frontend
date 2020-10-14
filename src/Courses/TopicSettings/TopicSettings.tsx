@@ -79,7 +79,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
 
     return (
         <form onChange={() => {setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
-            <DevTool control={control} />
+            {/* <DevTool control={control} /> */}
             <Grid container item md={12} spacing={3}>
                 {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
                 <CommonSettings formObject={topicForm} />
