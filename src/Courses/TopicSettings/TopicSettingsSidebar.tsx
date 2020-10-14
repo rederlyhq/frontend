@@ -3,6 +3,7 @@ import _ from 'lodash';
 import React, { useState } from 'react';
 import { Draggable, DragDropContext, Droppable, DraggableProvided } from 'react-beautiful-dnd';
 import { Nav, NavLink } from 'react-bootstrap';
+import { FaFileUpload } from 'react-icons/fa';
 import { MdAdd, MdDragHandle } from 'react-icons/md';
 import { TopicObject, CourseTopicAssessmentInfo, ProblemObject } from '../CourseInterfaces';
 
@@ -14,14 +15,33 @@ interface TopicSettingsSidebarProps {
     setSelected: React.Dispatch<React.SetStateAction<TopicObject | ProblemObject>>;
     addNewProblem: () => void;
     handleDrag: (result: any) => Promise<void>;
+    isDragActive: boolean;
 }
 
 // This is a sidebar that shows the settings for a topic as a single list.
-export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic, selected, setSelected, addNewProblem, handleDrag}) => {
+export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic, selected, setSelected, addNewProblem, handleDrag, isDragActive}) => {
 
     return (
         <Grid item md={3}>
-            <form>
+            <form style={{position: 'relative'}}>
+                {isDragActive && (
+                    <div style={{
+                        position: 'absolute', 
+                        width: '100%', 
+                        height: '100%', 
+                        border: '5px dashed lightblue', 
+                        borderRadius: '3px',
+                        textAlign: 'center',
+                        zIndex: 2,
+                        backgroundColor: 'white',
+                        opacity: 0.9
+                    }}>
+                        <div style={{position: 'relative', margin: '0 auto', top: '30%', fontSize: '1.3em'}}>
+                            Drop your DEF file here to add to this topic!
+                            <FaFileUpload style={{position: 'relative', margin: '0 auto', top: '30%', display: 'block', fontSize: '2em'}}/>
+                        </div>
+                    </div>
+                )}
                 <Nav variant='pills' className='flex-column' defaultActiveKey={(selected instanceof TopicObject) ? 'topic' : `${selected.id}`}>
                     {/* Settings for the entire topic */}
                     <NavLink

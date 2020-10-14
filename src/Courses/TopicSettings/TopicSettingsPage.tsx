@@ -1,5 +1,5 @@
 import { FormControlLabel, Grid, Switch } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { CourseTopicAssessmentInfo, ProblemObject, TopicAssessmentFields, TopicObject, UnitObject, ExamSettingsFields } from '../CourseInterfaces';
 import MomentUtils from '@date-io/moment';
 import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
@@ -8,9 +8,10 @@ import { useCourseContext } from '../CourseProvider';
 import { useParams } from 'react-router-dom';
 import _ from 'lodash';
 import SettingsForm from './SettingsForm';
-import { getTopic, postQuestion, putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { getTopic, postDefFile, postQuestion, putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { Moment } from 'moment';
 import { TopicTypeId } from '../../Enums/TopicType';
+import { useDropzone } from 'react-dropzone';
 
 interface TopicSettingsPageProps {
 
@@ -137,13 +138,40 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
         }
     };
 
+    const onDrop = useCallback(acceptedFiles => {
+        (async () => {
+            try {
+                // setError(null);
+                if (_.isNil(topic)) {
+                    console.error('existing topic is nil');
+                    throw new Error('Cannot find topic you are trying to add questions to');
+                }
+                const res = await postDefFile({
+                    acceptedFiles,
+                    courseTopicId: topic.id
+                });
+                const newProblems = [
+                    ...topic.questions,
+                    ...res.data.data.newQuestions.map((question: ProblemObject) => new ProblemObject(question))
+                ];
+                const newTopic = new TopicObject(topic);
+                newTopic.questions = newProblems;
+                setTopic(newTopic);
+            } catch (e) {
+                // setError(e);
+            }
+        })();
+    }, [topic]);
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+
     if (_.isNil(topic)) {
         return null;
     }
     
     return (
         <MuiPickersUtilsProvider utils={MomentUtils}>
-            <Grid container spacing={5} style={{margin: '0rem 5rem 0rem 0rem'}}>
+            <Grid container spacing={5} style={{margin: '0rem 5rem 0rem 0rem'}} {...getRootProps({refKey: 'innerRef'})}>
                 {/* Sidebar */}
                 <TopicSettingsSidebar 
                     topic={topic || new TopicObject()} 
@@ -151,6 +179,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = () => {
                     setSelected={setSelected}
                     addNewProblem={addNewProblem}
                     handleDrag={handleDrag}
+                    isDragActive={isDragActive}
                 />
                 {/* Problem List */}
                 <SettingsForm 
