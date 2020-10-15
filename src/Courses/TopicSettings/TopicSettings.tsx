@@ -76,16 +76,16 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                 {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
                 <CommonSettings formObject={topicForm} />
                 {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
-            </Grid>
-            <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
-                <Grid container item md={3} spacing={3} justify='flex-end'>
-                    <Button
-                        color='primary'
-                        variant='contained'
-                        type='submit'
-                    >
-                        Submit
-                    </Button>
+                <Grid container item md={12} alignItems='flex-start' justify="flex-end">
+                    <Grid container item md={3} spacing={3} justify='flex-end'>
+                        <Button
+                            color='primary'
+                            variant='contained'
+                            type='submit'
+                        >
+                            Save Topic Settings
+                        </Button>
+                    </Grid>
                 </Grid>
             </Grid>
         </form>

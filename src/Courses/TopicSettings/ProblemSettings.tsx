@@ -134,7 +134,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                             variant='contained'
                             type='submit'
                         >
-                            Submit
+                            Save Problem
                         </Button>
                     </Grid>
                 </Grid>

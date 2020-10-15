@@ -16,7 +16,7 @@ interface SettingsFormProps {
  */
 export const SettingsForm: React.FC<SettingsFormProps> = ({selected, setTopic, topic, setSelected}) => {
     return (        
-        <Grid container item md={9} style={{overflowY: 'auto', height: '82vh'}}>
+        <Grid container item md={9}>
             {(selected instanceof TopicObject) ? (
                 <TopicSettings 
                     selected={selected}

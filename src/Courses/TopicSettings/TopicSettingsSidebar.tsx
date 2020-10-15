@@ -26,7 +26,7 @@ interface TopicSettingsSidebarProps {
 export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic, selected, setSelected, addNewProblem, handleDrag, isDragActive, getInputProps, open}) => {
 
     return (
-        <Grid item md={3} style={{overflowY: 'auto', height: '82vh'}}>
+        <Grid item md={3}>
             <form style={{position: 'relative'}}>
                 {isDragActive && (
                     <div style={{

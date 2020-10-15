@@ -179,7 +179,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     
     return (
         <MuiPickersUtilsProvider utils={MomentUtils}>
-            <Grid container spacing={5} style={{maxWidth: '100%', marginLeft: '0px', maxHeight: '82vh'}} {...getRootProps({refKey: 'innerRef'})}>
+            <Grid container spacing={5} style={{maxWidth: '100%', marginLeft: '0px'}} {...getRootProps({refKey: 'innerRef'})}>
                 {/* Sidebar */}
                 <TopicSettingsSidebar 
                     topic={topic || new TopicObject()} 

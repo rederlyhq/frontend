@@ -260,11 +260,6 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                 <Modal.Body>
                     <TopicSettingsPage topic={showSettingsModal.topic || undefined} />
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant='primary' onClick={()=>setShowSettingsModal({state: false, topic: null})}>
-                        Finish
-                    </Button>
-                </Modal.Footer>
             </Modal>
         </>
     );
