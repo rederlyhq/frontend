@@ -113,7 +113,10 @@ export const getTopic = async ({
 }: GetCourseTopicOptions): Promise<AxiosResponse<GetTopicResponse>> => {
     try {
         return await AxiosRequest.get(
-            url.resolve(COURSE_TOPIC_PATH, `${id}?${qs.stringify(_.omitBy({userId, includeQuestions}, _.isUndefined))}`)
+            url.resolve(COURSE_TOPIC_PATH, `${id}?${qs.stringify(_.omitBy({
+                userId, 
+                includeQuestions
+            }, _.isUndefined))}`)
         );
     } catch (e) {
         throw new BackendAPIError(e);

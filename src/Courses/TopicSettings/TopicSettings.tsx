@@ -3,7 +3,7 @@ import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { TopicTypeId } from '../../Enums/TopicType';
-import { TopicObject } from '../CourseInterfaces';
+import { TopicAssessmentFields, TopicObject } from '../CourseInterfaces';
 import CommonSettings from './CommonSettings';
 import ExamSettings from './ExamSettings';
 import { TopicSettingsInputs } from './TopicSettingsPage';
@@ -51,11 +51,18 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
         }
 
         const obj: any = {...data};
-
+        obj.topicAssessmentInfo = _.pickBy(data.topicAssessmentInfo, (val) => {
+            return !(_.isNil(val) || (typeof(val) === 'string' && val === ''));
+        });
+        
         // TODO: Make a getter
         obj.topicTypeId = data.topicTypeId === TopicTypeId.HOMEWORK ? 1 : 2;
-        
+
         try {
+            await putTopic({
+                id: selected.id,
+                data: obj
+            });
 
             setUpdateAlert({message: 'Successfully updated', variant: 'success'});
 

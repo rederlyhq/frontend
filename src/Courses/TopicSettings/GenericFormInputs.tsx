@@ -58,9 +58,9 @@ export const durationField = (register: any) => (
 
 export const maxGradedAttemptsPerRandomizationField = (register: any) => (
     <TextField 
-        name={`${examFieldNamePrefix}.maxGradedAttemptsPerRandomization`}
+        name={`${examFieldNamePrefix}.maxGradedAttemptsPerVersion`}
         inputRef={register()}
-        label={'Max Graded Attempts Per Randomization'}
+        label={'Max Graded Attempts Per Version'}
         type='number'
         InputLabelProps={{style: {width: 'max-content'}}}
     />
@@ -68,17 +68,17 @@ export const maxGradedAttemptsPerRandomizationField = (register: any) => (
 
 export const maxReRandomizationsField = (register: any) => (
     <TextField 
-        name={`${examFieldNamePrefix}.maxReRandomizations`}
+        name={`${examFieldNamePrefix}.maxVersions`}
         inputRef={register()}
-        label={'Max Re-Randomizations'}
+        label={'Max Versions'}
         type='number'
     />
 );
 
 export const randomizationDelayField = (register: any) => (
     <TextField 
-        name={`${examFieldNamePrefix}.randomizationDelay`}
-        label={'Randomization Delay'}
+        name={`${examFieldNamePrefix}.versionDelay`}
+        label={'Version Delay'}
         inputRef={register()}
         type='number'
     />
