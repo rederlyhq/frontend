@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject, NewCourseUnitObj, StudentGrade } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, TopicObject, ProblemObject, NewProblemObject, NewCourseUnitObj, StudentGrade } from '../../../Courses/CourseInterfaces';
 import { Moment } from 'moment';
 
 /* *************** *************** */
@@ -35,16 +35,17 @@ export interface DeleteCourseUnitOptions {
 /* *************** *************** */
 export interface GetCourseTopicOptions {
     id: number;
-    userId: number | undefined;
+    userId?: number;
+    includeQuestions?: boolean;
 }
 
 export interface PostCourseTopicOptions {
-    data: Partial<NewCourseTopicObj>;
+    data: Partial<TopicObject>;
 }
 
 export interface PutCourseTopicOptions {
     id: number;
-    data: Partial<NewCourseTopicObj>;
+    data: Partial<TopicObject>;
 }
 
 export interface DeleteCourseTopicOptions {

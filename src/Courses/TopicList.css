@@ -1,0 +1,23 @@
+.fullscreen-modal > .modal-dialog {
+    position: absolute;
+}
+
+.fullscreen-modal > .modal-dialog > .modal-content {
+    width: 100vw;
+    height: 94vh;
+}
+
+.fullscreen-modal > .modal-dialog > .modal-content > .modal-body {
+    height: 89vh;
+}
+
+.fullscreen-modal > .modal-dialog > .modal-content > .modal-body > * {
+    max-height: 88vh;
+}
+
+.fullscreen-modal > .modal-dialog > .modal-content > .modal-body > .MuiGrid-container > * {
+    overflow-y: auto;
+    height: 88vh;
+}
+
+

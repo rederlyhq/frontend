@@ -84,6 +84,34 @@ enum TopicTypeId {
     EXAM = 2
 }
 
+export class TopicAssessmentFields {
+    duration?: number;
+    hardCutoff?: boolean;
+    maxGradedAttemptsPerRandomization?: number;
+    maxReRandomizations?: number;
+    randomizationDelay?: number;
+    hideHints?: boolean;
+    showItemizedResults?: boolean;
+    showTotalGradeImmediately?: boolean;
+    hideProblemsAfterFinish?: boolean;
+    randomizeOrder?: boolean;
+    // courseTopicContentId: number = -1;
+    // duration: number = 60; // enforce IN MINUTES
+    // hardCutoff: boolean = false;
+    // maxGradedAttemptsPerRandomization: number = 1;
+    // maxReRandomizations: number = 0;
+    // randomizationDelay: number = 0; // for consistency do we also force MINUTES here?
+    // hideHints: boolean = false;
+    // showItemizedResults: boolean = false;
+    // showTotalGradeImmediately: boolean = false;
+    // hideProblemsAfterFinish: boolean = false;
+    // randomizeOrder: boolean = false;
+
+    public constructor(init?:Partial<TopicAssessmentFields>) {
+        Object.assign(this, init);
+    }
+}
+
 const newTopicUniqueGen = uniqueGen();
 export class TopicObject {
     name: string = '';
@@ -93,28 +121,17 @@ export class TopicObject {
     id: number = 0;
     unique: number = newTopicUniqueGen.next().value || 0;
     contentOrder: number = 0;
-    
-    public constructor(init?:Partial<TopicObject>) {
-        Object.assign(this, init);
-      
-        if (!_.isNull(init?.questions)) {
-            this.questions = init?.questions?.map(question => new ProblemObject(question)) || [];
-        }
-    }
-}
-
-export class NewCourseTopicObj extends TopicObject {
     courseUnitContentId: number = 0;
     startDate: Date = new Date();
     endDate: Date = new Date();
     deadDate: Date = new Date();
     partialExtend: boolean = false;
     studentTopicOverride: any[] = [];
-
-    public constructor(init?:Partial<NewCourseTopicObj>) {
-        super(init);
+    topicAssessmentInfo: TopicAssessmentFields = new TopicAssessmentFields();
+    
+    public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
-        
+      
         if (!_.isNull(init?.questions)) {
             this.questions = init?.questions?.map(question => new ProblemObject(question)) || [];
         }
@@ -126,7 +143,7 @@ export class UnitObject {
     id: number = 0;
     name: string = '';
     curriculumId: number = 0;
-    topics: Array<NewCourseTopicObj> = [];
+    topics: Array<TopicObject> = [];
     unique: number = newUnitUniqueGen.next().value || 0;
     contentOrder: number = 0;
     courseId: number = 0;
@@ -135,7 +152,7 @@ export class UnitObject {
         Object.assign(this, init);
                         
         if (!_.isNull(init?.topics)) {
-            this.topics = init?.topics?.map(topic => new NewCourseTopicObj(topic)) || [];
+            this.topics = init?.topics?.map(topic => new TopicObject(topic)) || [];
         }
     }
 }
@@ -182,4 +199,37 @@ export class NewProblemObject extends ProblemObject {
     courseTopicContentId: number = 0;
 }
 
-export type SettingsComponentType = UnitObject | UserObject | NewCourseTopicObj | ProblemObject;
+export type SettingsComponentType = UnitObject | UserObject | TopicObject | ProblemObject;
+
+export class CourseTopicAssessmentInfo extends TopicObject {
+    duration?: number;
+    hardCutoff?: boolean;
+    maxGradedAttemptsPerRandomization?: number;
+    maxReRandomizations?: number;
+    randomizationDelay?: number;
+    hideHints?: boolean;
+    showItemizedResults?: boolean;
+    showTotalGradeImmediately?: boolean;
+    hideProblemsAfterFinish?: boolean;
+    randomizeOrder?: boolean;
+    
+    public constructor(init?:Partial<ProblemObject>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+export interface ExamSettingsFields {
+    topicAssessmentInfo?: {
+        hardCutoff?: boolean;
+        hideHints?: boolean;
+        showItemizedResults?: boolean;
+        showTotalGradeImmediately?: boolean;
+        hideProblemsAfterFinish?: boolean;
+        duration?: number;
+        maxGradedAttemptsPerRandomization?: number;
+        maxReRandomizations?: number;
+        randomizationDelay?: number;
+        randomizeOrder?: boolean;
+    },
+}

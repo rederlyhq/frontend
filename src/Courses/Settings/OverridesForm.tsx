@@ -6,7 +6,7 @@ import MomentUtils from '@date-io/moment';
 import moment, { Moment } from 'moment';
 import { extendQuestion, extendTopic, getQuestion, getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
-import { NewCourseTopicObj, ProblemObject } from '../CourseInterfaces';
+import { TopicObject, ProblemObject } from '../CourseInterfaces';
 import { Alert } from 'react-bootstrap';
 
 type Inputs = {
@@ -18,7 +18,7 @@ type Inputs = {
 
 interface OverridesFormProps {
     userId: number;
-    topic?: NewCourseTopicObj;
+    topic?: TopicObject;
     problem?: ProblemObject;
 }
 
@@ -38,7 +38,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
     const [formLoading, setFormLoading] = useState<boolean>(false);
     const drawerFontSize = '1.4em';
     const { startDate, endDate, deadDate } = watch();
-    const [defaultTopic, setDefaultTopic] = useState<NewCourseTopicObj | undefined>(topic);
+    const [defaultTopic, setDefaultTopic] = useState<TopicObject | undefined>(topic);
     const [defaultProblem, setDefaultProblem] = useState<ProblemObject | undefined>(problem);
     const { isSubmitSuccessful, isSubmitting  } = formState;
 
@@ -68,7 +68,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                     endDate: moment(topicData.endDate),
                     deadDate: moment(topicData.deadDate),
                 });
-                setDefaultTopic(new NewCourseTopicObj(topicData));
+                setDefaultTopic(new TopicObject(topicData));
             } catch (e) {
                 console.error(`Topic ${topic.id} or User ${userId} does not exist!`, e);
                 setError('server', {
@@ -153,7 +153,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
         </Grid>
     );
 
-    const renderTopicOverrideForm = (topic: NewCourseTopicObj) => (
+    const renderTopicOverrideForm = (topic: TopicObject) => (
         <>
             <Grid item md={12}>
                 <MuiPickersUtilsProvider utils={MomentUtils}>

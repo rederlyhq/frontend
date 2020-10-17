@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
-import { ListGroup, ListGroupItem, Row, Col, Button } from 'react-bootstrap';
-import { NewCourseTopicObj } from './CourseInterfaces';
+import { ListGroup, ListGroupItem, Row, Col, Button, Modal } from 'react-bootstrap';
+import { TopicObject } from './CourseInterfaces';
 import { BsPencilSquare, BsTrash } from 'react-icons/bs';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import MomentUtils from '@date-io/moment';
 import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
-import { useForm, Controller } from 'react-hook-form';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { UserRole, getUserRole, getUserId } from '../Enums/UserRole';
 import { CheckboxHider } from '../Components/CheckboxHider';
 import moment from 'moment';
 import { nameof } from '../Utilities/TypescriptUtils';
+import TopicSettingsPage from './TopicSettings/TopicSettingsPage';
+
+import './TopicList.css';
 
 interface TopicsListProps {
-    listOfTopics: Array<NewCourseTopicObj>;
+    listOfTopics: Array<TopicObject>;
     flush?: boolean;
     showEditTopic?: _.CurriedFunction2<any, number, void>;
     removeTopic?: _.CurriedFunction2<any, number, void>;
@@ -27,21 +29,21 @@ interface TopicsListProps {
  * Lists topics. Clicking into one will go to the problem sets.
  */
 export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, showEditTopic, removeTopic, unitUnique}) => {
-    const [topicFeedback, setTopicFeedback] = useState({topicId: -1, feedback: '', variant: 'danger'});
+    const [, setTopicFeedback] = useState({topicId: -1, feedback: '', variant: 'danger'});
+    const [showSettingsModal, setShowSettingsModal] = useState<{state: boolean, topic: TopicObject | null}>({state: false, topic: null});
     const userType: UserRole = getUserRole();
     const userId: number = getUserId();
     
-    const { control } = useForm();
     
-    const updateTopicField = async (topic: NewCourseTopicObj, field: keyof NewCourseTopicObj, newData: Date) => {
+    const updateTopicField = async (topic: TopicObject, field: keyof TopicObject, newData: Date) => {
         console.log(`Updating Topic ${topic.id} to ${field} = ${newData}`);
         const updates = {
             [field]: newData
         };
 
-        if (field === nameof<NewCourseTopicObj>('endDate')) {
+        if (field === nameof<TopicObject>('endDate')) {
             if (moment(newData).isAfter(moment(topic.deadDate)) || moment(topic.deadDate).isSame(moment(topic.endDate))) {
-                updates[nameof<NewCourseTopicObj>('deadDate')] = newData;
+                updates[nameof<TopicObject>('deadDate')] = newData;
             }
         }
 
@@ -56,7 +58,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
         }
     };
 
-    const getActiveExtensions = (topic: NewCourseTopicObj): Array<any> => {
+    const getActiveExtensions = (topic: TopicObject): Array<any> => {
         const now = moment();
         if (_.isEmpty(topic.studentTopicOverride)) return [];
 
@@ -70,7 +72,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
         return activeExtensions;
     };
 
-    const renderSingleTopic = (topic: NewCourseTopicObj) => {
+    const renderSingleTopic = (topic: TopicObject) => {
         const activeExtensions = getActiveExtensions(topic);
         return (
             <div className='d-flex'>
@@ -86,12 +88,13 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                         </Col>
                         <Col>
                             <Row style={{justifyContent: 'flex-end'}}>
-                                <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} onClick={(e: any) => showEditTopic(e, topic.id)}>
+                                <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} 
+                                    onClick={()=>setShowSettingsModal({state: true, topic: topic})}
+                                >
                                     <BsPencilSquare/> Edit
                                 </Button>
                                 <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} variant='danger' onClick={(e: any) => removeTopic(e, topic.id)}>
-                                    <BsTrash />
-                                Delete
+                                    <BsTrash /> Delete
                                 </Button>
                             </Row>
                         </Col>
@@ -246,6 +249,18 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                     </ListGroup>
                 )}
             </Droppable>
+            <Modal
+                show={showSettingsModal.state}
+                onHide={()=>setShowSettingsModal({state: false, topic: null})}
+                className='fullscreen-modal'
+            >
+                <Modal.Header closeButton>
+                    Edit Topic
+                </Modal.Header>
+                <Modal.Body>
+                    <TopicSettingsPage topic={showSettingsModal.topic || undefined} />
+                </Modal.Body>
+            </Modal>
         </>
     );
 };

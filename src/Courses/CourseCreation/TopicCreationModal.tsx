@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { FormControl, FormLabel, Form, FormGroup, Modal, Button, InputGroup, Col, Row, FormCheck, Alert } from 'react-bootstrap';
 import _ from 'lodash';
-import { ProblemObject, NewCourseTopicObj } from '../CourseInterfaces';
+import { ProblemObject, TopicObject } from '../CourseInterfaces';
 import moment from 'moment';
 import { useDropzone } from 'react-dropzone';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -15,10 +15,10 @@ import { CheckboxHider, CheckboxHiderChildrenPosition } from '../../Components/C
 
 interface TopicCreationModalProps {
     unitIndex: number;
-    addTopic: (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => void;
-    existingTopic?: NewCourseTopicObj;
+    addTopic: (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => void;
+    existingTopic?: TopicObject;
     closeModal?: () => void;
-    updateTopic?: (topic: NewCourseTopicObj) => void;
+    updateTopic?: (topic: TopicObject) => void;
 }
 
 /**
@@ -34,7 +34,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
     };
 
     const [error, setError] = useState<Error | null>(null);
-    const [topicMetadata, setTopicMetadata] = useState<NewCourseTopicObj>(new NewCourseTopicObj(existingTopic));
+    const [topicMetadata, setTopicMetadata] = useState<TopicObject>(new TopicObject(existingTopic));
     const [problems, setProblems] = useState<Array<ProblemObject>>(existingTopic ? existingTopic.questions : []);
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
     const webworkBasePath = 'webwork-open-problem-library/';
@@ -150,7 +150,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             }
             newProblems = _.reject(newProblems, ['id', problemId]);
             setProblems(newProblems);
-            const newTopic = new NewCourseTopicObj(existingTopic);
+            const newTopic = new TopicObject(existingTopic);
             newTopic.questions = newProblems;
             updateTopic?.(newTopic);
         } catch (e) {
@@ -249,7 +249,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         );
     };
 
-    const onTopicMetadataChange = (e: any, name: keyof NewCourseTopicObj) => {
+    const onTopicMetadataChange = (e: any, name: keyof TopicObject) => {
         let val = e.target.value;
         console.log(`updating ${name} to ${val}`);
         switch (name) {
@@ -273,7 +273,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         console.log(topicMetadata);
     };
 
-    const onTopicMetadataBlur = async (e: any, name: keyof NewCourseTopicObj) => {
+    const onTopicMetadataBlur = async (e: any, name: keyof TopicObject) => {
         let val = e.target.value;
         console.log(`updating ${name} to ${val}`);
         switch (name) {
@@ -338,7 +338,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                     ...res.data.data.newQuestions.map((question: ProblemObject) => new ProblemObject(question))
                 ];
                 setProblems(newProblems);
-                const newTopic = new NewCourseTopicObj(existingTopic);
+                const newTopic = new TopicObject(existingTopic);
                 newTopic.questions = newProblems;
                 updateTopic?.(newTopic);
             } catch (e) {
@@ -373,7 +373,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         });
         console.log(problemsWithOrdering);
         console.log(topicMetadata);
-        addTopic(unitIndex, existingTopic, new NewCourseTopicObj({ ...topicMetadata, questions: problemsWithOrdering }));
+        addTopic(unitIndex, existingTopic, new TopicObject({ ...topicMetadata, questions: problemsWithOrdering }));
     };
 
     const onDragEnd = async (result: any) => {
@@ -408,7 +408,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             const [removed] = newProbs.splice(result.source.index, 1);
             newProbs.splice(result.destination.index, 0, removed);
             setProblems(newProbs);
-            let newTopic: NewCourseTopicObj | null = null;
+            let newTopic: TopicObject | null = null;
             if (!_.isNil(existingTopic)) {
                 newTopic = _.cloneDeep(existingTopic);
                 newTopic.questions = newProbs;
@@ -429,7 +429,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                 newProbs = [...newProbs];
                 setProblems(newProbs);
                 if (!_.isNil(newTopic)) {
-                    newTopic = new NewCourseTopicObj(newTopic);
+                    newTopic = new TopicObject(newTopic);
                     newTopic.questions = newProbs;
                     updateTopic?.(newTopic);
                 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TopicsList from '../TopicsList';
 import { Accordion, Card, Row, Col, Modal, Alert, Button } from 'react-bootstrap';
-import { CourseObject, NewCourseTopicObj, UnitObject } from '../CourseInterfaces';
+import { CourseObject, TopicObject, UnitObject } from '../CourseInterfaces';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { FaPlusCircle, FaTrash } from 'react-icons/fa';
@@ -27,7 +27,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     const [error, setError] = useState<Error | null | undefined>(null);
     const userType: UserRole = getUserRole();
 
-    const [showTopicCreation, setShowTopicCreation] = useState<{ show: boolean, unitIndex: number, existingTopic?: NewCourseTopicObj | undefined }>({ show: false, unitIndex: -1 });
+    const [showTopicCreation, setShowTopicCreation] = useState<{ show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined }>({ show: false, unitIndex: -1 });
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
 
     const showEditTopic = (e: any, unitIdentifier: number, topicIdentifier: number) => {
@@ -101,7 +101,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 return;
             }
 
-            unit.topics.push(new NewCourseTopicObj(result.data.data));
+            unit.topics.push(new TopicObject(result.data.data));
             setCourse?.(newCourse);
         } catch (e) {
             setError(e);
@@ -162,7 +162,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         });
     };
 
-    const addTopic = (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => {
+    const addTopic = (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
         console.log('Adding Topic', unitIndex, existingTopic, topic);
         if (topic.questions.length <= 0) {
             // TODO: Render validation!
@@ -192,7 +192,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             // Otherwise, concatenate this object onto the existing array.
             // topic.contentOrder = unit.topics.length;
             topic.contentOrder = Math.max(...unit.topics.map(topic => topic.contentOrder), 0) + 1;
-            unit.topics = _.concat(unit.topics, new NewCourseTopicObj(topic));
+            unit.topics = _.concat(unit.topics, new TopicObject(topic));
         }
 
         setCourse?.(newCourse);
@@ -278,7 +278,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             const sourceUnitDroppableId = result.source.droppableId;
             const destinationUnitDroppableId = result.destination.droppableId;
 
-            const updates: Partial<NewCourseTopicObj> = {
+            const updates: Partial<TopicObject> = {
                 contentOrder: newContentOrder
             };
             const unitIdRegex = /^topicList-(\d+)$/;
@@ -331,7 +331,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 data: updates
             });
 
-            response.data.data.updatesResult.forEach((returnedTopic: Partial<NewCourseTopicObj>) => {
+            response.data.data.updatesResult.forEach((returnedTopic: Partial<TopicObject>) => {
                 const existingUnit = _.find(newCourse.units, ['id', returnedTopic.courseUnitContentId]);
                 if (_.isNil(existingUnit)) {
                     console.error('Could not find topics unit');
@@ -379,7 +379,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     addTopic={addTopic}
                     existingTopic={showTopicCreation.existingTopic}
                     closeModal={_.partial(setShowTopicCreation, { show: false, unitIndex: -1 })}
-                    updateTopic={(topic: NewCourseTopicObj) => {
+                    updateTopic={(topic: TopicObject) => {
                         const existingUnit = _.find(course.units, ['id', topic.courseUnitContentId]);
                         if (_.isNil(existingUnit)) {
                             console.error('Could not find unit');
