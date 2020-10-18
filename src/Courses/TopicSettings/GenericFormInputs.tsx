@@ -2,6 +2,7 @@ import React from 'react';
 import { FormControlLabel, Switch, TextField } from '@material-ui/core';
 import _ from 'lodash';
 import { Controller } from 'react-hook-form';
+import ChipInput from 'material-ui-chip-input'
 
 // TODO: Clean up typing here. Probably needs a generic <T>.
 export interface NestedFormInterface {
@@ -129,5 +130,22 @@ export const OptionalField = (control: any) => (
                 }
             />
         )} 
+    />
+);
+
+export const RandomSeedSet = (control: any) => (
+    <Controller
+        name='randomSeedSet'
+        control={control}
+        render={({ onChange, onBlur, value, name }) => (
+            <ChipInput
+                onChange={onChange}
+                value={value}
+            />
+        )}
+        rules={{
+            required: false,
+            validate: (arr: string[]) => _.every(arr, _.isNumber) || 'All values must be numbers'
+        }}
     />
 );
