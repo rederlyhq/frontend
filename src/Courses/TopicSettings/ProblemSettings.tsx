@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Grid } from '@material-ui/core';
-import { OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight } from './GenericFormInputs';
+import { OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
 import { Link } from 'react-router-dom';
 import { ProblemObject, TopicObject } from '../CourseInterfaces';
 import { ProblemSettingsInputs } from './TopicSettingsPage';
@@ -10,6 +10,7 @@ import _ from 'lodash';
 import useAlertState from '../../Hooks/useAlertState';
 import { Alert } from 'react-bootstrap';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
+import { DevTool } from '@hookform/devtools';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
@@ -27,7 +28,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             ...selected,
         }
     });
-    const { register, handleSubmit, control, watch, reset } = topicForm;
+    const { register, handleSubmit, control, watch, reset, errors } = topicForm;
     const { optional } = watch();
     const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
@@ -98,8 +99,10 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
     return (
         <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
+            <DevTool control={control} />
             <Grid container item md={12} spacing={3}>
                 {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
+                {errors}
                 <Grid container item md={12} spacing={3}>
                     <Grid item container md={12}><h1>Problem Settings</h1></Grid>
                     <Grid item md={8}>
@@ -117,6 +120,9 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                     </Grid><Grid item md={12}>
                 This problem is {optional ? 'optional' : 'required'}.<br/>
                         {OptionalField(control)}
+                    </Grid><Grid item md={12}>
+                You can optionally limit the seed values used for specific problems.
+                        {RandomSeedSet(control)}
                     </Grid>
                 </Grid>
                 <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
