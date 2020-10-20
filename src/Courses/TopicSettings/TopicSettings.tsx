@@ -1,7 +1,7 @@
 import { Grid, Button } from '@material-ui/core';
 import moment from 'moment';
 import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 import { TopicTypeId } from '../../Enums/TopicType';
 import { TopicAssessmentFields, TopicObject } from '../CourseInterfaces';
 import CommonSettings from './CommonSettings';
@@ -30,7 +30,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             topicTypeId: (selected.topicTypeId === 1) ? TopicTypeId.HOMEWORK : TopicTypeId.EXAM,
         }
     });
-    const { register, handleSubmit, control, watch, reset } = topicForm;
+    const { register, handleSubmit, control, watch, reset, errors } = topicForm;
     const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
 
     useEffect(()=>{
@@ -77,25 +77,27 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
     const { topicTypeId } = watch();
 
     return (
-        <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
-            {/* <DevTool control={control} /> */}
-            <Grid container item md={12} spacing={3}>
-                {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
-                <CommonSettings formObject={topicForm} />
-                {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
-                <Grid container item md={12} alignItems='flex-start' justify="flex-end">
-                    <Grid container item md={3} spacing={3} justify='flex-end'>
-                        <Button
-                            color='primary'
-                            variant='contained'
-                            type='submit'
-                        >
-                            Save Topic Settings
-                        </Button>
+        <FormProvider {...topicForm}>
+            <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
+                {/* <DevTool control={control} /> */}
+                <Grid container item md={12} spacing={3}>
+                    {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
+                    <CommonSettings formObject={topicForm} />
+                    {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
+                    <Grid container item md={12} alignItems='flex-start' justify="flex-end">
+                        <Grid container item md={3} spacing={3} justify='flex-end'>
+                            <Button
+                                color='primary'
+                                variant='contained'
+                                type='submit'
+                            >
+                                Save Topic Settings
+                            </Button>
+                        </Grid>
                     </Grid>
                 </Grid>
-            </Grid>
-        </form>
+            </form>
+        </FormProvider>
     );
 };
 

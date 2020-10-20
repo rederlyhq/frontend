@@ -189,6 +189,7 @@ export class ProblemObject implements IProblemObject {
     unique: number = newProblemUniqueGen.next().value || 0;
     grades?: StudentGrade[];
     studentTopicQuestionOverride: any[] = [];
+    courseQuestionAssessmentInfo?: any = {};
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
@@ -232,4 +233,11 @@ export interface ExamSettingsFields {
         randomizationDelay?: number;
         randomizeOrder?: boolean;
     },
+}
+
+export interface ExamProblemSettingsFields {
+    courseQuestionAssessmentInfo?: {
+        additionalProblemPaths?: Array<{path: string}>,
+        randomSeedSet?: number[],
+    }
 }

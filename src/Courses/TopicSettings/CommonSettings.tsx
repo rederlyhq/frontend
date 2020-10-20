@@ -4,6 +4,7 @@ import { DateTimePicker } from '@material-ui/pickers';
 import moment, { Moment } from 'moment';
 import { Controller } from 'react-hook-form';
 import { TopicTypeId } from '../../Enums/TopicType';
+import _ from 'lodash';
 
 interface CommonSettingsProps {
     // This is the register function from react-hook-forms.
@@ -84,7 +85,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                                 isDate: (data: any) => moment(data).isValid() || 'Invalid date',
                                 isEarliest: (startDate: Moment) => {
                                     const { endDate, deadDate } = getValues();
-                                    return (startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate)) || 'Start date cannot be after End or Dead dates';
+                                    return startDate.isSameOrBefore(endDate) || 'Start date cannot be after End or Dead dates';
                                 }
                             }
                         }}
@@ -104,10 +105,15 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                             required: true,
                             validate: {
                                 isDate: (data: any) => moment(data).isValid() || 'Invalid date',
-                                // isEarliest: (startDate: Moment) => {
-                                //     const { endDate, deadDate } = getValues();
-                                //     return startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate) || 'Start date cannot be after End or Dead dates';
-                                // }
+                                isBeforeStart: (endDate: Moment) => {
+                                    const { startDate } = getValues();
+                                    return startDate.isSameOrBefore(endDate) || 'End date cannot be before Start date';
+                                },
+                                isAfterDead: (endDate: Moment) => {
+                                    const { deadDate } = getValues();
+                                    if (_.isNil(deadDate)) return true;
+                                    return endDate.isSameOrBefore(deadDate) || 'End date cannot be after Dead date';
+                                }
                             }
                         }}
                     />
@@ -127,10 +133,10 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                             required: true,
                             validate: {
                                 isDate: (data: any) => moment(data).isValid() || 'Invalid date',
-                                // isEarliest: (startDate: Moment) => {
-                                //     const { endDate, deadDate } = getValues();
-                                //     return startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate) || 'Start date cannot be after End or Dead dates';
-                                // }
+                                isLatest: (deadDate: Moment) => {
+                                    const { endDate, startDate } = getValues();
+                                    return startDate.isSameOrBefore(deadDate) && endDate.isSameOrBefore(deadDate) || 'Dead date cannot be before Start or End dates';
+                                }
                             }
                         }}
                     />}
