@@ -79,7 +79,7 @@ export interface IProblemObject {
     weight: number;
 }
 
-enum TopicTypeId {
+export enum TopicTypeId {
     PROBLEM_SET = 1,
     EXAM = 2
 }

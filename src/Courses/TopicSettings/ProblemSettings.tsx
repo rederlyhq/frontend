@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Grid } from '@material-ui/core';
 import { MultipleProblemPaths, OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
 import { Link } from 'react-router-dom';
-import { ProblemObject, TopicObject } from '../CourseInterfaces';
+import { ProblemObject, TopicObject, TopicTypeId } from '../CourseInterfaces';
 import { ProblemSettingsInputs } from './TopicSettingsPage';
 import { useForm, FormProvider } from 'react-hook-form';
 import { deleteQuestion, putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
@@ -63,7 +63,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
         }
         reset({
             ...selected,
-            ...(topic.topicTypeId === 2 && {
+            ...(topic.topicTypeId === TopicTypeId.EXAM && {
                 courseQuestionAssessmentInfo: {
                     additionalProblemPaths: defaultAdditionalProblemPaths,
                     randomSeedSet: selected.courseQuestionAssessmentInfo?.randomSeedSet || [],
@@ -162,27 +162,30 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                     <Grid container item md={12} spacing={3}>
                         <Grid item container md={12}><h1>Problem Settings</h1></Grid>
                         <Grid item md={8}>
-                    Enter the path to the problem on the Rederly server. This is prefaced either 
-                    with <code>Library/</code> or <code>Contrib/</code> if this problem is included 
-                    in the <Link to='https://github.com/openwebwork/webwork-open-problem-library'>OPL</Link> or <code>private/</code> if 
-                    this problem has been uploaded to your private Rederly folder.
-                            {topic.topicTypeId === 2 ? 
+                            Enter the path to the problem on the Rederly server. This is prefaced either 
+                            with <code>Library/</code> or <code>Contrib/</code> if this problem is included 
+                            in the <Link to='https://github.com/openwebwork/webwork-open-problem-library'>OPL</Link> or <code>private/</code> if 
+                            this problem has been uploaded to your private Rederly folder.
+                            {topic.topicTypeId === TopicTypeId.EXAM ? 
                                 <MultipleProblemPaths /> :
                                 <ProblemPath />
                             }
                         </Grid><Grid item md={12}>
-                    Enter the max attempts for a problem, or 0 or -1 for unlimited attempts.<br/>
+                            Enter the max attempts for a problem, or 0 or -1 for unlimited attempts.<br/>
                             <ProblemMaxAttempts />
                         </Grid><Grid item md={12}>
-                    Enter the grading weight for this problem. Optional problems with weights will be treated as extra credit.<br/>
+                            Enter the grading weight for this problem. Optional problems with weights will be treated as extra credit.<br/>
                             <ProblemWeight />
                         </Grid><Grid item md={12}>
-                    This problem is {optional ? 'optional' : 'required'}.<br/>
+                            This problem is {optional ? 'optional' : 'required'}.<br/>
                             <OptionalField />
-                        </Grid><Grid item md={12}>
-                    You can optionally limit the seed values used for specific problems.<br/>
-                            <RandomSeedSet />
                         </Grid>
+                        {topic.topicTypeId === TopicTypeId.EXAM && (
+                            <Grid item md={12}>
+                                You can optionally limit the seed values used for specific problems.<br/>
+                                <RandomSeedSet />
+                            </Grid>
+                        )}
                     </Grid>
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
                         <Grid container item md={4} spacing={3} justify='flex-end'>
