@@ -55,20 +55,21 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
     useEffect(()=>{
+        let defaultAdditionalProblemPaths = [{path: ''}];
+        // Force renders to always include one empty path at the end.
+        if (!additionalProblemPathsArrayIsEmpty) {
+            const additionalProblemPathsArrayWithPadding = additionalProblemPathsArray.map((s: string) => ({path: s}));
+            defaultAdditionalProblemPaths = [...additionalProblemPathsArrayWithPadding, {path: ''}]
+        }
         reset({
             ...selected,
-            courseQuestionAssessmentInfo: {
-                ...selected.courseQuestionAssessmentInfo,
-                ...(
-                    additionalProblemPathsArrayIsEmpty ?
-                    {
-                        additionalProblemPaths: [{path: ''}]
-                    } : 
-                    {
-                        additionalProblemPaths: additionalProblemPathsArray.map((s: string) => ({path: s})),
+            ...(topic.topicTypeId === 2 && {
+                    courseQuestionAssessmentInfo: {
+                        additionalProblemPaths: defaultAdditionalProblemPaths,
+                        randomSeedSet: selected.courseQuestionAssessmentInfo?.randomSeedSet || [],
                     }
-                ),
-            }
+                }
+            )
         });
         setUpdateAlert({message: '', variant: 'warning'});
     }, [selected]);
