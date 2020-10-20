@@ -48,7 +48,6 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     };
 
     const topicForm = useForm<ProblemSettingsInputs>(formSettings);
-    console.log('form settings', formSettings);
 
     const { handleSubmit, control, watch, reset } = topicForm;
     const { optional } = watch();
@@ -56,7 +55,6 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
     useEffect(()=>{
-        console.log('Resetting form state');
         reset({
             ...selected,
             courseQuestionAssessmentInfo: {
@@ -99,7 +97,6 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             });
 
             const dataFromBackend = res.data.data.updatesResult?.[0];
-            console.log('dataFrombackend', dataFromBackend);
             setUpdateAlert({message: 'Successfully updated', variant: 'success'});
 
             // Overwrite fields from the original object. This resets the state object when clicking between options.
