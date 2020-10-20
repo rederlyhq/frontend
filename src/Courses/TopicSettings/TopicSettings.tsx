@@ -3,7 +3,7 @@ import moment from 'moment';
 import React, { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { TopicTypeId } from '../../Enums/TopicType';
-import { TopicAssessmentFields, TopicObject } from '../CourseInterfaces';
+import { TopicObject } from '../CourseInterfaces';
 import CommonSettings from './CommonSettings';
 import ExamSettings from './ExamSettings';
 import { TopicSettingsInputs } from './TopicSettingsPage';

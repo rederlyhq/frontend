@@ -95,7 +95,6 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             if (result.destination.index === result.source.index) {
                 return;
             }
-            console.log('Drag result:', result);
     
             const newContentOrder: number = result.destination.index + 1;
             const problemIdRegex = /^problemRow(\d+)$/;

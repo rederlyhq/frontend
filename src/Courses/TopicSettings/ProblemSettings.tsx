@@ -31,12 +31,12 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             ...selected.courseQuestionAssessmentInfo,
             ...(
                 additionalProblemPathsArrayIsEmpty ?
-                {
-                    additionalProblemPaths: [{path: ''}]
-                } : 
-                {
-                    additionalProblemPaths: additionalProblemPathsArray.map((s: string) => ({path: s})),
-                }
+                    {
+                        additionalProblemPaths: [{path: ''}]
+                    } : 
+                    {
+                        additionalProblemPaths: additionalProblemPathsArray.map((s: string) => ({path: s})),
+                    }
             ),
         }
     };
@@ -59,16 +59,16 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
         // Force renders to always include one empty path at the end.
         if (!additionalProblemPathsArrayIsEmpty) {
             const additionalProblemPathsArrayWithPadding = additionalProblemPathsArray.map((s: string) => ({path: s}));
-            defaultAdditionalProblemPaths = [...additionalProblemPathsArrayWithPadding, {path: ''}]
+            defaultAdditionalProblemPaths = [...additionalProblemPathsArrayWithPadding, {path: ''}];
         }
         reset({
             ...selected,
             ...(topic.topicTypeId === 2 && {
-                    courseQuestionAssessmentInfo: {
-                        additionalProblemPaths: defaultAdditionalProblemPaths,
-                        randomSeedSet: selected.courseQuestionAssessmentInfo?.randomSeedSet || [],
-                    }
+                courseQuestionAssessmentInfo: {
+                    additionalProblemPaths: defaultAdditionalProblemPaths,
+                    randomSeedSet: selected.courseQuestionAssessmentInfo?.randomSeedSet || [],
                 }
+            }
             )
         });
         setUpdateAlert({message: '', variant: 'warning'});
@@ -150,8 +150,8 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                 setProblemStudentGrade={() => { }} 
                 workbookId={0} 
                 readonly={false} />
-        )
-    }
+        );
+    };
 
     return (
         <FormProvider {...topicForm}>
