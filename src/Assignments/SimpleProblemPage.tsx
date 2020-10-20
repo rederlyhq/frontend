@@ -44,7 +44,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [confirmationParameters, setConfirmationParameters] = useState<{ show: boolean, headerText: string, bodyText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
-    const [gradeResultParameters, setGradeResultParameters] = useState<{ show: boolean, headerText: string, children: React.ReactNode  }>(DEFAULT_GRADE_PARAMETERS);
+    const [gradeResultParameters, setGradeResultParameters] = useState<{ show: boolean, headerText: string, children: React.ReactNode, onConfirm?: () => unknown  }>(DEFAULT_GRADE_PARAMETERS);
 
     useEffect(()=>{
         setLoading(true);
@@ -269,6 +269,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                             header={gradeResultParameters.headerText}
                             // eslint-disable-next-line react/no-children-prop
                             children={gradeResultParameters.children}
+                            onClose={() => { setGradeResultParameters({show: false, headerText: '', children: null}); }}
                         />
                         <Nav variant='pills' className='flex-column' defaultActiveKey={selectedProblemId}>
                             {_.chain(problems)
