@@ -1,6 +1,6 @@
 import { Grid } from '@material-ui/core';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ProblemObject, TopicObject, ExamSettingsFields } from '../CourseInterfaces';
+import { ProblemObject, TopicObject, ExamSettingsFields, ExamProblemSettingsFields } from '../CourseInterfaces';
 import MomentUtils from '@date-io/moment';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import TopicSettingsSidebar from './TopicSettingsSidebar';
@@ -25,11 +25,12 @@ export interface TopicSettingsInputs extends ExamSettingsFields {
     topicTypeId?: TopicTypeId;
 }
 
-export interface ProblemSettingsInputs {
+export interface ProblemSettingsInputs extends ExamProblemSettingsFields {
     webworkQuestionPath?: string;
     maxAttempts?: number;
     weight?: number;
     optional?: boolean;
+    additionalProblemPaths?: Array<{path: string}>;
 }
 
 export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topicProp}) => {
@@ -94,7 +95,6 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             if (result.destination.index === result.source.index) {
                 return;
             }
-            console.log('Drag result:', result);
     
             const newContentOrder: number = result.destination.index + 1;
             const problemIdRegex = /^problemRow(\d+)$/;
