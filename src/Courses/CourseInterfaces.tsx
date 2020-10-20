@@ -87,14 +87,15 @@ enum TopicTypeId {
 export class TopicAssessmentFields {
     duration?: number;
     hardCutoff?: boolean;
-    maxGradedAttemptsPerRandomization?: number;
-    maxReRandomizations?: number;
-    randomizationDelay?: number;
+    maxGradedAttemptsPerVersion?: number;
+    maxVersions: number = 1;
+    versionDelay?: number;
     hideHints?: boolean;
     showItemizedResults?: boolean;
     showTotalGradeImmediately?: boolean;
     hideProblemsAfterFinish?: boolean;
     randomizeOrder?: boolean;
+    studentTopicAssessmentInfo?: Array<StudentTopicAssessmentFields>;
     // courseTopicContentId: number = -1;
     // duration: number = 60; // enforce IN MINUTES
     // hardCutoff: boolean = false;
@@ -108,6 +109,24 @@ export class TopicAssessmentFields {
     // randomizeOrder: boolean = false;
 
     public constructor(init?:Partial<TopicAssessmentFields>) {
+        Object.assign(this, init);
+    }
+}
+
+export class StudentTopicAssessmentFields {
+    id?: number;
+    topicAssessmentInfoId?: number;
+    userId?: number;
+    startTime?: Date;
+    endTime?: Date;
+    nextVersionAvailableTime?: Date;
+    numAttempts?: number;
+    maxAttempts?: number;
+    isClean?: boolean;
+    isClosed?: boolean;
+    active?: boolean;
+
+    public constructor(init?: Partial<StudentTopicAssessmentFields>) {
         Object.assign(this, init);
     }
 }
@@ -127,7 +146,8 @@ export class TopicObject {
     deadDate: Date = new Date();
     partialExtend: boolean = false;
     studentTopicOverride: any[] = [];
-    topicAssessmentInfo: TopicAssessmentFields = new TopicAssessmentFields();
+    topicAssessmentInfo?: TopicAssessmentFields = new TopicAssessmentFields();
+    studentTopicAssessmentInfo: Array<StudentTopicAssessmentFields> = [new StudentTopicAssessmentFields()];
     
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
@@ -162,7 +182,28 @@ export class NewCourseUnitObj extends UnitObject {
 
 const newProblemUniqueGen = uniqueGen();
 
+export interface StudentGradeInstance {
+    id: number;
+    webworkQuestionPath: string;
+    problemNumber: number;
+    randomSeed: number;
+    // This is a jsonb field so it could be any (from db)
+    // Submitted in workbook used any so I'm going to keep it consistent here
+    // If this is used for form data we will never know any info about what keys are available
+    // Might make sense to make this an unknown type since I don't think we will ever access the types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    currentProblemState: any;
+    studentGradeId: number;
+    studentTopicAssessmentInfoId: number;
+    scoreForBestVersion: number; // the score from the highest-scoring exam submission
+    overallBestScore: number; // the best score on this problem alone
+    active: boolean;
+    bestIndividualAttemptId: number;
+    bestVersionAttemptId: number;
+}
+
 export class StudentGrade {
+    gradeInstances?: StudentGradeInstance[];
     overallBestScore: number = 0;
     effectiveScore: number = 0;
     bestScore: number = 0;
@@ -170,7 +211,7 @@ export class StudentGrade {
     numLegalAttempts: number = 0;
     locked: boolean = false;
     currentProblemState?: unknown;
-    id?: number;
+    id: number = 0;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);

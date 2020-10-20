@@ -31,7 +31,7 @@ export const ActiveTopics: React.FC<ActiveTopicsProps> = ({course}) => {
                     } else {
                         return _.find(topic.studentTopicOverride, ['userId', userId]) !== undefined;
                     }
-                }).map((topic: NewCourseTopicObj) => {
+                }).map((topic: TopicObject) => {
                     const override = _.find(topic.studentTopicOverride, ['userId', userId]);
                     if (!_.isNil(override)) {
                         delete override.id;

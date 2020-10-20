@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, TopicObject, ProblemObject, NewProblemObject, NewCourseUnitObj, StudentGrade } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, TopicObject, ProblemObject, NewProblemObject, NewCourseUnitObj, StudentGrade, StudentGradeInstance } from '../../../Courses/CourseInterfaces';
 import { Moment } from 'moment';
 
 /* *************** *************** */
@@ -71,6 +71,11 @@ export interface PutQuestionGradeOptions {
     data: Partial<StudentGrade>;
 }
 
+export interface PutQuestionGradeInstanceOptions {
+    id: number;
+    data: Partial<StudentGradeInstance>;
+}
+
 export interface DeleteCourseTopicQuestionOptions {
     id: number;
 }
@@ -108,4 +113,13 @@ export interface ExtendCourseTopicQuestionsForUser {
     courseTopicQuestionId: number;
     userId: number;
     extensions: {maxAttempts: number};
+}
+
+export interface GenerateNewVersionOptions {
+    topicId: number;
+}
+
+export interface SubmitVersionOptions {
+    topicId: number;
+    versionId: number;
 }
