@@ -4,7 +4,7 @@ import AxiosRequest from '../Hooks/AxiosRequest';
 import _ from 'lodash';
 import { Spinner } from 'react-bootstrap';
 import * as qs from 'querystring';
-import { postQuestionSubmission, putQuestionGrade } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import moment from 'moment';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import { xRayVision } from '../Utilities/NakedPromise';
@@ -172,13 +172,20 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 return;
             }
             const reqBody = {
-                currentProblemState: formDataToObject(formData)
+                currentProblemState: _.omit(formDataToObject(formData), 'answersSubmitted')
             };
+
             try {
-                const result = await putQuestionGrade({
-                    id: problem.grades[0].id, 
-                    data: reqBody
-                });
+                const result = (_.isNil(problem.grades[0].gradeInstances) || problem.grades[0].gradeInstances.length === 0) ?
+                    await putQuestionGrade({
+                        id: problem.grades[0].id,
+                        data: reqBody
+                    }) :
+                    await putQuestionGradeInstance({
+                        id: problem.grades[0].gradeInstances[0].id,
+                        data: reqBody
+                    });
+
                 if (result.data.data.updatesCount > 0) {
                     setLastSavedAt?.(moment());
                 }
