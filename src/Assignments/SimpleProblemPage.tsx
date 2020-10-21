@@ -96,14 +96,21 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             ) {
                 topic.topicAssessmentInfo.studentTopicAssessmentInfo = _.sortBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, ['startTime']).reverse();
                 setAttemptsRemaining(topic.topicAssessmentInfo.studentTopicAssessmentInfo[0].maxAttempts! - topic.topicAssessmentInfo.studentTopicAssessmentInfo[0].numAttempts!);
-                setVersionsRemaining(topic.topicAssessmentInfo.maxVersions - topic.topicAssessmentInfo.studentTopicAssessmentInfo.length);
+                if (!_.isNil(topic.topicAssessmentInfo.maxVersions)) {
+                    setVersionsRemaining(topic.topicAssessmentInfo.maxVersions - topic.topicAssessmentInfo.studentTopicAssessmentInfo.length);
+                }
                 setVersionId(topic.topicAssessmentInfo.studentTopicAssessmentInfo[0].id!);
                 setTopic(topic);
             }
         } else if (topic.topicTypeId === 2 && !_.isNil(topic.topicAssessmentInfo)) { // we are definitely an assessment - topicAssessmentInfo *should* never be missing
             const usedVersions = topic.topicAssessmentInfo.studentTopicAssessmentInfo?.length ?? 0;
-            const actualVersionsRemaining = topic.topicAssessmentInfo.maxVersions - usedVersions;
-            setVersionsRemaining(actualVersionsRemaining);
+            let actualVersionsRemaining = versionsRemaining;
+
+            if (!_.isNil(topic.topicAssessmentInfo.maxVersions)) {
+                actualVersionsRemaining = topic.topicAssessmentInfo.maxVersions - usedVersions;
+                setVersionsRemaining(actualVersionsRemaining);
+            }
+            
             if (actualVersionsRemaining > 0) {
                 confirmStartNewVersion(topic, actualVersionsRemaining, res.data.message);
             } else {

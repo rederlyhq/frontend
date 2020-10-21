@@ -88,7 +88,7 @@ export class TopicAssessmentFields {
     duration?: number;
     hardCutoff?: boolean;
     maxGradedAttemptsPerVersion?: number;
-    maxVersions: number = 1;
+    maxVersions?: number;
     versionDelay?: number;
     hideHints?: boolean;
     showItemizedResults?: boolean;
