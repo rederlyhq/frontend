@@ -122,13 +122,18 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         setProblems({ ...problems });
     };
 
+    const clearModal = () => {
+        setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS);
+        setModalLoading(false);
+    };
+
     const confirmSubmitVersion = (topicId: number, versionId: number) => {
         setConfirmationParameters({
             show: true,
             headerContent: <h5>Submit my exam</h5>,
             bodyContent: 'You are about to use one of your graded submissions. Proceed?',
             onConfirm: async () => await getResultsOfSubmission(topicId, versionId),
-            onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
+            onHide: clearModal,
         });
     };
 
@@ -142,16 +147,17 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 You have {actualVersionsRemaining} {(actualVersionsRemaining === 1) ? ' version ' : ' versions '} remaining.<br />
                 Are you ready to begin a new version of this assessment?
             </div>,
-            onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
+            onHide: clearModal,
             onConfirm: async () => await loadNewVersion(topic)
         });
     };
 
-    const confirmEndVersion = () => {
+    const confirmEndVersion = (actualAttemptsRemaining?: number) => {
+        actualAttemptsRemaining = actualAttemptsRemaining ?? attemptsRemaining;
         let message = '';
-        if (!_.isNil(attemptsRemaining) && attemptsRemaining > 0) {
-            const nit = (attemptsRemaining === 1) ? 'attempt' : 'attempts';
-            message = `You still have ${attemptsRemaining} graded ${nit} remaining. If you end the exam now, you will no longer be able to improve your score on this version. `;
+        if (actualAttemptsRemaining > 0) {
+            const nit = (actualAttemptsRemaining === 1) ? 'attempt' : 'attempts';
+            message = `You still have ${actualAttemptsRemaining} graded ${nit} remaining. If you end the exam now, you will no longer be able to improve your score on this version. `;
         }
         if (_.isNil(versionId)) {
             console.error('This should never happen - ending a version without versionId set.');
@@ -161,7 +167,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 headerContent: <h5>End this exam</h5>,
                 bodyContent: `${message}Are you sure you want to end this exam?`,
                 onConfirm: async () => await endCurrentVersion(versionId),
-                onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
+                onHide: clearModal,
             });
         }
     };
@@ -189,20 +195,19 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     onHide: () => fetchProblems(topicId),
                     secondaryVariant: (actualAttemptsRemaining === 0) ? 'secondary' : 'danger',
                     cancelText: 'End Exam',
-                    onSecondary: () => confirmEndVersion(),
+                    onSecondary: () => confirmEndVersion(actualAttemptsRemaining),
                     confirmVariant: 'success',
                     confirmText: (actualAttemptsRemaining === 0) ? 'New version' : 'Continue',
                     confirmDisabled: (actualAttemptsRemaining === 0 && versionsRemaining === 0) ? true : false,
                     onConfirm: (actualAttemptsRemaining === 0) ?
                         () => confirmStartNewVersion(topic) :
-                        () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS)
+                        clearModal
                 });
             }
-
             setModalLoading(false);
         } catch (e) {
             setError(e.message);
-            setModalLoading(false);
+            clearModal();
         }
     };
 
@@ -226,10 +231,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     setVersionId(version.id);
                     fetchProblems(topic.id);
                 }
-                setModalLoading(false);
+                clearModal();
             } catch (e) {
                 setError(e.message);
-                setModalLoading(false);
+                clearModal();
             }
         }
     };
@@ -250,10 +255,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 } catch (e) {
                     setError(e.message);
                     console.error(e);
-                    setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS);
-                    setModalLoading(false);
+                    clearModal();
                 }
-                setModalLoading(false);
+                clearModal();
             }
         } else {
             // student had no attempts remaining, so the backend already knows the version is closed
