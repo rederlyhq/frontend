@@ -256,7 +256,6 @@ export const putQuestionGradeInstance = async ({
     data
 }: PutQuestionGradeInstanceOptions): Promise<AxiosResponse<PutQuestionGradeInstanceResponse>> => {
     try {
-        console.log('putting question grade instance');
         return await AxiosRequest.put(
             url.resolve(
                 COURSE_QUESTION_INSTANCE_PATH,
