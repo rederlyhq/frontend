@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ProblemObject, StudentTopicAssessmentFields, TopicObject } from '../Courses/CourseInterfaces';
+import { ProblemObject, TopicObject } from '../Courses/CourseInterfaces';
 import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
@@ -32,7 +32,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const params = useParams<SimpleProblemPageLocationParams>();
     const [problems, setProblems] = useState<Record<number, ProblemObject> | null>(null);
     const [topic, setTopic] = useState<TopicObject | null>(null);
-    const [version, setVersion] = useState<StudentTopicAssessmentFields | null>(null);
     const [versionId, setVersionId] = useState<number | null>(null);
     const [attemptsRemaining, setAttemptsRemaining] = useState<number>(1); // the only time these two are not set
     const [versionsRemaining, setVersionsRemaining] = useState<number>(1); // is when an exam hasn't been attempted at all
@@ -94,7 +93,12 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             ) {
                 const currentVersion = _.maxBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, 'startTime');
                 if (!_.isNil(currentVersion) && !_.isNil(currentVersion?.numAttempts) && !_.isNil(currentVersion.maxAttempts)) {
-                    setAttemptsRemaining(currentVersion.maxAttempts - currentVersion.numAttempts);
+                    // if the assessment has expired - do NOT allow submissions...
+                    if (!_.isNil(currentVersion.endTime) && currentVersion.endTime >= new Date()) {
+                        setAttemptsRemaining(currentVersion.maxAttempts - currentVersion.numAttempts);
+                    } else {
+                        setAttemptsRemaining(0);
+                    }
                 }
                 if (!_.isNil(topic.topicAssessmentInfo.maxVersions)) {
                     setVersionsRemaining(topic.topicAssessmentInfo.maxVersions - topic.topicAssessmentInfo.studentTopicAssessmentInfo.length);
@@ -225,17 +229,17 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         } else {
             try {
                 const res = await generateNewVersion({ topicId: topic.id });
-                const version = res.data.data;
+                const currentVersion = res.data.data;
                 if (_.isNil(topic.studentTopicAssessmentInfo) === false && topic.studentTopicAssessmentInfo.length > 0) {
-                    topic.studentTopicAssessmentInfo.push(version);
+                    topic.studentTopicAssessmentInfo.push(currentVersion);
                 } else {
-                    topic.studentTopicAssessmentInfo = [version];
+                    topic.studentTopicAssessmentInfo = [currentVersion];
                 }
                 setTopic(topic);
-                if (_.isNil(version.id)) {
+                if (_.isNil(currentVersion.id)) {
                     console.error('we tried to generate a new version, but failed.');
                 } else {
-                    setVersionId(version.id);
+                    setVersionId(currentVersion.id);
                     fetchProblems(topic.id);
                 }
                 clearModal();

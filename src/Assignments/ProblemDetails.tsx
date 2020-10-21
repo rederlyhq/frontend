@@ -13,26 +13,28 @@ interface ProblemDetailsProps {
     problem: ProblemObject;
     topic: TopicObject | null;
     attemptsRemaining?: number;
-    version?: StudentTopicAssessmentFields;
 }
 
 export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     problem,
     topic,
     attemptsRemaining,
-    version,
 }) => {
     if (_.isNil(topic)) {
         console.error('Problem details requested without a topic');
     }
+
+    let version: StudentTopicAssessmentFields | undefined;
+
     if (
         !_.isNil(topic) &&
         !_.isNil(topic.topicAssessmentInfo) &&
         !_.isEmpty(topic?.topicAssessmentInfo?.studentTopicAssessmentInfo)
     ) {
-        // if this page is generated with a prepopulated version - use that, otherwise get most recent
-        version = version ?? _.maxBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, 'startTime');
-        console.log(version);
+        version = _.maxBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, 'startTime');
+        if (_.isNil(version)) {
+            console.error('We have versions, but an attempt to set the current version failed.');
+        }
     }
 
     const isVersionedAssessment = (topic?.topicTypeId === 2 && !_.isNil(version));
