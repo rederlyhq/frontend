@@ -172,12 +172,23 @@ export const deleteTopic = async ({
 };
 
 export const extendTopic = async ({
-    courseTopicContentId, userId,
-    extensions
+    courseTopicContentId,
+    userId,
+    topicAssessmentInfoId,
+    data,
 }: ExtendCourseTopicForUser): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
         return await AxiosRequest.put(
-            url.resolve(COURSE_TOPIC_PATH, `extend?${qs.stringify({courseTopicContentId, userId})}`), extensions
+            url.resolve(
+                COURSE_TOPIC_PATH,
+                `extend?${qs.stringify(
+                    _.omitBy({
+                        courseTopicContentId,
+                        userId,
+                        topicAssessmentInfoId
+                    }, _.isUndefined))
+                }`
+            ), data
         );
     } catch (e) {
         throw new BackendAPIError(e);

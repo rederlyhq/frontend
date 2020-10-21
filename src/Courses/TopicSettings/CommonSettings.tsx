@@ -84,7 +84,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                             validate: {
                                 isDate: (data: any) => moment(data).isValid() || 'Invalid date',
                                 isEarliest: (startDate: Moment) => {
-                                    const { endDate, deadDate } = getValues();
+                                    const { endDate } = getValues();
                                     return startDate.isSameOrBefore(endDate) || 'Start date cannot be after End or Dead dates';
                                 }
                             }
