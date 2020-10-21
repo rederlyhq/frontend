@@ -136,7 +136,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         setConfirmationParameters({
             show: true,
             headerContent: <h5>Submit my exam</h5>,
-            bodyContent: 'You are about to use one of your graded submissions. Proceed?',
+            bodyContent: 'You are about to use one of your exam attempts. This will score all problems for this assessment. Would you like to proceed?',
             onConfirm: async () => await getResultsOfSubmission(topicId, versionId),
             onHide: clearModal,
         });
@@ -254,6 +254,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 setModalLoading(true);
                 try {
                     await endVersion({ versionId });
+                    setAttemptsRemaining(0);
                     fetchProblems(topic.id); // reload the problems in case they are supposed to be hidden after close
                 } catch (e) {
                     setError(e.message);
@@ -417,6 +418,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                             <ProblemDetails
                                 problem={problems[selectedProblemId]}
                                 topic={topic}
+                                attemptsRemaining={attemptsRemaining}
                             />
                             {/* Temporarily disabled for release.  */}
                             {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
