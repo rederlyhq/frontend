@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ProblemObject, TopicObject } from '../Courses/CourseInterfaces';
+import { ProblemObject, StudentTopicAssessmentFields, TopicObject } from '../Courses/CourseInterfaces';
 import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
@@ -32,6 +32,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const params = useParams<SimpleProblemPageLocationParams>();
     const [problems, setProblems] = useState<Record<number, ProblemObject> | null>(null);
     const [topic, setTopic] = useState<TopicObject | null>(null);
+    const [version, setVersion] = useState<StudentTopicAssessmentFields | null>(null);
     const [versionId, setVersionId] = useState<number | null>(null);
     const [attemptsRemaining, setAttemptsRemaining] = useState<number>(1); // the only time these two are not set
     const [versionsRemaining, setVersionsRemaining] = useState<number>(1); // is when an exam hasn't been attempted at all
@@ -53,7 +54,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 }
                 setLoading(false);
             } catch (e) {
-                setError(e);
+                setError(e.message);
                 setLoading(false);
             }
         })();
@@ -91,12 +92,16 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 !_.isNil(topic.topicAssessmentInfo.studentTopicAssessmentInfo) &&
                 topic.topicAssessmentInfo.studentTopicAssessmentInfo.length > 0 // student has generated at least one version already
             ) {
-                topic.topicAssessmentInfo.studentTopicAssessmentInfo = _.sortBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, ['startTime'], ['desc']);
-                setAttemptsRemaining(topic.topicAssessmentInfo.studentTopicAssessmentInfo[0].maxAttempts! - topic.topicAssessmentInfo.studentTopicAssessmentInfo[0].numAttempts!);
+                const currentVersion = _.maxBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, 'startTime');
+                if (!_.isNil(currentVersion) && !_.isNil(currentVersion?.numAttempts) && !_.isNil(currentVersion.maxAttempts)) {
+                    setAttemptsRemaining(currentVersion.maxAttempts - currentVersion.numAttempts);
+                }
                 if (!_.isNil(topic.topicAssessmentInfo.maxVersions)) {
                     setVersionsRemaining(topic.topicAssessmentInfo.maxVersions - topic.topicAssessmentInfo.studentTopicAssessmentInfo.length);
                 }
-                setVersionId(topic.topicAssessmentInfo.studentTopicAssessmentInfo[0].id!);
+                if (!_.isNil(currentVersion) && !_.isNil(currentVersion.id)) {
+                    setVersionId(currentVersion.id);
+                }
                 setTopic(topic);
             }
         } else if (topic.topicTypeId === 2 && !_.isNil(topic.topicAssessmentInfo)) { // we are definitely an assessment - topicAssessmentInfo *should* never be missing

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProblemObject, TopicObject, StudentGrade } from '../Courses/CourseInterfaces';
+import { ProblemObject, TopicObject, StudentGrade, StudentTopicAssessmentFields } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
 import moment from 'moment';
 import { OverlayTrigger, Tooltip, Badge } from 'react-bootstrap';
@@ -13,24 +13,45 @@ interface ProblemDetailsProps {
     problem: ProblemObject;
     topic: TopicObject | null;
     attemptsRemaining?: number;
+    version?: StudentTopicAssessmentFields;
 }
 
 export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     problem,
     topic,
     attemptsRemaining,
+    version,
 }) => {
-    const isAssessment = !_.isNil(topic?.topicAssessmentInfo?.studentTopicAssessmentInfo?.[0]);
-    const isClosed = isAssessment && topic?.topicAssessmentInfo?.studentTopicAssessmentInfo?.[0].isClosed;
-    const versionStartTime = topic?.topicAssessmentInfo?.studentTopicAssessmentInfo?.[0].startTime;
-    const versionEndTime = topic?.topicAssessmentInfo?.studentTopicAssessmentInfo?.[0].endTime;
+    if (_.isNil(topic)) {
+        console.error('Problem details requested without a topic');
+    }
+    if (
+        !_.isNil(topic) &&
+        !_.isNil(topic.topicAssessmentInfo) &&
+        !_.isEmpty(topic?.topicAssessmentInfo?.studentTopicAssessmentInfo)
+    ) {
+        // if this page is generated with a prepopulated version - use that, otherwise get most recent
+        version = version ?? _.maxBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, 'startTime');
+        console.log(version);
+    }
+
+    const isVersionedAssessment = (topic?.topicTypeId === 2 && !_.isNil(version));
+    let isClosed: boolean | undefined;
+    let versionStartTime: Date | undefined;
+    let versionEndTime: Date | undefined;
+
+    if (!_.isNil(version)) {
+        isClosed = isVersionedAssessment && version.isClosed;
+        versionStartTime = version.startTime;
+        versionEndTime = version.endTime;
+    }
 
     const startDate = (_.isNil(versionStartTime)) ? moment(topic?.startDate) : moment(versionStartTime);
     const endDate = (_.isNil(versionEndTime)) ? moment(topic?.endDate) : moment(versionEndTime);
     const deadDate = (_.isNil(versionEndTime)) ? moment(topic?.deadDate) : moment(versionEndTime);
     const solutionsMoment = (_.isNil(versionEndTime)) ? moment(deadDate).add(1, 'days') : moment(versionEndTime);
 
-    const grade: StudentGrade | undefined = problem?.grades?.[0];
+    const grade: StudentGrade | undefined = problem.grades?.[0];
     const {lastSavedAt, lastSubmittedAt} = useCurrentProblemState(); 
 
     const maxAttempts = problem?.maxAttempts;
@@ -88,10 +109,10 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                     message = `Partial credit expires ${deadDate.fromNow()}`;
                                 } else if (currentMoment.isBefore(solutionsMoment)) {
                                     message = `Solutions available ${solutionsMoment.fromNow()}`;
-                                } else if (isAssessment && (attemptsRemaining === 0 || isClosed)) {
+                                } else if (isVersionedAssessment && (attemptsRemaining === 0 || isClosed)) {
                                     message = 'is completed';
                                 } else {
-                                    message = (isAssessment) ? 'Time expired' : 'Past due';
+                                    message = (isVersionedAssessment) ? 'Time expired for this version' : 'Past due';
                                 }
                                 return (<>{message}</>);
                             }}
@@ -105,7 +126,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                 </div>
             </div>
             <div className="d-flex">
-                { !isAssessment &&
+                { !isVersionedAssessment &&
                     <div className="d-flex flex-column">
                         <div className="d-flex">
                             <OverlayTrigger
