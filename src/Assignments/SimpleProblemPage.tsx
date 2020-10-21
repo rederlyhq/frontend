@@ -94,7 +94,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 !_.isNil(topic.topicAssessmentInfo.studentTopicAssessmentInfo) &&
                 topic.topicAssessmentInfo.studentTopicAssessmentInfo.length > 0 // student has generated at least one version already
             ) {
-                topic.topicAssessmentInfo.studentTopicAssessmentInfo = _.sortBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, ['startTime']).reverse();
+                topic.topicAssessmentInfo.studentTopicAssessmentInfo = _.sortBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, ['startTime'], ['desc']);
                 setAttemptsRemaining(topic.topicAssessmentInfo.studentTopicAssessmentInfo[0].maxAttempts! - topic.topicAssessmentInfo.studentTopicAssessmentInfo[0].numAttempts!);
                 if (!_.isNil(topic.topicAssessmentInfo.maxVersions)) {
                     setVersionsRemaining(topic.topicAssessmentInfo.maxVersions - topic.topicAssessmentInfo.studentTopicAssessmentInfo.length);
@@ -329,7 +329,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         return <div>{error}</div>;
     }
 
-    // if (_.isEmpty(problems)) return <div>There was an error loading this assignment.</div>;
+    // there's a serious problem if we get a topic, but no problems, and the topicType isn't an assessment
+    if (_.isEmpty(problems) && !_.isNil(topic) && topic.topicTypeId !== 2) return <div>There was an error loading this assignment.</div>;
 
     if (problems === null || selectedProblemId === null) return (
         <>
