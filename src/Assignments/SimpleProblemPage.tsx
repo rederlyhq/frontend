@@ -68,7 +68,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             courseTopicContentId: topicId
         });
         const problems: Array<ProblemObject> = res.data.data.questions;
-        console.log('drew:', problems);
 
         const topic = res.data.data.topic;
 
@@ -76,7 +75,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             _.assign(topic, topic.studentTopicOverride[0]);
         }
         setTopic(topic);
-        console.log('drew:', topic);
 
         if (!_.isEmpty(problems)) {
             const problemDictionary = _.chain(problems)
@@ -248,9 +246,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             } else {
                 setModalLoading(true);
                 try {
-                    console.log('drew: ', attemptsRemaining, ' attempts remaining and ', versionsRemaining, ' versions remaining.');
-                    const res = await endVersion({ versionId });
-                    console.log('drew: ', res);
+                    await endVersion({ versionId });
                     fetchProblems(topic.id); // reload the problems in case they are supposed to be hidden after close
                 } catch (e) {
                     setError(e.message);
