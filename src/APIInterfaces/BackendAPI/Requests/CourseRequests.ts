@@ -1,4 +1,4 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
@@ -7,6 +7,7 @@ import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdat
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 import _ from 'lodash';
+import { StudentTopicAssessmentFields } from '../../../Courses/CourseInterfaces';
 
 const COURSE_PATH = '/courses/';
 const COURSE_UNIT_PATH = url.resolve(COURSE_PATH, 'unit/');
@@ -376,7 +377,7 @@ export const deleteEnrollment = async ({
 
 export const generateNewVersion = async ({
     topicId
-}: GenerateNewVersionOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
+}: GenerateNewVersionOptions): Promise<AxiosResponse<BackendAPIResponse<StudentTopicAssessmentFields>>> => {
     try {
         return await AxiosRequest.get(
             url.resolve(COURSE_ASSESS_PATH, `topic/${topicId}/start`)
@@ -393,6 +394,18 @@ export const submitVersion = async ({
     try {
         return await AxiosRequest.post(
             url.resolve(COURSE_ASSESS_PATH, `topic/${topicId}/submit/${versionId}`)
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const endVersion = async ({
+    versionId
+}: EndVersionOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(COURSE_ASSESS_PATH, `topic/end/${versionId}`)
         );
     } catch (e) {
         throw new BackendAPIError(e);

@@ -123,3 +123,7 @@ export interface SubmitVersionOptions {
     topicId: number;
     versionId: number;
 }
+
+export interface EndVersionOptions {
+    versionId: number;
+}
