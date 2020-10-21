@@ -113,8 +113,28 @@ export class TopicAssessmentFields {
     // showTotalGradeImmediately: boolean = false;
     // hideProblemsAfterFinish: boolean = false;
     // randomizeOrder: boolean = false;
+    studentTopicAssessmentOverride?: StudentTopicAssessmentOverrideFields[];
 
     public constructor(init?:Partial<TopicAssessmentFields>) {
+        Object.assign(this, init);
+    }
+}
+
+export class StudentTopicAssessmentOverrideFields {
+    // TODO fixed truncated fields from backend
+    topicAssessm?: number;
+    // maxGradedAtt?: number;
+    maxGradedAttemptsPerVersion?: number;
+    id?: number;
+    userId?: number;
+    duration?: number;
+    maxVersions?: number;
+    versionDelay?: number;
+    active?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+
+    public constructor(init?:Partial<StudentTopicAssessmentOverrideFields>) {
         Object.assign(this, init);
     }
 }

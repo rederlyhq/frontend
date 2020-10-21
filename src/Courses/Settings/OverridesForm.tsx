@@ -68,10 +68,43 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
             try {
                 const res = await getTopic({id: topic.id, userId});
                 const topicData = res.data.data;
+
+                const newTopic = new TopicObject(topicData);
+
+                const studentTopicOverrides = newTopic.studentTopicOverride;
+                if (!_.isNil(studentTopicOverrides) && studentTopicOverrides.length > 0) {
+                    if (studentTopicOverrides.length > 1) {
+                        // TODO switch to logger
+                        // eslint-disable-next-line no-console
+                        console.warn('There are multiple student topic overrides');
+                    }
+                    const [ studentTopicOverride ] = studentTopicOverrides;
+                    const overrides = _.pick(studentTopicOverride, ['startDate', 'endDate', 'deadDate', 'maxAttempts']);
+                    _.assign(newTopic, overrides);
+                }
+
+
                 // If there are overrides for the selected user, overwrite the default dates in the object.
                 // Right now, we expect only one override per topic to be returned.
                 if (topicData.studentTopicOverride?.length === 1) {
                     _.assign(topicData, topicData.studentTopicOverride[0]);
+                }
+
+                const studentTopicAssessmentOverrides = newTopic.topicAssessmentInfo?.studentTopicAssessmentOverride;
+                if (!_.isNil(studentTopicAssessmentOverrides) && studentTopicAssessmentOverrides.length > 0) {
+                    if (studentTopicAssessmentOverrides.length > 1) {
+                        // TODO switch to logger
+                        // eslint-disable-next-line no-console
+                        console.warn('There are multiple student topic assessment overrides');
+                    }
+                    const [ studentTopicAssessmentOverride ] = studentTopicAssessmentOverrides;
+                    // TODO delete when the backend is fixed for truncation
+                    if (!_.isNil((studentTopicAssessmentOverride as any).maxGradedAtt)) {
+                        (studentTopicAssessmentOverride as any).maxGradedAttemptsPerVersion = (studentTopicAssessmentOverride as any).maxGradedAtt;
+                        delete (studentTopicAssessmentOverride as any).maxGradedAtt;
+                    }
+                    const overrides = _.pick(studentTopicAssessmentOverride, ['duration', 'maxGradedAttemptsPerVersion', 'maxVersions', 'versionDelay']);
+                    _.assign(newTopic.topicAssessmentInfo, overrides);
                 }
 
                 reset({
@@ -79,6 +112,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                     endDate: topicData.endDate?.toMoment(),
                     deadDate: topicData.deadDate?.toMoment(),    
                 });
+
                 setDefaultTopic(new TopicObject(topicData));
             } catch (e) {
                 console.error(`Topic ${topic.id} or User ${userId} does not exist!`, e);
