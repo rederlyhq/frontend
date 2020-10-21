@@ -53,7 +53,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 }
                 setLoading(false);
             } catch (e) {
-                setError(e);
+                setError(e.message);
                 setLoading(false);
             }
         })();
@@ -91,12 +91,21 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 !_.isNil(topic.topicAssessmentInfo.studentTopicAssessmentInfo) &&
                 topic.topicAssessmentInfo.studentTopicAssessmentInfo.length > 0 // student has generated at least one version already
             ) {
-                topic.topicAssessmentInfo.studentTopicAssessmentInfo = _.sortBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, ['startTime'], ['desc']);
-                setAttemptsRemaining(topic.topicAssessmentInfo.studentTopicAssessmentInfo[0].maxAttempts! - topic.topicAssessmentInfo.studentTopicAssessmentInfo[0].numAttempts!);
+                const currentVersion = _.maxBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, 'startTime');
+                if (!_.isNil(currentVersion) && !_.isNil(currentVersion?.numAttempts) && !_.isNil(currentVersion.maxAttempts)) {
+                    // if the assessment has expired - do NOT allow submissions...
+                    if (!_.isNil(currentVersion.endTime) && currentVersion.endTime >= new Date()) {
+                        setAttemptsRemaining(currentVersion.maxAttempts - currentVersion.numAttempts);
+                    } else {
+                        setAttemptsRemaining(0);
+                    }
+                }
                 if (!_.isNil(topic.topicAssessmentInfo.maxVersions)) {
                     setVersionsRemaining(topic.topicAssessmentInfo.maxVersions - topic.topicAssessmentInfo.studentTopicAssessmentInfo.length);
                 }
-                setVersionId(topic.topicAssessmentInfo.studentTopicAssessmentInfo[0].id!);
+                if (!_.isNil(currentVersion) && !_.isNil(currentVersion.id)) {
+                    setVersionId(currentVersion.id);
+                }
                 setTopic(topic);
             }
         } else if (topic.topicTypeId === 2 && !_.isNil(topic.topicAssessmentInfo)) { // we are definitely an assessment - topicAssessmentInfo *should* never be missing
@@ -220,17 +229,17 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         } else {
             try {
                 const res = await generateNewVersion({ topicId: topic.id });
-                const version = res.data.data;
+                const currentVersion = res.data.data;
                 if (_.isNil(topic.studentTopicAssessmentInfo) === false && topic.studentTopicAssessmentInfo.length > 0) {
-                    topic.studentTopicAssessmentInfo.push(version);
+                    topic.studentTopicAssessmentInfo.push(currentVersion);
                 } else {
-                    topic.studentTopicAssessmentInfo = [version];
+                    topic.studentTopicAssessmentInfo = [currentVersion];
                 }
                 setTopic(topic);
-                if (_.isNil(version.id)) {
+                if (_.isNil(currentVersion.id)) {
                     console.error('we tried to generate a new version, but failed.');
                 } else {
-                    setVersionId(version.id);
+                    setVersionId(currentVersion.id);
                     fetchProblems(topic.id);
                 }
                 clearModal();
