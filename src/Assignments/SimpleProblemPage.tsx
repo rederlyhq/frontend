@@ -93,13 +93,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 topic.topicAssessmentInfo.studentTopicAssessmentInfo.length > 0 // student has generated at least one version already
             ) {
                 const currentVersion = _.maxBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, 'startTime');
-                console.log(currentVersion);
                 if (!_.isNil(currentVersion) && !_.isNil(currentVersion?.numAttempts) && !_.isNil(currentVersion.maxAttempts)) {
                     // if the assessment has expired - do NOT allow submissions...
                     if (!_.isNil(currentVersion.endTime) && moment(currentVersion.endTime).isAfter(moment())) {
                         setAttemptsRemaining(currentVersion.maxAttempts - currentVersion.numAttempts);
                     } else {
-                        console.log('setting zero attempts remaining');
                         setAttemptsRemaining(0);
                     }
                 }
