@@ -1,4 +1,4 @@
-import { Grid, TextField, Button, CircularProgress, Box } from '@material-ui/core';
+import { Grid, TextField, Button, CircularProgress } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
@@ -201,22 +201,28 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
         }
     };
 
-    const renderQuestionOverrideForm = (question: ProblemObject) => (
-        <Grid item container md={12} alignItems='flex-start' justify="center">
-            <Grid item md={4}>
-                <TextField 
-                    name="maxAttempts" 
-                    inputRef={register({
-                        required: true, 
-                        min: -1
-                    })}
-                    defaultValue={question.maxAttempts} 
-                    label='Max Attempts'
-                    type='number'
-                />
+    const renderQuestionOverrideForm = (question: ProblemObject) => {
+        // TODO enum
+        if (topic?.topicTypeId === 2) {
+            return (<p>You cannot give extensions on a per problem basis for assessments.</p>);
+        }
+        return (
+            <Grid item container md={12} alignItems='flex-start' justify="center">
+                <Grid item md={4}>
+                    <TextField 
+                        name="maxAttempts" 
+                        inputRef={register({
+                            required: true, 
+                            min: -1
+                        })}
+                        defaultValue={question.maxAttempts} 
+                        label='Max Attempts'
+                        type='number'
+                    />
+                </Grid>
             </Grid>
-        </Grid>
-    );
+        );
+    };
 
     const renderNormalTopicOverrideForm = (topic: TopicObject) => (
         <>
@@ -367,12 +373,12 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
         const md = _.isNil(topic.topicAssessmentInfo) ? 12 : 6;
         return (
             <>
-                <Grid md={md} item spacing={1}>
+                <Grid md={md} container item spacing={1}>
                     {renderNormalTopicOverrideForm(topic)}                
                 </Grid>
                 {
                     _.isNil(topic.topicAssessmentInfo) === false &&
-                    <Grid md={md} item spacing={1}>
+                    <Grid md={md} container item spacing={1}>
                         {renderAssessmentTopicOverrideForm(topic)}            
                     </Grid>
                 }
@@ -418,7 +424,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                                     color='primary' 
                                     type="submit" 
                                     style={{fontSize: '1.2em'}}
-                                    disabled={formLoading}
+                                    disabled={formLoading || (defaultProblem && defaultTopic?.topicTypeId === 2)}
                                 >
                                     Confirm Extension
                                 </Button>)
