@@ -15,7 +15,6 @@ interface SimpleProblemPageProps {
 }
 
 interface SimpleProblemPageLocationParams {
-    versionId?: string;
     topicId?: string;
     courseId?: string;
 }
@@ -48,15 +47,13 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             try {
                 if (_.isNil(params.topicId)) {
                     console.error('topicId is null');
-                    setError('An unexpected error has occurred');
-                    return;
+                    throw new Error('An unexpected error has occurred');
+                } else {
+                    await fetchProblems(parseInt(params.topicId, 10));
                 }
-
-                await fetchProblems(parseInt(params.topicId, 10));
                 setLoading(false);
             } catch (e) {
-                setError(e.message);
-                console.error(e);
+                setError(e);
                 setLoading(false);
             }
         })();
