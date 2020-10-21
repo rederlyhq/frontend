@@ -1,6 +1,24 @@
 import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
+type ModalVariant = 'primary'
+    | 'secondary'
+    | 'success'
+    | 'danger'
+    | 'warning'
+    | 'info'
+    | 'dark'
+    | 'light'
+    | 'link'
+    | 'outline-primary'
+    | 'outline-secondary'
+    | 'outline-success'
+    | 'outline-danger'
+    | 'outline-warning'
+    | 'outline-info'
+    | 'outline-dark'
+    | 'outline-light';
+
 export interface ConfirmationModalProps {
     show: boolean;
     onHide: () => unknown;
@@ -12,40 +30,8 @@ export interface ConfirmationModalProps {
     cancelText?: string;
     confirmDisabled?: boolean;
     secondaryDisabled?: boolean;
-    confirmVariant?: | 'primary'
-    | 'secondary'
-    | 'success'
-    | 'danger'
-    | 'warning'
-    | 'info'
-    | 'dark'
-    | 'light'
-    | 'link'
-    | 'outline-primary'
-    | 'outline-secondary'
-    | 'outline-success'
-    | 'outline-danger'
-    | 'outline-warning'
-    | 'outline-info'
-    | 'outline-dark'
-    | 'outline-light';
-    secondaryVariant?: | 'primary'
-    | 'secondary'
-    | 'success'
-    | 'danger'
-    | 'warning'
-    | 'info'
-    | 'dark'
-    | 'light'
-    | 'link'
-    | 'outline-primary'
-    | 'outline-secondary'
-    | 'outline-success'
-    | 'outline-danger'
-    | 'outline-warning'
-    | 'outline-info'
-    | 'outline-dark'
-    | 'outline-light';
+    confirmVariant?: ModalVariant;
+    secondaryVariant?: ModalVariant;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({

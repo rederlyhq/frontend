@@ -211,7 +211,7 @@ export class StudentGrade {
     numLegalAttempts: number = 0;
     locked: boolean = false;
     currentProblemState?: unknown;
-    id: number = 0;
+    id?: number;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
