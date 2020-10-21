@@ -59,6 +59,10 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     const maxAttempts = problem?.maxAttempts;
     const usedAttempts = grade?.numAttempts;
 
+    if (_.isNil(topic)) {
+        return (<p>An error occurred.</p>);
+    }
+
     return (
         <div>
             <div className="d-flex">
