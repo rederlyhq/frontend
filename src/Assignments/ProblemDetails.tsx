@@ -91,7 +91,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                 </OverlayTrigger>
                 <div style={{ marginLeft: 'auto' }}>
                     <Badge pill variant="dark">
-                        {problem.id}
+                        {problem.id}{_.isNil(grade) ? '' : `-${grade.id}`}
                     </Badge>
                 </div>
             </div>

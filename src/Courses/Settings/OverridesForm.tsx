@@ -1,4 +1,4 @@
-import { Grid, TextField, Button, CircularProgress } from '@material-ui/core';
+import { Grid, TextField, Button, CircularProgress, Box } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
@@ -9,30 +9,41 @@ import _ from 'lodash';
 import { TopicObject, ProblemObject } from '../CourseInterfaces';
 import { Alert } from 'react-bootstrap';
 
-type Inputs = {
-    startDate: Moment;
-    endDate: Moment;
-    deadDate: Moment;
-    maxAttempts: number;
-};
-
 interface OverridesFormProps {
     userId: number;
     topic?: TopicObject;
     problem?: ProblemObject;
 }
 
+type TopicExtensions = {
+    startDate: Moment;
+    endDate: Moment;
+    deadDate?: Moment;
+    maxGradedAttemptsPerVersion?: number;
+    maxVersions?: number;
+    versionDelay?: number;
+    duration?: number;
+}
+
+type QuestionExtensions = {
+    maxAttempts: number;
+}
+
+type Inputs = TopicExtensions & QuestionExtensions;
+
+
 export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, problem}) => {
+    const formDefaultValues = {
+        startDate: moment(),
+        endDate: moment(),
+        deadDate: moment(),
+        maxAttempts: -1,
+    };
     const { register, handleSubmit, getValues, errors, control, watch, formState, reset, setError } = useForm<Inputs>(
         {
             mode: 'onSubmit', 
             shouldFocusError: true,
-            defaultValues: {
-                startDate: moment(),
-                endDate: moment(),
-                deadDate: moment(),
-                maxAttempts: -1,
-            }
+            defaultValues: formDefaultValues
         }
     );
     const [formLoading, setFormLoading] = useState<boolean>(false);
@@ -64,9 +75,9 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                 }
 
                 reset({
-                    startDate: moment(topicData.startDate),
-                    endDate: moment(topicData.endDate),
-                    deadDate: moment(topicData.deadDate),
+                    startDate: topicData.startDate?.toMoment(),
+                    endDate: topicData.endDate?.toMoment(),
+                    deadDate: topicData.deadDate?.toMoment(),    
                 });
                 setDefaultTopic(new TopicObject(topicData));
             } catch (e) {
@@ -96,7 +107,9 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                     _.assign(questionData, questionData.studentTopicQuestionOverride[0]);
                 }
 
-                reset({maxAttempts: questionData.maxAttempts});
+                reset({
+                    maxAttempts: questionData.maxAttempts
+                });
                 setDefaultProblem(new ProblemObject(questionData));
             } catch (e) {
                 console.error(`Question ${problem.id} or User ${userId} does not exist!`, e);
@@ -111,20 +124,38 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
 
     }, [problem, userId]);
 
-    const updateTopic = async (courseTopicContentId: number, userId: number, extensions: {startDate: Moment, endDate: Moment, deadDate: Moment}) => {
-        await extendTopic({courseTopicContentId, userId, extensions});
+    const updateTopic = async (courseTopicContentId: number, userId: number, inputs: TopicExtensions, topicAssessmentInfoId?: number) => {
+        // TODO update state with response, there is currently a bug where coming back from a problem will show the original state of the page not with updates
+        await extendTopic({
+            courseTopicContentId,
+            userId,
+            topicAssessmentInfoId,
+            data: {
+                extensions: {
+                    startDate: inputs.startDate,
+                    endDate: inputs.endDate,
+                    deadDate: inputs.deadDate,
+                },
+                studentTopicAssessmentOverride: {
+                    duration: inputs.duration,
+                    maxGradedAttemptsPerVersion: inputs.maxGradedAttemptsPerVersion,
+                    maxVersions: inputs.maxVersions,
+                    versionDelay: inputs.versionDelay,
+                }
+            }
+        });
     };
 
-    const updateQuestions = async (courseTopicQuestionId: number, userId: number, extensions: {maxAttempts: number}) => {
+    const updateQuestions = async (courseTopicQuestionId: number, userId: number, extensions: QuestionExtensions) => {
         await extendQuestion({courseTopicQuestionId, userId, extensions});
     };
 
-    const onSubmit = async (extensions: {startDate: Moment, endDate: Moment, deadDate: Moment} | {maxAttempts: number}) => {
+    const onSubmit = async (extensions: TopicExtensions | QuestionExtensions) => {
         try {
             if (problem) {
-                await updateQuestions(problem.id, userId, extensions as {maxAttempts: number});
+                await updateQuestions(problem.id, userId, extensions as QuestionExtensions);
             } else if (topic) {
-                await updateTopic(topic.id, userId, extensions as {startDate: Moment, endDate: Moment, deadDate: Moment});
+                await updateTopic(topic.id, userId, extensions as TopicExtensions, defaultTopic?.topicAssessmentInfo?.id);
             } else {
                 console.error('Unhandled override case.');
             }
@@ -153,7 +184,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
         </Grid>
     );
 
-    const renderTopicOverrideForm = (topic: TopicObject) => (
+    const renderNormalTopicOverrideForm = (topic: TopicObject) => (
         <>
             <Grid item md={12}>
                 <MuiPickersUtilsProvider utils={MomentUtils}>
@@ -175,7 +206,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                                 isDate: (data: any) => moment(data).isValid() || 'Invalid date',
                                 isEarliest: (startDate: Moment) => {
                                     const { endDate, deadDate } = getValues();
-                                    return startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate) || 'Start date cannot be after End or Dead dates';
+                                    return startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate) || topic.topicTypeId === 2 || 'Start date cannot be after End or Dead dates';
                                 }
                             }
                         }}
@@ -197,7 +228,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                         InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
                         inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
                         minDate={startDate || moment(topic.startDate)}
-                        maxDate={deadDate || moment(topic.deadDate)}
+                        maxDate={topic.topicTypeId === 1 ? (deadDate || moment(topic.deadDate)) : undefined}
                         rules={{
                             required: true,
                             validate: {
@@ -208,25 +239,112 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                 </MuiPickersUtilsProvider>
             </Grid>
 
-            <Grid item md={12}>
-                <MuiPickersUtilsProvider utils={MomentUtils}>
-                    <Controller
-                        as={<DateTimePicker value="" onChange={() => {}} />}
-                        name="deadDate"
-                        control={control}
-                        defaultValue={moment(topic.deadDate)}
-                        autoOk
-                        variant="inline"
-                        fullWidth={true}
-                        label='Dead Date'
-                        InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
-                        inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                        minDate={endDate || moment(topic.endDate)}
-                    />
-                </MuiPickersUtilsProvider>
-            </Grid>
+            {
+                topic.topicTypeId === 1 &&
+                <Grid item md={12}>
+                    <MuiPickersUtilsProvider utils={MomentUtils}>
+                        <Controller
+                            as={<DateTimePicker value="" onChange={() => {}} />}
+                            name="deadDate"
+                            control={control}
+                            defaultValue={moment(topic.deadDate)}
+                            autoOk
+                            variant="inline"
+                            fullWidth={true}
+                            label='Dead Date'
+                            InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
+                            inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
+                            minDate={endDate || moment(topic.endDate)}
+                        />
+                    </MuiPickersUtilsProvider>
+                </Grid>
+            }
         </>
     );
+
+    const renderAssessmentTopicOverrideForm = (topic: TopicObject) => {
+        const { topicAssessmentInfo } = topic;
+        // Defensive code, should have already been checked
+        if (_.isNil(topicAssessmentInfo)) {
+            return null;
+        }
+
+        const md = 12;
+
+        return (
+            <>
+                <Grid item md={md}>
+                    <TextField 
+                        name="maxGradedAttemptsPerVersion" 
+                        inputRef={register({
+                            required: true, 
+                            min: -1
+                        })}
+                        defaultValue={topicAssessmentInfo.maxGradedAttemptsPerVersion} 
+                        label='Max Graded Attempts Per Version'
+                        type='number'
+                        fullWidth={true}
+                    />
+                </Grid>
+                <Grid item md={md}>
+                    <TextField 
+                        name="maxVersions" 
+                        inputRef={register({
+                            required: true, 
+                            min: -1
+                        })}
+                        defaultValue={topicAssessmentInfo.maxVersions} 
+                        label='Max Versions'
+                        type='number'
+                        fullWidth={true}
+                    />
+                </Grid>
+                <Grid item md={md}>
+                    <TextField 
+                        name="versionDelay" 
+                        inputRef={register({
+                            required: true, 
+                            min: 0 // TODO what should we make the min
+                        })}
+                        defaultValue={topicAssessmentInfo.versionDelay} 
+                        label='Version Delay'
+                        type='number'
+                        fullWidth={true}
+                    />
+                </Grid>
+                <Grid item md={md}>
+                    <TextField 
+                        name="duration" 
+                        inputRef={register({
+                            required: true, 
+                            min: 0 // TODO what should we make the min
+                        })}
+                        defaultValue={topicAssessmentInfo.duration} 
+                        label='Duration'
+                        type='number'
+                        fullWidth={true}
+                    />
+                </Grid>
+            </>
+        );
+    };
+
+    const renderTopicOverrideForm = (topic: TopicObject) => {
+        const md = _.isNil(topic.topicAssessmentInfo) ? 12 : 6;
+        return (
+            <>
+                <Grid md={md} item spacing={1}>
+                    {renderNormalTopicOverrideForm(topic)}                
+                </Grid>
+                {
+                    _.isNil(topic.topicAssessmentInfo) === false &&
+                    <Grid md={md} item spacing={1}>
+                        {renderAssessmentTopicOverrideForm(topic)}            
+                    </Grid>
+                }
+            </>
+        );
+    };
   
     return (
         <form onSubmit={handleSubmit(onSubmit)} style={{width: '100%', marginTop: '1.5rem'}}>

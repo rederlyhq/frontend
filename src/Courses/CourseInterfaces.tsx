@@ -85,10 +85,17 @@ export enum TopicTypeId {
 }
 
 export class TopicAssessmentFields {
+    id?: number;
     duration?: number;
     hardCutoff?: boolean;
+    maxGradedAttemptsPerVersion?: number;
+    // TODO delete the below field
     maxGradedAttemptsPerRandomization?: number;
+    maxVersions?: number;
+    // TODO delete the below field
     maxReRandomizations?: number;
+    versionDelay?: number;
+    // TODO delete the below field
     randomizationDelay?: number;
     hideHints?: boolean;
     showItemizedResults?: boolean;
