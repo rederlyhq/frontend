@@ -79,12 +79,13 @@ export interface IProblemObject {
     weight: number;
 }
 
-enum TopicTypeId {
+export enum TopicTypeId {
     PROBLEM_SET = 1,
     EXAM = 2
 }
 
 export class TopicAssessmentFields {
+    id?: number;
     duration?: number;
     hardCutoff?: boolean;
     maxGradedAttemptsPerVersion?: number;
@@ -107,8 +108,28 @@ export class TopicAssessmentFields {
     // showTotalGradeImmediately: boolean = false;
     // hideProblemsAfterFinish: boolean = false;
     // randomizeOrder: boolean = false;
+    studentTopicAssessmentOverride?: StudentTopicAssessmentOverrideFields[];
 
     public constructor(init?:Partial<TopicAssessmentFields>) {
+        Object.assign(this, init);
+    }
+}
+
+export class StudentTopicAssessmentOverrideFields {
+    // TODO fixed truncated fields from backend
+    topicAssessm?: number;
+    // maxGradedAtt?: number;
+    maxGradedAttemptsPerVersion?: number;
+    id?: number;
+    userId?: number;
+    duration?: number;
+    maxVersions?: number;
+    versionDelay?: number;
+    active?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+
+    public constructor(init?:Partial<StudentTopicAssessmentOverrideFields>) {
         Object.assign(this, init);
     }
 }
@@ -230,6 +251,7 @@ export class ProblemObject implements IProblemObject {
     unique: number = newProblemUniqueGen.next().value || 0;
     grades?: StudentGrade[];
     studentTopicQuestionOverride: any[] = [];
+    courseQuestionAssessmentInfo?: any = {};
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
@@ -273,4 +295,11 @@ export interface ExamSettingsFields {
         randomizationDelay?: number;
         randomizeOrder?: boolean;
     },
+}
+
+export interface ExamProblemSettingsFields {
+    courseQuestionAssessmentInfo?: {
+        additionalProblemPaths?: Array<{path: string}>,
+        randomSeedSet?: number[],
+    }
 }

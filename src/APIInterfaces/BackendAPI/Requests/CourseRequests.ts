@@ -172,12 +172,23 @@ export const deleteTopic = async ({
 };
 
 export const extendTopic = async ({
-    courseTopicContentId, userId,
-    extensions
+    courseTopicContentId,
+    userId,
+    topicAssessmentInfoId,
+    data,
 }: ExtendCourseTopicForUser): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
         return await AxiosRequest.put(
-            url.resolve(COURSE_TOPIC_PATH, `extend?${qs.stringify({courseTopicContentId, userId})}`), extensions
+            url.resolve(
+                COURSE_TOPIC_PATH,
+                `extend?${qs.stringify(
+                    _.omitBy({
+                        courseTopicContentId,
+                        userId,
+                        topicAssessmentInfoId
+                    }, _.isUndefined))
+                }`
+            ), data
         );
     } catch (e) {
         throw new BackendAPIError(e);
@@ -379,7 +390,18 @@ export const generateNewVersion = async ({
 }: GenerateNewVersionOptions): Promise<AxiosResponse<BackendAPIResponse<StudentTopicAssessmentFields>>> => {
     try {
         return await AxiosRequest.get(
-            url.resolve(COURSE_ASSESS_PATH, `topic/${topicId}/start`)
+            url.resolve(COURSE_ASSESS_PATH, `topic/${topicId}/start`),
+            {
+                headers: {
+                    /**
+                     * Forms send this field in the origin header, however that wasn't coming across with the axios request
+                     * Adding `origin` myself was getting stripped
+                     * Could not find solution online so used a custom header
+                     * Other headers don't work because they get modified by aws (between cloudfront and the load balancers) 
+                     */
+                    'rederly-origin': window.location.origin,
+                }
+            }
         );
     } catch (e) {
         throw new BackendAPIError(e);

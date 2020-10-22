@@ -1,6 +1,6 @@
 import React from 'react';
 import { Grid } from '@material-ui/core';
-import { maxGradedAttemptsPerRandomizationField, maxReRandomizationsField, randomizationDelayField, generateSwitchField, durationField } from './GenericFormInputs';
+import { MaxGradedAttemptsPerVersionField, MaxVersionsField, RandomizationDelayField, GenerateSwitchField, DurationField } from './GenericFormInputs';
 
 interface ExamSettingsProps {
     // This is the register function from react-hook-forms.
@@ -22,20 +22,20 @@ export const ExamSettings: React.FC<ExamSettingsProps> = ({register, control}) =
                         Unsetting it will allow students to have the full duration to submit their exam.
                     </p>
                 </Grid>
-                <Grid md={3} item>{durationField(register)}</Grid>
-                <Grid md={3} item>{generateSwitchField(control, 'hardCutoff')}</Grid>
+                <Grid md={3} item><DurationField /></Grid>
+                <Grid md={3} item><GenerateSwitchField fieldName='hardCutoff' /></Grid>
             </Grid>
             <Grid item container md={12} spacing={1}>
-                <Grid md={12} item><h4>Re-Randomization Settings</h4></Grid>
+                <Grid md={12} item><h4>Version Settings</h4></Grid>
                 <Grid md={12} item>
                     <p>
-                        Re-Randomization allows for students to generate new versions of the exams by shuffling problem order and random seeds.
+                        Versions allow for students to generate new versions of the exams by shuffling problem order and random seeds.
                     </p>
                 </Grid>
-                <Grid md={3} item>{maxGradedAttemptsPerRandomizationField(register)}</Grid>
-                <Grid md={3} item>{maxReRandomizationsField(register)}</Grid>
-                <Grid md={3} item>{randomizationDelayField(register)}</Grid>
-                <Grid md={3} item>{generateSwitchField(control, 'randomizeOrder')}</Grid>
+                <Grid md={3} item><MaxGradedAttemptsPerVersionField /></Grid>
+                <Grid md={3} item><MaxVersionsField /></Grid>
+                <Grid md={3} item><RandomizationDelayField /></Grid>
+                <Grid md={3} item><GenerateSwitchField fieldName='randomizeOrder' /></Grid>
             </Grid>
             <Grid item container md={12} spacing={1}>
                 <Grid md={12} item><h4>Post-Submission Settings</h4></Grid>
@@ -44,10 +44,10 @@ export const ExamSettings: React.FC<ExamSettingsProps> = ({register, control}) =
                         These setttings control how students can interact with the exam after they&apos;ve submitted their attempt.
                     </p>
                 </Grid>
-                <Grid md={3} item>{generateSwitchField(control, 'hideHints')}</Grid>
-                <Grid md={3} item>{generateSwitchField(control, 'showItemizedResults')}</Grid>
-                <Grid md={3} item>{generateSwitchField(control, 'showTotalGradeImmediately')}</Grid>
-                <Grid md={3} item>{generateSwitchField(control, 'hideProblemsAfterFinish')}</Grid>
+                <Grid md={3} item><GenerateSwitchField fieldName='hideHints' /></Grid>
+                <Grid md={3} item><GenerateSwitchField fieldName='showItemizedResults' /></Grid>
+                <Grid md={3} item><GenerateSwitchField fieldName='showTotalGradeImmediately' /></Grid>
+                <Grid md={3} item><GenerateSwitchField fieldName='hideProblemsAfterFinish' /></Grid>
             </Grid>
         </Grid>
     );

@@ -55,7 +55,20 @@ export interface DeleteCourseTopicOptions {
 export interface ExtendCourseTopicForUser {
     courseTopicContentId: number;
     userId: number;
-    extensions: {startDate: Moment, endDate: Moment, deadDate: Moment};
+    topicAssessmentInfoId?: number;
+    data: {
+        extensions?: {
+            startDate?: Moment;
+            endDate?: Moment;
+            deadDate?: Moment;
+        };    
+        studentTopicAssessmentOverride?: {
+            versionDelay?: number;
+            duration?: number;
+            maxVersions?: number;
+            maxGradedAttemptsPerVersion?: number;
+        };
+    }
 }
 
 /* *************** *************** */
