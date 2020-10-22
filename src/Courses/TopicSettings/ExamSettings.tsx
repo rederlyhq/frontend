@@ -17,7 +17,7 @@ export const ExamSettings: React.FC<ExamSettingsProps> = ({register, control}) =
                 <Grid md={12} item><h4>Time Settings</h4></Grid>
                 <Grid md={12} item>
                     <p>
-                        Duration controls how long the test will run for. 
+                        Duration controls the window of time students are given to submit a particular version of the exam once they start it. 
                         Hard Cutoff forces submissions to occur at the end date of the exam. 
                         Unsetting it will allow students to have the full duration to submit their exam.
                     </p>

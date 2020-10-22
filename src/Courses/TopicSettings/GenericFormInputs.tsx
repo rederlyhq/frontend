@@ -185,9 +185,11 @@ export const DurationField: React.FC<{}> = () => {
     return (
         <TextField 
             name={`${examFieldNamePrefix}.duration`}
+            InputLabelProps={{ shrink: true }}
             inputRef={register()}
             label={'Duration'}
             type='number'
+            inputProps={{min: 10}}
         />
     );
 };
@@ -201,7 +203,7 @@ export const MaxGradedAttemptsPerVersionField: React.FC<{}> = () => {
             inputRef={register()}
             label={'Max Graded Attempts Per Version'}
             type='number'
-            InputLabelProps={{style: {width: 'max-content'}}}
+            InputLabelProps={{style: {width: 'max-content'}, shrink: true}}
         />
     );
 };
@@ -212,6 +214,7 @@ export const MaxVersionsField: React.FC<{}> = () => {
     return (
         <TextField 
             name={`${examFieldNamePrefix}.maxVersions`}
+            InputLabelProps={{ shrink: true }}
             inputRef={register()}
             label={'Max Versions'}
             type='number'
@@ -226,6 +229,7 @@ export const RandomizationDelayField: React.FC<{}> = () => {
         <TextField 
             name={`${examFieldNamePrefix}.versionDelay`}
             label={'Version Delay'}
+            InputLabelProps={{ shrink: true }}
             inputRef={register()}
             type='number'
         />
