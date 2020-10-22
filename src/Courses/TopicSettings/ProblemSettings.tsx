@@ -187,7 +187,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                                     // Validate first
                                     // const regex = /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/;
                                     // if (regex.test(previewSettings.path)) {
-                                        forceUpdate();
+                                    forceUpdate();
                                     // }
                                 }}
                                 label='Problem Path'
