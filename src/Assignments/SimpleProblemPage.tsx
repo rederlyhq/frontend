@@ -10,6 +10,7 @@ import { endVersion, generateNewVersion, getQuestions, submitVersion } from '../
 import { ProblemDetails } from './ProblemDetails';
 import { ProblemStateProvider } from '../Contexts/CurrentProblemState';
 import { ConfirmationModalProps, ConfirmationModal } from '../Components/ConfirmationModal';
+import moment from 'moment';
 
 interface SimpleProblemPageProps {
 }
@@ -94,7 +95,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 const currentVersion = _.maxBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, 'startTime');
                 if (!_.isNil(currentVersion) && !_.isNil(currentVersion?.numAttempts) && !_.isNil(currentVersion.maxAttempts)) {
                     // if the assessment has expired - do NOT allow submissions...
-                    if (!_.isNil(currentVersion.endTime) && currentVersion.endTime >= new Date()) {
+                    if (!_.isNil(currentVersion.endTime) && currentVersion.endTime.toMoment().isAfter(moment())) {
                         setAttemptsRemaining(currentVersion.maxAttempts - currentVersion.numAttempts);
                     } else {
                         setAttemptsRemaining(0);
