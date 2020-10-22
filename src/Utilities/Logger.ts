@@ -1,10 +1,10 @@
 import winston from 'winston';
-import BrowserConsole from 'winston-transport-browserconsole';
+import BrowserConsoleLoggerTransport from './BrowserConsoleLoggerTransport';
 
 let level = process.env.NODE_ENV === 'production' ? 'error' : 'debug';
 
 const transports = {
-    console: new BrowserConsole(
+    console: new BrowserConsoleLoggerTransport(
         {
             format: winston.format.simple(),
             level: level,
