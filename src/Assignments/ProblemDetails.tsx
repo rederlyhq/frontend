@@ -119,7 +119,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                     message = `Solutions available ${solutionsMoment.fromNow()}`;
                                 } else if (currentMoment.isAfter(solutionsMoment)) {
                                     message = (isVersionedAssessment) ? 'Time expired for this version' : 'Past due';
-                                    isVersionedAssessment && setAttemptsRemaining?.(0);
+                                    if (isVersionedAssessment) setAttemptsRemaining?.(0);
                                 } else {
                                     message = 'is completed';
                                 }
