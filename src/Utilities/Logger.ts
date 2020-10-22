@@ -1,4 +1,6 @@
 import winston from 'winston';
+import AxiosRequest from '../Hooks/AxiosRequest';
+import AxiosBatchTransport from './AxiosBatchTransport';
 import BrowserConsoleLoggerTransport from './BrowserConsoleLoggerTransport';
 
 let level = process.env.NODE_ENV === 'production' ? 'error' : 'debug';
@@ -10,6 +12,12 @@ const transports = {
             level: level,
         },
     ),
+    server: new AxiosBatchTransport({
+        level: 'error',
+        axios: AxiosRequest,
+        loggingEndpoint: '/utility/client-logs',
+        format: winston.format.simple(),
+    })
 };
 
 const logger = winston.createLogger({
@@ -26,6 +34,7 @@ declare global {
         setLogLevel(level: string): void;
     }
 }
+
 
 window.logger = logger;
 window.setLogLevel = (level: string) => {
