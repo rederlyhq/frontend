@@ -40,7 +40,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
         deadDate: moment(),
         maxAttempts: -1,
     };
-    const { register, handleSubmit, getValues, errors, control, watch, formState, reset, setError } = useForm<Inputs>(
+    const { register, handleSubmit, getValues, errors, control, watch, formState, reset, setError, clearErrors } = useForm<Inputs>(
         {
             mode: 'onSubmit', 
             shouldFocusError: true,
@@ -251,6 +251,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                                 }
                             }
                         }}
+                        onAccept={() => clearErrors()}
                     />
                 </MuiPickersUtilsProvider>
             </Grid>
@@ -276,6 +277,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                                 isDate: (data: any) => moment(data).isValid() || 'Invalid date',
                             }
                         }}
+                        onAccept={() => clearErrors()}
                     />
                 </MuiPickersUtilsProvider>
             </Grid>
@@ -296,6 +298,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                             InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
                             inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
                             minDate={endDate || moment(topic.endDate)}
+                            onAccept={() => clearErrors()}
                         />
                     </MuiPickersUtilsProvider>
                 </Grid>
@@ -388,7 +391,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
     };
   
     return (
-        <form onSubmit={handleSubmit(onSubmit)} style={{width: '100%', marginTop: '1.5rem'}}>
+        <form onChange={() => clearErrors()} onSubmit={handleSubmit(onSubmit)} style={{width: '100%', marginTop: '1.5rem'}}>
             <Grid container justify='center'>
                 <Grid container item md={6} spacing={2}>
                     <Grid item md={12}>
