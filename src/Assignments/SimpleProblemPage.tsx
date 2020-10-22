@@ -58,7 +58,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 setLoading(false);
             }
         })();
-    }, [params.topicId, versionId]);
+    }, [params.topicId, versionId, attemptsRemaining]);
 
     const fetchProblems = async (topicId: number) => {
         const res = await getQuestions({
