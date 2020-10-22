@@ -18,6 +18,7 @@ import './TopicSettings.css';
 import { FaDice } from 'react-icons/fa';
 import { motion, useAnimation, useCycle } from 'framer-motion';
 import { IconBaseProps } from 'react-icons/lib';
+import logger from '../../Utilities/logger';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
@@ -88,7 +89,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
     const onSubmit = async (data: ProblemSettingsInputs) => {
         if (_.isNil(selected)) {
-            console.error('Tried to submit while problem was blank!');
+            logger.error('Tried to submit while problem was blank!');
             return;
         }
 
@@ -119,7 +120,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             _.assign(newQuestion, dataFromBackend);
             setTopic(newTopic);
         } catch (e) {
-            console.error('Error updating topic.', e);
+            logger.error('Error updating topic.', e);
             setUpdateAlert({message: e.message, variant: 'danger'});
         }
     };

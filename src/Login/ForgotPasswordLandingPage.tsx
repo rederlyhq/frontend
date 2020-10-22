@@ -6,6 +6,7 @@ import useAlertState from '../Hooks/useAlertState';
 import { putUpdateForgottonPassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
+import logger from '../Utilities/logger';
 
 interface ForgotPasswordLandingPageProps {
 
@@ -32,7 +33,7 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
     const handleForgotPassword = async () => {
         try {
             if(_.isNil(uid)) {
-                console.error('The router should not allow for null uid');
+                logger.error('The router should not allow for null uid');
                 throw new Error('Cannot reset password with token!');
             }
             await putUpdateForgottonPassword({
@@ -76,7 +77,7 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
     const handleNamedChange = (name: keyof ForgotPasswordFormData) => {
         return (event: any) => {
             if (name !== event.target.name) {
-                console.error(`Mismatched event, ${name} is on ${event.target.name}`);
+                logger.error(`Mismatched event, ${name} is on ${event.target.name}`);
             }
             const val = event.target.value;
             setFormState({

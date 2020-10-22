@@ -11,6 +11,7 @@ import { ProblemDetails } from './ProblemDetails';
 import { ProblemStateProvider } from '../Contexts/CurrentProblemState';
 import { ConfirmationModalProps, ConfirmationModal } from '../Components/ConfirmationModal';
 import moment from 'moment';
+import logger from '../Utilities/logger';
 
 interface SimpleProblemPageProps {
 }
@@ -24,7 +25,7 @@ interface SimpleProblemPageLocationParams {
 export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const DEFAULT_CONFIRMATION_PARAMETERS = {
         show: false,
-        onConfirm: () => { console.error('onConfirm not set'); },
+        onConfirm: () => { logger.error('onConfirm not set'); },
         onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
         headerContent: '',
         bodyContent: ''
@@ -47,7 +48,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         (async () => {
             try {
                 if (_.isNil(params.topicId)) {
-                    console.error('topicId is null');
+                    logger.error('topicId is null');
                     throw new Error('An unexpected error has occurred');
                 } else {
                     await fetchProblems(parseInt(params.topicId, 10));
@@ -172,7 +173,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             message = `You still have ${actualAttemptsRemaining} graded ${nit} remaining. If you end the exam now, you will no longer be able to improve your score on this version. `;
         }
         if (_.isNil(versionId)) {
-            console.error('This should never happen - ending a version without versionId set.');
+            logger.error('This should never happen - ending a version without versionId set.');
         } else {
             setConfirmationParameters({
                 show: true,
@@ -192,12 +193,12 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             const actualAttemptsRemaining = attemptsRemaining - 1;
 
             if (_.isNil(attemptsRemaining)) {
-                console.error('This should never happen - attemptsRemaining is still undefined.');
+                logger.error('This should never happen - attemptsRemaining is still undefined.');
             } else {
                 setAttemptsRemaining(actualAttemptsRemaining); //attemptsRemaining is const per render
             }
             if (_.isNil(topic)) {
-                console.error('How did we get here without a topic in state?');
+                logger.error('How did we get here without a topic in state?');
             } else {
                 setConfirmationParameters({
                     show: true,
@@ -226,7 +227,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const loadNewVersion = async (topic: TopicObject) => {
         setModalLoading(true);
         if (_.isNil(topic)) {
-            console.error('This should not happen - no topic loaded');
+            logger.error('This should not happen - no topic loaded');
         } else {
             try {
                 const res = await generateNewVersion({ topicId: topic.id });
@@ -238,7 +239,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 }
                 setTopic(topic);
                 if (_.isNil(currentVersion.id)) {
-                    console.error('we tried to generate a new version, but failed.');
+                    logger.error('we tried to generate a new version, but failed.');
                 } else {
                     setVersionId(currentVersion.id);
                     fetchProblems(topic.id);
@@ -256,7 +257,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         // if zero attemptsRemaining, we don't need to tell the backend to close
         if (!_.isNil(attemptsRemaining) && attemptsRemaining > 0) {
             if (_.isNil(topic)) {
-                console.error('This should not happen - no topic loaded');
+                logger.error('This should not happen - no topic loaded');
             } else {
                 setModalLoading(true);
                 try {
@@ -265,7 +266,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     fetchProblems(topic.id); // reload the problems in case they are supposed to be hidden after close
                 } catch (e) {
                     setError(e.message);
-                    console.error(e);
+                    logger.error(e);
                     clearModal();
                 }
                 clearModal();

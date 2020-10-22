@@ -3,6 +3,7 @@ import { Jumbotron } from 'react-bootstrap';
 import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import Axios from '../Hooks/AxiosRequest';
+import logger from '../Utilities/logger';
 
 interface VerificationLandingPageProps {
 
@@ -20,7 +21,7 @@ export const VerificationLandingPage: React.FC<VerificationLandingPageProps> = (
             try {
                 const res = await Axios.get(`/users/verify?verifyToken=${uid}`);
                 if (res.status === 200) {
-                    console.log(res.data);
+                    logger.info(res.data);
                     setVerifyState({verifyData: 'Success', verifyError: ''});
                 }
             } catch (e) {

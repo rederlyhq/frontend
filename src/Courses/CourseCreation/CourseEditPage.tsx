@@ -17,6 +17,7 @@ import './Course.css';
 import { BsPlusCircleFill } from 'react-icons/bs';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
+import logger from '../../Utilities/logger';
 
 interface CourseEditPageProps {
 
@@ -44,7 +45,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             try {
                 let course = await AxiosRequest.get(`/curriculum/${courseId}`);
                 // TODO: Error handling for bad template id.
-                console.log(course.data.data);
+                logger.info(course.data.data);
                 const courseData = course.data.data;
                 courseData.units = courseData.units.map((unit: any) => {
                     unit.topics = unit.topics.map((t: any) => new TopicObject(t));
@@ -52,7 +53,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 });
                 setCourse(new CourseObject(courseData));
             } catch (e) {
-                console.error('A bad Curriculum ID was used.', e);
+                logger.error('A bad Curriculum ID was used.', e);
             }
         })();
     }, [courseId]);
@@ -73,17 +74,17 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             e.stopPropagation();
             e.preventDefault();
         }
-        console.log(`Showing Topic Add for unit in index ${unitIndex}`);
+        logger.info(`Showing Topic Add for unit in index ${unitIndex}`);
         setShowTopicCreation({show: true, unitIndex: unitIndex});
     };
 
     // Adds a topic to the selected unit.
     // unitIndex is the index of the unit in the current course.
     const addTopic = (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
-        console.log('Adding Topic', unitIndex, existingTopic, topic);
+        logger.info('Adding Topic', unitIndex, existingTopic, topic);
         if (topic.questions.length <= 0) {
             // TODO: Render validation!
-            console.error('Attempted to add a topic without questions!');
+            logger.error('Attempted to add a topic without questions!');
             return;
         }
 
@@ -91,7 +92,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         let unit = _.find(newCourse.units, ['unique', unitIndex]);
 
         if (!unit) {
-            console.error(`Could not find a unit with id ${unitIndex}`);
+            logger.error(`Could not find a unit with id ${unitIndex}`);
             return;
         }
 
@@ -100,7 +101,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             let oldTopic = _.find(unit.topics, ['unique', existingTopic.unique]);
 
             if (!oldTopic) {
-                console.error(`Could not update topic ${existingTopic.id} in unit ${unitIndex}`);
+                logger.error(`Could not update topic ${existingTopic.id} in unit ${unitIndex}`);
             }
 
             _.assign(oldTopic, topic);
@@ -120,7 +121,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         let unit = _.find(newCourse.units, ['unique', unitId]);
 
         if (!unit) {
-            console.error(`Could not find a unit with id ${unitId}`);
+            logger.error(`Could not find a unit with id ${unitId}`);
             return;
         }
 
@@ -136,22 +137,22 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         setShowLoadingSpinner(true);
         // Course ID is generated from the CreateCourse call right before this.
         const createUnit = async (unit: NewCourseUnitObj, newCourseId: number) => {
-            console.log(`creating unit for course number ${newCourseId}`, unit);
+            logger.info(`creating unit for course number ${newCourseId}`, unit);
             // Create the unit first.
             const newUnitFields = ['name', 'courseId', 'contentOrder'];
             let unitPostObject = _.pick(unit, newUnitFields);
             unitPostObject.courseId = newCourseId;
-            console.log('Creating a new unit', unitPostObject);
+            logger.info('Creating a new unit', unitPostObject);
             let unitRes = await AxiosRequest.post('/courses/unit', unitPostObject);
 
             if (unitRes?.status !== 201) {
-                console.error('Post unit failed.');
+                logger.error('Post unit failed.');
                 return;
             }
     
             const newUnitId = unitRes?.data.data.id;
             
-            console.log(`Currying createUnit with ${newUnitId}`);
+            logger.info(`Currying createUnit with ${newUnitId}`);
             const createTopicForUnit = _.curry(createTopic)(_, newUnitId);
             // WARNING: Why does this need to be cast as any, when this pattern works below?
             await Promise.all(unit.topics.map((createTopicForUnit as any)));
@@ -166,7 +167,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             ];
             let postObject = _.pick(newTopic, newTopicFields);
             postObject.deadDate = moment(postObject.endDate).add(2, 'weeks').toDate();
-            console.log('Creating topic', postObject);
+            logger.info('Creating topic', postObject);
             let res = await AxiosRequest.post('/courses/topic', postObject);
             let topicId = res.data?.data?.id;
             
@@ -182,7 +183,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             ];
             let postObject: any = _.pick(newProblem, newProblemFields);
             postObject.courseTopicContentId = courseTopicContentId;
-            console.log('Creating problem', postObject, ' from ', problem);
+            logger.info('Creating problem', postObject, ' from ', problem);
             // Error bubbles up.
             await AxiosRequest.post('/courses/question', postObject);
         };
@@ -192,7 +193,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
 
         const createCourse = async (course: CourseObject) => {
             // Not every field belongs in the request.
-            console.log(course);
+            logger.info(course);
             const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode', 'textbooks'];
             let postObject = _.pick(course, newCourseFields);
             postObject.semesterCode = `${course.semesterCode}${course.semesterCodeYear}`;
@@ -204,11 +205,11 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
                 return;
             }
 
-            console.log(postObject);
+            logger.info(postObject);
 
             postObject.curriculumId = parseInt(courseId, 10);
-            console.log('Creating a new course');
-            console.log(JSON.stringify(postObject));
+            logger.info('Creating a new course');
+            logger.info(JSON.stringify(postObject));
             return await AxiosRequest.post('/courses', postObject);
         };
 
@@ -219,32 +220,32 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         let res;
         try {
             res = await createCourse(course);
-            console.log(res);
+            logger.info(res);
         } catch (e) {
-            console.error('Error creating course:', e);
+            logger.error('Error creating course:', e);
             setCreateCourseError(`Failed to create course. ${e}`);
             return;
         }
 
         if (res?.status !== 201) {
-            console.error('Post failed.', res);
+            logger.error('Post failed.', res);
             setCreateCourseError(`Failed to create all course objects. ${res?.data}`);
             return;
         }
 
         const newCourseId = res.data.data.id;
-        console.log(`Currying createUnit with ${newCourseId}`);
+        logger.info(`Currying createUnit with ${newCourseId}`);
         const createUnitForCourse = _.curry(createUnit)(_, newCourseId);
         try {
             await Promise.all(course?.units?.map(createUnitForCourse));
             // TODO: Need to handle extra validation to make sure everything succeeded.
-            console.log('The course was successfully created (based on the log above)');
+            logger.info('The course was successfully created (based on the log above)');
             setTimeout(()=> {
                 history.replace('/common/courses');
             }, 1000);
         } catch (e) {
-            console.error('An error occurred when creating this course', e);
-            console.log(e.response?.data.message);
+            logger.error('An error occurred when creating this course', e);
+            logger.info(e.response?.data.message);
             setCreateCourseError(`Post failed. ${e.response?.data.message}`);
         }
 
@@ -264,17 +265,17 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     };
 
     const showEditTopic = (e: any, unitIndex: number, topicId: number) => {
-        console.log(`Editing topic ${topicId} in unit ${unitIndex}`);
+        logger.info(`Editing topic ${topicId} in unit ${unitIndex}`);
         let unit = _.find(course.units, ['unique', unitIndex]);
-        console.log(unit);
+        logger.info(unit);
         if (!unit) {
-            console.error(`Cannot find unit with id ${unitIndex}`);
+            logger.error(`Cannot find unit with id ${unitIndex}`);
             return;
         }
 
         const topic = _.find(unit.topics, ['unique', topicId]);
         if (!topic) {
-            console.error(`Cannot find topic with id ${topicId} in unit with id ${unitIndex}`);
+            logger.error(`Cannot find topic with id ${topicId} in unit with id ${unitIndex}`);
             return;
         }
         setShowTopicCreation({show: true, unitIndex: unitIndex, existingTopic: topic});
@@ -296,14 +297,14 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
         let newCourse = new CourseObject(course);
         let updatingUnit = _.find(newCourse.units, ['unique', unitIndex]);
         if (!updatingUnit) {
-            console.error(`Could not find a unit with the unique identifier ${unitIndex}`);
+            logger.error(`Could not find a unit with the unique identifier ${unitIndex}`);
             return;
         }
     
-        console.log(e.target);
-        console.log(e.target.innerText);
+        logger.info(e.target);
+        logger.info(e.target.innerText);
         updatingUnit.name = e.target.innerText;
-        console.log(`Updating Unit ${unitIndex} name.`, newCourse);
+        logger.info(`Updating Unit ${unitIndex} name.`, newCourse);
         setCourse(newCourse);
     };
  
@@ -324,7 +325,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             return;
         }
 
-        console.log('onDragEnd!', result);
+        logger.info('onDragEnd!', result);
 
         if (result.type === 'UNIT') {
             onUnitDrop(result);
@@ -333,11 +334,11 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             // For topics, we have to handle cross-droppable reordering.
             const sourceUnitUnique = parseInt(result.source.droppableId.substring('topicList-'.length), 10);
             const destUnitUnique = parseInt(result.destination.droppableId.substring('topicList-'.length), 10);
-            console.log(`Source unit unique: ${sourceUnitUnique}, Destination unit unique: ${destUnitUnique}`);
+            logger.info(`Source unit unique: ${sourceUnitUnique}, Destination unit unique: ${destUnitUnique}`);
 
             const sourceUnit = _.find(courseCopy.units, ['unique', sourceUnitUnique]);
             if (!sourceUnit) {
-                console.error('Could not find a source unit specified in drag. Is the unique tag correct?', sourceUnitUnique, result, courseCopy.units);
+                logger.error('Could not find a source unit specified in drag. Is the unique tag correct?', sourceUnitUnique, result, courseCopy.units);
                 return;
             }
 
@@ -351,7 +352,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
             } else {
                 const destUnit = _.find(courseCopy.units, ['unique', destUnitUnique]);
                 if (!destUnit) {
-                    console.error('Could not find a source unit specified in drag. Is the unique tag correct?', destUnitUnique, result, courseCopy.units);
+                    logger.error('Could not find a source unit specified in drag. Is the unique tag correct?', destUnitUnique, result, courseCopy.units);
                     return;
                 }
                 // const sourceUnitTopics = Array.from(sourceUnit.topics);
@@ -367,7 +368,7 @@ export const CourseEditPage: React.FC<CourseEditPageProps> = () => {
     };
 
     const onUnitDrop = (result: any) => {
-        console.log(`trying to move unit from ${result.source.index} to ${result.destination.index}`);
+        logger.info(`trying to move unit from ${result.source.index} to ${result.destination.index}`);
 
         let newUnits = reorder(course?.units, result.source.index, result.destination.index);
         newUnits = newUnits.map((prob, i) => {

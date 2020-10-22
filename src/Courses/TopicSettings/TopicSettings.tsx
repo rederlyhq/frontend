@@ -11,6 +11,7 @@ import { putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests
 import _ from 'lodash';
 import { Alert } from 'react-bootstrap';
 import useAlertState from '../../Hooks/useAlertState';
+import logger from '../../Utilities/logger';
 
 interface TopicSettingsProps {
     selected: TopicObject;
@@ -46,7 +47,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
 
     const onSubmit = async (data: TopicSettingsInputs) => {
         if (_.isNil(selected)) {
-            console.error('Tried to submit while topic was blank!');
+            logger.error('Tried to submit while topic was blank!');
             return;
         }
 
@@ -69,7 +70,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             // Overwrite fields from the original object. This resets the state object when clicking between options.
             setTopic(new TopicObject({...selected, ...obj}));
         } catch (e) {
-            console.error('Error updating topic.', e);
+            logger.error('Error updating topic.', e);
             setUpdateAlert({message: e.message, variant: 'danger'});
         }
     };

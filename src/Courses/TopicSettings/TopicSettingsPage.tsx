@@ -12,6 +12,7 @@ import { getTopic, postDefFile, postQuestion, putQuestion } from '../../APIInter
 import { Moment } from 'moment';
 import { TopicTypeId } from '../../Enums/TopicType';
 import { useDropzone } from 'react-dropzone';
+import logger from '../../Utilities/logger';
 
 interface TopicSettingsPageProps {
     topic?: TopicObject;
@@ -42,7 +43,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     
     useEffect(()=>{
         if (!topicId) {
-            console.error('No topicId!', window.location);
+            logger.error('No topicId!', window.location);
             return;
         }
 
@@ -53,14 +54,14 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 setTopic(new TopicObject(topicData));
                 setSelected(new TopicObject(topicData));
             } catch (e) {
-                console.error('Failed to load Topic', e);
+                logger.error('Failed to load Topic', e);
             }
         })();
     }, [course]);
 
     const addNewProblem = async () => {
         if (_.isNil(topicId) || _.isNil(topic)) {
-            console.error('Tried to add a new problem with no topicId');
+            logger.error('Tried to add a new problem with no topicId');
             return;
         }
 
@@ -77,14 +78,14 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
 
             setTopic(newTopic);
         } catch (e) {
-            console.error('Failed to create a new problem with default settings.', e);
+            logger.error('Failed to create a new problem with default settings.', e);
         }
     };
 
     const handleDrag = async (result: any) => {
         try {
             if (!topic) {
-                console.error('Received a drag event on a null topic.', result);
+                logger.error('Received a drag event on a null topic.', result);
                 return;
             }
 
@@ -103,7 +104,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             // If it does succeed the index `1` will always be the group above
             const problemIdStr = problemIdRegex.exec(problemDraggableId)?.[1];
             if(_.isNil(problemIdStr)) {
-                console.error('problem not found could not update backend');
+                logger.error('problem not found could not update backend');
                 return;
             }
             const problemId = parseInt(problemIdStr, 10);
@@ -112,7 +113,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             const existingProblem = _.find(newTopic.questions, ['id', problemId]);
 
             if(_.isNil(existingProblem)) {
-                console.error('existing problem not found could not update frontend');
+                logger.error('existing problem not found could not update frontend');
                 return;
             }
 
@@ -137,7 +138,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 setSelected(selected => new ProblemObject({...selected}));
             }
         } catch (e) {
-            console.error('Drag/Drop error:', e);
+            logger.error('Drag/Drop error:', e);
         }
     };
 
@@ -146,7 +147,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             try {
                 // setError(null);
                 if (_.isNil(topic)) {
-                    console.error('existing topic is nil');
+                    logger.error('existing topic is nil');
                     throw new Error('Cannot find topic you are trying to add questions to');
                 }
                 const res = await postDefFile({

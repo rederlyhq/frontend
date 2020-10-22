@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button, Modal, FormControl, FormLabel, FormGroup, Spinner, Form, } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
+import logger from '../Utilities/logger';
 
 export const ProvideFeedback: React.FC<any> = () => {
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -18,7 +19,7 @@ export const ProvideFeedback: React.FC<any> = () => {
             setMessage('');
             setSubmitting(true);
             setEnabled(false);
-            console.log(history);
+            logger.info(history);
             await AxiosRequest.post('/support', {
                 description: `${description} (Sent from: ${window.location.origin}${history.location.pathname})`,
                 summary,

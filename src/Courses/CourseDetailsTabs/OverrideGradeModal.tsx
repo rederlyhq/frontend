@@ -4,6 +4,7 @@ import _ from 'lodash';
 import { StudentGrade } from '../CourseInterfaces';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import useAlertState from '../../Hooks/useAlertState';
+import logger from '../../Utilities/logger';
 
 enum OverrideGradePhase {
     PROMPT = 'PROMPT',
@@ -200,7 +201,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                                 </p>
                             );
                         default:
-                            console.error(`APPLICAION ERROR: no body for OverrideGradePhase ${overrideGradePhase}`);
+                            logger.error(`APPLICAION ERROR: no body for OverrideGradePhase ${overrideGradePhase}`);
                         }
 
                     })()}
@@ -217,7 +218,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                             case OverrideGradePhase.LOCK_CONFIRM:
                                 return 'Cancel Lock';
                             default:
-                                console.error(`APPLICAION ERROR: no cancel for OverrideGradePhase ${overrideGradePhase}`);
+                                logger.error(`APPLICAION ERROR: no cancel for OverrideGradePhase ${overrideGradePhase}`);
                                 return 'Exit';
                             }
                         })()}
@@ -249,7 +250,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                                 </Button>
                             );
                         default:
-                            console.error(`APPLICAION ERROR: no body for OverrideGradePhase ${overrideGradePhase}`);
+                            logger.error(`APPLICAION ERROR: no body for OverrideGradePhase ${overrideGradePhase}`);
                             return;
                         }
                     })()}

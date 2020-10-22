@@ -12,6 +12,7 @@ import { FaTrash } from 'react-icons/fa';
 import { putQuestion, postQuestion, putTopic, postDefFile, deleteQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { CheckboxHider, CheckboxHiderChildrenPosition } from '../../Components/CheckboxHider';
+import logger from '../../Utilities/logger';
 
 interface TopicCreationModalProps {
     unitIndex: number;
@@ -251,7 +252,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
 
     const onTopicMetadataChange = (e: any, name: keyof TopicObject) => {
         let val = e.target.value;
-        console.log(`updating ${name} to ${val}`);
+        logger.info(`updating ${name} to ${val}`);
         switch (name) {
         case 'startDate':
         case 'endDate':
@@ -270,12 +271,12 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
 
         setTopicMetadata({ ...topicMetadata, ...updates });
 
-        console.log(topicMetadata);
+        logger.info(topicMetadata);
     };
 
     const onTopicMetadataBlur = async (e: any, name: keyof TopicObject) => {
         let val = e.target.value;
-        console.log(`updating ${name} to ${val}`);
+        logger.info(`updating ${name} to ${val}`);
         switch (name) {
         case 'startDate':
         case 'endDate':
@@ -295,7 +296,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         try {
             setError(null);
             if(_.isNil(existingTopic)) {
-                console.error('Tried to edit a topic that does not exist');
+                logger.error('Tried to edit a topic that does not exist');
                 throw new Error('Error updating existing topic');
             }
             // We could pull the changes down however we already have them so why bother
@@ -307,7 +308,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             setTopicMetadata({ ...topicMetadata, ...updates });
     
             if(_.isNil(existingTopic)) {
-                console.error('Cannot update topic because it is nil');
+                logger.error('Cannot update topic because it is nil');
                 return;
             }
             updateTopic?.({
@@ -315,7 +316,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                 ...topicMetadata
             });
     
-            console.log(topicMetadata);    
+            logger.info(topicMetadata);    
         } catch (e) {
             setError(e);
         }
@@ -326,7 +327,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             try {
                 setError(null);
                 if (_.isNil(existingTopic)) {
-                    console.error('existing topic is nil');
+                    logger.error('existing topic is nil');
                     throw new Error('Cannot find topic you are trying to add questions to');
                 }
                 const res = await postDefFile({
@@ -371,8 +372,8 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
 
             return problem;
         });
-        console.log(problemsWithOrdering);
-        console.log(topicMetadata);
+        logger.info(problemsWithOrdering);
+        logger.info(topicMetadata);
         addTopic(unitIndex, existingTopic, new TopicObject({ ...topicMetadata, questions: problemsWithOrdering }));
     };
 
@@ -393,14 +394,14 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             // If it does succeed the index `1` will always be the group above
             const problemId = problemIdRegex.exec(problemDraggableId)?.[1];
             if(_.isNil(problemId)) {
-                console.error('problem not found could not update backend');
+                logger.error('problem not found could not update backend');
                 return;
             }
 
             let newProbs = _.cloneDeep(problems);
             const existingProblem = _.find(newProbs, ['id', parseInt(problemId, 10)]);
             if(_.isNil(existingProblem)) {
-                console.error('existing problem not found could not update frontend');
+                logger.error('existing problem not found could not update frontend');
                 return;
             }
 
@@ -460,7 +461,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             setProblems(newProblems);
             
             if(_.isNil(existingTopic)) {
-                console.error('Cannot update topic because it is nil');
+                logger.error('Cannot update topic because it is nil');
                 return;
             }
             existingTopic.questions = newProblems;

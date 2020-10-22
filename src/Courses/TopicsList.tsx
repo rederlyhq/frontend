@@ -16,6 +16,7 @@ import { nameof } from '../Utilities/TypescriptUtils';
 import TopicSettingsPage from './TopicSettings/TopicSettingsPage';
 
 import './TopicList.css';
+import logger from '../Utilities/logger';
 
 interface TopicsListProps {
     listOfTopics: Array<TopicObject>;
@@ -36,7 +37,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
     
     
     const updateTopicField = async (topic: TopicObject, field: keyof TopicObject, newData: Date) => {
-        console.log(`Updating Topic ${topic.id} to ${field} = ${newData}`);
+        logger.info(`Updating Topic ${topic.id} to ${field} = ${newData}`);
         const updates = {
             [field]: newData
         };
@@ -50,10 +51,10 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
         try {
             const res = await AxiosRequest.put(`/courses/topic/${topic.id}`, updates);
             _.assign(topic, updates);
-            console.log(res);
+            logger.info(res);
             setTopicFeedback({topicId: topic.id, feedback: res.data.message, variant: 'success'});
         } catch (e) {
-            console.error(e);
+            logger.error(e);
             setTopicFeedback({topicId: topic.id, feedback: e.message, variant: 'danger'});
         }
     };
@@ -210,7 +211,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
 
     const getDraggableTopic = (provided: any, snapshot: any, rubric: any) => {
         if (rubric.source.index >= listOfTopics.length) {
-            console.error(`Tried moving ${rubric.source.index} which exceed list length ${listOfTopics.length}`);
+            logger.error(`Tried moving ${rubric.source.index} which exceed list length ${listOfTopics.length}`);
             return <div/>;
         }
         

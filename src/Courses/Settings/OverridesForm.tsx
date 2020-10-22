@@ -8,6 +8,7 @@ import { extendQuestion, extendTopic, getQuestion, getTopic } from '../../APIInt
 import _ from 'lodash';
 import { TopicObject, ProblemObject } from '../CourseInterfaces';
 import { Alert } from 'react-bootstrap';
+import logger from '../../Utilities/logger';
 
 interface OverridesFormProps {
     userId: number;
@@ -76,7 +77,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                     if (studentTopicOverrides.length > 1) {
                         // TODO switch to logger
                         // eslint-disable-next-line no-console
-                        console.warn('There are multiple student topic overrides');
+                        logger.warn('There are multiple student topic overrides');
                     }
                     const [ studentTopicOverride ] = studentTopicOverrides;
                     const overrides = _.pick(studentTopicOverride, ['startDate', 'endDate', 'deadDate', 'maxAttempts']);
@@ -95,7 +96,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                     if (studentTopicAssessmentOverrides.length > 1) {
                         // TODO switch to logger
                         // eslint-disable-next-line no-console
-                        console.warn('There are multiple student topic assessment overrides');
+                        logger.warn('There are multiple student topic assessment overrides');
                     }
                     const [ studentTopicAssessmentOverride ] = studentTopicAssessmentOverrides;
                     // TODO delete when the backend is fixed for truncation
@@ -115,7 +116,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
 
                 setDefaultTopic(new TopicObject(topicData));
             } catch (e) {
-                console.error(`Topic ${topic.id} or User ${userId} does not exist!`, e);
+                logger.error(`Topic ${topic.id} or User ${userId} does not exist!`, e);
                 setError('server', {
                     type: 'manual',
                     message: e.message,
@@ -146,7 +147,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                 });
                 setDefaultProblem(new ProblemObject(questionData));
             } catch (e) {
-                console.error(`Question ${problem.id} or User ${userId} does not exist!`, e);
+                logger.error(`Question ${problem.id} or User ${userId} does not exist!`, e);
                 setError('server', {
                     type: 'manual',
                     message: e.message,
@@ -191,7 +192,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
             } else if (topic) {
                 await updateTopic(topic.id, userId, extensions as TopicExtensions, defaultTopic?.topicAssessmentInfo?.id);
             } else {
-                console.error('Unhandled override case.');
+                logger.error('Unhandled override case.');
             }
         } catch (e) {
             setError('server', {

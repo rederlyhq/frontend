@@ -22,6 +22,7 @@ import SettingsPage from '../Courses/Settings/SettingsPage';
 import { version } from '../../package.json';
 import CourseProvider from '../Courses/CourseProvider';
 import TopicSettingsPage from '../Courses/TopicSettings/TopicSettingsPage';
+import logger from '../Utilities/logger';
 
 interface NavWrapperProps {
 
@@ -42,7 +43,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
 
     // TODO: Check if the user has been deauthenticated (ex: expired) and display a message.
     if (!sessionCookie) {
-        console.log('Logging out due to missing session token.');
+        logger.info('Logging out due to missing session token.');
         return <Redirect to={{
             pathname: '/'
         }} />;
@@ -51,7 +52,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     const logout = async () => {
         let res = await AxiosRequest.post('/users/logout');
         if (res.status !== 200) {
-            console.warn('Unnecessary call to logout.');
+            logger.warn('Unnecessary call to logout.');
         }
         history.push('/');
     };

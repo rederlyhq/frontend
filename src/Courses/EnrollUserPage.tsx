@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Axios from '../Hooks/AxiosRequest';
 import Cookies from 'js-cookie';
 import { CookieEnum } from '../Enums/CookieEnum';
+import logger from '../Utilities/logger';
 
 interface EnrollUserPageProps {
 
@@ -27,11 +28,11 @@ export const EnrollUserPage: React.FC<EnrollUserPageProps> = () => {
                 const url = `/courses/enroll/${enrollCode}`;
                 const res = await Axios.post(url);
                 if (res.status === 200) {
-                    console.log(res.data);
+                    logger.info(res.data);
                     setVerifyState({enrollData: res.data.data, enrollError: ''});
                 }
             } catch (e) {
-                console.error(e);
+                logger.error(e);
                 setVerifyState({
                     enrollError: 'An error occurred. Please contact your professor for assistance.', 
                     enrollData: {courseId: -1}

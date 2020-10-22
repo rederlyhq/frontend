@@ -9,6 +9,7 @@ import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { nameof } from '../../Utilities/TypescriptUtils';
 import { EditableCourseDetailsForm } from '../CourseCreation/EditableCourseDetailsForm';
 import { putCourse } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import logger from '../../Utilities/logger';
 
 interface CourseDetailsTabProps {
     course?: CourseObject;
@@ -46,7 +47,7 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
                     units: course.units
                 }));
             } catch (e) {
-                console.error(e);
+                logger.error(e);
                 setUpdateError(e.message);
             }
         }
