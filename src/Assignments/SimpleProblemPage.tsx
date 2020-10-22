@@ -53,7 +53,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 }
                 setLoading(false);
             } catch (e) {
-                setError(e);
+                setError(e.message);
                 setLoading(false);
             }
         })();

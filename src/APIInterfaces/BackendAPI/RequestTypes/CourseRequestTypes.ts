@@ -94,6 +94,12 @@ export interface PostDefFileOptions {
     courseTopicId: number;
 }
 
+export interface PreviewQuestionOptions {
+    webworkQuestionPath: string;
+    problemSeed?: number;
+    formData?: FormData;
+}
+
 export interface GetQuestionOptions {
     id: number;
     userId?: number;

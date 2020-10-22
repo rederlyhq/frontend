@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Grid } from '@material-ui/core';
+import { Button, Grid, ExpansionPanel, ExpansionPanelDetails, ExpansionPanelSummary, ExpansionPanelActions, TextField, IconButton, InputAdornment, Tooltip } from '@material-ui/core';
+import { ExpandMore, Refresh } from '@material-ui/icons';
 import { MultipleProblemPaths, OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
 import { Link } from 'react-router-dom';
 import { ProblemObject, TopicObject, TopicTypeId } from '../CourseInterfaces';
@@ -12,6 +13,11 @@ import { Alert } from 'react-bootstrap';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { DevTool } from '@hookform/devtools';
 import ProblemIframe from '../../Assignments/ProblemIframe';
+
+import './TopicSettings.css';
+import { FaDice } from 'react-icons/fa';
+import { motion, useAnimation, useCycle } from 'framer-motion';
+import { IconBaseProps } from 'react-icons/lib';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
@@ -53,6 +59,8 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const { optional } = watch();
     const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
+
+    const pathArray = watch('courseQuestionAssessmentInfo');
 
     useEffect(()=>{
         let defaultAdditionalProblemPaths = [{path: ''}];
@@ -143,13 +151,75 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
         }
     };
 
+    const controls = useAnimation();
+    const [flipped, cycleFlipped] = useCycle(-1, 1);
+    const MotionRefresh = motion.custom(Refresh);
+    // This is an experiment in creating custom animation elements.
+    // const MotionDice = motion.custom<typeof FaDice>(React.forwardRef<typeof FaDice>((props: typeof FaDice, ref) => {
+    //     return <FaDice glyphRef={ref} />
+    // }));
+
     const rendererPreview = () => {
         return (
-            <ProblemIframe 
-                problem={new ProblemObject({  })} 
-                setProblemStudentGrade={() => { }} 
-                workbookId={0} 
-                readonly={false} />
+            <ExpansionPanel>
+                <ExpansionPanelSummary
+                    expandIcon={<ExpandMore />}
+                    aria-label="Expand"
+                    aria-controls="additional-actions3-content"
+                    id="additional-actions3-header"
+                >
+                    Problem Preview Pane
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <Grid xs={12}>
+                        <Grid xs={12}>
+                            {!_.isEmpty(pathArray?.additionalProblemPaths) && pathArray?.additionalProblemPaths?.[0].path}
+                            <TextField
+                                aria-label="Problem Seed"
+                                size='small'
+                                variant='outlined'
+                                onClick={(event: any) => event.stopPropagation()}
+                                onFocus={(event: any) => event.stopPropagation()}
+                                // onBlur will reload
+                                onBlur={()=>{}}
+                                label="Problem Seed"
+                                type='number'
+                                className='hideNumberSpinners'
+                                InputProps={{
+                                    startAdornment: <InputAdornment position='start'>
+                                        <Tooltip title='Randomize'>
+                                            <IconButton
+                                                aria-label='reload problem with a random seed'
+                                                onClick={()=>{cycleFlipped();}}
+                                            >
+                                                <motion.div animate={{scaleX: flipped}} ><FaDice/></motion.div>
+                                            </IconButton>
+                                        </Tooltip>
+                                    </InputAdornment>,
+                                    endAdornment: <InputAdornment position='end'>
+                                        <Tooltip title='Reload'>
+                                            <IconButton
+                                                aria-label='reload problem with current seed'
+                                                onClick={()=>{controls.start({rotate: 360, transition: {duration: 0.5}})}}
+                                            >
+                                                <MotionRefresh animate={controls} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </InputAdornment>
+                                }}
+                            />
+                        </Grid>
+                        <Grid>
+                            <ProblemIframe 
+                                problem={new ProblemObject({})} 
+                                previewPath='webwork-open-problem-library/Contrib/CUNY/CityTech/CollegeAlgebra_Trig/ReducingRationalExpressions/monoDenom-NS.pg'
+                                setProblemStudentGrade={() => {}}
+                                readonly={false} />
+                        </Grid>
+                    </Grid>
+                </ExpansionPanelDetails>
+                    
+            </ExpansionPanel>
         );
     };
 
@@ -170,7 +240,12 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                                 <MultipleProblemPaths /> :
                                 <ProblemPath />
                             }
-                        </Grid><Grid item md={12}>
+                        </Grid><Grid item xs={12}>
+                            {
+                                rendererPreview()
+                            }
+                        </Grid>
+                        <Grid item md={12}>
                             Enter the max attempts for a problem, or 0 or -1 for unlimited attempts.<br/>
                             <ProblemMaxAttempts />
                         </Grid><Grid item md={12}>

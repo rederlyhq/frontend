@@ -42,3 +42,14 @@ svg.grDragHandle path {
 .MuiFormControlLabel-root.MuiFormControlLabel-labelPlacementStart {
   height: 100%;
 }
+
+.hideNumberSpinners input::-webkit-outer-spin-button,
+.hideNumberSpinners input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.hideNumberSpinners input[type=number] {
+  -moz-appearance: textfield;
+}
