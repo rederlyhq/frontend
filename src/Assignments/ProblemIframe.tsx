@@ -4,7 +4,7 @@ import AxiosRequest from '../Hooks/AxiosRequest';
 import _ from 'lodash';
 import { Spinner } from 'react-bootstrap';
 import * as qs from 'querystring';
-import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance, postPreviewQuestion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import moment from 'moment';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import { xRayVision } from '../Utilities/NakedPromise';
@@ -12,7 +12,9 @@ import IframeResizer, { IFrameComponent } from 'iframe-resizer-react';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
-    setProblemStudentGrade: (val: any) => void;
+    setProblemStudentGrade?: (val: any) => void;
+    previewPath?: string;
+    previewSeed?: number;
     workbookId?: number;
     readonly?: boolean;
 }
@@ -26,7 +28,9 @@ interface ProblemIframeProps {
  */
 export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     problem,
-    setProblemStudentGrade,
+    previewPath,
+    previewSeed,
+    setProblemStudentGrade = ()=>{},
     workbookId,
     readonly = false,
 }) => {
@@ -58,7 +62,13 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 if (!_.isEmpty(queryString)) {
                     queryString = `?${queryString}`;
                 }
-                const res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
+
+                let res;
+                if (previewPath) {
+                    res = await postPreviewQuestion({webworkQuestionPath: previewPath, problemSeed: previewSeed});
+                } else {
+                    res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
+                }
                 // TODO: Error handling.
                 setRenderedHTML(res.data.data.rendererData.renderedHTML);
             } catch (e) {
@@ -71,7 +81,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
         setLastSubmission({});
-    }, [problem.id]);
+    }, [problem, problem.id]);
 
     const isPrevious = (_value: any, key: string): boolean => {
         return /^previous_/.test(key);
@@ -144,16 +154,28 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             const saveMeLater = formDataToObject(formData); 
             formData.set(clickedButton.name, clickedButton.value);
             try {
-                const result = await postQuestionSubmission({
-                    id: problem.id,
-                    data: formData,
-                });
+                let result: any;
+                if (_.isNil(previewPath)) {
+                    result = await postQuestionSubmission({
+                        id: problem.id,
+                        data: formData,
+                    });
+                } else {
+                    result = await postPreviewQuestion({
+                        webworkQuestionPath: previewPath,
+                        problemSeed: previewSeed,
+                        formData,
+                    });
+                }
+
                 if(_.isNil(iframeRef?.current)) {
                     console.error('Hijacker: Could not find the iframe ref');
                     setError('An error occurred');
                     return;
                 }
+
                 setRenderedHTML(result.data.data.rendererData.renderedHTML);
+                
                 if (clickedButton.name === 'submitAnswers'){
                     setProblemStudentGrade(result.data.data.studentGrade);
                     setLastSubmission(saveMeLater);
