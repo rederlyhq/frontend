@@ -171,7 +171,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
                     <Grid container xs={12}>
-                        <Grid item xs={8}>
+                        <Grid item xs={10}>
                             <TextField
                                 fullWidth
                                 aria-label='Problem Path'
