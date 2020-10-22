@@ -19,7 +19,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({selected, setTopic, t
         <Grid container item md={9}>
             {(selected instanceof TopicObject) ? (
                 <TopicSettings 
-                    selected={selected}
+                    selected={topic}
                     setTopic={setTopic}
                 />
             ) : (
