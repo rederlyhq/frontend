@@ -169,7 +169,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                 extensions: {
                     startDate: inputs.startDate,
                     endDate: inputs.endDate,
-                    deadDate: inputs.deadDate,
+                    deadDate: inputs.deadDate ?? inputs.endDate,
                 },
                 studentTopicAssessmentOverride: {
                     duration: inputs.duration,
