@@ -8,6 +8,7 @@ import { UnitObject, TopicObject, ProblemObject, CourseObject } from '../CourseI
 import { CookieEnum } from '../../Enums/CookieEnum';
 import Cookies from 'js-cookie';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
+import logger from '../../Utilities/Logger';
 
 interface GradesTabProps {
     course: CourseObject;
@@ -41,7 +42,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
     const userType: UserRole = getUserRole();
 
     const handleChangedView = (selectedView: string) => {
-        console.log('handling changing view', selectedView);
+        logger.info('handling changing view', selectedView);
         setView(selectedView);
         if (selectedView === GradesView.OVERVIEW) {
             setSelectedObjects({});
@@ -125,7 +126,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
                     courseName={course.name}
                     grades={viewData} 
                     onRowClick={(event: any, rowData: any) => {
-                        console.log(rowData);
+                        logger.info(rowData);
                         setStudentGradesTab(rowData.firstName, rowData.id);
                     }} /> :
                 <div>No data!</div>}

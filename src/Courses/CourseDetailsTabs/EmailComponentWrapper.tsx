@@ -13,6 +13,7 @@ import { deleteEnrollment } from '../../APIInterfaces/BackendAPI/Requests/Course
 import { courseContext } from '../CourseDetailsPage';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { useHistory } from 'react-router-dom';
+import logger from '../../Utilities/Logger';
 
 interface EmailComponentWrapperProps {
     users: Array<UserObject>;
@@ -41,7 +42,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
             setUsers(_.filter(users, user => user.id !== userId));
         } catch (e) {
             // TODO: display errors to user.
-            console.error(e);
+            logger.error(e);
         }
     };
     
@@ -53,7 +54,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                 onHide={() => setShowConfirmDelete({state: false, user: null})}
                 onConfirm={() => {
                     if (_.isNull(showConfirmDelete.user)) {
-                        console.error('Tried deleting a null user!');
+                        logger.error('Tried deleting a null user!');
                         return;
                     }
                     onDropStudent(showConfirmDelete.user.id, course.id);

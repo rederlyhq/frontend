@@ -4,6 +4,7 @@ import SimpleFormRow from '../Components/SimpleFormRow';
 import useAlertState from '../Hooks/useAlertState';
 import { putUpdatePassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { Grid } from '@material-ui/core';
+import logger from '../Utilities/Logger';
 
 interface AccountChangePasswordPageProps {
 
@@ -66,7 +67,7 @@ export const AccountChangePasswordPage: React.FC<AccountChangePasswordPageProps>
     const handleNamedChange = (name: keyof UpdatePasswordFormData) => {
         return (event: any) => {
             if (name !== event.target.name) {
-                console.error(`Mismatched event, ${name} is on ${event.target.name}`);
+                logger.error(`Mismatched event, ${name} is on ${event.target.name}`);
             }
             const val = event.target.value;
             setFormState({

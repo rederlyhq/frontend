@@ -9,6 +9,7 @@ import moment from 'moment';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import { xRayVision } from '../Utilities/NakedPromise';
 import IframeResizer, { IFrameComponent } from 'iframe-resizer-react';
+import logger from '../Utilities/Logger';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
@@ -73,7 +74,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 setRenderedHTML(res.data.data.rendererData.renderedHTML);
             } catch (e) {
                 setError(e.message);
-                console.error(e);
+                logger.error(e);
                 setLoading(false);
             }
         })();
@@ -91,7 +92,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         const submitButtons = iframeRef.current?.contentWindow?.document.getElementsByName('submitAnswers') as NodeListOf<HTMLButtonElement>;
         const problemForm = iframeRef.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
         // called only onLoad or after interaction with already loaded srcdoc - so form will exist, unless bad problemPath
-        // no console.error because exam problems (and static problems) will not have 'submitAnswers'
+        // no logger.error because exam problems (and static problems) will not have 'submitAnswers'
         if (_.isNil(submitButtons) || _.isNil(problemForm)) {return;}
 
         const currentState = _.omitBy(formDataToObject(new FormData(problemForm)), isPrevious);
@@ -110,7 +111,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                         button.setAttribute(valueStashAttributeName, valueContents);
                         button.setAttribute('value', 'Submitted');
                     } else {
-                        console.error('Inconceivable! Submit button has no value contents.');
+                        logger.error('Inconceivable! Submit button has no value contents.');
                     }
                 }
             } else {
@@ -169,7 +170,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 }
 
                 if(_.isNil(iframeRef?.current)) {
-                    console.error('Hijacker: Could not find the iframe ref');
+                    logger.error('Hijacker: Could not find the iframe ref');
                     setError('An error occurred');
                     return;
                 }
@@ -186,10 +187,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 return;
             }
         } else {
-            if (_.isNil(problem.grades)) {return;} // TODO: impossi-log console.error()
+            if (_.isNil(problem.grades)) {return;} // TODO: impossi-log logger.error()
             if (_.isNil(problem.grades[0])) {return;} // not enrolled - do not save
             if (_.isNil(problem.grades[0].id)) {
-                // TODO: impossi-log console.error()
+                // TODO: impossi-log logger.error()
                 setError(`No grades id for problem #${problem.id}`);
                 return;
             }
@@ -261,7 +262,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
         const body = iframeDoc?.body;
         if (body === undefined) {
-            console.error('Couldn\'t access body of iframe');
+            logger.error('Couldn\'t access body of iframe');
             return;
         }
 
@@ -271,14 +272,14 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             const submitUrl = problemForm.getAttribute('action');
             const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
             if (checkId && parseInt(checkId[1],10) !== problem.id) {
-                console.error('Something went wrong. This problem is reporting an ID that is incorrect');
+                logger.error('Something went wrong. This problem is reporting an ID that is incorrect');
                 setError('This problem ID is out of sync.');
                 return;
             }
             insertListeners(problemForm);
             updateSubmitActive();
         } else {
-            console.error('this problem has no problemMainForm'); // should NEVER happen in WW
+            logger.error('this problem has no problemMainForm'); // should NEVER happen in WW
         }
 
         const ww_applet_list = iframeWindow?.ww_applet_list;
@@ -323,7 +324,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                         onLoadHandlers();
                     } else {
                         // TODO I would like a logging framework that stripped these
-                        // console.debug('Reference did not change, do not call on load, that is a workaround for first load anyway');
+                        // logger.debug('Reference did not change, do not call on load, that is a workaround for first load anyway');
                     }
                 }}
                 title='Problem Frame'

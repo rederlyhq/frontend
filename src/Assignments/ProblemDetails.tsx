@@ -6,6 +6,7 @@ import { OverlayTrigger, Tooltip, Badge } from 'react-bootstrap';
 import { getUserRole, UserRole } from '../Enums/UserRole';
 import { MomentReacter } from '../Components/MomentReacter';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
+import logger from '../Utilities/Logger';
 
 const INFINITE_MAX_ATTEMPT_VALUE = 0;
 
@@ -21,7 +22,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     attemptsRemaining,
 }) => {
     if (_.isNil(topic)) {
-        console.error('Problem details requested without a topic');
+        logger.error('Problem details requested without a topic');
     }
 
     let version: StudentTopicAssessmentFields | undefined;
@@ -33,7 +34,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     ) {
         version = _.maxBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, 'startTime');
         if (_.isNil(version)) {
-            console.error('We have versions, but an attempt to set the current version failed.');
+            logger.error('We have versions, but an attempt to set the current version failed.');
         }
     }
 

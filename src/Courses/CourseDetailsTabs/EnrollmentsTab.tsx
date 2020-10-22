@@ -3,6 +3,7 @@ import EmailComponentWrapper from './EmailComponentWrapper';
 import { Row, FormLabel, InputGroup, FormControl, Button, Col } from 'react-bootstrap';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { useCourseContext } from '../CourseProvider';
+import logger from '../../Utilities/Logger';
 
 interface EnrollmentsTabProps {
 }
@@ -20,17 +21,17 @@ export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = () => {
 
     const copyToClipboard = (e: any) => {
         if (textAreaRef?.current === null) {
-            console.error('enrollLinkRef not logged properly.');
+            logger.error('enrollLinkRef not logged properly.');
             return;
         }
-        console.log(textAreaRef);
+        logger.info(textAreaRef);
         textAreaRef?.current.select();
 
         try {
             const res = document.execCommand('copy');
-            console.log(`Copy operation ${res ? 'was successful' : 'failed'}`);
+            logger.info(`Copy operation ${res ? 'was successful' : 'failed'}`);
         } catch (err) {
-            console.error(err);
+            logger.error(err);
         } finally {
             e.target.focus();
         }

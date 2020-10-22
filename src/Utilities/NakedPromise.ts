@@ -1,3 +1,5 @@
+import logger from './Logger';
+
 export class NakedPromise<T> {
     public promise: Promise<T>;
     public reject!: (() => void);
@@ -20,7 +22,7 @@ export const xRayVision = (f: any) => {
                 //@ts-ignore
                 f(...arguments);
             } catch (e) {
-                console.error('error occurred in parameter function', e);
+                logger.error('error occurred in parameter function', e);
             }
             nakedPromise.resolve();
         }, 

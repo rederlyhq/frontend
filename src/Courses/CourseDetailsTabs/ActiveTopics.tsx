@@ -5,6 +5,7 @@ import TopicsList from '../TopicsList';
 import _ from 'lodash';
 import moment from 'moment';
 import { UserRole, getUserRole, getUserId } from '../../Enums/UserRole';
+import logger from '../../Utilities/Logger';
 
 interface ActiveTopicsProps {
     course: CourseObject
@@ -18,7 +19,7 @@ export const ActiveTopics: React.FC<ActiveTopicsProps> = ({course}) => {
     useEffect(()=>{
         (async () => {
             const res = await AxiosRequest.get(`/courses/topics?isOpen=true&courseId=${course.id}`);
-            console.log(res.data.data);
+            logger.info(res.data.data);
             let activeTopics = res.data?.data?.map((topic: any) => new TopicObject(topic));
 
             // TODO: Currently, the backend returns topics that have extensions for any users.

@@ -9,6 +9,7 @@ import { ForgotPasswordButtonAndModal } from './ForgotPasswordButtonAndModal';
 import { postLogin } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import BackendAPIError, { isAxiosError } from '../APIInterfaces/BackendAPI/BackendAPIError';
 import ResendVerificationModal from './ResendVerificationModal';
+import logger from '../Utilities/Logger';
 
 interface LoginFormProps {
 
@@ -35,7 +36,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
     const handleNamedChange = (name: keyof LoginFormData) => {
         return (event: any) => {
             if (name !== event.target.name) {
-                console.error(`Mismatched event, ${name} is on ${event.target.name}`);
+                logger.error(`Mismatched event, ${name} is on ${event.target.name}`);
             }
             const val = event.target.value;
             setFormState({ ...formState, [name]: val });
@@ -76,14 +77,13 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
     };
 
     const handleSubmit = (event: any) => {
-        console.log(event);
+        logger.debug(event);
         const form = event.currentTarget;
         event.preventDefault();
 
         if (form.checkValidity() === false) {
             event.stopPropagation();
         } else {
-            console.log(form);
             handleLogin();
         }
 
@@ -92,9 +92,9 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
 
     useEffect(() => {
         const token = Cookie.get('sessionToken');
-        console.log(token);
+        logger.info(token);
         if (token) {
-            console.info('Already logged in, pushing to Courses.');
+            logger.info('Already logged in, pushing to Courses.');
             // TODO: Check user type
             history.push('/common/courses');
         }
