@@ -1,6 +1,7 @@
 import { AxiosInstance } from 'axios';
 import Transport from 'winston-transport';
 import _ from 'lodash';
+import { getUserId } from '../Enums/UserRole';
 
 interface AxiosBatchTransportOptions extends Transport.TransportStreamOptions {
     axios: AxiosInstance;
@@ -12,6 +13,7 @@ interface LogMessage {
     message: string;
     time: Date;
     level: string;
+    meta?: unknown;
 }
 
 export default class AxiosBatchTransport extends Transport {
@@ -91,7 +93,15 @@ export default class AxiosBatchTransport extends Transport {
         const logMessage: LogMessage = {
             message: log.join(' '),
             time: new Date(),
-            level: level
+            level: level,
+            // TODO below is specific, should be pulled out into an extended transport
+            // some of it is specific to rederly (getUserId)
+            // some of it is specific to the browser (get window location)
+            meta: {
+                userId: getUserId(),
+                location: window.location.href
+            }
+
         };
         this.logsToSend.push(logMessage);
         // Send it and forget about it
