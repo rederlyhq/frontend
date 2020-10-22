@@ -189,6 +189,7 @@ export const DurationField: React.FC<{}> = () => {
             inputRef={register()}
             label={'Duration'}
             type='number'
+            inputProps={{min: 10}}
         />
     );
 };
