@@ -14,12 +14,14 @@ interface ProblemDetailsProps {
     problem: ProblemObject;
     topic: TopicObject | null;
     attemptsRemaining?: number;
+    setAttemptsRemaining?: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     problem,
     topic,
     attemptsRemaining,
+    setAttemptsRemaining
 }) => {
     if (_.isNil(topic)) {
         logger.error('Problem details requested without a topic');
@@ -110,17 +112,19 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         >
                             {(currentMoment: moment.Moment) => {
                                 let message = '';
-                                if (currentMoment.isBefore(endDate) && (_.isNil(attemptsRemaining) || attemptsRemaining > 0)) {
+                                if (currentMoment.isBefore(endDate) && (_.isNil(attemptsRemaining) || (attemptsRemaining > 0 && !isClosed))) {
                                     message = `Due ${endDate.fromNow()}`;
                                 } else if (currentMoment.isBefore(deadDate)) {
                                     message = `Partial credit expires ${deadDate.fromNow()}`;
                                 } else if (currentMoment.isBefore(solutionsMoment)) {
                                     message = `Solutions available ${solutionsMoment.fromNow()}`;
-                                } else if (isVersionedAssessment && (attemptsRemaining === 0 || isClosed)) {
-                                    message = 'is completed';
-                                } else {
+                                } else if (currentMoment.isAfter(solutionsMoment)) {
                                     message = (isVersionedAssessment) ? 'Time expired for this version' : 'Past due';
+                                    isVersionedAssessment && setAttemptsRemaining?.(0);
+                                } else {
+                                    message = 'is completed';
                                 }
+
                                 return (<>{message}</>);
                             }}
                         </MomentReacter>
