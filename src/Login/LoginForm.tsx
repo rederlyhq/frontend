@@ -77,14 +77,13 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
     };
 
     const handleSubmit = (event: any) => {
-        logger.info(event);
+        logger.debug(event);
         const form = event.currentTarget;
         event.preventDefault();
 
         if (form.checkValidity() === false) {
             event.stopPropagation();
         } else {
-            logger.info(form);
             handleLogin();
         }
 
