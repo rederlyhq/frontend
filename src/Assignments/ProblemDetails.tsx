@@ -13,7 +13,7 @@ interface ProblemDetailsProps {
     problem: ProblemObject;
     topic: TopicObject | null;
     attemptsRemaining?: number;
-    setAttemptsRemaining?: (a: number)=>unknown;
+    setAttemptsRemaining?: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
@@ -119,7 +119,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                     message = `Solutions available ${solutionsMoment.fromNow()}`;
                                 } else if (currentMoment.isAfter(solutionsMoment)) {
                                     message = (isVersionedAssessment) ? 'Time expired for this version' : 'Past due';
-                                    setAttemptsRemaining && setAttemptsRemaining(0);
+                                    isVersionedAssessment && setAttemptsRemaining?.(0);
                                 } else {
                                     message = 'is completed';
                                 }
