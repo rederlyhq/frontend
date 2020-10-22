@@ -12,7 +12,7 @@ import { FaTrash } from 'react-icons/fa';
 import { putQuestion, postQuestion, putTopic, postDefFile, deleteQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { CheckboxHider, CheckboxHiderChildrenPosition } from '../../Components/CheckboxHider';
-import logger from '../../Utilities/logger';
+import logger from '../../Utilities/Logger';
 
 interface TopicCreationModalProps {
     unitIndex: number;

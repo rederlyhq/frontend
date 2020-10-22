@@ -31,4 +31,5 @@ window.setLogLevel = (level: string) => {
     transports.console.level = level;
 };
 
+// const logger = console;
 export default logger;

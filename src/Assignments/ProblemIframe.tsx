@@ -9,7 +9,7 @@ import moment from 'moment';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import { xRayVision } from '../Utilities/NakedPromise';
 import IframeResizer, { IFrameComponent } from 'iframe-resizer-react';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface ProblemIframeProps {
     problem: ProblemObject;

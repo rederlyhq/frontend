@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Axios from '../Hooks/AxiosRequest';
 import Cookies from 'js-cookie';
 import { CookieEnum } from '../Enums/CookieEnum';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface EnrollUserPageProps {
 

@@ -5,7 +5,7 @@ import TopicsList from '../TopicsList';
 import _ from 'lodash';
 import moment from 'moment';
 import { UserRole, getUserRole, getUserId } from '../../Enums/UserRole';
-import logger from '../../Utilities/logger';
+import logger from '../../Utilities/Logger';
 
 interface ActiveTopicsProps {
     course: CourseObject

@@ -6,7 +6,7 @@ import useAlertState from '../Hooks/useAlertState';
 import { putUpdateForgottonPassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface ForgotPasswordLandingPageProps {
 

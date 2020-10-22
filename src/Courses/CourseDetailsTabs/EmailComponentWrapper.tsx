@@ -13,7 +13,7 @@ import { deleteEnrollment } from '../../APIInterfaces/BackendAPI/Requests/Course
 import { courseContext } from '../CourseDetailsPage';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { useHistory } from 'react-router-dom';
-import logger from '../../Utilities/logger';
+import logger from '../../Utilities/Logger';
 
 interface EmailComponentWrapperProps {
     users: Array<UserObject>;

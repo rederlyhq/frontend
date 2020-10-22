@@ -3,7 +3,7 @@ import { Jumbotron } from 'react-bootstrap';
 import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import Axios from '../Hooks/AxiosRequest';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface VerificationLandingPageProps {
 

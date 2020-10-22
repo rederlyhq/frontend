@@ -12,7 +12,7 @@ import { getTopic, postDefFile, postQuestion, putQuestion } from '../../APIInter
 import { Moment } from 'moment';
 import { TopicTypeId } from '../../Enums/TopicType';
 import { useDropzone } from 'react-dropzone';
-import logger from '../../Utilities/logger';
+import logger from '../../Utilities/Logger';
 
 interface TopicSettingsPageProps {
     topic?: TopicObject;

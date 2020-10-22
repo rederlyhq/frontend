@@ -16,7 +16,7 @@ import { nameof } from '../Utilities/TypescriptUtils';
 import TopicSettingsPage from './TopicSettings/TopicSettingsPage';
 
 import './TopicList.css';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface TopicsListProps {
     listOfTopics: Array<TopicObject>;

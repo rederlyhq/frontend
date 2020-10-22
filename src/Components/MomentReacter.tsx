@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import moment from 'moment';
 import _ from 'lodash';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 const FILE_LOG_TAG = 'MomentReacter';
 const MAX_TIMEOUT_TIME = 2147483647;

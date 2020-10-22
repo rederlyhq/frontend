@@ -3,7 +3,7 @@ import { Form, Button, Alert, Modal } from 'react-bootstrap';
 import useAlertState from '../Hooks/useAlertState';
 import _ from 'lodash';
 import { postForgotPassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface ForgotPasswordButtonAndModalProps {
     defaultEmail?: string;

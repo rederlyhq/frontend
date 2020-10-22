@@ -3,7 +3,7 @@ import { Form, Button, Alert } from 'react-bootstrap';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import SimpleFormRow from '../Components/SimpleFormRow';
 import useAlertState from '../Hooks/useAlertState';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface RegisterFormProps {
 

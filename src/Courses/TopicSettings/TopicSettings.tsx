@@ -11,7 +11,7 @@ import { putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests
 import _ from 'lodash';
 import { Alert } from 'react-bootstrap';
 import useAlertState from '../../Hooks/useAlertState';
-import logger from '../../Utilities/logger';
+import logger from '../../Utilities/Logger';
 
 interface TopicSettingsProps {
     selected: TopicObject;

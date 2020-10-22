@@ -8,7 +8,7 @@ import { extendQuestion, extendTopic, getQuestion, getTopic } from '../../APIInt
 import _ from 'lodash';
 import { TopicObject, ProblemObject } from '../CourseInterfaces';
 import { Alert } from 'react-bootstrap';
-import logger from '../../Utilities/logger';
+import logger from '../../Utilities/Logger';
 
 interface OverridesFormProps {
     userId: number;

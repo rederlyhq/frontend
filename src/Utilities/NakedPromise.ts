@@ -1,4 +1,4 @@
-import logger from "./logger";
+import logger from './Logger';
 
 export class NakedPromise<T> {
     public promise: Promise<T>;

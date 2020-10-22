@@ -17,7 +17,7 @@ import './Course.css';
 import { BsPlusCircleFill } from 'react-icons/bs';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
-import logger from '../../Utilities/logger';
+import logger from '../../Utilities/Logger';
 
 interface CourseEditPageProps {
 

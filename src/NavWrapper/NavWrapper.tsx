@@ -22,7 +22,7 @@ import SettingsPage from '../Courses/Settings/SettingsPage';
 import { version } from '../../package.json';
 import CourseProvider from '../Courses/CourseProvider';
 import TopicSettingsPage from '../Courses/TopicSettings/TopicSettingsPage';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface NavWrapperProps {
 

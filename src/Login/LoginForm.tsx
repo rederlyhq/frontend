@@ -9,7 +9,7 @@ import { ForgotPasswordButtonAndModal } from './ForgotPasswordButtonAndModal';
 import { postLogin } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import BackendAPIError, { isAxiosError } from '../APIInterfaces/BackendAPI/BackendAPIError';
 import ResendVerificationModal from './ResendVerificationModal';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface LoginFormProps {
 

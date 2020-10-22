@@ -9,7 +9,7 @@ import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { nameof } from '../../Utilities/TypescriptUtils';
 import { EditableCourseDetailsForm } from '../CourseCreation/EditableCourseDetailsForm';
 import { putCourse } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
-import logger from '../../Utilities/logger';
+import logger from '../../Utilities/Logger';
 
 interface CourseDetailsTabProps {
     course?: CourseObject;

@@ -8,7 +8,7 @@ import { UnitObject, TopicObject, ProblemObject, CourseObject } from '../CourseI
 import { CookieEnum } from '../../Enums/CookieEnum';
 import Cookies from 'js-cookie';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
-import logger from '../../Utilities/logger';
+import logger from '../../Utilities/Logger';
 
 interface GradesTabProps {
     course: CourseObject;

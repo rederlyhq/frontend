@@ -3,7 +3,7 @@ import EmailComponentWrapper from './EmailComponentWrapper';
 import { Row, FormLabel, InputGroup, FormControl, Button, Col } from 'react-bootstrap';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { useCourseContext } from '../CourseProvider';
-import logger from '../../Utilities/logger';
+import logger from '../../Utilities/Logger';
 
 interface EnrollmentsTabProps {
 }

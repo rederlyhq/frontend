@@ -4,7 +4,7 @@ import SimpleFormRow from '../Components/SimpleFormRow';
 import useAlertState from '../Hooks/useAlertState';
 import { putUpdatePassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { Grid } from '@material-ui/core';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface AccountChangePasswordPageProps {
 

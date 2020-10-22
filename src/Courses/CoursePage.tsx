@@ -10,7 +10,7 @@ import { UserRole, getUserRole } from '../Enums/UserRole';
 import { Link } from 'react-router-dom';
 import { CookieEnum } from '../Enums/CookieEnum';
 import _ from 'lodash';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface CoursePageProps {
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
 import * as _ from 'lodash';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface SimpleFormRowProps {
     label: String;

@@ -17,7 +17,7 @@ import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { IAlertModalState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
-import logger from '../../Utilities/logger';
+import logger from '../../Utilities/Logger';
 
 const FILTERED_STRING = '_FILTERED';
 

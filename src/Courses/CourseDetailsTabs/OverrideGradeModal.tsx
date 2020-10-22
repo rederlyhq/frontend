@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { StudentGrade } from '../CourseInterfaces';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import useAlertState from '../../Hooks/useAlertState';
-import logger from '../../Utilities/logger';
+import logger from '../../Utilities/Logger';
 
 enum OverrideGradePhase {
     PROMPT = 'PROMPT',

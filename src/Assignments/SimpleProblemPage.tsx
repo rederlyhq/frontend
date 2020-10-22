@@ -11,7 +11,7 @@ import { ProblemDetails } from './ProblemDetails';
 import { ProblemStateProvider } from '../Contexts/CurrentProblemState';
 import { ConfirmationModalProps, ConfirmationModal } from '../Components/ConfirmationModal';
 import moment from 'moment';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 interface SimpleProblemPageProps {
 }

@@ -6,7 +6,7 @@ import { OverlayTrigger, Tooltip, Badge } from 'react-bootstrap';
 import { getUserRole, UserRole } from '../Enums/UserRole';
 import { MomentReacter } from '../Components/MomentReacter';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 const INFINITE_MAX_ATTEMPT_VALUE = 0;
 

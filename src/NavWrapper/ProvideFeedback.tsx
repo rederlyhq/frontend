@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button, Modal, FormControl, FormLabel, FormGroup, Spinner, Form, } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
-import logger from '../Utilities/logger';
+import logger from '../Utilities/Logger';
 
 export const ProvideFeedback: React.FC<any> = () => {
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
