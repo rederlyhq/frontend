@@ -1,5 +1,4 @@
 import Transport from 'winston-transport';
-import _ from 'lodash';
 
 export default class BrowserConsoleLoggerTransport extends Transport {
     constructor(opts?: Transport.TransportStreamOptions) {
@@ -10,6 +9,9 @@ export default class BrowserConsoleLoggerTransport extends Transport {
         // - Authentication information for APIs (e.g. loggly, papertrail, 
         //   logentries, etc.).
         //
+
+        // some log levels break with some ui logs
+        // i.e. using json and logging an html element does not work
     }
 
     log(info: any, callback: any): void {
@@ -25,12 +27,10 @@ export default class BrowserConsoleLoggerTransport extends Transport {
         const level = (info.level in console ? info.level : 'log') as keyof Console;
 
         let log = [info.message];
-        
-        const splatSymbol = _.find(Object.getOwnPropertySymbols(info), (elm: Symbol) => {
-            return elm.toString() === 'Symbol(splat)';
-        });
 
-        if(splatSymbol) {
+        const splatSymbol = Symbol.for('splat');
+
+        if(info[splatSymbol]) {
             log = [...log, ...info[splatSymbol]];
         }
         
