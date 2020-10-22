@@ -67,6 +67,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                         className='d-inline-block align-top'
                         alt='Rederly logo'
                         height={50}
+                        width={155}
                     />
                 </NavbarBrand>
                 <NavbarCollapse>
