@@ -14,6 +14,7 @@ interface ProblemIframeProps {
     problem: ProblemObject;
     setProblemStudentGrade?: (val: any) => void;
     previewPath?: string;
+    previewSeed?: number;
     workbookId?: number;
     readonly?: boolean;
 }
@@ -28,6 +29,7 @@ interface ProblemIframeProps {
 export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     problem,
     previewPath,
+    previewSeed,
     setProblemStudentGrade = ()=>{},
     workbookId,
     readonly = false,
@@ -63,7 +65,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
                 let res;
                 if (previewPath) {
-                    res = await postPreviewQuestion({webworkQuestionPath: previewPath, problemSeed: 1});
+                    res = await postPreviewQuestion({webworkQuestionPath: previewPath, problemSeed: previewSeed});
                 } else {
                     res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
                 }
@@ -79,7 +81,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
         setLastSubmission({});
-    }, [problem.id]);
+    }, [problem, problem.id]);
 
     const isPrevious = (_value: any, key: string): boolean => {
         return /^previous_/.test(key);
@@ -161,7 +163,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 } else {
                     result = await postPreviewQuestion({
                         webworkQuestionPath: previewPath,
-                        problemSeed: 1,
+                        problemSeed: previewSeed,
                         formData,
                     });
                 }

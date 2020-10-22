@@ -43,6 +43,10 @@ svg.grDragHandle path {
   height: 100%;
 }
 
+.hideNumberSpinners {
+  width: 13em;
+}
+
 .hideNumberSpinners input::-webkit-outer-spin-button,
 .hideNumberSpinners input::-webkit-inner-spin-button {
   -webkit-appearance: none;

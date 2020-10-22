@@ -59,6 +59,10 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const { optional } = watch();
     const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
+    const [previewSettings, setPreviewSettings] = useState({path: '', seed: 1});
+    const [forcedUpdate, setForcedUpdate] = React.useState(new ProblemObject());
+    const forceUpdate = React.useCallback(() => setForcedUpdate(new ProblemObject()), []);
+    const pgRegex = /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/;
 
     const pathArray = watch('courseQuestionAssessmentInfo');
 
@@ -153,11 +157,6 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
     const controls = useAnimation();
     const [flipped, cycleFlipped] = useCycle(-1, 1);
-    const MotionRefresh = motion.custom(Refresh);
-    // This is an experiment in creating custom animation elements.
-    // const MotionDice = motion.custom<typeof FaDice>(React.forwardRef<typeof FaDice>((props: typeof FaDice, ref) => {
-    //     return <FaDice glyphRef={ref} />
-    // }));
 
     const rendererPreview = () => {
         return (
@@ -171,18 +170,48 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                     Problem Preview Pane
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails>
-                    <Grid xs={12}>
-                        <Grid xs={12}>
-                            {!_.isEmpty(pathArray?.additionalProblemPaths) && pathArray?.additionalProblemPaths?.[0].path}
+                    <Grid container xs={12}>
+                        <Grid item xs={8}>
                             <TextField
-                                aria-label="Problem Seed"
-                                size='small'
+                                fullWidth
+                                aria-label='Problem Path'
                                 variant='outlined'
                                 onClick={(event: any) => event.stopPropagation()}
                                 onFocus={(event: any) => event.stopPropagation()}
-                                // onBlur will reload
-                                onBlur={()=>{}}
-                                label="Problem Seed"
+                                onChange={(event: any)=>{
+                                    const val = event.target.value;
+                                    setPreviewSettings(settings => ({...settings, path: val}));
+                                }}
+                                onBlur={()=>{
+                                    // Validate first
+                                    // const regex = /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/;
+                                    // if (regex.test(previewSettings.path)) {
+                                        forceUpdate();
+                                    // }
+                                }}
+                                label='Problem Path'
+                                value={previewSettings.path}
+                                inputProps={{
+                                    pattern: /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/
+                                }}
+                            />
+                        </Grid>
+                        <Grid item xs={2}>
+                            {!_.isEmpty(pathArray?.additionalProblemPaths) && pathArray?.additionalProblemPaths?.[0].path}
+                            <TextField
+                                aria-label="Problem Seed"
+                                variant='outlined'
+                                onClick={(event: any) => event.stopPropagation()}
+                                onFocus={(event: any) => event.stopPropagation()}
+                                onChange={(event: any)=>{
+                                    const val = event.target.value;
+                                    if (_.isNaN(parseInt(val, 10))) {
+                                        return;
+                                    }
+                                    setPreviewSettings(settings => ({...settings, seed: val}));
+                                }}
+                                label='Problem Seed'
+                                value={previewSettings.seed}
                                 type='number'
                                 className='hideNumberSpinners'
                                 InputProps={{
@@ -190,7 +219,12 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                                         <Tooltip title='Randomize'>
                                             <IconButton
                                                 aria-label='reload problem with a random seed'
-                                                onClick={()=>{cycleFlipped();}}
+                                                onClick={(event: any)=>{
+                                                    event.stopPropagation();
+                                                    setPreviewSettings(settings => ({...settings, seed: _.random(0, 999999, false)}));
+                                                    forceUpdate();
+                                                    cycleFlipped();
+                                                }}
                                             >
                                                 <motion.div animate={{scaleX: flipped}} ><FaDice/></motion.div>
                                             </IconButton>
@@ -200,22 +234,34 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                                         <Tooltip title='Reload'>
                                             <IconButton
                                                 aria-label='reload problem with current seed'
-                                                onClick={()=>{controls.start({rotate: 360, transition: {duration: 0.5}})}}
+                                                onClick={(event: any)=>{
+                                                    event.stopPropagation();
+                                                    controls.start({rotate: 360, transition: {duration: 0.5}});
+                                                    forceUpdate();
+                                                }}
                                             >
-                                                <MotionRefresh animate={controls} />
+                                                <motion.div animate={controls}><Refresh /></motion.div>
                                             </IconButton>
                                         </Tooltip>
                                     </InputAdornment>
                                 }}
                             />
                         </Grid>
-                        <Grid>
-                            <ProblemIframe 
-                                problem={new ProblemObject({})} 
-                                previewPath='webwork-open-problem-library/Contrib/CUNY/CityTech/CollegeAlgebra_Trig/ReducingRationalExpressions/monoDenom-NS.pg'
-                                setProblemStudentGrade={() => {}}
-                                readonly={false} />
-                        </Grid>
+                        <Grid xs={12} item>
+                            {pgRegex.test(previewSettings.path) ?
+                                <ProblemIframe 
+                                    problem={forcedUpdate} 
+                                    previewPath={previewSettings.path}
+                                    previewSeed={previewSettings.seed}
+                                    setProblemStudentGrade={() => {}}
+                                    readonly={false} /> :
+                                <>
+                                    {previewSettings.path !== '' && (
+                                        <Alert variant='warning'>The path you&apos;ve entered is invalid.</Alert>
+                                    )}
+                                </>                             
+                            }
+                        </Grid>                    
                     </Grid>
                 </ExpansionPanelDetails>
                     
@@ -240,12 +286,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                                 <MultipleProblemPaths /> :
                                 <ProblemPath />
                             }
-                        </Grid><Grid item xs={12}>
-                            {
-                                rendererPreview()
-                            }
-                        </Grid>
-                        <Grid item md={12}>
+                        </Grid><Grid item md={12}>
                             Enter the max attempts for a problem, or 0 or -1 for unlimited attempts.<br/>
                             <ProblemMaxAttempts />
                         </Grid><Grid item md={12}>
@@ -261,6 +302,10 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                                 <RandomSeedSet />
                             </Grid>
                         )}
+                    </Grid><Grid item xs={12}>
+                        {
+                            rendererPreview()
+                        }
                     </Grid>
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
                         <Grid container item md={4} spacing={3} justify='flex-end'>
