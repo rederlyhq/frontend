@@ -119,6 +119,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             }
             
             if (actualVersionsRemaining > 0) {
+                // TODO do we need to check for start times?
                 confirmStartNewVersion(topic, actualVersionsRemaining, res.data.message);
             } else {
                 // no problems were sent back, and user has used the maximum versions allowed
@@ -427,6 +428,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 problem={problems[selectedProblemId]}
                                 topic={topic}
                                 attemptsRemaining={attemptsRemaining}
+                                setAttemptsRemaining={setAttemptsRemaining}
                             />
                             {/* Temporarily disabled for release.  */}
                             {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
