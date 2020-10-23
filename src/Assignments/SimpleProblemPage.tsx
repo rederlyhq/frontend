@@ -104,8 +104,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     }
 
                     // if the assessment has been "closed" OR time has expired - do NOT allow submissions...
-                    if ((!_.isNil(currentVersion.isClosed) && currentVersion.isClosed) ||
-                        (!_.isNil(currentVersion.endTime) && currentVersion.endTime.toMoment().isBefore(moment()))
+                    if (currentVersion.isClosed ||
+                        currentVersion.endTime?.toMoment().isBefore(moment())
                     ) {
                         if (attemptsRemaining !== 0) setAttemptsRemaining(0); // avoid render loop when exam ends without having used all available attempts
                         if (currentTopic.topicAssessmentInfo.hideProblemsAfterFinish) {
@@ -131,12 +131,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         setAttemptsRemaining(currentAttemptsRemaining);
                     }
                 } else {
-                    console.error('Something is wrong with this assessment version. There are versions provided, but no version is "current"');
+                    logger.error('Something is wrong with this assessment version. There are versions provided, but no version is "current"');
                 }
                 if (!_.isNil(currentVersion) && !_.isNil(currentVersion.id)) {
                     setVersionId(currentVersion.id);
                 }
-                // setTopic(topic);
             }
         } else if (currentTopic.topicTypeId === 2 && !_.isNil(currentTopic.topicAssessmentInfo)) { // we are definitely an assessment - topicAssessmentInfo *should* never be missing
             const usedVersions = currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo?.length ?? 0;
@@ -418,11 +417,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                                 New Version
                                             </Button>
                                         }
-                                        {(attemptsRemaining!==topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion) &&
+                                        { topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion && attemptsRemaining < topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion &&
                                             <Button variant='danger'
                                                 tabIndex={0}
                                                 onClick={() => confirmEndVersion()}
-                                                disabled={attemptsRemaining===topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion}
                                             >
                                                 End Exam
                                             </Button>
