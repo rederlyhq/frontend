@@ -247,7 +247,21 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 }
                 clearModal();
             } catch (e) {
-                setError(e.message);
+                const data = e.data as Partial<{
+                    status: string;
+                    nextAvailableStartTime: string;
+                }> | undefined;
+                if (data?.status === 'NOT_AVAILABLE_YET') {
+                    const nextAvailableStartTime = data.nextAvailableStartTime;
+                    if (_.isNil(nextAvailableStartTime)) {
+                        logger.error('Could properly format version available string because response.data.nextAvailableStartTime was nil');
+                        setError(e.message);
+                    } else {
+                        setError(`Another version of this assessment will be available after ${new Date(nextAvailableStartTime).toLocaleString()}.`);
+                    }
+                } else {
+                    setError(e.message);
+                }
                 clearModal();
             }
         }
