@@ -59,6 +59,11 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
         // TODO: Make a getter
         obj.topicTypeId = data.topicTypeId === TopicTypeId.HOMEWORK ? 1 : 2;
 
+        // Explicitly false
+        if (data.partialExtend === false) {
+            obj.deadDate = obj.endDate;
+        }
+
         try {
             await putTopic({
                 id: selected.id,
