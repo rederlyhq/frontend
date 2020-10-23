@@ -217,7 +217,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         setModalLoading(true);
         try {
             const result = await submitVersion({ topicId, versionId });
-            const bodyContent = generateScoreTable(result.data.data);
+            const bodyContent = (_.isEmpty(result.data.data)) ? 'Your professor has blocked you from seeing your exam results at this time.' : generateScoreTable(result.data.data);
             const actualAttemptsRemaining = attemptsRemaining - 1;
 
             if (_.isNil(attemptsRemaining)) {
