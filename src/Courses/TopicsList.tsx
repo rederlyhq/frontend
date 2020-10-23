@@ -58,9 +58,14 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                     <>
                         <Col md={8}>
                             <Row>
-                                <Col>
-                                    <h5>{topic.name}</h5>
-                                </Col>
+                                <Link to={loc =>(userType !== UserRole.STUDENT ?
+                                    {pathname: `${loc.pathname}/topic/${topic.id}/settings`} :
+                                    {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
+                                )}>
+                                    <Col>
+                                        <h5>{topic.name}</h5>
+                                    </Col>
+                                </Link>
                             </Row>
                         </Col>
                         <Col>
@@ -81,7 +86,10 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                         <Row>
                             <Col>
                                 <Row>
-                                    <Link to={loc =>({pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}})}>
+                                    <Link to={loc =>(userType !== UserRole.STUDENT ?
+                                        {pathname: `${loc.pathname}/topic/${topic.id}/settings`} :
+                                        {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
+                                    )}>
                                         <Col>
                                             <h5>{topic.name}</h5>
                                         </Col>
