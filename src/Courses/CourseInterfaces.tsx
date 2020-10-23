@@ -108,7 +108,7 @@ export class TopicAssessmentFields {
             duration: 60,
             hardCutoff: false,
             maxGradedAttemptsPerVersion: 1,
-            maxVersions: 0,
+            maxVersions: 1,
             versionDelay: 0,
             hideHints: false,
             showItemizedResults: false,
