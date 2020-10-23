@@ -94,7 +94,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                 {/* <DevTool control={control} /> */}
                 <Grid container item md={12} spacing={3}>
                     {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
-                    <CommonSettings formObject={topicForm} />
+                    <CommonSettings formObject={topicForm} setUpdateAlert={setUpdateAlert} />
                     {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end">
                         <Grid container item md={3} spacing={3} justify='flex-end'>

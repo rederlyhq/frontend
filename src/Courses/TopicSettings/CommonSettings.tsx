@@ -5,17 +5,19 @@ import moment, { Moment } from 'moment';
 import { Controller } from 'react-hook-form';
 import { TopicTypeId } from '../../Enums/TopicType';
 import _ from 'lodash';
+import { IAlertModalState } from '../../Hooks/useAlertState';
 
 interface CommonSettingsProps {
     // This is the register function from react-hook-forms.
-    formObject: any
+    formObject: any;
+    setUpdateAlert: React.Dispatch<React.SetStateAction<IAlertModalState>>;
 }
 
 /**
  * This component renders settings that are common to all Topic objects.
  * 
  */
-export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
+export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUpdateAlert}) => {
     const { register, getValues, errors, control, setValue, watch, formState, reset } = formObject;
     const { topicTypeId, partialExtend, startDate, endDate, deadDate } = watch();
 
@@ -80,6 +82,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                         fullWidth={false}
                         label='Start Date'
                         maxDate={endDate}
+                        onAccept={() => {setUpdateAlert({message: '', variant: 'warning'});}}
                         rules={{
                             required: true,
                             validate: {
@@ -102,6 +105,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                         fullWidth={false}
                         label='End Date'
                         minDate={moment.max([startDate, moment()])}
+                        onAccept={() => {setUpdateAlert({message: '', variant: 'warning'});}}
                         rules={{
                             required: true,
                             validate: {
@@ -129,6 +133,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                         fullWidth={false}
                         label='Dead Date'
                         minDate={moment.max([endDate, moment()])}
+                        onAccept={() => {setUpdateAlert({message: '', variant: 'warning'});}}
                         rules={{
                             required: true,
                             validate: {
