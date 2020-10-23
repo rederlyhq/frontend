@@ -41,12 +41,12 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     }
 
     const isVersionedAssessment = (topic?.topicTypeId === 2 && !_.isNil(version));
-    let isClosed: boolean | undefined;
+    let isClosed = false;
     let versionStartTime: Date | undefined;
     let versionEndTime: Date | undefined;
 
     if (!_.isNil(version)) {
-        isClosed = isVersionedAssessment && version.isClosed;
+        isClosed = isVersionedAssessment && !_.isNil(version.isClosed) && version.isClosed;
         versionStartTime = version.startTime;
         versionEndTime = version.endTime;
     }
@@ -114,9 +114,9 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                 let message = '';
                                 if (currentMoment.isBefore(endDate) && (_.isNil(attemptsRemaining) || (attemptsRemaining > 0 && !isClosed))) {
                                     message = `Due ${endDate.fromNow()}`;
-                                } else if (currentMoment.isBefore(deadDate)) {
+                                } else if (currentMoment.isBefore(deadDate) && (_.isNil(attemptsRemaining) || (attemptsRemaining > 0 && !isClosed))) {
                                     message = `Partial credit expires ${deadDate.fromNow()}`;
-                                } else if (currentMoment.isBefore(solutionsMoment)) {
+                                } else if (currentMoment.isBefore(solutionsMoment) && (_.isNil(attemptsRemaining) || (attemptsRemaining > 0 && !isClosed))) {
                                     message = `Solutions available ${solutionsMoment.fromNow()}`;
                                 } else if (currentMoment.isAfter(solutionsMoment)) {
                                     message = (isVersionedAssessment) ? 'Time expired for this version' : 'Past due';
