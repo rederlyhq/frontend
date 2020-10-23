@@ -202,7 +202,6 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                             />
                         </Grid>
                         <Grid item xs={2}>
-                            {!_.isEmpty(pathArray?.additionalProblemPaths) && pathArray?.additionalProblemPaths?.[0].path}
                             <TextField
                                 aria-label="Problem Seed"
                                 variant='outlined'
