@@ -269,7 +269,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                         label='End Date'
                         InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
                         inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                        minDate={startDate || moment(topic.startDate)}
+                        minDate={moment.max([(startDate || moment(topic.startDate)), moment()])}
                         maxDate={topic.topicTypeId === 1 ? (deadDate || moment(topic.deadDate)) : undefined}
                         rules={{
                             required: true,
@@ -297,7 +297,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                             label='Dead Date'
                             InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
                             inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                            minDate={endDate || moment(topic.endDate)}
+                            minDate={moment.max([(endDate || moment(topic.endDate)), moment()])}
                             onAccept={() => clearErrors()}
                         />
                     </MuiPickersUtilsProvider>
