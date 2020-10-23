@@ -3,7 +3,7 @@ import moment from 'moment';
 import React, { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { TopicTypeId } from '../../Enums/TopicType';
-import { TopicObject } from '../CourseInterfaces';
+import { TopicObject, TopicAssessmentFields } from '../CourseInterfaces';
 import CommonSettings from './CommonSettings';
 import ExamSettings from './ExamSettings';
 import { TopicSettingsInputs } from './TopicSettingsPage';
@@ -29,6 +29,9 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             deadDate: moment(selected.deadDate),
             // TODO: Fix duplicate enum
             topicTypeId: (selected.topicTypeId === 1) ? TopicTypeId.HOMEWORK : TopicTypeId.EXAM,
+            ...(_.isNil(selected.topicAssessmentInfo) && {
+                topicAssessmentInfo: TopicAssessmentFields.getDefaultFields(),
+            }),
         }
     });
     const { register, handleSubmit, control, watch, reset, errors } = topicForm;
@@ -42,6 +45,9 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             deadDate: moment(selected.deadDate),
             // TODO: Fix duplicate enum
             topicTypeId: (selected.topicTypeId === 1) ? TopicTypeId.HOMEWORK : TopicTypeId.EXAM,
+            ...(_.isNil(selected.topicAssessmentInfo) && {
+                topicAssessmentInfo: TopicAssessmentFields.getDefaultFields(),
+            }),
         });
     }, [selected]);
 

@@ -113,34 +113,35 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             </Col>
                         </Row>
                         <MuiPickersUtilsProvider utils={MomentUtils}>
-                            <DateTimePicker
-                                style={{
-                                    marginLeft: 'auto'
-                                }} 
-                                variant='inline'
-                                label='Start date'
-                                name={'start'}
-                                value={topic.startDate}
-                                onChange={()=>{}}
-                                inputVariant='outlined'
-                                disabled={true}
-                            />
+                            <>
+                                <DateTimePicker
+                                    style={{
+                                        marginLeft: 'auto'
+                                    }} 
+                                    variant='inline'
+                                    label='Start date'
+                                    name={'start'}
+                                    value={topic.startDate}
+                                    onChange={()=>{}}
+                                    inputVariant='outlined'
+                                    disabled={true}
+                                />
 
-                            <DateTimePicker
-                                style={{
-                                    marginLeft: '10px'
-                                }} 
-                                variant='inline'
-                                label='End date'
-                                name={'end'}
-                                value={topic.endDate}
-                                onChange={()=>{}}
-                                inputVariant='outlined'
-                                disabled={true}
-                            />
-                            {/* Show the Dead Date if != end, if student also now > end */}
-                            {
-                                (!moment(topic.deadDate).isSame(moment(topic.endDate))) && 
+                                <DateTimePicker
+                                    style={{
+                                        marginLeft: '10px'
+                                    }} 
+                                    variant='inline'
+                                    label='End date'
+                                    name={'end'}
+                                    value={topic.endDate}
+                                    onChange={()=>{}}
+                                    inputVariant='outlined'
+                                    disabled={true}
+                                />
+                                {/* Show the Dead Date if != end, if student also now > end */}
+                                {
+                                    (!moment(topic.deadDate).isSame(moment(topic.endDate))) && 
                                 (
                                     userType !== UserRole.STUDENT || 
                                     moment().isSameOrAfter(moment(topic.endDate))
@@ -157,7 +158,8 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                                     inputVariant='outlined'
                                     disabled={true}
                                 />
-                            }
+                                }
+                            </>
                         </MuiPickersUtilsProvider>
                     </>
                 )}
