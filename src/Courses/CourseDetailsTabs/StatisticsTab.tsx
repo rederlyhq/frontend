@@ -17,6 +17,7 @@ import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { IAlertModalState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
+import logger from '../../Utilities/Logger';
 
 const FILTERED_STRING = '_FILTERED';
 
@@ -136,7 +137,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
 
     useEffect(() => {
-        console.log('Rerunning useEffect');
+        logger.info('Rerunning useEffect');
         if (course?.id === 0) return;
 
         let url = '/courses/statistics';
@@ -148,7 +149,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             url = `${url}/units?`;
             filterParam = '';
             if (idFilterLocal !== null) {
-                console.error('This should be null for units');
+                logger.error('This should be null for units');
                 idFilterLocal = null;
             }
             break;
@@ -169,7 +170,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             idFilterLocal = null;
             break;
         default:
-            console.error('You should not have a view that is not the views or filtered views');
+            logger.error('You should not have a view that is not the views or filtered views');
             break;
         }
 
@@ -224,7 +225,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 }
                 setRowData(data);
             } catch (e) {
-                console.error('Failed to get statistics.', e);
+                logger.error('Failed to get statistics.', e);
                 return;
             }
         })();
@@ -240,11 +241,11 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         case StatisticsView.ATTEMPTS:
             // Expand for attempt
             if (_.isNil(rowData.problemId)) {
-                console.error('rowData.problemId cannot be nil!');
+                logger.error('rowData.problemId cannot be nil!');
             }
             return <ProblemIframe problem={new ProblemObject({ id: rowData.problemId })} setProblemStudentGrade={() => { }} workbookId={rowData.id} readonly={true} />;
         default:
-            console.error('Problem preview can only happen for problems or attempts');
+            logger.error('Problem preview can only happen for problems or attempts');
             return <>An application error has occurred</>;
         }
     };
@@ -297,14 +298,14 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             break;
         case StatisticsViewFilter.TOPICS_FILTERED:
         case StatisticsView.PROBLEMS:
-            console.log(userId);
+            logger.info(userId);
             if (userId !== undefined) {
                 setIdFilter(rowData.id);
-                console.log('Switching to Attempts');
+                logger.info('Switching to Attempts');
                 resetBreadCrumbs(StatisticsView.PROBLEMS, newBreadcrumb);
                 setView(StatisticsViewFilter.PROBLEMS_FILTERED);
             } else {
-                console.log('Showing a panel.');
+                logger.info('Showing a panel.');
                 togglePanel();
             }
             break;

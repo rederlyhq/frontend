@@ -1,6 +1,7 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
 import * as _ from 'lodash';
+import logger from '../Utilities/Logger';
 
 interface SimpleFormRowProps {
     label: String;
@@ -19,7 +20,7 @@ interface SimpleFormRowProps {
 export const SimpleFormRow: React.FC<SimpleFormRowProps> = ({label, id, errmsg, ...passedProps}) => {
     // controlId sets the id, so it throws errors when its included.
     const safeProps: object = _.omit(passedProps, (['label', 'id']));
-    console.log(safeProps);
+    logger.info(safeProps);
 
     return (
         <Form.Group controlId={`${id}-group`}>

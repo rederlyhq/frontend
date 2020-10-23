@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TopicsList from '../TopicsList';
 import { Accordion, Card, Row, Col, Modal, Alert, Button } from 'react-bootstrap';
-import { CourseObject, NewCourseTopicObj, UnitObject } from '../CourseInterfaces';
+import { CourseObject, TopicObject, UnitObject } from '../CourseInterfaces';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { FaPlusCircle, FaTrash } from 'react-icons/fa';
@@ -10,6 +10,7 @@ import TopicCreationModal from '../CourseCreation/TopicCreationModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
 import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import logger from '../../Utilities/Logger';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -27,21 +28,21 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     const [error, setError] = useState<Error | null | undefined>(null);
     const userType: UserRole = getUserRole();
 
-    const [showTopicCreation, setShowTopicCreation] = useState<{ show: boolean, unitIndex: number, existingTopic?: NewCourseTopicObj | undefined }>({ show: false, unitIndex: -1 });
+    const [showTopicCreation, setShowTopicCreation] = useState<{ show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined }>({ show: false, unitIndex: -1 });
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
 
     const showEditTopic = (e: any, unitIdentifier: number, topicIdentifier: number) => {
-        console.log(`Editing topic ${topicIdentifier} in unit ${unitIdentifier}`);
+        logger.info(`Editing topic ${topicIdentifier} in unit ${unitIdentifier}`);
         let unit = _.find(course.units, ['id', unitIdentifier]);
-        console.log(unit);
+        logger.info(unit);
         if (!unit) {
-            console.error(`Cannot find unit with identifier ${unitIdentifier}`);
+            logger.error(`Cannot find unit with identifier ${unitIdentifier}`);
             return;
         }
 
         const topic = _.find(unit.topics, ['id', topicIdentifier]);
         if (!topic) {
-            console.error(`Cannot find topic with id ${topicIdentifier} in unit with id ${unitIdentifier}`);
+            logger.error(`Cannot find topic with id ${topicIdentifier} in unit with id ${unitIdentifier}`);
             return;
         }
         setShowTopicCreation({ show: true, unitIndex: unitIdentifier, existingTopic: topic });
@@ -58,7 +59,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             let unit = _.find(newCourse.units, ['id', unitId]);
 
             if (!unit) {
-                console.error(`Could not find a unit with id ${unitId}`);
+                logger.error(`Could not find a unit with id ${unitId}`);
                 return;
             }
 
@@ -97,11 +98,11 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             let unit = _.find(newCourse.units, ['id', courseUnitContentId]);
 
             if (!unit) {
-                console.error(`Could not find a unit with id ${courseUnitContentId}`);
+                logger.error(`Could not find a unit with id ${courseUnitContentId}`);
                 return;
             }
 
-            unit.topics.push(new NewCourseTopicObj(result.data.data));
+            unit.topics.push(new TopicObject(result.data.data));
             setCourse?.(newCourse);
         } catch (e) {
             setError(e);
@@ -162,11 +163,11 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         });
     };
 
-    const addTopic = (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => {
-        console.log('Adding Topic', unitIndex, existingTopic, topic);
+    const addTopic = (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
+        logger.info('Adding Topic', unitIndex, existingTopic, topic);
         if (topic.questions.length <= 0) {
             // TODO: Render validation!
-            console.error('Attempted to add a topic without questions!');
+            logger.error('Attempted to add a topic without questions!');
             return;
         }
 
@@ -174,8 +175,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         let unit = _.find(newCourse.units, ['unique', unitIndex]);
 
         if (!unit) {
-            console.error(`Could not find a unit with id ${unitIndex}`);
-            console.log(`Could not find a unit with id ${unitIndex}`);
+            logger.error(`Could not find a unit with id ${unitIndex}`);
+            logger.info(`Could not find a unit with id ${unitIndex}`);
             return;
         }
 
@@ -184,7 +185,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             let oldTopic = _.find(unit.topics, ['unique', existingTopic.unique]);
 
             if (!oldTopic) {
-                console.error(`Could not update topic ${existingTopic.id} in unit ${unitIndex}`);
+                logger.error(`Could not update topic ${existingTopic.id} in unit ${unitIndex}`);
             }
 
             _.assign(oldTopic, topic);
@@ -192,7 +193,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             // Otherwise, concatenate this object onto the existing array.
             // topic.contentOrder = unit.topics.length;
             topic.contentOrder = Math.max(...unit.topics.map(topic => topic.contentOrder), 0) + 1;
-            unit.topics = _.concat(unit.topics, new NewCourseTopicObj(topic));
+            unit.topics = _.concat(unit.topics, new TopicObject(topic));
         }
 
         setCourse?.(newCourse);
@@ -205,7 +206,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             let newCourse = _.cloneDeep(course);
             let updatingUnit = _.find(newCourse.units, ['id', unitId]);
             if (!updatingUnit) {
-                console.error(`Could not find a unit with the unique identifier ${unitId}`);
+                logger.error(`Could not find a unit with the unique identifier ${unitId}`);
                 return;
             }
             updatingUnit.name = event.target.innerText;
@@ -232,7 +233,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         try {
             if (_.isNil(unitId)) {
                 // This should not be possible
-                console.error('unitId was nil when dropping');
+                logger.error('unitId was nil when dropping');
                 throw new Error('Something went wrong with drag and drop');
             }
 
@@ -278,7 +279,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             const sourceUnitDroppableId = result.source.droppableId;
             const destinationUnitDroppableId = result.destination.droppableId;
 
-            const updates: Partial<NewCourseTopicObj> = {
+            const updates: Partial<TopicObject> = {
                 contentOrder: newContentOrder
             };
             const unitIdRegex = /^topicList-(\d+)$/;
@@ -286,18 +287,18 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             const sourceUnitId = unitIdRegex.exec(sourceUnitDroppableId)?.[1];
 
             if (_.isNil(destinationUnitId)) {
-                console.error('Could not parse desintationUnitId');
+                logger.error('Could not parse desintationUnitId');
                 return;
             }
 
             if (_.isNil(sourceUnitId)) {
-                console.error('Could not parse sourceUnitId');
+                logger.error('Could not parse sourceUnitId');
                 return;
             }
 
             if (sourceUnitDroppableId !== destinationUnitDroppableId) {
                 if (_.isNil(destinationUnitId)) {
-                    console.error('destinationUnitId was somehow nil');
+                    logger.error('destinationUnitId was somehow nil');
                     throw new Error('Something went wrong with drag and drop');
                 }
                 updates.courseUnitContentId = parseInt(destinationUnitId, 10);
@@ -308,12 +309,12 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             const destinationUnit = sourceUnitId === destinationUnitId ? sourceUnit : _.find(newCourse.units, ['id', parseInt(destinationUnitId, 10)]);
 
             if (_.isNil(sourceUnit)) {
-                console.error('Could not find source unit');
+                logger.error('Could not find source unit');
                 return;
             }
 
             if (_.isNil(destinationUnit)) {
-                console.error('Could not find destination unit');
+                logger.error('Could not find destination unit');
                 return;
             }
             const [removed] = sourceUnit.topics.splice(result.source.index, 1);
@@ -323,7 +324,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             setError(null);
             if (_.isNil(topicId)) {
                 // This should not be possible
-                console.error('topicId was nil when dropping');
+                logger.error('topicId was nil when dropping');
                 throw new Error('Something went wrong with drag and drop');
             }
             const response = await putTopic({
@@ -331,10 +332,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 data: updates
             });
 
-            response.data.data.updatesResult.forEach((returnedTopic: Partial<NewCourseTopicObj>) => {
+            response.data.data.updatesResult.forEach((returnedTopic: Partial<TopicObject>) => {
                 const existingUnit = _.find(newCourse.units, ['id', returnedTopic.courseUnitContentId]);
                 if (_.isNil(existingUnit)) {
-                    console.error('Could not find topics unit');
+                    logger.error('Could not find topics unit');
                     throw new Error('Drag and drop encountered an unexpected error');
                 }
                 const existingTopic = _.find(existingUnit.topics, ['id', returnedTopic.id]);
@@ -356,14 +357,14 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             return;
         }
 
-        console.log('onDragEnd!', result);
+        logger.info('onDragEnd!', result);
 
         if (result.type === 'UNIT') {
             onUnitDragEnd(result);
         } else if (result.type === 'TOPIC') {
             onTopicDragEnd(result);
         } else {
-            console.error(`Invalid result.type "${result.type}"`);
+            logger.error(`Invalid result.type "${result.type}"`);
         }
     };
 
@@ -379,15 +380,15 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     addTopic={addTopic}
                     existingTopic={showTopicCreation.existingTopic}
                     closeModal={_.partial(setShowTopicCreation, { show: false, unitIndex: -1 })}
-                    updateTopic={(topic: NewCourseTopicObj) => {
+                    updateTopic={(topic: TopicObject) => {
                         const existingUnit = _.find(course.units, ['id', topic.courseUnitContentId]);
                         if (_.isNil(existingUnit)) {
-                            console.error('Could not find unit');
+                            logger.error('Could not find unit');
                             return;
                         }
                         const topicIndex = _.findIndex(existingUnit.topics, ['id', topic.id]);
                         if (_.isNil(topicIndex)) {
-                            console.error('Could not find topic');
+                            logger.error('Could not find topic');
                             return;
                         }
                         existingUnit.topics[topicIndex] = topic;

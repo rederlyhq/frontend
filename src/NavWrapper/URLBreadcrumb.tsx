@@ -41,7 +41,7 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
             ++i;
 
             const to = `/${pathnames.slice(0, i + 1).join('/')}`;
-            arr.push((<span style={{padding: '0em 1em 0em 1em' }}>/</span>));
+            arr.push((<span key={`Span${to}`} style={{padding: '0em 1em 0em 1em' }}>/</span>));
             arr.push((
                 <MaterialLink key={`Link${to}`} component={Link} to={to}>
                     {/* {pathnames[i] ? `${m} ${pathnames[i]}` : m} */}

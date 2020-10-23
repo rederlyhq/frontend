@@ -1,15 +1,7 @@
 import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
-interface ComponentToggleButtonProps {
-    show: boolean;
-    onHide: () => unknown;
-    headerContent?: JSX.Element | string;
-    bodyContent?: JSX.Element | string;
-    onConfirm: () => unknown;
-    confirmText?: string;
-    cancelText?: string;
-    confirmVariant?: | 'primary'
+type ModalVariant = 'primary'
     | 'secondary'
     | 'success'
     | 'danger'
@@ -26,9 +18,23 @@ interface ComponentToggleButtonProps {
     | 'outline-info'
     | 'outline-dark'
     | 'outline-light';
+
+export interface ConfirmationModalProps {
+    show: boolean;
+    onHide: () => unknown;
+    headerContent?: JSX.Element | string;
+    bodyContent?: JSX.Element | string;
+    onConfirm: () => unknown;
+    onSecondary?: () => unknown;
+    confirmText?: string;
+    cancelText?: string;
+    confirmDisabled?: boolean;
+    secondaryDisabled?: boolean;
+    confirmVariant?: ModalVariant;
+    secondaryVariant?: ModalVariant;
 }
 
-export const ConfirmationModal: React.FC<ComponentToggleButtonProps> = ({
+export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     show,
     onHide,
     headerContent = 'Are you sure?',
@@ -36,7 +42,11 @@ export const ConfirmationModal: React.FC<ComponentToggleButtonProps> = ({
     confirmText = 'Confirm',
     cancelText = 'Cancel',
     confirmVariant = 'primary',
-    onConfirm
+    secondaryVariant = 'secondary',
+    confirmDisabled = false,
+    secondaryDisabled = false,
+    onConfirm,
+    onSecondary
 }) => {
     return (
         <Modal
@@ -50,10 +60,10 @@ export const ConfirmationModal: React.FC<ComponentToggleButtonProps> = ({
                 {bodyContent}
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onHide}>
+                <Button disabled={secondaryDisabled} variant={secondaryVariant} onClick={onSecondary ?? onHide}>
                     {cancelText}
                 </Button>
-                <Button variant={confirmVariant} onClick={onConfirm}>
+                <Button disabled={confirmDisabled} variant={confirmVariant} onClick={onConfirm}>
                     {confirmText}
                 </Button>
             </Modal.Footer>

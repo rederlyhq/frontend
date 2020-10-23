@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject, NewCourseUnitObj, StudentGrade } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, TopicObject, ProblemObject, NewProblemObject, NewCourseUnitObj, StudentGrade, StudentGradeInstance } from '../../../Courses/CourseInterfaces';
 import { Moment } from 'moment';
 
 /* *************** *************** */
@@ -35,16 +35,17 @@ export interface DeleteCourseUnitOptions {
 /* *************** *************** */
 export interface GetCourseTopicOptions {
     id: number;
-    userId: number | undefined;
+    userId?: number;
+    includeQuestions?: boolean;
 }
 
 export interface PostCourseTopicOptions {
-    data: Partial<NewCourseTopicObj>;
+    data: Partial<TopicObject>;
 }
 
 export interface PutCourseTopicOptions {
     id: number;
-    data: Partial<NewCourseTopicObj>;
+    data: Partial<TopicObject>;
 }
 
 export interface DeleteCourseTopicOptions {
@@ -54,7 +55,20 @@ export interface DeleteCourseTopicOptions {
 export interface ExtendCourseTopicForUser {
     courseTopicContentId: number;
     userId: number;
-    extensions: {startDate: Moment, endDate: Moment, deadDate: Moment};
+    topicAssessmentInfoId?: number;
+    data: {
+        extensions?: {
+            startDate?: Moment;
+            endDate?: Moment;
+            deadDate?: Moment;
+        };    
+        studentTopicAssessmentOverride?: {
+            versionDelay?: number;
+            duration?: number;
+            maxVersions?: number;
+            maxGradedAttemptsPerVersion?: number;
+        };
+    }
 }
 
 /* *************** *************** */
@@ -68,6 +82,11 @@ export interface PutCourseTopicQuestionOptions {
 export interface PutQuestionGradeOptions {
     id: number;
     data: Partial<StudentGrade>;
+}
+
+export interface PutQuestionGradeInstanceOptions {
+    id: number;
+    data: Partial<StudentGradeInstance>;
 }
 
 export interface DeleteCourseTopicQuestionOptions {
@@ -86,6 +105,12 @@ export interface PostQuestionSubmissionOptions {
 export interface PostDefFileOptions {
     acceptedFiles: any;
     courseTopicId: number;
+}
+
+export interface PreviewQuestionOptions {
+    webworkQuestionPath: string;
+    problemSeed?: number;
+    formData?: FormData;
 }
 
 export interface GetQuestionOptions {
@@ -107,4 +132,17 @@ export interface ExtendCourseTopicQuestionsForUser {
     courseTopicQuestionId: number;
     userId: number;
     extensions: {maxAttempts: number};
+}
+
+export interface GenerateNewVersionOptions {
+    topicId: number;
+}
+
+export interface SubmitVersionOptions {
+    topicId: number;
+    versionId: number;
+}
+
+export interface EndVersionOptions {
+    versionId: number;
 }

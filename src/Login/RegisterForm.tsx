@@ -3,6 +3,7 @@ import { Form, Button, Alert } from 'react-bootstrap';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import SimpleFormRow from '../Components/SimpleFormRow';
 import useAlertState from '../Hooks/useAlertState';
+import logger from '../Utilities/Logger';
 
 interface RegisterFormProps {
 
@@ -38,7 +39,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
     const handleNamedChange = (name: keyof RegisterFormData) => {
         return (event: any) => {
             if (name !== event.target.name) { 
-                console.error(`Mismatched event, ${name} is on ${event.target.name}`);
+                logger.error(`Mismatched event, ${name} is on ${event.target.name}`);
             }
             const val = event.target.value;
             setFormState({...formState, [name]: val});
@@ -56,7 +57,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
                     firstName: formState.registerFirstName,
                     lastName: formState.registerLastName,
                 });
-            console.log(resp);
+            logger.info(resp);
 
             if (resp.status === 201) {
                 let message = 'Registration succeeded!';

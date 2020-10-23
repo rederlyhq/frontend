@@ -4,7 +4,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 import MaterialTriSelect from '../../Components/MaterialTriSelect';
 import { useCourseContext } from '../CourseProvider';
 import { OverridesForm } from './OverridesForm';
-import { CourseObject, UnitObject, UserObject, NewCourseTopicObj, ProblemObject, SettingsComponentType } from '../CourseInterfaces';
+import { CourseObject, UnitObject, UserObject, TopicObject, ProblemObject, SettingsComponentType } from '../CourseInterfaces';
 
 import './SettingsPage.css';
 
@@ -16,7 +16,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = () => {
     const {course, users} = useCourseContext();
     const [selected, setSelected] = useState<{
         unit?: UnitObject, 
-        topic?: NewCourseTopicObj, 
+        topic?: TopicObject, 
         problem?: ProblemObject, 
         user?: UserObject
     }>({});
@@ -25,7 +25,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = () => {
         <Container style={{marginBottom: (selected.user && selected.topic) ? '25rem' : undefined}}>
             <Row>
                 <Col className='text-center'>
-                    <h1>Course/Individual Settings</h1>
+                    <h1>Extensions</h1>
                 </Col>
             </Row>
             <MaterialTriSelect course={course} users={users} selected={selected} setSelected={setSelected} />

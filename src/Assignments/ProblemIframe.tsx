@@ -4,15 +4,18 @@ import AxiosRequest from '../Hooks/AxiosRequest';
 import _ from 'lodash';
 import { Spinner } from 'react-bootstrap';
 import * as qs from 'querystring';
-import { postQuestionSubmission, putQuestionGrade } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance, postPreviewQuestion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import moment from 'moment';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import { xRayVision } from '../Utilities/NakedPromise';
 import IframeResizer, { IFrameComponent } from 'iframe-resizer-react';
+import logger from '../Utilities/Logger';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
-    setProblemStudentGrade: (val: any) => void;
+    setProblemStudentGrade?: (val: any) => void;
+    previewPath?: string;
+    previewSeed?: number;
     workbookId?: number;
     readonly?: boolean;
 }
@@ -26,7 +29,9 @@ interface ProblemIframeProps {
  */
 export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     problem,
-    setProblemStudentGrade,
+    previewPath,
+    previewSeed,
+    setProblemStudentGrade = ()=>{},
     workbookId,
     readonly = false,
 }) => {
@@ -36,6 +41,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const [error, setError] = useState('');
     const [lastSubmission, setLastSubmission] = useState({});
     const height = '100vh';
+    const currentMutationObserver = useRef<MutationObserver> (null);
 
     const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
@@ -57,12 +63,18 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 if (!_.isEmpty(queryString)) {
                     queryString = `?${queryString}`;
                 }
-                const res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
+
+                let res;
+                if (previewPath) {
+                    res = await postPreviewQuestion({webworkQuestionPath: previewPath, problemSeed: previewSeed});
+                } else {
+                    res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
+                }
                 // TODO: Error handling.
                 setRenderedHTML(res.data.data.rendererData.renderedHTML);
             } catch (e) {
                 setError(e.message);
-                console.error(e);
+                logger.error(e);
                 setLoading(false);
             }
         })();
@@ -70,33 +82,50 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
         setLastSubmission({});
-    }, [problem.id]);
+    }, [problem, problem.id]);
+
+    const isPrevious = (_value: any, key: string): boolean => {
+        return /^previous_/.test(key);
+    };
 
     const updateSubmitActive = _.throttle(() => {
         const submitButtons = iframeRef.current?.contentWindow?.document.getElementsByName('submitAnswers') as NodeListOf<HTMLButtonElement>;
         const problemForm = iframeRef.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
         // called only onLoad or after interaction with already loaded srcdoc - so form will exist, unless bad problemPath
-        // no console.error because exam problems (and static problems) will not have 'submitAnswers'
+        // no logger.error because exam problems (and static problems) will not have 'submitAnswers'
         if (_.isNil(submitButtons) || _.isNil(problemForm)) {return;}
 
-        const isClean = _.isEqual(formDataToObject(new FormData(problemForm)), lastSubmission);
+        const currentState = _.omitBy(formDataToObject(new FormData(problemForm)), isPrevious);
+        const previousState = _.omitBy(lastSubmission, isPrevious);
+        const isClean = _.isEqual(currentState, previousState);
 
         submitButtons.forEach((button: HTMLButtonElement) => {
+            const valueStashAttributeName = 'value-stash';
+            const valueStashAttributeContents = button.getAttribute(valueStashAttributeName);
+            const valueContents = button.getAttribute('value');
             if (isClean) {
-                button.setAttribute('disabled','true');
-                // invisibly stash the button's label (in case there are multiple submit buttons)
-                button.setAttribute('textContent', button.value);
-                button.setAttribute('value', 'Submitted');
+                if (!button.disabled) {
+                    button.setAttribute('disabled','true');
+                    // invisibly stash the button's label (in case there are multiple submit buttons)
+                    if (valueContents){
+                        button.setAttribute(valueStashAttributeName, valueContents);
+                        button.setAttribute('value', 'Submitted');
+                    } else {
+                        logger.error('Inconceivable! Submit button has no value contents.');
+                    }
+                }
             } else {
-                button.removeAttribute('disabled');
-                if (button.textContent) {
-                    // put it back and clear the stash - just in case
-                    button.setAttribute('value', button.textContent);
-                    button.removeAttribute('textContent');
+                if (button.disabled) {
+                    button.removeAttribute('disabled');
+                    if (valueStashAttributeContents) {
+                        // put it back and clear the stash - just in case
+                        button.setAttribute('value', valueStashAttributeContents);
+                        button.removeAttribute(valueStashAttributeName);
+                    } 
                 }
             }
         });
-    }, 1000, {leading:true, trailing:true});
+    }, 100, {leading:true, trailing:true});
 
     const formDataToObject = (formData: FormData) => {
         let object:any = {};
@@ -126,16 +155,28 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             const saveMeLater = formDataToObject(formData); 
             formData.set(clickedButton.name, clickedButton.value);
             try {
-                const result = await postQuestionSubmission({
-                    id: problem.id,
-                    data: formData,
-                });
+                let result: any;
+                if (_.isNil(previewPath)) {
+                    result = await postQuestionSubmission({
+                        id: problem.id,
+                        data: formData,
+                    });
+                } else {
+                    result = await postPreviewQuestion({
+                        webworkQuestionPath: previewPath,
+                        problemSeed: previewSeed,
+                        formData,
+                    });
+                }
+
                 if(_.isNil(iframeRef?.current)) {
-                    console.error('Hijacker: Could not find the iframe ref');
+                    logger.error('Hijacker: Could not find the iframe ref');
                     setError('An error occurred');
                     return;
                 }
+
                 setRenderedHTML(result.data.data.rendererData.renderedHTML);
+                
                 if (clickedButton.name === 'submitAnswers'){
                     setProblemStudentGrade(result.data.data.studentGrade);
                     setLastSubmission(saveMeLater);
@@ -146,21 +187,28 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 return;
             }
         } else {
-            if (_.isNil(problem.grades)) {return;} // TODO: impossi-log console.error()
+            if (_.isNil(problem.grades)) {return;} // TODO: impossi-log logger.error()
             if (_.isNil(problem.grades[0])) {return;} // not enrolled - do not save
             if (_.isNil(problem.grades[0].id)) {
-                // TODO: impossi-log console.error()
+                // TODO: impossi-log logger.error()
                 setError(`No grades id for problem #${problem.id}`);
                 return;
             }
             const reqBody = {
-                currentProblemState: formDataToObject(formData)
+                currentProblemState: _.omit(formDataToObject(formData), 'answersSubmitted')
             };
+
             try {
-                const result = await putQuestionGrade({
-                    id: problem.grades[0].id, 
-                    data: reqBody
-                });
+                const result = (_.isNil(problem.grades[0].gradeInstances) || problem.grades[0].gradeInstances.length === 0) ?
+                    await putQuestionGrade({
+                        id: problem.grades[0].id,
+                        data: reqBody
+                    }) :
+                    await putQuestionGradeInstance({
+                        id: problem.grades[0].gradeInstances[0].id,
+                        data: reqBody
+                    });
+
                 if (result.data.data.updatesCount > 0) {
                     setLastSavedAt?.(moment());
                 }
@@ -172,21 +220,37 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }
 
     function insertListeners(problemForm: HTMLFormElement) {
-        const debouncedSubmitHandler = _.debounce(prepareAndSubmit, 2000, { leading: false, trailing: true });
+        const debouncedSaveHandler = _.debounce(prepareAndSubmit, 2000, { leading: false, trailing: true });
+        const debouncedSubmitHandler = _.debounce(prepareAndSubmit, 300, { leading: true, trailing: false });
 
         // submission of problems will trigger updateSubmitActive @onLoad
         // because re-submission of identical answers is blocked, we expect srcdoc to change
         problemForm.addEventListener('submit', (event: { preventDefault: () => void; }) => {
             event.preventDefault();
             const clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
-            prepareAndSubmit(problemForm, clickedButton);
+            debouncedSubmitHandler(problemForm, clickedButton);
         });
 
         problemForm.addEventListener('input', () => {
             // updating submit button is throttled - so don't worry onInput spam
             updateSubmitActive();
             // we don't want to save while edits are in progress, so debounce
-            debouncedSubmitHandler(problemForm);
+            debouncedSaveHandler(problemForm);
+        });
+
+        // TODO: remove once MathQuill events properly bubble
+        // solves two issues - backspace nor mq-menu buttons trigger input/update
+        // fires too often, onFocus etc - throttle handles it
+        const iframeWindow = iframeRef?.current?.contentWindow as any | null | undefined;
+        currentMutationObserver.current?.disconnect();
+        (currentMutationObserver.current as any) = new MutationObserver(updateSubmitActive);
+        iframeWindow.jQuery('#problemMainForm span.mq-root-block').each( (_index: number, subElm: HTMLSpanElement) => {
+            currentMutationObserver.current?.observe(subElm, {
+                childList: true,
+                subtree: false,
+                attributes: false,
+                characterData: false
+            });
         });
     }
 
@@ -198,7 +262,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
         const body = iframeDoc?.body;
         if (body === undefined) {
-            console.log('Couldn\'t access body of iframe');
+            logger.error('Couldn\'t access body of iframe');
             return;
         }
 
@@ -208,14 +272,14 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             const submitUrl = problemForm.getAttribute('action');
             const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
             if (checkId && parseInt(checkId[1],10) !== problem.id) {
-                console.error('Something went wrong. This problem is reporting an ID that is incorrect');
+                logger.error('Something went wrong. This problem is reporting an ID that is incorrect');
                 setError('This problem ID is out of sync.');
                 return;
             }
             insertListeners(problemForm);
             updateSubmitActive();
         } else {
-            console.error('this problem has no problemMainForm'); // should NEVER happen in WW
+            logger.error('this problem has no problemMainForm'); // should NEVER happen in WW
         }
 
         const ww_applet_list = iframeWindow?.ww_applet_list;
@@ -232,10 +296,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 await nakedPromise.promise;
 
                 const {getApplet} = iframeWindow;
-                getApplet(key).registerUpdateListener?.(_.debounce(()=>{
+                getApplet(key).registerUpdateListener?.(_.throttle(()=>{
                     ww_applet_list[key].submitAction();
                     problemForm.dispatchEvent(new Event('input'));
-                },2000));
+                }, 100, {leading:true, trailing:true}));
             }); 
             await Promise.all(promises);       
         }
@@ -260,7 +324,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                         onLoadHandlers();
                     } else {
                         // TODO I would like a logging framework that stripped these
-                        // console.debug('Reference did not change, do not call on load, that is a workaround for first load anyway');
+                        // logger.debug('Reference did not change, do not call on load, that is a workaround for first load anyway');
                     }
                 }}
                 title='Problem Frame'

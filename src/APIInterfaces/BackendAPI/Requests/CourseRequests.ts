@@ -1,20 +1,24 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
+import _ from 'lodash';
+import { StudentTopicAssessmentFields } from '../../../Courses/CourseInterfaces';
 
 const COURSE_PATH = '/courses/';
 const COURSE_UNIT_PATH = url.resolve(COURSE_PATH, 'unit/');
 const COURSE_TOPIC_PATH = url.resolve(COURSE_PATH, 'topic/');
 const COURSE_QUESTION_PATH = url.resolve(COURSE_PATH, 'question/');
 const COURSE_QUESTION_GRADE_PATH = url.resolve(COURSE_QUESTION_PATH, 'grade/');
+const COURSE_QUESTION_INSTANCE_PATH = url.resolve(COURSE_QUESTION_GRADE_PATH, 'instance/');
 const COURSE_QUESTIONS_PATH = url.resolve(COURSE_PATH, 'questions/');
 const COURSE_DEF_PATH = url.resolve(COURSE_PATH, 'def/');
 const COURSE_ENROLL_PATH = url.resolve(COURSE_PATH, 'enroll/');
+const COURSE_ASSESS_PATH = url.resolve(COURSE_PATH, 'assessment/');
 
 /* *************** *************** */
 /* *********** Courses *********** */
@@ -107,11 +111,15 @@ export const deleteUnit = async ({
 /* *************** *************** */
 export const getTopic = async ({
     id,
-    userId
+    userId,
+    includeQuestions
 }: GetCourseTopicOptions): Promise<AxiosResponse<GetTopicResponse>> => {
     try {
         return await AxiosRequest.get(
-            url.resolve(COURSE_TOPIC_PATH, `${id}?${qs.stringify({userId})}`)
+            url.resolve(COURSE_TOPIC_PATH, `${id}?${qs.stringify(_.omitBy({
+                userId, 
+                includeQuestions
+            }, _.isUndefined))}`)
         );
     } catch (e) {
         throw new BackendAPIError(e);
@@ -164,12 +172,23 @@ export const deleteTopic = async ({
 };
 
 export const extendTopic = async ({
-    courseTopicContentId, userId,
-    extensions
+    courseTopicContentId,
+    userId,
+    topicAssessmentInfoId,
+    data,
 }: ExtendCourseTopicForUser): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
         return await AxiosRequest.put(
-            url.resolve(COURSE_TOPIC_PATH, `extend?${qs.stringify({courseTopicContentId, userId})}`), extensions
+            url.resolve(
+                COURSE_TOPIC_PATH,
+                `extend?${qs.stringify(
+                    _.omitBy({
+                        courseTopicContentId,
+                        userId,
+                        topicAssessmentInfoId
+                    }, _.isUndefined))
+                }`
+            ), data
         );
     } catch (e) {
         throw new BackendAPIError(e);
@@ -243,6 +262,23 @@ export const putQuestionGrade = async ({
     }
 };
 
+export const putQuestionGradeInstance = async ({
+    id,
+    data
+}: PutQuestionGradeInstanceOptions): Promise<AxiosResponse<PutQuestionGradeInstanceResponse>> => {
+    try {
+        return await AxiosRequest.put(
+            url.resolve(
+                COURSE_QUESTION_INSTANCE_PATH,
+                `${id}/`
+            ),
+            data
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
 export const deleteQuestion = async ({
     id
 }: DeleteCourseTopicQuestionOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
@@ -280,6 +316,25 @@ export const postDefFile = async ({
                 }
             }
         );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+// This handles both GET and SUBMIT.
+export const postPreviewQuestion = async ({
+    webworkQuestionPath,
+    problemSeed,
+    formData,
+}: PreviewQuestionOptions): Promise<AxiosResponse<GetQuestionResponse>> => {
+    try {
+        return await AxiosRequest.post(
+            url.resolve(COURSE_PATH, 'preview'), formData, {
+                params: {
+                    webworkQuestionPath,
+                    problemSeed,
+                }
+            });
     } catch (e) {
         throw new BackendAPIError(e);
     }
@@ -343,6 +398,54 @@ export const deleteEnrollment = async ({
                     userId, courseId
                 }
             }
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const generateNewVersion = async ({
+    topicId
+}: GenerateNewVersionOptions): Promise<AxiosResponse<BackendAPIResponse<StudentTopicAssessmentFields>>> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(COURSE_ASSESS_PATH, `topic/${topicId}/start`),
+            {
+                headers: {
+                    /**
+                     * Forms send this field in the origin header, however that wasn't coming across with the axios request
+                     * Adding `origin` myself was getting stripped
+                     * Could not find solution online so used a custom header
+                     * Other headers don't work because they get modified by aws (between cloudfront and the load balancers) 
+                     */
+                    'rederly-origin': window.location.origin,
+                }
+            }
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const submitVersion = async ({
+    topicId,
+    versionId
+}: SubmitVersionOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.post(
+            url.resolve(COURSE_ASSESS_PATH, `topic/${topicId}/submit/${versionId}`)
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const endVersion = async ({
+    versionId
+}: EndVersionOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(COURSE_ASSESS_PATH, `topic/end/${versionId}`)
         );
     } catch (e) {
         throw new BackendAPIError(e);

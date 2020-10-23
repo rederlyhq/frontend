@@ -1,0 +1,59 @@
+/* Lazy: pseudoglobal styles */
+
+.nav-link:hover {
+    background-color: rgba(122, 145, 243, 0.6);
+}
+
+.additiveNave {
+  color: darkslategrey;
+}
+
+.additiveNave:hover {
+  background-color: rgba(80, 255, 57, 0.541);
+}
+
+/* This is a fix for HookForm's DevTools */
+pre:nth-child(1) {
+  color: white;
+}
+
+/* Generic icon alignment */
+.icon-container {
+  display: inline-flex;
+}
+
+.icon-container svg, .icon-container img {
+  height: 1em;
+  width: 1em;
+  fill: currentColor;
+  align-self: center;
+}
+
+svg.grDragHandle path {
+  stroke: currentColor;
+}
+
+.icon-container.baseline svg, .icon-container img {
+  top: .125em;
+  position: relative;
+}
+
+/* Center Switches vertically to slightly align them with input */
+.MuiFormControlLabel-root.MuiFormControlLabel-labelPlacementStart {
+  height: 100%;
+}
+
+.hideNumberSpinners {
+  width: 13em;
+}
+
+.hideNumberSpinners input::-webkit-outer-spin-button,
+.hideNumberSpinners input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.hideNumberSpinners input[type=number] {
+  -moz-appearance: textfield;
+}
