@@ -272,14 +272,17 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             const submitUrl = problemForm.getAttribute('action');
             const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
             if (checkId && parseInt(checkId[1],10) !== problem.id) {
-                logger.error('Something went wrong. This problem is reporting an ID that is incorrect');
+                // Need more context for this error -- but I think we're trying to make this "too smart"
+                logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
                 setError('This problem ID is out of sync.');
                 return;
             }
             insertListeners(problemForm);
             updateSubmitActive();
         } else {
-            logger.error('this problem has no problemMainForm'); // should NEVER happen in WW
+            if (renderedHTML !== '') {
+                logger.error('this problem has no problemMainForm'); // should NEVER happen when renderedHTML is non-empty
+            }
         }
 
         const ww_applet_list = iframeWindow?.ww_applet_list;
