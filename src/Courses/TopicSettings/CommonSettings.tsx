@@ -17,7 +17,7 @@ interface CommonSettingsProps {
  */
 export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
     const { register, getValues, errors, control, setValue, watch, formState, reset } = formObject;
-    const { topicTypeId, partialExtend } = watch();
+    const { topicTypeId, partialExtend, startDate, endDate, deadDate } = watch();
 
     useEffect(()=>{
         if (topicTypeId === TopicTypeId.EXAM) {
@@ -79,12 +79,12 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                         inputVariant='outlined'
                         fullWidth={false}
                         label='Start Date'
+                        maxDate={endDate}
                         rules={{
                             required: true,
                             validate: {
                                 isDate: (data: any) => moment(data).isValid() || 'Invalid date',
                                 isEarliest: (startDate: Moment) => {
-                                    const { endDate } = getValues();
                                     return startDate.isSameOrBefore(endDate) || 'Start date cannot be after End or Dead dates';
                                 }
                             }
@@ -101,16 +101,15 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                         inputVariant='outlined'
                         fullWidth={false}
                         label='End Date'
+                        minDate={moment.max([startDate, moment()])}
                         rules={{
                             required: true,
                             validate: {
                                 isDate: (data: any) => moment(data).isValid() || 'Invalid date',
                                 isBeforeStart: (endDate: Moment) => {
-                                    const { startDate } = getValues();
                                     return startDate.isSameOrBefore(endDate) || 'End date cannot be before Start date';
                                 },
                                 isAfterDead: (endDate: Moment) => {
-                                    const { deadDate } = getValues();
                                     if (_.isNil(deadDate)) return true;
                                     return endDate.isSameOrBefore(deadDate) || 'End date cannot be after Dead date';
                                 }
@@ -129,6 +128,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                         inputVariant='outlined'
                         fullWidth={false}
                         label='Dead Date'
+                        minDate={moment.max([endDate, moment()])}
                         rules={{
                             required: true,
                             validate: {

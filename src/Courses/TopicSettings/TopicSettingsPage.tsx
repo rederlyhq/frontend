@@ -24,6 +24,7 @@ export interface TopicSettingsInputs extends ExamSettingsFields {
     endDate?: Moment;
     deadDate?: Moment;
     topicTypeId?: TopicTypeId;
+    partialExtend?: boolean;
 }
 
 export interface ProblemSettingsInputs extends ExamProblemSettingsFields {
