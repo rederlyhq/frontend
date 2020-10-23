@@ -97,21 +97,25 @@ export class TopicAssessmentFields {
     hideProblemsAfterFinish?: boolean;
     randomizeOrder?: boolean;
     studentTopicAssessmentInfo?: Array<StudentTopicAssessmentFields>;
-    // courseTopicContentId: number = -1;
-    // duration: number = 60; // enforce IN MINUTES
-    // hardCutoff: boolean = false;
-    // maxGradedAttemptsPerRandomization: number = 1;
-    // maxReRandomizations: number = 0;
-    // randomizationDelay: number = 0; // for consistency do we also force MINUTES here?
-    // hideHints: boolean = false;
-    // showItemizedResults: boolean = false;
-    // showTotalGradeImmediately: boolean = false;
-    // hideProblemsAfterFinish: boolean = false;
-    // randomizeOrder: boolean = false;
     studentTopicAssessmentOverride?: StudentTopicAssessmentOverrideFields[];
-
+    
     public constructor(init?:Partial<TopicAssessmentFields>) {
         Object.assign(this, init);
+    }
+    
+    static getDefaultFields = (): Partial<TopicAssessmentFields> => {
+        return {
+            duration: 60,
+            hardCutoff: false,
+            maxGradedAttemptsPerVersion: 1,
+            maxVersions: 0,
+            versionDelay: 0,
+            hideHints: false,
+            showItemizedResults: false,
+            showTotalGradeImmediately: false,
+            hideProblemsAfterFinish: false,
+            randomizeOrder: false,
+        };
     }
 }
 

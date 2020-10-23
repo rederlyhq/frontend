@@ -65,8 +65,6 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const forceUpdate = React.useCallback(() => setForcedUpdate(new ProblemObject()), []);
     const pgRegex = /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/;
 
-    const pathArray = watch('courseQuestionAssessmentInfo');
-
     useEffect(()=>{
         let defaultAdditionalProblemPaths = [{path: selected.webworkQuestionPath || ''}];
         // Force renders to always include one empty path at the end.
@@ -85,7 +83,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             )
         });
         setUpdateAlert({message: '', variant: 'warning'});
-    }, [selected]);
+    }, [selected, additionalProblemPathsArray, additionalProblemPathsArrayIsEmpty, reset, setUpdateAlert, topic.topicTypeId]);
 
     const onSubmit = async (data: ProblemSettingsInputs) => {
         if (_.isNil(selected)) {
