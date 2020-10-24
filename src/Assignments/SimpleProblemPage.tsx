@@ -68,12 +68,12 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         });
         const problems: Array<ProblemObject> = res.data.data.questions;
 
-        const topic = res.data.data.topic;
+        const currentTopic = res.data.data.topic;
 
-        if (topic.studentTopicOverride?.length > 0) {
-            _.assign(topic, topic.studentTopicOverride[0]);
+        if (currentTopic.studentTopicOverride?.length > 0) {
+            _.assign(currentTopic, currentTopic.studentTopicOverride[0]);
         }
-        setTopic(topic);
+        setTopic(currentTopic);
 
         if (!_.isEmpty(problems)) {
             const problemDictionary = _.chain(problems)
@@ -89,39 +89,66 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 .value();
             setProblems(problemDictionary);
             setSelectedProblemId(_.sortBy(problems, ['problemNumber'])[0].id);
-            if (!_.isNil(topic.topicAssessmentInfo) &&
-                !_.isNil(topic.topicAssessmentInfo.studentTopicAssessmentInfo) &&
-                topic.topicAssessmentInfo.studentTopicAssessmentInfo.length > 0 // student has generated at least one version already
+            if (!_.isNil(currentTopic.topicAssessmentInfo) &&
+                !_.isNil(currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo) &&
+                currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo.length > 0 // student has generated at least one version already
             ) {
-                const currentVersion = _.maxBy(topic.topicAssessmentInfo.studentTopicAssessmentInfo, 'startTime');
+                const currentVersion = _.maxBy(currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo, 'startTime');
                 if (!_.isNil(currentVersion) && !_.isNil(currentVersion?.numAttempts) && !_.isNil(currentVersion.maxAttempts)) {
-                    // if the assessment has expired - do NOT allow submissions...
-                    if (!_.isNil(currentVersion.endTime) && currentVersion.endTime.toMoment().isAfter(moment())) {
-                        setAttemptsRemaining(currentVersion.maxAttempts - currentVersion.numAttempts);
-                    } else {
-                        setAttemptsRemaining(0);
+                    // determine status from current version, don't rely on useState variables to be immediately accurate
+                    const currentAttemptsRemaining = currentVersion.maxAttempts - currentVersion.numAttempts;
+                    let currentVersionsRemaining = versionsRemaining;
+                    if (!_.isNil(currentTopic.topicAssessmentInfo.maxVersions)) {
+                        currentVersionsRemaining = currentTopic.topicAssessmentInfo.maxVersions - currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo.length;
+                        setVersionsRemaining(currentVersionsRemaining);
                     }
-                }
-                if (!_.isNil(topic.topicAssessmentInfo.maxVersions)) {
-                    setVersionsRemaining(topic.topicAssessmentInfo.maxVersions - topic.topicAssessmentInfo.studentTopicAssessmentInfo.length);
+
+                    // if the assessment has been "closed" OR time has expired - do NOT allow submissions...
+                    if (currentVersion.isClosed ||
+                        currentVersion.endTime?.toMoment().isBefore(moment())
+                    ) {
+                        if (attemptsRemaining !== 0) setAttemptsRemaining(0); // avoid render loop when exam ends without having used all available attempts
+                        if (currentTopic.topicAssessmentInfo.hideProblemsAfterFinish) {
+                            if (currentVersionsRemaining > 0) {
+                                setConfirmationParameters({
+                                    show: true,
+                                    onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
+                                    onConfirm: () => confirmStartNewVersion(currentTopic, currentVersionsRemaining),
+                                    headerContent: 'This version has expired',
+                                    bodyContent: 'Would you like to start a new version of this assessment?'
+                                });
+                            } else {
+                                setConfirmationParameters({
+                                    show: true,
+                                    onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
+                                    onConfirm: () => { },
+                                    headerContent: 'This version has expired',
+                                    bodyContent: 'You have completed all available versions of this assessment.'
+                                });
+                            }
+                        }
+                    } else {
+                        setAttemptsRemaining(currentAttemptsRemaining);
+                    }
+                } else {
+                    logger.error('Something is wrong with this assessment version. There are versions provided, but no version is "current"');
                 }
                 if (!_.isNil(currentVersion) && !_.isNil(currentVersion.id)) {
                     setVersionId(currentVersion.id);
                 }
-                setTopic(topic);
             }
-        } else if (topic.topicTypeId === 2 && !_.isNil(topic.topicAssessmentInfo)) { // we are definitely an assessment - topicAssessmentInfo *should* never be missing
-            const usedVersions = topic.topicAssessmentInfo.studentTopicAssessmentInfo?.length ?? 0;
+        } else if (currentTopic.topicTypeId === 2 && !_.isNil(currentTopic.topicAssessmentInfo)) { // we are definitely an assessment - topicAssessmentInfo *should* never be missing
+            const usedVersions = currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo?.length ?? 0;
             let actualVersionsRemaining = versionsRemaining;
 
-            if (!_.isNil(topic.topicAssessmentInfo.maxVersions)) {
-                actualVersionsRemaining = topic.topicAssessmentInfo.maxVersions - usedVersions;
+            if (!_.isNil(currentTopic.topicAssessmentInfo.maxVersions)) {
+                actualVersionsRemaining = currentTopic.topicAssessmentInfo.maxVersions - usedVersions;
                 setVersionsRemaining(actualVersionsRemaining);
             }
             
             if (actualVersionsRemaining > 0) {
                 // TODO do we need to check for start times?
-                confirmStartNewVersion(topic, actualVersionsRemaining, res.data.message);
+                confirmStartNewVersion(currentTopic, actualVersionsRemaining, res.data.message);
             } else {
                 // no problems were sent back, and user has used the maximum versions allowed
                 setError(`${res.data.message} You have used all available versions for this assessment.`);
@@ -190,7 +217,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         setModalLoading(true);
         try {
             const result = await submitVersion({ topicId, versionId });
-            const bodyContent = generateScoreTable(result.data.data);
+            const bodyContent = (_.isEmpty(result.data.data)) ? 'Your professor has blocked you from seeing your exam results at this time.' : generateScoreTable(result.data.data);
             const actualAttemptsRemaining = attemptsRemaining - 1;
 
             if (_.isNil(attemptsRemaining)) {
@@ -233,12 +260,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             try {
                 const res = await generateNewVersion({ topicId: topic.id });
                 const currentVersion = res.data.data;
-                if (_.isNil(topic.studentTopicAssessmentInfo) === false && topic.studentTopicAssessmentInfo.length > 0) {
-                    topic.studentTopicAssessmentInfo.push(currentVersion);
-                } else {
-                    topic.studentTopicAssessmentInfo = [currentVersion];
-                }
-                setTopic(topic);
                 if (_.isNil(currentVersion.id)) {
                     logger.error('we tried to generate a new version, but failed.');
                 } else {
@@ -247,7 +268,21 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 }
                 clearModal();
             } catch (e) {
-                setError(e.message);
+                const data = e.data as Partial<{
+                    status: string;
+                    nextAvailableStartTime: string;
+                }> | undefined;
+                if (data?.status === 'NOT_AVAILABLE_YET') {
+                    const nextAvailableStartTime = data.nextAvailableStartTime;
+                    if (_.isNil(nextAvailableStartTime)) {
+                        logger.error('Could properly format version available string because response.data.nextAvailableStartTime was nil');
+                        setError(e.message);
+                    } else {
+                        setError(`Another version of this assessment will be available after ${new Date(nextAvailableStartTime).toLocaleString()}.`);
+                    }
+                } else {
+                    setError(e.message);
+                }
                 clearModal();
             }
         }
@@ -307,13 +342,22 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     const renderDoneStateIcon = (problem: ProblemObject) => {
         let doneState: ProblemDoneState = ProblemDoneState.UNTOUCHED;
-        if (_.isNil(problem.grades) || _.isNil(problem.grades[0]) || problem.grades[0].numAttempts === 0) {
+        const grade = problem.grades?.[0];
+        const instance = grade?.gradeInstances?.[0];
+        const overallBestScore = (topic?.topicTypeId === 2) ? instance?.overallBestScore : grade?.overallBestScore;
+        const numAttempts = (topic?.topicTypeId === 2) ? topic.topicAssessmentInfo?.studentTopicAssessmentInfo?.[0]?.numAttempts : grade?.numAttempts;
+
+        if (_.isNil(numAttempts)) {
+            logger.error(`no number of attempts found for problem #${problem.id}`);
+        } else if (_.isNil(overallBestScore)) {
+            logger.error(`no overall best score found for problem #${problem.id}`);
+        } else if (numAttempts === 0 || topic?.topicAssessmentInfo?.hideProblemsAfterFinish) {
             // Do nothing but skip everything else
-        } else if (problem.grades[0].overallBestScore === 1) {
+        } else if (overallBestScore === 1) {
             doneState = ProblemDoneState.COMPLETE;
-        } else if (problem.grades[0].overallBestScore === 0) {
+        } else if (overallBestScore === 0) {
             doneState = ProblemDoneState.INCORRECT;
-        } else if (problem.grades[0].overallBestScore < 1) {
+        } else if (overallBestScore < 1) {
             doneState = ProblemDoneState.PARTIAL;
         }
 
@@ -343,6 +387,17 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     if (problems === null || selectedProblemId === null) return (
         <>
+            { (topic?.topicTypeId === 2 && versionsRemaining > 0 && topic.endDate.toMoment().isAfter(moment())) &&
+                <Button variant='success'
+                    tabIndex={0}
+                    onClick={() => confirmStartNewVersion(topic, versionsRemaining)}
+                >
+                    Begin Exam
+                </Button>
+            }            
+            { (topic?.topicTypeId === 2 && (versionsRemaining === 0 || topic.endDate.toMoment().isBefore(moment()))) &&
+                <div>There are no more versions of this assessment available.</div>
+            }            
             <ConfirmationModal
                 {...confirmationParameters}
                 onConfirm={() => {
@@ -379,12 +434,14 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                                 New Version
                                             </Button>
                                         }
-                                        <Button variant='danger'
-                                            tabIndex={0}
-                                            onClick={() => confirmEndVersion()}
-                                        >
-                                            End Exam
-                                        </Button>
+                                        { topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion && attemptsRemaining < topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion &&
+                                            <Button variant='danger'
+                                                tabIndex={0}
+                                                onClick={() => confirmEndVersion()}
+                                            >
+                                                End Exam
+                                            </Button>
+                                        }
                                     </div>
                                     <div className='flex-row'>
                                         Attempts remaining: {attemptsRemaining}

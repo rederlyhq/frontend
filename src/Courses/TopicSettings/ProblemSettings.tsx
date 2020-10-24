@@ -39,7 +39,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             ...(
                 additionalProblemPathsArrayIsEmpty ?
                     {
-                        additionalProblemPaths: [{path: ''}]
+                        additionalProblemPaths: [{path: selected.webworkQuestionPath || ''}]
                     } : 
                     {
                         additionalProblemPaths: additionalProblemPathsArray.map((s: string) => ({path: s})),
@@ -65,10 +65,8 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const forceUpdate = React.useCallback(() => setForcedUpdate(new ProblemObject()), []);
     const pgRegex = /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/;
 
-    const pathArray = watch('courseQuestionAssessmentInfo');
-
     useEffect(()=>{
-        let defaultAdditionalProblemPaths = [{path: ''}];
+        let defaultAdditionalProblemPaths = [{path: selected.webworkQuestionPath || ''}];
         // Force renders to always include one empty path at the end.
         if (!additionalProblemPathsArrayIsEmpty) {
             const additionalProblemPathsArrayWithPadding = additionalProblemPathsArray.map((s: string) => ({path: s}));
@@ -85,7 +83,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             )
         });
         setUpdateAlert({message: '', variant: 'warning'});
-    }, [selected]);
+    }, [selected, additionalProblemPathsArray, additionalProblemPathsArrayIsEmpty, reset, setUpdateAlert, topic.topicTypeId]);
 
     const onSubmit = async (data: ProblemSettingsInputs) => {
         if (_.isNil(selected)) {
@@ -95,18 +93,19 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
         // React Hook Forms only supports nested field array structures, so we have to flatten it ourselves.
         const fieldArray = data.courseQuestionAssessmentInfo?.additionalProblemPaths?.map?.(f => f.path);
+        const updateAssessmentInfo = (data.courseQuestionAssessmentInfo && {
+            courseQuestionAssessmentInfo: {
+                ...(data.courseQuestionAssessmentInfo.additionalProblemPaths && {additionalProblemPaths: _.compact(fieldArray)}),
+                randomSeedSet: data.courseQuestionAssessmentInfo.randomSeedSet,
+            }
+        });
 
         try {
             const res = await putQuestion({
                 id: selected.id,
                 data: {
                     ...data,
-                    ...(data.courseQuestionAssessmentInfo && {
-                        courseQuestionAssessmentInfo: {
-                            ...(data.courseQuestionAssessmentInfo.additionalProblemPaths && {additionalProblemPaths: _.compact(fieldArray)}),
-                            randomSeedSet: data.courseQuestionAssessmentInfo.randomSeedSet,
-                        }
-                    })
+                    ...updateAssessmentInfo
                 }
             });
 
@@ -117,7 +116,10 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             const newTopic = new TopicObject(topic);
             const newQuestion = _.find(newTopic.questions, ['id', selected.id]);
 
+            // TODO: Right now, the backend does not return the courseQuestionAssessmentInfo, so we should use the local data
+            // if the attempt was a success.
             _.assign(newQuestion, dataFromBackend);
+            _.assign(newQuestion, updateAssessmentInfo);
             setTopic(newTopic);
         } catch (e) {
             logger.error('Error updating topic.', e);
@@ -198,7 +200,6 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                             />
                         </Grid>
                         <Grid item xs={2}>
-                            {!_.isEmpty(pathArray?.additionalProblemPaths) && pathArray?.additionalProblemPaths?.[0].path}
                             <TextField
                                 aria-label="Problem Seed"
                                 variant='outlined'

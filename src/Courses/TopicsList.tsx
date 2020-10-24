@@ -34,30 +34,6 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
     const [showSettingsModal, setShowSettingsModal] = useState<{state: boolean, topic: TopicObject | null}>({state: false, topic: null});
     const userType: UserRole = getUserRole();
     const userId: number = getUserId();
-    
-    
-    const updateTopicField = async (topic: TopicObject, field: keyof TopicObject, newData: Date) => {
-        logger.info(`Updating Topic ${topic.id} to ${field} = ${newData}`);
-        const updates = {
-            [field]: newData
-        };
-
-        if (field === nameof<TopicObject>('endDate')) {
-            if (moment(newData).isAfter(moment(topic.deadDate)) || moment(topic.deadDate).isSame(moment(topic.endDate))) {
-                updates[nameof<TopicObject>('deadDate')] = newData;
-            }
-        }
-
-        try {
-            const res = await AxiosRequest.put(`/courses/topic/${topic.id}`, updates);
-            _.assign(topic, updates);
-            logger.info(res);
-            setTopicFeedback({topicId: topic.id, feedback: res.data.message, variant: 'success'});
-        } catch (e) {
-            logger.error(e);
-            setTopicFeedback({topicId: topic.id, feedback: e.message, variant: 'danger'});
-        }
-    };
 
     const getActiveExtensions = (topic: TopicObject): Array<any> => {
         const now = moment();
@@ -82,9 +58,14 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                     <>
                         <Col md={8}>
                             <Row>
-                                <Col>
-                                    <h5>{topic.name}</h5>
-                                </Col>
+                                <Link to={loc =>(userType !== UserRole.STUDENT ?
+                                    {pathname: `${loc.pathname}/topic/${topic.id}/settings`} :
+                                    {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
+                                )}>
+                                    <Col>
+                                        <h5>{topic.name}</h5>
+                                    </Col>
+                                </Link>
                             </Row>
                         </Col>
                         <Col>
@@ -105,7 +86,10 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                         <Row>
                             <Col>
                                 <Row>
-                                    <Link to={loc =>({pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}})}>
+                                    <Link to={loc =>(userType !== UserRole.STUDENT ?
+                                        {pathname: `${loc.pathname}/topic/${topic.id}/settings`} :
+                                        {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
+                                    )}>
                                         <Col>
                                             <h5>{topic.name}</h5>
                                         </Col>
@@ -137,72 +121,53 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             </Col>
                         </Row>
                         <MuiPickersUtilsProvider utils={MomentUtils}>
-                            <DateTimePicker
-                                style={{
-                                    marginLeft: 'auto'
-                                }} 
-                                variant='inline'
-                                label='Start date'
-                                name={'start'}
-                                value={topic.startDate}
-                                onChange={()=>{}}
-                                onAccept={(date: MaterialUiPickersDate) => {
-                                    if (!date) return;
-                                    updateTopicField(topic, 'startDate', date.toDate());
-                                }}
-                                inputVariant='outlined'
-                                disabled={userType === UserRole.STUDENT}
-                            />
+                            <>
+                                <DateTimePicker
+                                    style={{
+                                        marginLeft: 'auto'
+                                    }} 
+                                    variant='inline'
+                                    label='Start date'
+                                    name={'start'}
+                                    value={topic.startDate}
+                                    onChange={()=>{}}
+                                    inputVariant='outlined'
+                                    disabled={true}
+                                />
 
-                            <DateTimePicker
-                                style={{
-                                    marginLeft: '10px'
-                                }} 
-                                variant='inline'
-                                label='End date'
-                                name={'end'}
-                                value={topic.endDate}
-                                onChange={()=>{}}
-                                onAccept={(date: MaterialUiPickersDate) => {
-                                    if (!date) return;
-                                    updateTopicField(topic, 'endDate', date.toDate());
-                                }}
-                                inputVariant='outlined'
-                                disabled={userType === UserRole.STUDENT}
-                            />
-                        
-                            {(userType !== UserRole.STUDENT || moment().isAfter(moment(topic.endDate))) &&
-                        <CheckboxHider
-                            style={{
-                                marginLeft: '10px'
-                            }}
-                            labelText='Partial Credit?'
-                            defaultChecked={!moment(topic.endDate).isSame(moment(topic.deadDate))}
-                            onChange={(newValue: boolean) => {
-                                if (!newValue) {
-                                    updateTopicField(topic, 'deadDate', topic.endDate);
+                                <DateTimePicker
+                                    style={{
+                                        marginLeft: '10px'
+                                    }} 
+                                    variant='inline'
+                                    label='End date'
+                                    name={'end'}
+                                    value={topic.endDate}
+                                    onChange={()=>{}}
+                                    inputVariant='outlined'
+                                    disabled={true}
+                                />
+                                {/* Show the Dead Date if != end, if student also now > end */}
+                                {
+                                    (!moment(topic.deadDate).isSame(moment(topic.endDate))) && 
+                                (
+                                    userType !== UserRole.STUDENT || 
+                                    moment().isSameOrAfter(moment(topic.endDate))
+                                ) &&
+                                <DateTimePicker
+                                    style={{
+                                        marginLeft: '10px'
+                                    }} 
+                                    variant='inline'
+                                    label='Dead date'
+                                    name={'end'}
+                                    value={topic.deadDate}
+                                    onChange={()=>{}}
+                                    inputVariant='outlined'
+                                    disabled={true}
+                                />
                                 }
-                            }}
-                            showCheckbox={userType !== UserRole.STUDENT}
-                        >
-                            <DateTimePicker
-                                style={{
-                                    marginLeft: '10px'
-                                }} 
-                                variant='inline'
-                                label='Dead date'
-                                name={'end'}
-                                value={topic.deadDate}
-                                onChange={()=>{}}
-                                onAccept={(date: MaterialUiPickersDate) => {
-                                    if (!date) return;
-                                    updateTopicField(topic, 'deadDate', date.toDate());
-                                }}
-                                inputVariant='outlined'
-                                disabled={userType === UserRole.STUDENT}
-                            />
-                        </CheckboxHider>
-                            }
+                            </>
                         </MuiPickersUtilsProvider>
                     </>
                 )}

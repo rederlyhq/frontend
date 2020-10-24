@@ -5,19 +5,21 @@ import moment, { Moment } from 'moment';
 import { Controller } from 'react-hook-form';
 import { TopicTypeId } from '../../Enums/TopicType';
 import _ from 'lodash';
+import { IAlertModalState } from '../../Hooks/useAlertState';
 
 interface CommonSettingsProps {
     // This is the register function from react-hook-forms.
-    formObject: any
+    formObject: any;
+    setUpdateAlert: React.Dispatch<React.SetStateAction<IAlertModalState>>;
 }
 
 /**
  * This component renders settings that are common to all Topic objects.
  * 
  */
-export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
+export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUpdateAlert}) => {
     const { register, getValues, errors, control, setValue, watch, formState, reset } = formObject;
-    const { topicTypeId, partialExtend } = watch();
+    const { topicTypeId, partialExtend, startDate, endDate, deadDate } = watch();
 
     useEffect(()=>{
         if (topicTypeId === TopicTypeId.EXAM) {
@@ -79,12 +81,13 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                         inputVariant='outlined'
                         fullWidth={false}
                         label='Start Date'
+                        maxDate={endDate}
+                        onAccept={() => {setUpdateAlert({message: '', variant: 'warning'});}}
                         rules={{
                             required: true,
                             validate: {
                                 isDate: (data: any) => moment(data).isValid() || 'Invalid date',
                                 isEarliest: (startDate: Moment) => {
-                                    const { endDate } = getValues();
                                     return startDate.isSameOrBefore(endDate) || 'Start date cannot be after End or Dead dates';
                                 }
                             }
@@ -101,16 +104,16 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                         inputVariant='outlined'
                         fullWidth={false}
                         label='End Date'
+                        minDate={moment.max([startDate, moment()])}
+                        onAccept={() => {setUpdateAlert({message: '', variant: 'warning'});}}
                         rules={{
                             required: true,
                             validate: {
                                 isDate: (data: any) => moment(data).isValid() || 'Invalid date',
                                 isBeforeStart: (endDate: Moment) => {
-                                    const { startDate } = getValues();
                                     return startDate.isSameOrBefore(endDate) || 'End date cannot be before Start date';
                                 },
                                 isAfterDead: (endDate: Moment) => {
-                                    const { deadDate } = getValues();
                                     if (_.isNil(deadDate)) return true;
                                     return endDate.isSameOrBefore(deadDate) || 'End date cannot be after Dead date';
                                 }
@@ -129,6 +132,8 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject}) => {
                         inputVariant='outlined'
                         fullWidth={false}
                         label='Dead Date'
+                        minDate={moment.max([endDate, moment()])}
+                        onAccept={() => {setUpdateAlert({message: '', variant: 'warning'});}}
                         rules={{
                             required: true,
                             validate: {

@@ -63,10 +63,11 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
             <Navbar role='navigation' variant='dark' bg='dark' className="toolbar mr-auto">
                 <NavbarBrand as={Link} to="/common/courses">
                     <img
-                        src="/logo-rederly+RGB-original.png"
+                        src="/rederly-logo-offwhite.webp"
                         className='d-inline-block align-top'
                         alt='Rederly logo'
                         height={50}
+                        width={155}
                     />
                 </NavbarBrand>
                 <NavbarCollapse>

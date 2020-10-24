@@ -3,7 +3,7 @@ import moment from 'moment';
 import React, { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { TopicTypeId } from '../../Enums/TopicType';
-import { TopicObject } from '../CourseInterfaces';
+import { TopicObject, TopicAssessmentFields } from '../CourseInterfaces';
 import CommonSettings from './CommonSettings';
 import ExamSettings from './ExamSettings';
 import { TopicSettingsInputs } from './TopicSettingsPage';
@@ -29,6 +29,9 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             deadDate: moment(selected.deadDate),
             // TODO: Fix duplicate enum
             topicTypeId: (selected.topicTypeId === 1) ? TopicTypeId.HOMEWORK : TopicTypeId.EXAM,
+            ...(_.isNil(selected.topicAssessmentInfo) && {
+                topicAssessmentInfo: TopicAssessmentFields.getDefaultFields(),
+            }),
         }
     });
     const { register, handleSubmit, control, watch, reset, errors } = topicForm;
@@ -42,6 +45,9 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             deadDate: moment(selected.deadDate),
             // TODO: Fix duplicate enum
             topicTypeId: (selected.topicTypeId === 1) ? TopicTypeId.HOMEWORK : TopicTypeId.EXAM,
+            ...(_.isNil(selected.topicAssessmentInfo) && {
+                topicAssessmentInfo: TopicAssessmentFields.getDefaultFields(),
+            }),
         });
     }, [selected]);
 
@@ -58,6 +64,11 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
         
         // TODO: Make a getter
         obj.topicTypeId = data.topicTypeId === TopicTypeId.HOMEWORK ? 1 : 2;
+
+        // Explicitly false
+        if (data.partialExtend === false) {
+            obj.deadDate = obj.endDate;
+        }
 
         try {
             await putTopic({
@@ -83,7 +94,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                 {/* <DevTool control={control} /> */}
                 <Grid container item md={12} spacing={3}>
                     {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
-                    <CommonSettings formObject={topicForm} />
+                    <CommonSettings formObject={topicForm} setUpdateAlert={setUpdateAlert} />
                     {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end">
                         <Grid container item md={3} spacing={3} justify='flex-end'>
