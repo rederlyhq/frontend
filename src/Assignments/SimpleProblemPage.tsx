@@ -260,12 +260,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             try {
                 const res = await generateNewVersion({ topicId: topic.id });
                 const currentVersion = res.data.data;
-                if (_.isNil(topic.studentTopicAssessmentInfo) === false && topic.studentTopicAssessmentInfo.length > 0) {
-                    topic.studentTopicAssessmentInfo.push(currentVersion);
-                } else {
-                    topic.studentTopicAssessmentInfo = [currentVersion];
-                }
-                setTopic(topic);
                 if (_.isNil(currentVersion.id)) {
                     logger.error('we tried to generate a new version, but failed.');
                 } else {
@@ -348,13 +342,22 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     const renderDoneStateIcon = (problem: ProblemObject) => {
         let doneState: ProblemDoneState = ProblemDoneState.UNTOUCHED;
-        if (_.isNil(problem.grades) || _.isNil(problem.grades[0]) || problem.grades[0].numAttempts === 0) {
+        const grade = problem.grades?.[0];
+        const instance = grade?.gradeInstances?.[0];
+        const overallBestScore = (topic?.topicTypeId === 2) ? instance?.overallBestScore : grade?.overallBestScore;
+        const numAttempts = (topic?.topicTypeId === 2) ? topic.topicAssessmentInfo?.studentTopicAssessmentInfo?.[0]?.numAttempts : grade?.numAttempts;
+
+        if (_.isNil(numAttempts)) {
+            logger.error(`no number of attempts found for problem #${problem.id}`);
+        } else if (_.isNil(overallBestScore)) {
+            logger.error(`no overall best score found for problem #${problem.id}`);
+        } else if (numAttempts === 0 || topic?.topicAssessmentInfo?.hideProblemsAfterFinish) {
             // Do nothing but skip everything else
-        } else if (problem.grades[0].overallBestScore === 1) {
+        } else if (overallBestScore === 1) {
             doneState = ProblemDoneState.COMPLETE;
-        } else if (problem.grades[0].overallBestScore === 0) {
+        } else if (overallBestScore === 0) {
             doneState = ProblemDoneState.INCORRECT;
-        } else if (problem.grades[0].overallBestScore < 1) {
+        } else if (overallBestScore < 1) {
             doneState = ProblemDoneState.PARTIAL;
         }
 
