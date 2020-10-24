@@ -351,7 +351,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             logger.error(`no number of attempts found for problem #${problem.id}`);
         } else if (_.isNil(overallBestScore)) {
             logger.error(`no overall best score found for problem #${problem.id}`);
-        } else if (numAttempts === 0 || topic?.topicAssessmentInfo?.hideProblemsAfterFinish) {
+        } else if (numAttempts === 0 || topic?.topicAssessmentInfo?.showItemizedResults === false) {
             // Do nothing but skip everything else
         } else if (overallBestScore === 1) {
             doneState = ProblemDoneState.COMPLETE;
