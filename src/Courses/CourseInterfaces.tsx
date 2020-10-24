@@ -172,7 +172,6 @@ export class TopicObject {
     partialExtend: boolean = false;
     studentTopicOverride: any[] = [];
     topicAssessmentInfo?: TopicAssessmentFields = new TopicAssessmentFields();
-    studentTopicAssessmentInfo: Array<StudentTopicAssessmentFields> = [new StudentTopicAssessmentFields()];
     
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
