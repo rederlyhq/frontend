@@ -23,7 +23,6 @@ export const CoursePage: React.FC<CoursePageProps> = () => {
 
     // Get the list of courses to render.
     useEffect(() => {
-        logger.info(`is nil, ${userId}`);
         if (_.isNil(userId) || userId === 'undefined') {
             logger.error('Missing userId cookie.');
             return;
@@ -32,14 +31,13 @@ export const CoursePage: React.FC<CoursePageProps> = () => {
         (async () => {
             try {
                 const idParams = getCourseIdParamFromRole(userType, parseInt(userId, 10));
-                logger.info(`converted ${userId} to ${idParams}`);
+                logger.debug(`Get course converted ${userId} to ${idParams}`);
                 let res = await AxiosRequest.get(`/courses?${idParams}`);
-                logger.info(res.data.data);
                 const courses: Array<CourseObject> = map(res.data?.data, obj => new CourseObject(obj));
 
                 setCourses(courses);
             } catch (e) {
-                logger.info(e.response);
+                logger.error('Could not get courses', e);
                 setCourses([]);
             }
         })();

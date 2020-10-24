@@ -302,7 +302,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     fetchProblems(topic.id); // reload the problems in case they are supposed to be hidden after close
                 } catch (e) {
                     setError(e.message);
-                    logger.error(e);
+                    logger.error('End version failed', e);
                     clearModal();
                 }
                 clearModal();

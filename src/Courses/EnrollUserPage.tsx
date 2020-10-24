@@ -32,7 +32,7 @@ export const EnrollUserPage: React.FC<EnrollUserPageProps> = () => {
                     setVerifyState({enrollData: res.data.data, enrollError: ''});
                 }
             } catch (e) {
-                logger.error(e);
+                logger.error('Enrollment failed', e);
                 setVerifyState({
                     enrollError: 'An error occurred. Please contact your professor for assistance.', 
                     enrollData: {courseId: -1}
