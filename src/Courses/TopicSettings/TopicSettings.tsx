@@ -1,6 +1,6 @@
 import { Grid, Button } from '@material-ui/core';
 import moment from 'moment';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { TopicTypeId } from '../../Enums/TopicType';
 import { TopicObject, TopicAssessmentFields } from '../CourseInterfaces';
@@ -36,19 +36,27 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
     });
     const { register, handleSubmit, control, watch, reset, errors } = topicForm;
     const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
+    // This is a hack to allow us to update the selected TopicObject with DEF file information but not
+    // lose all the user input that might be in the form.
+    const [oldSelectedState, setOldSelectedState] = useState<TopicObject>(selected);
 
     useEffect(()=>{
-        reset({
-            ...selected,
-            startDate: moment(selected.startDate),
-            endDate: moment(selected.endDate),
-            deadDate: moment(selected.deadDate),
-            // TODO: Fix duplicate enum
-            topicTypeId: (selected.topicTypeId === 1) ? TopicTypeId.HOMEWORK : TopicTypeId.EXAM,
-            ...(_.isNil(selected.topicAssessmentInfo) && {
-                topicAssessmentInfo: TopicAssessmentFields.getDefaultFields(),
-            }),
-        });
+        const selectedWithoutQuestions = _.omit(selected, ['questions']);
+        const stateWithoutQuestions = _.omit(oldSelectedState, ['questions']);
+        if (!_.isEqual(selectedWithoutQuestions, stateWithoutQuestions)) {
+            reset({
+                ...selected,
+                startDate: moment(selected.startDate),
+                endDate: moment(selected.endDate),
+                deadDate: moment(selected.deadDate),
+                // TODO: Fix duplicate enum
+                topicTypeId: (selected.topicTypeId === 1) ? TopicTypeId.HOMEWORK : TopicTypeId.EXAM,
+                ...(_.isNil(selected.topicAssessmentInfo) && {
+                    topicAssessmentInfo: TopicAssessmentFields.getDefaultFields(),
+                }),
+            });
+        }
+        setOldSelectedState(selected);
     }, [selected]);
 
     const onSubmit = async (data: TopicSettingsInputs) => {
