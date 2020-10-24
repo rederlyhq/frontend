@@ -137,7 +137,6 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
 
     useEffect(() => {
-        logger.info('Rerunning useEffect');
         if (course?.id === 0) return;
 
         let url = '/courses/statistics';
@@ -298,14 +297,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             break;
         case StatisticsViewFilter.TOPICS_FILTERED:
         case StatisticsView.PROBLEMS:
-            logger.info(userId);
             if (userId !== undefined) {
                 setIdFilter(rowData.id);
-                logger.info('Switching to Attempts');
+                logger.debug('Switching to Attempts');
                 resetBreadCrumbs(StatisticsView.PROBLEMS, newBreadcrumb);
                 setView(StatisticsViewFilter.PROBLEMS_FILTERED);
             } else {
-                logger.info('Showing a panel.');
+                logger.debug('Showing a panel.');
                 togglePanel();
             }
             break;
