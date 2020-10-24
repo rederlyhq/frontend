@@ -31,6 +31,7 @@ export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = () => {
             const res = document.execCommand('copy');
             logger.info(`Copy operation ${res ? 'was successful' : 'failed'}`);
         } catch (err) {
+            logger.error('Copy to clipboard failed', err);
             logger.error(err);
         } finally {
             e.target.focus();
