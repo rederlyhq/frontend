@@ -118,8 +118,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
             // TODO: Right now, the backend does not return the courseQuestionAssessmentInfo, so we should use the local data
             // if the attempt was a success.
-            _.assign(newQuestion, dataFromBackend);
-            _.assign(newQuestion, updateAssessmentInfo);
+            _.assign(newQuestion, dataFromBackend, updateAssessmentInfo);
             setTopic(newTopic);
         } catch (e) {
             logger.error('Error updating topic.', e);
