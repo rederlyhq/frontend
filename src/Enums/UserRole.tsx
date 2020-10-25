@@ -55,3 +55,11 @@ export const getUserId = () => {
 
     return userIdValue;
 };
+
+/**
+ * TODO:
+ * This should be included in the above however pushing this out on a deadline I don't want to mess with it
+ */
+export const getUserIdNoRedirect = () => {
+    return Cookies.get(CookieEnum.USERID);
+};
