@@ -70,8 +70,20 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
         const currentTopic = res.data.data.topic;
 
-        if (currentTopic.studentTopicOverride?.length > 0) {
-            _.assign(currentTopic, currentTopic.studentTopicOverride[0]);
+        // apply topic overrides: start/end/dead dates
+        if (!_.isNil(currentTopic.studentTopicOverride) && !_.isEmpty(currentTopic.studentTopicOverride)) {
+            const override = currentTopic.studentTopicOverride[0];
+            delete override.id;
+            _.assign(currentTopic, override);
+        }
+        // apply assessment overrides: duration, maxAttempts, maxVersions, versionDelay
+        // only maxVersions is relevant -- the others are accounted for in version (studentTopicAssessmentInfo)
+        if (!_.isNil(currentTopic.topicAssessmentInfo) && 
+            !_.isNil(currentTopic.topicAssessmentInfo.studentTopicAssessmentOverride) && 
+            !_.isEmpty(currentTopic.topicAssessmentInfo.studentTopicAssessmentOverride)
+        ) {
+            const override = currentTopic.topicAssessmentInfo?.studentTopicAssessmentOverride[0];
+            currentTopic.topicAssessmentInfo.maxVersions =  override.maxVersions;
         }
         setTopic(currentTopic);
 
