@@ -30,6 +30,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const userMap = _(users).keyBy('id').value();
+
     useEffect(() => {
         setLoading(true);
         (async () => {
@@ -46,10 +48,29 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 setLoading(false);
             }
         })();
-    }, [params.topicId, selectedProblemId]);
+    }, [params.topicId]);
+
+    useEffect(() => {
+        setLoading(true);
+        (async () => {
+            try {
+                if (_.isNil(selectedProblemId)) {
+                    logger.error('selected problem is null');
+                    throw new Error('An unexpected error has occurred');
+                } else {
+                    // organize grades/workbooks 
+                    // await fetchProblems(parseInt(params.topicId, 10));
+                }
+                setLoading(false);
+            } catch (e) {
+                setError(e.message);
+                setLoading(false);
+            }
+        })();
+    }, [selectedProblemId]);
 
     // https://stackoverflow.com/questions/40937961/lodash-keyby-for-multiple-nested-level-arrays
-    const deepKeyBy = (arr: Array<unknown>, key: string): Record<number, unknown> => {
+    const deepKeyBy = (arr: Array<any>, key: string): Record<number, any> => {
         return _(arr)
             .map(function (o) {
                 return _.mapValues(o, function (v) {

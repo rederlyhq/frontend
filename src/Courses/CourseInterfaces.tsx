@@ -211,7 +211,29 @@ export class UnitObject {
 export class NewCourseUnitObj extends UnitObject {
 }
 
-const newProblemUniqueGen = uniqueGen();
+export interface StudentWorkbookInterface {
+    id: number;
+    active: boolean;
+    studentGradeId: number;
+    userId: number;
+    courseWWTopicQuestionId: number;
+    studentGradeInstanceId?: number;
+    randomSeed: number;
+
+    // This is a jsonb field so it could be any (from db)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    submitted: any;
+    result: number;
+    time: Date;
+    wasLate: boolean;
+    wasExpired: boolean;
+    wasAfterAttemptLimit: boolean;
+    wasLocked: boolean;
+    wasAutoSubmitted: boolean;
+
+    createdAt: Date;
+    updatedAt: Date;
+}
 
 export interface StudentGradeInstance {
     id: number;
@@ -250,6 +272,7 @@ export class StudentGrade {
     }
 }
 
+const newProblemUniqueGen = uniqueGen();
 export class ProblemObject implements IProblemObject {
     id: number = 0;
     problemNumber: number = 1;
