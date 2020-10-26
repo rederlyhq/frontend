@@ -1,4 +1,4 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, getAssessmentProblemsWithWorkbooksOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
@@ -18,7 +18,7 @@ const COURSE_QUESTION_INSTANCE_PATH = url.resolve(COURSE_QUESTION_GRADE_PATH, 'i
 const COURSE_QUESTIONS_PATH = url.resolve(COURSE_PATH, 'questions/');
 const COURSE_DEF_PATH = url.resolve(COURSE_PATH, 'def/');
 const COURSE_ENROLL_PATH = url.resolve(COURSE_PATH, 'enroll/');
-const COURSE_ASSESS_PATH = url.resolve(COURSE_PATH, 'assessment/');
+const COURSE_ASSESS_PATH = url.resolve(COURSE_PATH, 'assessment/topic/');
 
 /* *************** *************** */
 /* *********** Courses *********** */
@@ -409,7 +409,7 @@ export const generateNewVersion = async ({
 }: GenerateNewVersionOptions): Promise<AxiosResponse<BackendAPIResponse<StudentTopicAssessmentFields>>> => {
     try {
         return await AxiosRequest.get(
-            url.resolve(COURSE_ASSESS_PATH, `topic/${topicId}/start`),
+            url.resolve(COURSE_ASSESS_PATH, `${topicId}/start`),
             {
                 headers: {
                     /**
@@ -433,7 +433,7 @@ export const submitVersion = async ({
 }: SubmitVersionOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
         return await AxiosRequest.post(
-            url.resolve(COURSE_ASSESS_PATH, `topic/${topicId}/submit/${versionId}`)
+            url.resolve(COURSE_ASSESS_PATH, `${topicId}/submit/${versionId}`)
         );
     } catch (e) {
         throw new BackendAPIError(e);
@@ -445,7 +445,19 @@ export const endVersion = async ({
 }: EndVersionOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
         return await AxiosRequest.get(
-            url.resolve(COURSE_ASSESS_PATH, `topic/end/${versionId}`)
+            url.resolve(COURSE_ASSESS_PATH, `end/${versionId}`)
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getAssessmentProblemsWithWorkbooks = async ({
+    topicId
+}: getAssessmentProblemsWithWorkbooksOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(COURSE_ASSESS_PATH, `grade/${topicId}`)
         );
     } catch (e) {
         throw new BackendAPIError(e);

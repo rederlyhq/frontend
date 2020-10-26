@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
 import { ListGroup, ListGroupItem, Row, Col, Button, Modal } from 'react-bootstrap';
-import { TopicObject } from './CourseInterfaces';
+import { TopicObject, TopicOverride } from './CourseInterfaces';
 import { BsPencilSquare, BsTrash } from 'react-icons/bs';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import MomentUtils from '@date-io/moment';
 import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
-import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { UserRole, getUserRole, getUserId } from '../Enums/UserRole';
-import { CheckboxHider } from '../Components/CheckboxHider';
 import moment from 'moment';
-import { nameof } from '../Utilities/TypescriptUtils';
 import TopicSettingsPage from './TopicSettings/TopicSettingsPage';
 
 import './TopicList.css';
@@ -39,7 +35,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
         const now = moment();
         if (_.isEmpty(topic.studentTopicOverride)) return [];
 
-        const activeExtensions: any[] = topic.studentTopicOverride.reduce((accum, extension) => {
+        const activeExtensions: any[] = topic.studentTopicOverride.reduce((accum: TopicOverride[], extension) => {
             if (now.isBetween(extension.startDate, extension.deadDate, 'day', '[]')) {
                 accum.push(extension);
             }

@@ -146,3 +146,7 @@ export interface SubmitVersionOptions {
 export interface EndVersionOptions {
     versionId: number;
 }
+
+export interface getAssessmentProblemsWithWorkbooksOptions {
+    topicId: number;
+}

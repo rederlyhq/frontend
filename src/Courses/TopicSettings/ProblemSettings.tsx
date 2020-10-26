@@ -17,7 +17,6 @@ import ProblemIframe from '../../Assignments/ProblemIframe';
 import './TopicSettings.css';
 import { FaDice } from 'react-icons/fa';
 import { motion, useAnimation, useCycle } from 'framer-motion';
-import { IconBaseProps } from 'react-icons/lib';
 import logger from '../../Utilities/Logger';
 
 interface ProblemSettingsProps {

@@ -156,6 +156,13 @@ export class StudentTopicAssessmentFields {
     }
 }
 
+export class TopicOverride {
+    id?: number;
+    startDate?: Date;
+    endDate?: Date;
+    deadDate?: Date;
+}
+
 const newTopicUniqueGen = uniqueGen();
 export class TopicObject {
     name: string = '';
@@ -170,7 +177,7 @@ export class TopicObject {
     endDate: Date = new Date();
     deadDate: Date = new Date();
     partialExtend: boolean = false;
-    studentTopicOverride: any[] = [];
+    studentTopicOverride: TopicOverride[] = [];
     topicAssessmentInfo?: TopicAssessmentFields = new TopicAssessmentFields();
     
     public constructor(init?:Partial<TopicObject>) {
@@ -236,6 +243,7 @@ export class StudentGrade {
     locked: boolean = false;
     currentProblemState?: unknown;
     id?: number;
+    lastInfluencingAttemptId?: number;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
