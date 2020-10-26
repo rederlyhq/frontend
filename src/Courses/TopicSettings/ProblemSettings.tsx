@@ -31,6 +31,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const defaultValues : ProblemSettingsInputs = {
         ...selected,
         courseQuestionAssessmentInfo: {
+            randomSeedSet: [],
             ...selected.courseQuestionAssessmentInfo,
             ...(
                 additionalProblemPathsArrayIsEmpty ?
@@ -53,7 +54,8 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const topicForm = useForm<ProblemSettingsInputs>(formSettings);
 
     const { handleSubmit, control, watch, reset } = topicForm;
-    const { optional } = watch();
+    const { optional, webworkQuestionPath } = watch();
+    const additionalProblemPaths = watch('courseQuestionAssessmentInfo.additionalProblemPaths', [{path: ''}]);
     const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
@@ -183,9 +185,11 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                             </Grid>
                         )}
                     </Grid><Grid item xs={12}>
-                        {
-                            <RendererPreview />
-                        }
+                        <RendererPreview 
+                            defaultPath={topic.topicTypeId === TopicTypeId.EXAM ? 
+                                additionalProblemPaths?.[0].path || '' : 
+                                webworkQuestionPath} 
+                        />
                     </Grid>
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
                         <Grid container item md={4} spacing={3} justify='flex-end'>

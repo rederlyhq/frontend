@@ -2,23 +2,29 @@ import { ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, Grid, Tex
 import { ExpandMore, Refresh } from '@material-ui/icons';
 import { motion, useAnimation, useCycle } from 'framer-motion';
 import _ from 'lodash';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert } from 'react-bootstrap';
 import { FaDice } from 'react-icons/fa';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import { ProblemObject } from '../CourseInterfaces';
 
 interface RendererPreviewProps {
-
+    defaultPath?: string;
 }
 
-export const RendererPreview: React.FC<RendererPreviewProps> = ({}) => {
+export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) => {
     const [previewSettings, setPreviewSettings] = useState({path: '', seed: 1});
     const [forcedUpdate, setForcedUpdate] = React.useState(new ProblemObject());
     const forceUpdate = React.useCallback(() => setForcedUpdate(new ProblemObject()), []);
     const pgRegex = /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/;
     const controls = useAnimation();
     const [flipped, cycleFlipped] = useCycle(-1, 1);
+
+    useEffect(()=>{
+        if (!_.isNil(defaultPath)) {
+            setPreviewSettings(settings => ({...settings, path: defaultPath}));
+        }
+    }, [defaultPath]);
 
     return (
         <ExpansionPanel elevation={5}>
@@ -28,7 +34,7 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({}) => {
                 aria-controls="additional-actions3-content"
                 id="additional-actions3-header"
             >
-                Problem Preview Pane
+                Problem Preview Pane - Test 
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
                 <Grid container xs={12}>
@@ -42,6 +48,11 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({}) => {
                             onChange={(event: any)=>{
                                 const val = event.target.value;
                                 setPreviewSettings(settings => ({...settings, path: val}));
+                            }}
+                            onKeyDown={(e: any) => {
+                                if (e.key === 'Enter') {
+                                    forceUpdate();
+                                }
                             }}
                             onBlur={()=>{
                                 // Validate first
@@ -70,6 +81,11 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({}) => {
                                     return;
                                 }
                                 setPreviewSettings(settings => ({...settings, seed: val}));
+                            }}
+                            onKeyDown={(e: any) => {
+                                if (e.key === 'Enter') {
+                                    forceUpdate();
+                                }
                             }}
                             label='Problem Seed'
                             value={previewSettings.seed}
