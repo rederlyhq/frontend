@@ -107,13 +107,19 @@ export const RandomSeedSet: React.FC<{}> = () => {
                 control={control}
                 render={({ onChange, onBlur, value /* name */ }) => (
                     <ChipInput
-                        onChange={onChange}
                         onBlur={onBlur}
                         // Using the value prop turns this into a controlled component, which
                         // would require using onAdd/onDelete instead of onChange.
-                        defaultValue={value}
+                        defaultValue={_(value).map(_.toString).uniq().value()}
+                        value={_(value).map(_.toString).uniq().value()}
+                        onAdd={(chip) => onChange(_.uniq([...value, parseInt(chip, 10)]))}
+                        onDelete={(chip) => onChange(_.without(value, parseInt(chip, 10), chip.toString()))}
+                        clearInputValueOnChange={true}
                         blurBehavior='add'
                         helperText={errMsg && <span style={{color: 'red'}}>{errMsg}</span>}
+                        placeholder='9135, 1534, 447'
+                        newChipKeys={['Enter', 'Separator']}
+                        newChipKeyCodes={[13, 188]}
                         // We could use this to prevent validation, but it makes it easy to accidentally submit.
                         // TODO: Move HandleSubmit to the submit button to fix accidental submissions?
                         // onBeforeAdd={val => !_.isNaN(_.toNumber(val))}
