@@ -34,7 +34,7 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
                 aria-controls="additional-actions3-content"
                 id="additional-actions3-header"
             >
-                Problem Preview Pane - Test 
+                Problem Preview Pane
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
                 <Grid container xs={12}>
