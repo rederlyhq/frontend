@@ -42,7 +42,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
     const userType: UserRole = getUserRole();
 
     const handleChangedView = (selectedView: string) => {
-        logger.info('handling changing view', selectedView);
+        logger.debug('handling changing view', selectedView);
         setView(selectedView);
         if (selectedView === GradesView.OVERVIEW) {
             setSelectedObjects({});
@@ -125,8 +125,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
                 <GradeTable 
                     courseName={course.name}
                     grades={viewData} 
-                    onRowClick={(event: any, rowData: any) => {
-                        logger.info(rowData);
+                    onRowClick={(_event: any, rowData: any) => {
                         setStudentGradesTab(rowData.firstName, rowData.id);
                     }} /> :
                 <div>No data!</div>}

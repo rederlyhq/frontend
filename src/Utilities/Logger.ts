@@ -1,7 +1,9 @@
 import winston from 'winston';
+import { getUserIdNoRedirect } from '../Enums/UserRole';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import AxiosBatchTransport from './AxiosBatchTransport';
 import BrowserConsoleLoggerTransport from './BrowserConsoleLoggerTransport';
+import { version } from '../../package.json';
 
 let level = process.env.NODE_ENV === 'production' ? 'error' : 'debug';
 
@@ -23,7 +25,13 @@ const transports = {
 const logger = winston.createLogger({
     level: level,
     format: winston.format.simple(),
-    defaultMeta: { service: 'user-service' },
+    defaultMeta: {
+        meta: {
+            get userId() { return getUserIdNoRedirect() },
+            get location() { return window.location.href },
+            version: version
+        }
+    },
     transports: Object.values(transports),
     
 });

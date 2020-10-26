@@ -302,7 +302,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     fetchProblems(topic.id); // reload the problems in case they are supposed to be hidden after close
                 } catch (e) {
                     setError(e.message);
-                    logger.error(e);
+                    logger.error('End version failed', e);
                     clearModal();
                 }
                 clearModal();
@@ -345,13 +345,15 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         const grade = problem.grades?.[0];
         const instance = grade?.gradeInstances?.[0];
         const overallBestScore = (topic?.topicTypeId === 2) ? instance?.overallBestScore : grade?.overallBestScore;
-        const numAttempts = (topic?.topicTypeId === 2) ? topic.topicAssessmentInfo?.studentTopicAssessmentInfo?.[0]?.numAttempts : grade?.numAttempts;
+        const numAttempts = (topic?.topicTypeId === 2) ? 
+            _.maxBy(topic.topicAssessmentInfo?.studentTopicAssessmentInfo, 'startTime')?.numAttempts : 
+            grade?.numAttempts;
 
         if (_.isNil(numAttempts)) {
             logger.error(`no number of attempts found for problem #${problem.id}`);
         } else if (_.isNil(overallBestScore)) {
             logger.error(`no overall best score found for problem #${problem.id}`);
-        } else if (numAttempts === 0 || topic?.topicAssessmentInfo?.hideProblemsAfterFinish) {
+        } else if (numAttempts === 0 || topic?.topicAssessmentInfo?.showItemizedResults === false) {
             // Do nothing but skip everything else
         } else if (overallBestScore === 1) {
             doneState = ProblemDoneState.COMPLETE;

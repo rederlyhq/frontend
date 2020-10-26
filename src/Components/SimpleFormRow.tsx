@@ -20,7 +20,6 @@ interface SimpleFormRowProps {
 export const SimpleFormRow: React.FC<SimpleFormRowProps> = ({label, id, errmsg, ...passedProps}) => {
     // controlId sets the id, so it throws errors when its included.
     const safeProps: object = _.omit(passedProps, (['label', 'id']));
-    logger.info(safeProps);
 
     return (
         <Form.Group controlId={`${id}-group`}>

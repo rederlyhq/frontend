@@ -77,7 +77,6 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
     };
 
     const handleSubmit = (event: any) => {
-        logger.debug(event);
         const form = event.currentTarget;
         event.preventDefault();
 
@@ -92,7 +91,6 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
 
     useEffect(() => {
         const token = Cookie.get('sessionToken');
-        logger.info(token);
         if (token) {
             logger.info('Already logged in, pushing to Courses.');
             // TODO: Check user type

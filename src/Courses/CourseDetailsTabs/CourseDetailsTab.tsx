@@ -47,7 +47,7 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
                     units: course.units
                 }));
             } catch (e) {
-                logger.error(e);
+                logger.error('update course failed', e);
                 setUpdateError(e.message);
             }
         }

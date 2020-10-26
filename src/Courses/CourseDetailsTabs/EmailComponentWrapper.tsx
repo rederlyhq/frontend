@@ -42,7 +42,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
             setUsers(_.filter(users, user => user.id !== userId));
         } catch (e) {
             // TODO: display errors to user.
-            logger.error(e);
+            logger.error('Drop student failed', e);
         }
     };
     
