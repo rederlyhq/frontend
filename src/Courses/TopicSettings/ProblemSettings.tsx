@@ -180,7 +180,10 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                         </Grid>
                         {topic.topicTypeId === TopicTypeId.EXAM && (
                             <Grid item md={12}>
-                                You can optionally limit the seed values used for specific problems.<br/>
+                                <Grid item md={10}>
+                                    You can optionally limit the seeds used for this problem to specific, individual values by entering numeric values between 1 and 999999 into the text field below. 
+                                    You can add multiple numbers by pressing enter or using a comma to separate them.<br/>
+                                </Grid>
                                 <RandomSeedSet />
                             </Grid>
                         )}
