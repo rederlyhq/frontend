@@ -158,8 +158,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 setVersionsRemaining(actualVersionsRemaining);
             }
             
-            if (actualVersionsRemaining > 0) {
-                // TODO do we need to check for start times?
+            if (actualVersionsRemaining > 0 && 
+                moment().isBetween(currentTopic.startDate.toMoment(), currentTopic.endDate.toMoment())
+            ) {
                 confirmStartNewVersion(currentTopic, actualVersionsRemaining, res.data.message);
             } else {
                 // no problems were sent back, and user has used the maximum versions allowed
