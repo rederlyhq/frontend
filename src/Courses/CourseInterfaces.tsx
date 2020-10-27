@@ -255,6 +255,20 @@ export interface StudentGradeInstance {
     bestVersionAttemptId: number;
 }
 
+export interface StudentGradeDict {
+    id?: number;
+    overallBestScore: number;
+    effectiveScore: number;
+    bestScore: number;
+    legalScore: number;
+    bestPartialCreditScore: number;
+    numAttempts: number;
+    numLegalAttempts: number;
+    locked: boolean;
+    lastInfluencingAttemptId?: number;
+    workbooks?: Record<number, StudentWorkbookInterface>;
+}
+
 export class StudentGrade {
     gradeInstances?: StudentGradeInstance[];
     overallBestScore: number = 0;
@@ -270,6 +284,18 @@ export class StudentGrade {
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
     }
+}
+
+export interface ProblemDict {
+    id: number;
+    problemNumber: number;
+    webworkQuestionPath: string; // This is the same as path, currently.
+    path: string;
+    weight: number;
+    maxAttempts: number;
+    hidden: boolean;
+    optional: boolean;
+    grades?: Record<number, StudentGradeDict>;
 }
 
 const newProblemUniqueGen = uniqueGen();

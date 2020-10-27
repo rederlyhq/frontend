@@ -1,7 +1,7 @@
 import { Grid } from '@material-ui/core';
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
-import { CourseObject, UnitObject, UserObject, ProblemObject, SettingsComponentType, TopicObject } from '../Courses/CourseInterfaces';
+import { CourseObject, UserObject, ProblemObject, SettingsComponentType, TopicObject } from '../Courses/CourseInterfaces';
 import MultiSelectCardList from './MultiSelectCardList';
 
 interface MaterialBiSelectProps {
@@ -19,7 +19,7 @@ interface MaterialBiSelectProps {
     }>>
 }
 
-export const MaterialBiSelect: React.FC<MaterialBiSelectProps> = ({course, users, selected, setSelected}) => {
+export const MaterialBiSelect: React.FC<MaterialBiSelectProps> = ({users, selected, setSelected}) => {
     const onItemClick = (type: SettingsComponentType) => {
         if (type instanceof TopicObject) {
             setSelected(selected => ({topic: type, user: selected.user}));
@@ -32,15 +32,15 @@ export const MaterialBiSelect: React.FC<MaterialBiSelectProps> = ({course, users
 
     return (
         <Grid container justify="center" spacing={3} wrap="nowrap">
-            <Grid item md={3}>
+            {/* <Grid item md={3}>
                 <MultiSelectCardList 
                     title='Units'
                     listItems={course.units} 
                     onItemClick={onItemClick}
                     selected={selected.unit}
                 />
-            </Grid>
-            <AnimatePresence>
+            </Grid> */}
+            {/* <AnimatePresence>
                 {selected.unit !== undefined && <Grid item md={3}>
                     <motion.div
                         initial={{scale: 0}}
@@ -55,7 +55,7 @@ export const MaterialBiSelect: React.FC<MaterialBiSelectProps> = ({course, users
                         />
                     </motion.div>
                 </Grid>}
-            </AnimatePresence>
+            </AnimatePresence> */}
             <AnimatePresence>
                 {selected.topic !== undefined && <Grid item md={3}>
                     <motion.div
