@@ -12,10 +12,14 @@ export const putUploadWork = async ({
     presignedUrl,
     data,
 }: PutUploadWork) => {
-    await AxiosRequest.put(presignedUrl.toString(), data, {
-        headers: {
-            // TODO: Detect?
-            'Content-Type': 'image/*'
-        }
-    });
+    const promArr = [];
+    for (let file of data) {
+        const prom = AxiosRequest.put(presignedUrl.toString(), file, {
+            headers: {
+                'Content-Type': file.type
+            }
+        });
+        promArr.push(prom);
+    }
+    return Promise.all(promArr);
 };

@@ -20,10 +20,11 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
     }, [topic]);
     
     const onDrop: <T extends File>(acceptedFiles: T[], fileRejections: FileRejection[], event: DropEvent) => void = useCallback(
-        acceptedFiles => {
+        (acceptedFiles, fileRejections) => {
             (async () => {
                 try {
                     console.log(acceptedFiles);
+                    console.log(fileRejections);
                 // TODO: Post get signed url to backend
                 // TODO: Post upload work to AWS
                 // TODO: Post confirmed upload to backend
@@ -34,7 +35,7 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
         }, []);
     
     const { getRootProps, getInputProps, isDragActive, open } = useDropzone({ onDrop,
-        accept: ['.png', 'jpg', 'pdf', 'jpeg'],
+        accept: ['.png', '.jpg', '.pdf', '.jpeg'],
         noClick: true,
         noKeyboard: true
     });
