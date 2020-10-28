@@ -12,6 +12,12 @@ interface PutCourseUpdates {
 
 export type PutCourseUpdatesResponse = BackendAPIResponse<PutCourseUpdates>;
 
+interface SuccessResponse {
+    message: string;
+}
+
+export type PostEmailProfResponse = BackendAPIResponse<SuccessResponse>;
+
 /* *************** *************** */
 /* ************ Units ************ */
 /* *************** *************** */
