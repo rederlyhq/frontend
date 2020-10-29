@@ -2,11 +2,12 @@ import React from 'react';
 import { ProblemObject, TopicObject, StudentGrade, StudentTopicAssessmentFields } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
 import moment from 'moment';
-import { OverlayTrigger, Tooltip, Badge } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip, Badge, Button } from 'react-bootstrap';
 import { getUserRole, UserRole } from '../Enums/UserRole';
 import { MomentReacter } from '../Components/MomentReacter';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import logger from '../Utilities/Logger';
+import EmailProfessor from './EmailProfessor';
 
 const INFINITE_MAX_ATTEMPT_VALUE = 0;
 
@@ -15,13 +16,15 @@ interface ProblemDetailsProps {
     topic: TopicObject | null;
     attemptsRemaining?: number;
     setAttemptsRemaining?: React.Dispatch<React.SetStateAction<number>>;
+    setOpenDrawer: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     problem,
     topic,
     attemptsRemaining,
-    setAttemptsRemaining
+    setAttemptsRemaining,
+    setOpenDrawer,
 }) => {
     if (_.isNil(topic)) {
         logger.error('Problem details requested without a topic');
@@ -68,7 +71,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
 
     return (
         <div>
-            <div className="d-flex">
+            <div className="d-flex flex-row">
                 <h2>{topic?.name}</h2>
                 <OverlayTrigger
                     placement="top"
@@ -130,7 +133,9 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         </MomentReacter>
                     </div>
                 </OverlayTrigger>
-                <div style={{ marginLeft: 'auto' }}>
+                <Button style={{ marginLeft: 'auto' }} onClick={()=>setOpenDrawer(true)}>Attach Work</Button>
+                <EmailProfessor topic={topic} problem={problem} />
+                <div style={{ marginLeft: '1em' }}>
                     <Badge pill variant="dark">
                         {problem.id}{_.isNil(grade) ? '' : `-${grade.id}`}
                     </Badge>

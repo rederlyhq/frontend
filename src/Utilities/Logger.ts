@@ -27,8 +27,8 @@ const logger = winston.createLogger({
     format: winston.format.simple(),
     defaultMeta: {
         meta: {
-            get userId() { return getUserIdNoRedirect() },
-            get location() { return window.location.href },
+            get userId() { return getUserIdNoRedirect(); },
+            get location() { return window.location.href; },
             version: version
         }
     },

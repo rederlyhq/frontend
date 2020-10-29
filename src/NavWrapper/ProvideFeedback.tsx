@@ -3,6 +3,7 @@ import { Button, Modal, FormControl, FormLabel, FormGroup, Spinner, Form, } from
 import { useHistory } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import logger from '../Utilities/Logger';
+import { version } from '../../package.json';
 
 export const ProvideFeedback: React.FC<any> = () => {
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -21,7 +22,7 @@ export const ProvideFeedback: React.FC<any> = () => {
             setEnabled(false);
             logger.info(history);
             await AxiosRequest.post('/support', {
-                description: `${description} (Sent from: ${window.location.origin}${history.location.pathname})`,
+                description: `${description} (Sent from: ${window.location.origin}${history.location.pathname} using v${version})`,
                 summary,
             });
             setMessage('Thank you, your feedback has been submitted.');

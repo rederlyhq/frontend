@@ -12,6 +12,7 @@ import { ProblemStateProvider } from '../Contexts/CurrentProblemState';
 import { ConfirmationModalProps, ConfirmationModal } from '../Components/ConfirmationModal';
 import moment from 'moment';
 import logger from '../Utilities/Logger';
+import AttachmentsSidebar from './AttachmentsSidebar';
 
 interface SimpleProblemPageProps {
 }
@@ -42,6 +43,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [confirmationParameters, setConfirmationParameters] = useState<ConfirmationModalProps>(DEFAULT_CONFIRMATION_PARAMETERS);
+    const [openDrawer, setOpenDrawer] = useState<boolean>(false);
 
     useEffect(() => {
         setLoading(true);
@@ -398,7 +400,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     }
 
     // there's a serious problem if we get a topic, but no problems, and the topicType isn't an assessment
-    if (_.isEmpty(problems) && !_.isNil(topic) && topic.topicTypeId !== 2) return <div>There was an error loading this assignment.</div>;
+    if (_.isEmpty(problems) && 
+        !_.isNil(topic) && 
+        topic.topicTypeId !== 2) return <div>There was an error loading this assignment.</div>;
 
     if (problems === null || selectedProblemId === null) return (
         <>
@@ -425,6 +429,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             />
         </>
     );
+
+    const selectedGradeId = problems[selectedProblemId].grades?.[0]?.id;
+    const selectedGradeInstanceId = problems[selectedProblemId].grades?.[0]?.gradeInstances?.[0]?.id;
 
     return (
         <>
@@ -502,6 +509,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 topic={topic}
                                 attemptsRemaining={attemptsRemaining}
                                 setAttemptsRemaining={setAttemptsRemaining}
+                                setOpenDrawer={setOpenDrawer}
                             />
                             {/* Temporarily disabled for release.  */}
                             {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
@@ -514,6 +522,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         </ProblemStateProvider>
                     </Col>
                 </Row>
+                <AttachmentsSidebar topic={topic || new TopicObject()} openDrawer={openDrawer} setOpenDrawer={setOpenDrawer} gradeId={selectedGradeId} gradeInstanceId={selectedGradeInstanceId} />
             </Container>
         </>
     );
