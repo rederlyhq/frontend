@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Grid, ExpansionPanel, ExpansionPanelDetails, ExpansionPanelSummary, ExpansionPanelActions, TextField, IconButton, InputAdornment, Tooltip } from '@material-ui/core';
-import { ExpandMore, Refresh } from '@material-ui/icons';
+import { Button, Grid } from '@material-ui/core';
 import { MultipleProblemPaths, OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
 import { Link } from 'react-router-dom';
 import { ProblemObject, TopicObject, TopicTypeId } from '../CourseInterfaces';
@@ -12,12 +11,10 @@ import useAlertState from '../../Hooks/useAlertState';
 import { Alert } from 'react-bootstrap';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { DevTool } from '@hookform/devtools';
-import ProblemIframe from '../../Assignments/ProblemIframe';
 
 import './TopicSettings.css';
-import { FaDice } from 'react-icons/fa';
-import { motion, useAnimation, useCycle } from 'framer-motion';
 import logger from '../../Utilities/Logger';
+import RendererPreview from './RendererPreview';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
@@ -34,6 +31,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const defaultValues : ProblemSettingsInputs = {
         ...selected,
         courseQuestionAssessmentInfo: {
+            randomSeedSet: [],
             ...selected.courseQuestionAssessmentInfo,
             ...(
                 additionalProblemPathsArrayIsEmpty ?
@@ -56,13 +54,10 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const topicForm = useForm<ProblemSettingsInputs>(formSettings);
 
     const { handleSubmit, control, watch, reset } = topicForm;
-    const { optional } = watch();
+    const { optional, webworkQuestionPath } = watch();
+    const additionalProblemPaths = watch('courseQuestionAssessmentInfo.additionalProblemPaths', [{path: ''}]);
     const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
-    const [previewSettings, setPreviewSettings] = useState({path: '', seed: 1});
-    const [forcedUpdate, setForcedUpdate] = React.useState(new ProblemObject());
-    const forceUpdate = React.useCallback(() => setForcedUpdate(new ProblemObject()), []);
-    const pgRegex = /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/;
 
     useEffect(()=>{
         let defaultAdditionalProblemPaths = [{path: selected.webworkQuestionPath || ''}];
@@ -156,119 +151,6 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
         }
     };
 
-    const controls = useAnimation();
-    const [flipped, cycleFlipped] = useCycle(-1, 1);
-
-    const rendererPreview = () => {
-        return (
-            <ExpansionPanel>
-                <ExpansionPanelSummary
-                    expandIcon={<ExpandMore />}
-                    aria-label="Expand"
-                    aria-controls="additional-actions3-content"
-                    id="additional-actions3-header"
-                >
-                    Problem Preview Pane
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                    <Grid container xs={12}>
-                        <Grid item xs={10}>
-                            <TextField
-                                fullWidth
-                                aria-label='Problem Path'
-                                variant='outlined'
-                                onClick={(event: any) => event.stopPropagation()}
-                                onFocus={(event: any) => event.stopPropagation()}
-                                onChange={(event: any)=>{
-                                    const val = event.target.value;
-                                    setPreviewSettings(settings => ({...settings, path: val}));
-                                }}
-                                onBlur={()=>{
-                                    // Validate first
-                                    // const regex = /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/;
-                                    // if (regex.test(previewSettings.path)) {
-                                    forceUpdate();
-                                    // }
-                                }}
-                                label='Problem Path'
-                                value={previewSettings.path}
-                                inputProps={{
-                                    pattern: /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/
-                                }}
-                            />
-                        </Grid>
-                        <Grid item xs={2}>
-                            <TextField
-                                aria-label="Problem Seed"
-                                variant='outlined'
-                                onClick={(event: any) => event.stopPropagation()}
-                                onFocus={(event: any) => event.stopPropagation()}
-                                onChange={(event: any)=>{
-                                    const val = event.target.value;
-                                    if (_.isNaN(parseInt(val, 10))) {
-                                        return;
-                                    }
-                                    setPreviewSettings(settings => ({...settings, seed: val}));
-                                }}
-                                label='Problem Seed'
-                                value={previewSettings.seed}
-                                type='number'
-                                className='hideNumberSpinners'
-                                InputProps={{
-                                    startAdornment: <InputAdornment position='start'>
-                                        <Tooltip title='Randomize'>
-                                            <IconButton
-                                                aria-label='reload problem with a random seed'
-                                                onClick={(event: any)=>{
-                                                    event.stopPropagation();
-                                                    setPreviewSettings(settings => ({...settings, seed: _.random(0, 999999, false)}));
-                                                    forceUpdate();
-                                                    cycleFlipped();
-                                                }}
-                                            >
-                                                <motion.div animate={{scaleX: flipped}} ><FaDice/></motion.div>
-                                            </IconButton>
-                                        </Tooltip>
-                                    </InputAdornment>,
-                                    endAdornment: <InputAdornment position='end'>
-                                        <Tooltip title='Reload'>
-                                            <IconButton
-                                                aria-label='reload problem with current seed'
-                                                onClick={(event: any)=>{
-                                                    event.stopPropagation();
-                                                    controls.start({rotate: 360, transition: {duration: 0.5}});
-                                                    forceUpdate();
-                                                }}
-                                            >
-                                                <motion.div animate={controls}><Refresh /></motion.div>
-                                            </IconButton>
-                                        </Tooltip>
-                                    </InputAdornment>
-                                }}
-                            />
-                        </Grid>
-                        <Grid xs={12} item>
-                            {pgRegex.test(previewSettings.path) ?
-                                <ProblemIframe 
-                                    problem={forcedUpdate} 
-                                    previewPath={previewSettings.path}
-                                    previewSeed={previewSettings.seed}
-                                    setProblemStudentGrade={() => {}}
-                                    readonly={false} /> :
-                                <>
-                                    {previewSettings.path !== '' && (
-                                        <Alert variant='warning'>The path you&apos;ve entered is invalid.</Alert>
-                                    )}
-                                </>                             
-                            }
-                        </Grid>                    
-                    </Grid>
-                </ExpansionPanelDetails>
-                    
-            </ExpansionPanel>
-        );
-    };
-
     return (
         <FormProvider {...topicForm}>
             <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
@@ -298,14 +180,19 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                         </Grid>
                         {topic.topicTypeId === TopicTypeId.EXAM && (
                             <Grid item md={12}>
-                                You can optionally limit the seed values used for specific problems.<br/>
+                                <Grid item md={10}>
+                                    You can optionally limit the seeds used for this problem to specific, individual values by entering numeric values between 1 and 999999 into the text field below. 
+                                    You can add multiple numbers by pressing enter or using a comma to separate them.<br/>
+                                </Grid>
                                 <RandomSeedSet />
                             </Grid>
                         )}
                     </Grid><Grid item xs={12}>
-                        {
-                            rendererPreview()
-                        }
+                        <RendererPreview 
+                            defaultPath={topic.topicTypeId === TopicTypeId.EXAM ? 
+                                additionalProblemPaths?.[0].path || '' : 
+                                webworkQuestionPath} 
+                        />
                     </Grid>
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
                         <Grid container item md={4} spacing={3} justify='flex-end'>

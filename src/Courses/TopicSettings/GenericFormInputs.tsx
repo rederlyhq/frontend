@@ -157,18 +157,20 @@ export const MultipleProblemPaths: React.FC = () => {
                     helperText={errors?.[examProblemFieldNamePrefix]?.[fieldArrayName]?.[index] ? 'Invalid path.' : null}
                     error={!!(errors?.[examProblemFieldNamePrefix]?.[fieldArrayName]?.[index])}
                     inputRef={register({
-                        pattern: /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/
+                        pattern: /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/,
+                        required: index === 0,
                     })} 
                     onBlur={(e: any)=>{
-                        // If the user entered something in the field and it's the last field,
-                        // add a new empty field.
-                        if (e.target.value !== '' && index === fields.length - 1) {
-                            append({path: ''}, true);
-                        }
-
                         // If the user deleted something and it's not the last field, remove it.
                         if (e.target.value === '' && index !== fields.length - 1) {
                             remove(index);
+                        }
+                    }}
+                    onFocus={()=> {
+                        // If the user entered something in the field and it's the last field,
+                        // add a new empty field.
+                        if (index === fields.length - 1) {
+                            append({path: ''}, false);
                         }
                     }}
                 />
