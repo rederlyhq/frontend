@@ -63,7 +63,6 @@ export const putCourse = async ({
 export const postEmailProfessor = async ({
     courseId,
     content,
-    topic,
     question
 }: PostEmailProfOptions): Promise<AxiosResponse<PostEmailProfResponse>> => {
     return await AxiosRequest.post(
@@ -71,7 +70,7 @@ export const postEmailProfessor = async ({
             COURSE_PATH,
             `${courseId}/email`
         ),
-        {content, topic, question}
+        {content, question}
     );
 };
 

@@ -14,7 +14,7 @@ interface EmailProfessorProps {
 /**
  * This is a button-and-model pair.
  */
-export const EmailProfessor: React.FC<EmailProfessorProps> = ({topic, problem}) => {
+export const EmailProfessor: React.FC<EmailProfessorProps> = ({problem}) => {
     const {course} = useCourseContext();
     const [content, setContent] = useState<string>('');
     const [show, setShow] = useState<boolean>(false);
@@ -27,12 +27,6 @@ export const EmailProfessor: React.FC<EmailProfessorProps> = ({topic, problem}) 
                 content: content,
                 question: {
                     id: problem.id,
-                    problemNumber: problem.problemNumber,
-                    webworkQuestionPath: problem.webworkQuestionPath,
-                },
-                topic: {
-                    id: topic.id,
-                    name: topic.name,
                 }
             });
             setSendEmailRespMsg({message: res.data.message ?? 'Email sent.', variant: 'success'});
