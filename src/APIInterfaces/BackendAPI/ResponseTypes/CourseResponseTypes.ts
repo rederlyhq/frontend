@@ -12,6 +12,12 @@ interface PutCourseUpdates {
 
 export type PutCourseUpdatesResponse = BackendAPIResponse<PutCourseUpdates>;
 
+interface SuccessResponse {
+    message: string;
+}
+
+export type PostEmailProfResponse = BackendAPIResponse<SuccessResponse>;
+
 /* *************** *************** */
 /* ************ Units ************ */
 /* *************** *************** */
@@ -87,3 +93,14 @@ interface GetQuestions {
 export type GetQuestionsResponse = BackendAPIResponse<GetQuestions>;
 
 export type GetQuestionResponse = BackendAPIResponse<Partial<ProblemObject>>;
+
+/* *************** *************** */
+/* ********** Questions ********** */
+/* *************** *************** */
+
+interface GetUploadURL {
+    uploadURL: URL;
+    cloudFilename: string;
+}
+
+export type GetUploadURLResponse = BackendAPIResponse<GetUploadURL>;

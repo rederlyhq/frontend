@@ -14,6 +14,14 @@ export interface PutCourseOptions {
     data: Partial<CourseObject>;
 }
 
+export interface PostEmailProfOptions {
+    courseId: number;
+    content: string;
+    question: {
+        id: number;
+    };
+}
+
 /* *************** *************** */
 /* ************ Units ************ */
 /* *************** *************** */
@@ -145,4 +153,17 @@ export interface SubmitVersionOptions {
 
 export interface EndVersionOptions {
     versionId: number;
+}
+
+/* *************** *************** */
+/* ********** Attachments ********** */
+/* *************** *************** */
+
+export interface PostConfirmAttachmentUploadOptions {
+    attachment: {
+        cloudFileName: string;
+        userLocalFilename: string;
+    },
+    studentGradeId?: number;
+    studentGradeInstanceId?: number;
 }
