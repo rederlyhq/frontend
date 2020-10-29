@@ -5,6 +5,7 @@ import { useCourseContext } from '../Courses/CourseProvider';
 import { Alert, Button, Form, FormControl, FormGroup, FormLabel, Modal, ModalBody, ModalFooter, ModalTitle } from 'react-bootstrap';
 import ModalHeader from 'react-bootstrap/ModalHeader';
 import useAlertState from '../Hooks/useAlertState';
+import logger from '../Utilities/Logger';
 
 interface EmailProfessorProps {
     topic: TopicObject;
@@ -19,8 +20,10 @@ export const EmailProfessor: React.FC<EmailProfessorProps> = ({problem}) => {
     const [content, setContent] = useState<string>('');
     const [show, setShow] = useState<boolean>(false);
     const [{message: sendEmailRespMsg, variant: sendEmailRespAlertType}, setSendEmailRespMsg] = useAlertState();
+    const [disabled, setDisabled] = useState<boolean>(false);
 
     const onClick = async () => {
+        setDisabled(true);
         try {
             const res = await postEmailProfessor({
                 courseId: course.id,
@@ -31,8 +34,9 @@ export const EmailProfessor: React.FC<EmailProfessorProps> = ({problem}) => {
             });
             setSendEmailRespMsg({message: res.data.message ?? 'Email sent.', variant: 'success'});
         } catch (e) {
-            console.error(e);
+            logger.error('A student failed to email their professor.', e.message);
             setSendEmailRespMsg({message: e.message, variant: 'danger'});
+            setDisabled(false);
         }
     };
 
@@ -52,7 +56,13 @@ export const EmailProfessor: React.FC<EmailProfessorProps> = ({problem}) => {
                                 as='textarea' 
                                 size='sm' style={{height: '200px'}}
                                 autoComplete='off'
-                                onChange={(e: any) => setContent(e.target.value)}
+                                onChange={(e: any) => {
+                                    setContent(e.target.value);
+                                    if (disabled) {
+                                        setDisabled(false);
+                                        setSendEmailRespMsg({message: '', variant: 'warning'});
+                                    }
+                                }}
                             />
                         </FormGroup>
                     </Form>
@@ -61,7 +71,7 @@ export const EmailProfessor: React.FC<EmailProfessorProps> = ({problem}) => {
                     <Button 
                         variant="primary" 
                         onClick={onClick}
-                        // disabled={sendEmailRespAlertType === 'success'}
+                        disabled={disabled}
                     >
                         Send Email</Button>
                 </ModalFooter>
