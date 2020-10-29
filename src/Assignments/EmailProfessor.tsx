@@ -20,10 +20,15 @@ export const EmailProfessor: React.FC<EmailProfessorProps> = ({problem}) => {
     const [content, setContent] = useState<string>('');
     const [show, setShow] = useState<boolean>(false);
     const [{message: sendEmailRespMsg, variant: sendEmailRespAlertType}, setSendEmailRespMsg] = useAlertState();
-    const [disabled, setDisabled] = useState<boolean>(false);
+    const [disabled, setDisabled] = useState<boolean>(true);
 
     const onClick = async () => {
         setDisabled(true);
+        if (content === '') {
+            setSendEmailRespMsg({message: 'Email content cannot be empty.', variant: 'danger'});
+            return;
+        }
+
         try {
             const res = await postEmailProfessor({
                 courseId: course.id,
@@ -56,9 +61,10 @@ export const EmailProfessor: React.FC<EmailProfessorProps> = ({problem}) => {
                                 as='textarea' 
                                 size='sm' style={{height: '200px'}}
                                 autoComplete='off'
+                                value={content}
                                 onChange={(e: any) => {
                                     setContent(e.target.value);
-                                    if (disabled) {
+                                    if (disabled && e.target.value !== '') {
                                         setDisabled(false);
                                         setSendEmailRespMsg({message: '', variant: 'warning'});
                                     }
