@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import _ from 'lodash';
 import { ProblemObject, StudentGrade, StudentGradeDict, StudentWorkbookInterface, UserObject } from '../CourseInterfaces';
-import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
-import useAlertState from '../../Hooks/useAlertState';
 import logger from '../../Utilities/Logger';
-import { Button, FormControl, Grid, InputLabel, makeStyles, Select, TextField } from '@material-ui/core';
+import { Button, FormControl, Grid, InputLabel, makeStyles, Modal, Select, TextField } from '@material-ui/core';
+import { OverrideGradeModal } from '../CourseDetailsTabs/OverrideGradeModal';
 
 enum OverrideGradePhase {
     PROMPT = 'PROMPT',
@@ -25,7 +24,10 @@ interface GradeInfoHeaderProps {
         user?: UserObject,
         workbook?: StudentWorkbookInterface,
     }>>;
-    onSuccess: (newGrade: Partial<StudentGrade>) => void;
+    onSuccess: React.Dispatch<React.SetStateAction<{
+        id?: number, 
+        override?: Partial<StudentGrade>
+    }>>;
 }
 
 type WorkbookOption = {
@@ -51,14 +53,11 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     onSuccess
 }) => {
     const displayCurrentScore = useRef<string | null>(null);
-    if(_.isNil(displayCurrentScore.current)) {
+    if (_.isNil(displayCurrentScore.current)) {
         displayCurrentScore.current = (grade.effectiveScore * 100).toFixed(1);
     }
     const classes = useStyles();
-    const [alertState, setAlertState] = useAlertState();
-    const [overrideGradePhase, setOverrideGradePhase] = useState<OverrideGradePhase>(OverrideGradePhase.PROMPT);
-    const [validated, setValidated] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [showGradeModal, setShowGradeModal] = useState<boolean>(false);
     const [newScorePercentInput, setNewScorePercentInput] = useState<string>(displayCurrentScore.current ?? '');
     const [info, setInfo] = useState<{
         legalScore: number;
@@ -79,7 +78,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     });
 
     useEffect(() => {
-        // console.log(`GIH: selectedInfo has changed my grade. ${workbookId}`);
+        logger.debug('GIH: selectedInfo has changed my grade.', grade);
         const workbooks = grade.workbooks;
         let currentAttemptsCount: number | undefined;
         let currentAverageScore: number | undefined;
@@ -111,9 +110,15 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             currentAverageScore = 0;
         }
         const currentWorkbookList = workbookList(currentVersionMap);
-        setInfo({...info, 
-            attemptsCount: currentAttemptsCount, 
-            averageScore: currentAverageScore, 
+        logger.debug('GIH: setting workbook list: ', currentWorkbookList);
+        setInfo({
+            legalScore: grade.legalScore,
+            overallBestScore: grade.overallBestScore,
+            partialCreditBestScore: grade.partialCreditBestScore,
+            effectiveScore: grade.effectiveScore,
+            workbookId,
+            attemptsCount: currentAttemptsCount,
+            averageScore: currentAverageScore,
             versionMap: currentVersionMap,
             workbookList: currentWorkbookList,
         });
@@ -122,10 +127,10 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     useEffect(() => {
         if (!_.isNil(grade.workbooks) && !_.isNil(info.workbookId) && !_.isNil(grade.workbooks[info.workbookId])) {
             const newWorkbook = grade.workbooks[info.workbookId];
-            // console.log('GIH: local "info" attempting to set new workbook: ', newWorkbook);
+            logger.debug('GIH: local "info" attempting to set new workbook: ', newWorkbook);
             setSelected({ ...selected, workbook: newWorkbook });
         } else {
-            // console.log('GIH: current grade.workbooks:', grade.workbooks);
+            logger.debug('GIH: current grade.workbooks:', grade.workbooks);
             console.error(`GIH: local "info" failed to set desired workbook: ${info.workbookId} - what about "selected": ${selected.workbook?.id}?`);
         }
     }, [info.workbookId]);
@@ -136,10 +141,10 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         const versioned = versionKeys.length > 1;
         versionKeys.forEach((key, i) => {
             let prefix = '';
-            if (versioned) prefix = `Version #${(i+1)} - `;
+            if (versioned) prefix = `Version #${(i + 1)} - `;
             vMap[key].sort().forEach((v, i) => {
                 const value = v;
-                const label = prefix + `Attempt #${(i+1)}`;
+                const label = prefix + `Attempt #${(i + 1)}`;
                 options.push({ label, value });
             });
         });
@@ -155,7 +160,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     function WorkbookSelect<T extends KeyType>(props: Props) {
         function handleOnChange(e: React.ChangeEvent<{ name?: string | undefined; value: unknown; }>) {
             const { value } = e.target;
-            props.onChange({...info, workbookId: value as number});
+            props.onChange({ ...info, workbookId: value as number });
         }
         return (
             <FormControl className={classes.formControl}>
@@ -171,167 +176,71 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         );
     }
 
-    // const onHide = () => {
-    //     displayCurrentScore.current = null;
-    //     // onHideProp();
-    //     // There is a small flicker while it animates that setTimeout hides
-    //     setTimeout(() => {
-    //         setOverrideGradePhase(OverrideGradePhase.PROMPT);
-    //         setValidated(false);
-    //         setLoading(false);
-    //         // setNewScorePercentInput should be updated in setEffect because it value should default to the student grade
-    //     });
-    // };
-
-    // const onNewScoreChange = (ev: React.ChangeEvent<HTMLInputElement>): void => setNewScorePercentInput(ev.target.value);
-
-    // const overrideGradeSubmit = () => {
-    //     const newScore = parseFloat(newScorePercentInput) / 100;
-    //     if (newScore === grade.effectiveScore) {
-    //         onHide();
-    //     } else {
-    //         setOverrideGradePhase(OverrideGradePhase.CONFIRM);
-    //     }
-    // };
-
-    // const overrideGradeConfirm = async () => {
-    //     setAlertState({
-    //         variant: 'danger',
-    //         message: ''
-    //     });
-    //     const newScore = parseFloat(newScorePercentInput) / 100;
-    //     setLoading(true);
-    //     try {
-    //         if (_.isNil(grade.id)) {
-    //             throw new Error('Application error: grade missing');
-    //         }
-    //         const result = await putQuestionGrade({
-    //             id: grade.id,
-    //             data: {
-    //                 effectiveScore: newScore
-    //             }
-    //         });
-    //         onSuccess(result.data.data.updatesResult.updatedRecords[0]);
-    //     } catch (e) {
-    //         setAlertState({
-    //             variant: 'danger',
-    //             message: e.message
-    //         });
-    //         setLoading(false);
-    //         return;
-    //     }
-    //     setLoading(false);
-    //     if (!grade.locked && newScore < grade.effectiveScore) {
-    //         setOverrideGradePhase(OverrideGradePhase.LOCK);
-    //     } else {
-    //         onHide();
-    //     }
-    // };
-
-    // const lockSubmit = () => {
-    //     setOverrideGradePhase(OverrideGradePhase.LOCK_CONFIRM);
-    // };
-
-    // const lockConfirm = async () => {
-    //     setLoading(true);
-    //     try {
-    //         if (_.isNil(grade.id)) {
-    //             throw new Error('Application error: grade missing');
-    //         }
-    //         const result = await putQuestionGrade({
-    //             id: grade.id,
-    //             data: {
-    //                 locked: true
-    //             }
-    //         });
-    //         onSuccess(result.data.data.updatesResult.updatedRecords[0]);
-    //     } catch (e) {
-    //         setAlertState({
-    //             variant: 'danger',
-    //             message: e.message
-    //         });
-    //         setLoading(false);
-    //         return;
-    //     }
-    //     setLoading(false);
-    //     onHide();
-    // };
-
-    // const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    //     const form = event.currentTarget;
-    //     event.preventDefault();
-
-    //     if (form.checkValidity() === false) {
-    //         event.stopPropagation();
-    //     } else {
-    //         overrideGradeSubmit();
-    //     }
-  
-    //     setValidated(true);
-    // };
-
-    // if (_.isNil(grade.workbooks) || _.isEmpty(grade.workbooks)) {
-    //     return (
-    //         <Grid container spacing={1}>
-    //             <Grid item xs={12}>
-    //                 {selected.user?.name ?? 'This student'} has not made any attempts on this problem.
-    //             </Grid>
-    //         </Grid>
-    //     );
-    // }
-
     return (
-        <Grid container spacing={1} style={{paddingLeft: '1rem'}}>
+        <Grid container spacing={1} style={{ paddingLeft: '1rem' }}>
             <Grid item xs={6}>
-                <div>Number of attempts: {info.attemptsCount} </div>
+                Number of attempts: <strong>{info.attemptsCount}</strong>
             </Grid>
             <Grid item xs={6}>
-                <div>Best overall score: {(info.overallBestScore * 100).toFixed(1)}</div>
+                Best overall score: <strong>{(info.overallBestScore * 100).toFixed(1)}</strong>
             </Grid>
             <Grid item xs={6}>
-                <div>Average score: {info.averageScore && (info.averageScore * 100).toFixed(1)}</div>
+                Average score: <strong>{info.averageScore && (info.averageScore * 100).toFixed(1)}</strong>
             </Grid>
             <Grid item xs={6}>
-                <div>Score from best exam submission: {(info.legalScore * 100).toFixed(1)}</div>
+                Score from best exam submission: <strong>{(info.legalScore * 100).toFixed(1)}</strong>
             </Grid>
             <Grid item xs={6}>
-                {info.workbookList && !_.isEmpty(info.workbookList) && workbookId &&
+                {info.workbookList && !_.isEmpty(info.workbookList) && info.workbookId &&
                     <WorkbookSelect
                         options={info.workbookList}
-                        value={workbookId}
+                        value={info.workbookId}
                         onChange={setInfo}
                     />
                 }
             </Grid>
             <Grid item xs={6}>
-                <div>Effective score for grades: {(info.effectiveScore * 100).toFixed(1)}</div>
+                Effective score for grades: <strong>{(info.effectiveScore * 100).toFixed(1)}</strong>
             </Grid>
             {grade.workbooks && !_.isEmpty(grade.workbooks) &&
                 <Grid item xs={6}>
+                    Score on this attempt: 
                     {(!_.isNil(info.workbookId) && !_.isNil(grade.workbooks[info.workbookId])) ?
-                        <div>[LOCAL] Score on this attempt: {(grade.workbooks[info.workbookId].result * 100).toFixed(1)}</div> :
-                        (!_.isNil(workbookId) && !_.isNil(grade.workbooks[workbookId])) ? 
-                            <div>[SUPER] Score on this attempt: {(grade.workbooks[workbookId].result * 100).toFixed(1)}</div> :
-                            <div>Something went wrong here.</div>
+                        <strong>{(grade.workbooks[info.workbookId].result * 100).toFixed(1)}</strong> :
+                        (!_.isNil(workbookId) && !_.isNil(grade.workbooks[workbookId])) ?
+                            <strong>{(grade.workbooks[workbookId].result * 100).toFixed(1)}</strong> :
+                            'Something went wrong here.'
                     }
                 </Grid>
             }
             <Grid item xs={_.isNil(grade.workbooks) ? 12 : 6}>
-                <div>
-                    <Button
-                        variant='outlined'
-                    >Set new score for grades:</Button> 
-                    <TextField
-                        id="standard-number"
-                        /*label="Set grade:"*/
-                        defaultValue={(info.effectiveScore*100).toFixed(1)}
-                        type="number"
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                    />
-                    
-                </div>
+                <Button
+                    variant='outlined'
+                    onClick={() => setShowGradeModal(true)}
+                    // disabled={(parseFloat(newScorePercentInput) / 100) === info.effectiveScore}
+                >
+                    Set new score for grades:
+                </Button>
+                <OverrideGradeModal
+                    show={showGradeModal}
+                    onHide={() => setShowGradeModal(false)}
+                    grade={grade}
+                    onSuccess={(newGrade: Partial<StudentGrade>) => {
+                        if (!_.isNil(newGrade.effectiveScore)) {
+                            setInfo({...info, effectiveScore: newGrade.effectiveScore});
+                            onSuccess(newGrade);
+                        }
+                    }}
+                />
+                {/* <TextField
+                    id="standard-number"
+                    defaultValue={(info.effectiveScore * 100).toFixed(1)}
+                    type="number"
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                    onChange={onNewScoreChange}
+                /> */}
             </Grid>
         </Grid>
     );

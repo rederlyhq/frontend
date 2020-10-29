@@ -23,7 +23,7 @@ import { version } from '../../package.json';
 import CourseProvider from '../Courses/CourseProvider';
 import TopicSettingsPage from '../Courses/TopicSettings/TopicSettingsPage';
 import logger from '../Utilities/Logger';
-import TopicGradingPage from '../Courses/TopicGrades/GradingPage2';
+import TopicGradingPage from '../Courses/TopicGrades/GradingPage';
 
 interface NavWrapperProps {
 

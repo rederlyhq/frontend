@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import logger from '../../Utilities/Logger';
 import MaterialBiSelect from '../../Components/MaterialBiSelect';
 import { useCourseContext } from '../CourseProvider';
-import { UserObject, TopicObject, ProblemObject, StudentWorkbookInterface, ProblemDict, StudentGradeDict } from '../CourseInterfaces';
+import { UserObject, TopicObject, ProblemObject, StudentWorkbookInterface, ProblemDict, StudentGradeDict, StudentGrade } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import { getAssessmentProblemsWithWorkbooks } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { GradeInfoHeader } from './GradeInfoHeader';
@@ -24,6 +24,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     const params = useParams<TopicGradingPageProps>();
     const {users} = useCourseContext();
     const [problemMap, setProblemMap] = useState<Record<number, ProblemDict>>({});
+    const [gradeOverride, setGradeOverride] = useState<Partial<StudentGrade>>({});
     const [isPinned, setIsPinned] = useState<pin | null>(null); // pin one or the other, not both
     const [topic, setTopic] = useState<TopicObject | null>(null);
     const [problems, setProblems] = useState<ProblemObject[] | null>(null);
@@ -42,7 +43,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     }>({});
 
     useEffect(() => {
-        // console.log('GP2: topicId changed');
+        logger.debug('GP2: topicId changed');
         (async () => {
             try {
                 if (_.isNil(params.topicId)) {
@@ -58,7 +59,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     }, [params.topicId]);
 
     useEffect(() => {
-        // console.log('GP2: different user or problem was selected');
+        logger.debug('GP2: different user or problem was selected');
         // when user and problem are selected - set the available workbooks and 
         // pick one workbook as the default for rendering
         // TODO: adjust for different policies -- best individual / best attempt
@@ -88,18 +89,18 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                             if (_.isNil(currentWorkbook)) {
                                 logger.error(`we were supposed to get workbook #${selectedWorkbookId}, but failed.`);
                             } else {
-                                // console.log(currentWorkbook.id);
+                                // logger.debug(currentWorkbook.id);
                                 currentPath = undefined;
                                 currentSeed = undefined;
                             }
                         } else {
                             logger.error(`student #${selected.user.id} has workbooks for problem #${selected.problem.id} but no target-able id`);
-                            // console.log(currentUserGrade);
+                            logger.debug(currentUserGrade);
                         }
                     } else {
                         // no error - student simply has no workbooks
                         // what do we set to render instead?
-                        // console.log('student has no workbooks for this problem');
+                        logger.info('student has no workbooks for this problem');
                     }
                 } else {
                     logger.error('will anything ever trigger this? It is a problem with NO grades?!');
@@ -107,7 +108,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
             } else {
                 logger.error('User and problem are selected, but one is missing an id!');
             }
-            // console.log(`GP2: setting "selectedInfo" workbook: ${currentWorkbook?.id}`);
+            logger.debug(`GP2: setting "selectedInfo" workbook: ${currentWorkbook?.id} or preview path: ${currentPath}`);
             setSelectedInfo({
                 path: currentPath,
                 seed: currentSeed,
@@ -121,7 +122,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     }, [selected.problem, selected.user]);
 
     useEffect(() => {
-        // console.log(`GP2: "selected" workbook is changing: ${selected.workbook?.id}, selectedInfo: ${selectedInfo.workbook?.id}`);
+        logger.debug(`GP2: "selected" workbook is changing: ${selected.workbook?.id}, selectedInfo: ${selectedInfo.workbook?.id}`);
         if (_.isNil(selected.workbook)) {
             const currentPath = selectedInfo.problem?.webworkQuestionPath;
             const currentSeed = selectedInfo.grade?.randomSeed;
@@ -141,6 +142,29 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
             });
         }
     }, [selected.workbook]);
+
+    useEffect(() => {
+        logger.debug('GP2: overriding grade', gradeOverride.effectiveScore);
+        let currentMap = problemMap;
+        if (!_.isNil(selectedInfo.problem) &&
+            !_.isNil(currentMap[selectedInfo.problem.id])
+        ) {
+            // save our nil-check progress to avoid TS complaints with the following
+            let problem = currentMap[selectedInfo.problem.id];
+            if (!_.isNil(gradeOverride) &&
+                !_.isNil(gradeOverride.effectiveScore) &&
+                !_.isNil(problem.grades) &&
+                !_.isNil(selected.user) &&
+                !_.isNil(problem.grades[selected.user.id])
+            ) {
+                // edit the relevant problem dictionary
+                problem.grades[selected.user.id].effectiveScore = gradeOverride.effectiveScore;
+                // and put it back in the map
+                currentMap[selectedInfo.problem.id] = problem;
+                setProblemMap(currentMap);
+            }
+        }
+    }, [gradeOverride]);
 
     const fetchProblems = async (topicId: number) => {
         const res = await getAssessmentProblemsWithWorkbooks({ topicId });
@@ -208,7 +232,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                             workbookId={selectedInfo.workbook?.id}
                             selected={selected}
                             setSelected={setSelected}
-                            onSuccess={() => {}}
+                            onSuccess={setGradeOverride}
                         />
                     }
                     {selectedInfo.problem && selected.user && selectedInfo.workbook && selectedInfo.workbook.id && (
