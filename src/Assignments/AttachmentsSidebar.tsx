@@ -85,7 +85,7 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
             } catch (e) {
                 // Catch on an individual file basis
                 updateIndexProgressWithOffset(index, -1, 0);
-                logger.warn('A user encountered an error during attachment upload.', e.message);
+                logger.error('A user encountered an error during attachment upload.', e.message);
             }
         });
     };
