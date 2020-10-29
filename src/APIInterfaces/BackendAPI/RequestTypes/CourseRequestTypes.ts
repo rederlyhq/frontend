@@ -14,6 +14,14 @@ export interface PutCourseOptions {
     data: Partial<CourseObject>;
 }
 
+export interface PostEmailProfOptions {
+    courseId: number;
+    content: string;
+    question: {
+        id: number;
+    };
+}
+
 /* *************** *************** */
 /* ************ Units ************ */
 /* *************** *************** */

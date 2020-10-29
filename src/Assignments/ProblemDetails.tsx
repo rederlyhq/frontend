@@ -7,6 +7,7 @@ import { getUserRole, UserRole } from '../Enums/UserRole';
 import { MomentReacter } from '../Components/MomentReacter';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import logger from '../Utilities/Logger';
+import EmailProfessor from './EmailProfessor';
 
 const INFINITE_MAX_ATTEMPT_VALUE = 0;
 
@@ -133,7 +134,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                     </div>
                 </OverlayTrigger>
                 <Button style={{ marginLeft: 'auto' }} onClick={()=>setOpenDrawer(true)}>Attach Work</Button>
-                <Button style={{ marginLeft: '1em' }}>Email Professor</Button>
+                <EmailProfessor topic={topic} problem={problem} />
                 <div style={{ marginLeft: '1em' }}>
                     <Badge pill variant="dark">
                         {problem.id}{_.isNil(grade) ? '' : `-${grade.id}`}
