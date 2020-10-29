@@ -44,7 +44,7 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
     const updateIndexProgress = (index: number, progressEvent: any) => {
         setAttachedFiles(attachedFiles => {
             if (index >= attachedFiles.length) {
-                console.error('Attempted to update progress beyond array bounds.', index);
+                logger.error('Attempted to update progress beyond array bounds. (TSNH)', index);
                 return attachedFiles;
             }
             const progressPercent = Math.round((progressEvent.loaded / progressEvent.total) * 70);
@@ -55,40 +55,39 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
     };
 
     const uploadFilesWIthProgress = async (attachedFiles: Array<{file: File, progress: number}>) => {
-        try {
-            attachedFiles.forEach(async (file, index) => {
-                // Skip in-progress files.
-                if (file.progress > 0) return;
-                try {
-                    const onUploadProgress = _.partial(updateIndexProgress, index);
-                    const res = await getUploadURL();
-                    logger.debug(res);
-                    updateIndexProgressWithOffset(index, 20, 0);
+        attachedFiles.forEach(async (file, index) => {
+            // Skip in-progress files.
+            if (file.progress > 0) return;
+            try {
+                const onUploadProgress = _.partial(updateIndexProgress, index);
+                const res = await getUploadURL();
+                logger.debug(res);
+                updateIndexProgressWithOffset(index, 20, 0);
                     
-                    await putUploadWork({
-                        presignedUrl: res.data.data.uploadURL,
-                        file: file.file, 
-                        onUploadProgress: onUploadProgress
-                    });
+                await putUploadWork({
+                    presignedUrl: res.data.data.uploadURL,
+                    file: file.file, 
+                    onUploadProgress: onUploadProgress
+                });
 
-                    await postConfirmAttachmentUpload({
-                        attachment: {
-                            cloudFileName: res.data.data.cloudFilename,
-                            userLocalFilename: file.file.name,
-                        },
-                        studentGradeId: gradeId,
-                        studentGradeInstanceId: gradeInstanceId,
-                    });
+                await postConfirmAttachmentUpload({
+                    attachment: {
+                        cloudFileName: res.data.data.cloudFilename,
+                        userLocalFilename: file.file.name,
+                    },
+                    ...(gradeInstanceId ?
+                        {studentGradeInstanceId: gradeInstanceId} :
+                        {studentGradeId: gradeId}
+                    ),
+                });
 
-                    updateIndexProgressWithOffset(index, 10, 90);
-                } catch (e) {
-                    // Catch on an individual file basis
-                    updateIndexProgressWithOffset(index, -1, 0);
-                }
-            });
-        } catch (e) {
-            console.error(e);
-        }
+                updateIndexProgressWithOffset(index, 10, 90);
+            } catch (e) {
+                // Catch on an individual file basis
+                updateIndexProgressWithOffset(index, -1, 0);
+                logger.warn('A user encountered an error during attachment upload.', e.message);
+            }
+        });
     };
 
     const onDrop: <T extends File>(acceptedFiles: T[], fileRejections: FileRejection[], event: DropEvent) => void = useCallback(
@@ -102,7 +101,14 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
         }, [attachedFiles]);
     
     const { getRootProps, getInputProps, isDragActive, open } = useDropzone({ onDrop,
-        accept: ['.png', '.jpg', '.pdf', '.jpeg'],
+        accept: [
+            'image/*',
+            'application/pdf',
+            // Fallback, if MIME-type detection fails.
+            '.heic',
+            '.png',
+            '.jpeg',
+        ],
         noClick: true,
         noKeyboard: true
     });
