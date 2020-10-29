@@ -1,4 +1,5 @@
 export interface PutUploadWork {
     presignedUrl: URL;
-    data: File[];
+    file: File;
+    onUploadProgress: (progressEvent: any) => void;
 }

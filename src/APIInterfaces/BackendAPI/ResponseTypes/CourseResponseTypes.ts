@@ -87,3 +87,14 @@ interface GetQuestions {
 export type GetQuestionsResponse = BackendAPIResponse<GetQuestions>;
 
 export type GetQuestionResponse = BackendAPIResponse<Partial<ProblemObject>>;
+
+/* *************** *************** */
+/* ********** Questions ********** */
+/* *************** *************** */
+
+interface GetUploadURL {
+    uploadURL: URL;
+    cloudFilename: string;
+}
+
+export type GetUploadURLResponse = BackendAPIResponse<GetUploadURL>;

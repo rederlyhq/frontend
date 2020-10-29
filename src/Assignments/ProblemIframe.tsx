@@ -74,7 +74,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 setRenderedHTML(res.data.data.rendererData.renderedHTML);
             } catch (e) {
                 setError(e.message);
-                logger.error('Error posting preview', e);
+                logger.error('Error posting preview', e, e.message);
                 setLoading(false);
             }
         })();

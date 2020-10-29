@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ProblemObject, TopicObject } from '../Courses/CourseInterfaces';
 import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
-import { Drawer } from '@material-ui/core';
 import { useParams } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
 import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
@@ -431,6 +430,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         </>
     );
 
+    const selectedGradeId = problems[selectedProblemId].grades?.[0]?.id;
+    const selectedGradeInstanceId = problems[selectedProblemId].grades?.[0]?.gradeInstances?.[0]?.id;
+
     return (
         <>
             <Container fluid>
@@ -520,7 +522,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         </ProblemStateProvider>
                     </Col>
                 </Row>
-                <AttachmentsSidebar topic={topic || new TopicObject()} openDrawer={openDrawer} setOpenDrawer={setOpenDrawer} />
+                <AttachmentsSidebar topic={topic || new TopicObject()} openDrawer={openDrawer} setOpenDrawer={setOpenDrawer} gradeId={selectedGradeId} gradeInstanceId={selectedGradeInstanceId} />
             </Container>
         </>
     );

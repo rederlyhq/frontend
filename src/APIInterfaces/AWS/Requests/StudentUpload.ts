@@ -1,25 +1,21 @@
-import AxiosRequest from "../../../Hooks/AxiosRequest";
-import { PutUploadWork } from "../RequestTypes/StudentUploadRequests";
+import { AxiosResponse } from 'axios';
+import AxiosRequest from '../../../Hooks/AxiosRequest';
+import BackendAPIError from '../../BackendAPI/BackendAPIError';
+import { PutUploadWork } from '../RequestTypes/StudentUploadRequests';
 
-/*
-const res = await AxiosRequest.put(pre_sign_url.data.data.data.uploadURL, data, {
-                headers: {
-                    'Content-Type': 'application/pdf'
-                }
-            });
-*/
-export const putUploadWork = async ({
+export const putUploadWork = ({
     presignedUrl,
-    data,
-}: PutUploadWork) => {
-    const promArr = [];
-    for (let file of data) {
-        const prom = AxiosRequest.put(presignedUrl.toString(), file, {
+    file,
+    onUploadProgress,
+}: PutUploadWork): Promise<AxiosResponse<any>> => {
+    try {
+        return AxiosRequest.put(presignedUrl.toString(), file, {
             headers: {
-                'Content-Type': file.type
-            }
+                'Content-Type': file.type,
+            },
+            onUploadProgress: onUploadProgress
         });
-        promArr.push(prom);
+    } catch (e) {
+        throw new BackendAPIError(e);
     }
-    return Promise.all(promArr);
 };
