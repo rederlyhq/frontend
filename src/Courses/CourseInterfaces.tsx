@@ -256,17 +256,19 @@ export interface StudentGradeInstance {
 }
 
 export interface StudentGradeDict {
-    id?: number;
+    id: number;
+    randomSeed: number;
     overallBestScore: number;
     effectiveScore: number;
     bestScore: number;
     legalScore: number;
-    bestPartialCreditScore: number;
+    partialCreditBestScore: number;
     numAttempts: number;
     numLegalAttempts: number;
     locked: boolean;
     lastInfluencingAttemptId?: number;
     workbooks?: Record<number, StudentWorkbookInterface>;
+    overrides?: number;
 }
 
 export class StudentGrade {
@@ -279,6 +281,7 @@ export class StudentGrade {
     locked: boolean = false;
     currentProblemState?: unknown;
     id?: number;
+    randomSeed?: number;
     lastInfluencingAttemptId?: number;
 
     public constructor(init?:Partial<ProblemObject>) {

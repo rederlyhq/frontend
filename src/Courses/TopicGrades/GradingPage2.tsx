@@ -1,16 +1,15 @@
-import { Drawer, Grid } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
-import MaterialBiSelect from '../../Components/MaterialBiSelect';
-import { useCourseContext } from '../CourseProvider';
-import { UserObject, TopicObject, ProblemObject, StudentWorkbookInterface, ProblemDict } from '../CourseInterfaces';
 import _ from 'lodash';
-
-import './SettingsPage.css';
-import ProblemIframe from '../../Assignments/ProblemIframe';
-import { getAssessmentProblemsWithWorkbooks } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { Row, Col } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import logger from '../../Utilities/Logger';
+import MaterialBiSelect from '../../Components/MaterialBiSelect';
+import { useCourseContext } from '../CourseProvider';
+import { UserObject, TopicObject, ProblemObject, StudentWorkbookInterface, ProblemDict, StudentGradeDict } from '../CourseInterfaces';
+import ProblemIframe from '../../Assignments/ProblemIframe';
+import { getAssessmentProblemsWithWorkbooks } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { GradeInfoHeader } from './GradeInfoHeader';
 
 interface TopicGradingPageProps {
     topicId?: string;
@@ -18,18 +17,32 @@ interface TopicGradingPageProps {
 }
 
 export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
+    enum pin {
+        STUDENT,
+        PROBLEM
+    } 
     const params = useParams<TopicGradingPageProps>();
-    const {course, users} = useCourseContext();
-    const [problemMap, setProblems] = useState<Record<number, ProblemDict>>({});
-    const [workbooks, setWorkbooks] = useState<Record<number, StudentWorkbookInterface>>({});
+    const {users} = useCourseContext();
+    const [problemMap, setProblemMap] = useState<Record<number, ProblemDict>>({});
+    const [isPinned, setIsPinned] = useState<pin | null>(null); // pin one or the other, not both
+    const [topic, setTopic] = useState<TopicObject | null>(null);
+    const [problems, setProblems] = useState<ProblemObject[] | null>(null);
     const [selected, setSelected] = useState<{
-        topic?: TopicObject, 
         problem?: ProblemObject, 
+        user?: UserObject,
         workbook?: StudentWorkbookInterface,
-        user?: UserObject
+    }>({});
+    const [selectedInfo, setSelectedInfo] = useState<{
+        path?: string,
+        seed?: number,
+        grade?: StudentGradeDict,
+        problem?: ProblemObject,
+        workbooks?: Record<number, StudentWorkbookInterface>,
+        workbook?: StudentWorkbookInterface,
     }>({});
 
     useEffect(() => {
+        // console.log('GP2: topicId changed');
         (async () => {
             try {
                 if (_.isNil(params.topicId)) {
@@ -45,45 +58,106 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     }, [params.topicId]);
 
     useEffect(() => {
+        // console.log('GP2: different user or problem was selected');
+        // when user and problem are selected - set the available workbooks and 
+        // pick one workbook as the default for rendering
+        // TODO: adjust for different policies -- best individual / best attempt
+        let currentPath: string | undefined;
+        let currentSeed: number | undefined;
+        let currentUserGrade: StudentGradeDict | undefined;
+        let currentWorkbooks: Record<number, StudentWorkbookInterface> | undefined;
+        let currentWorkbook: StudentWorkbookInterface | undefined;
+        
         if (!_.isNil(selected.problem) && !_.isNil(selected.user)) {
+            if (!_.isNil(selected.problem.webworkQuestionPath)) {
+                currentPath = selected.problem.webworkQuestionPath;
+            } 
             if (!_.isNil(selected.problem.id) && !_.isNil(selected.user.id)) {
                 const problemDict = problemMap[selected.problem.id];
                 if (!_.isNil(problemDict.grades)) {
-                    const userGrade = problemDict.grades[selected.user.id];
-                    const userProblemWorkbooks = userGrade.workbooks;
-                    const selectedWorkbookId = userGrade.lastInfluencingAttemptId;
-                    if (!_.isNil(userProblemWorkbooks)) {
-                        setWorkbooks(userProblemWorkbooks);
+                    currentUserGrade = problemDict.grades[selected.user.id];
+                    if (!_.isNil(currentUserGrade.randomSeed)) {
+                        currentSeed = currentUserGrade.randomSeed;
+                    }
+                    const userProblemWorkbooks = currentUserGrade.workbooks;
+                    const selectedWorkbookId = currentUserGrade.lastInfluencingAttemptId; // this can be expanded
+                    if (!_.isNil(userProblemWorkbooks) && (!_.isEmpty(userProblemWorkbooks))) {
+                        currentWorkbooks = userProblemWorkbooks;
                         if (!_.isNil(selectedWorkbookId)) {
-                            const selectedWorkbook = workbooks[selectedWorkbookId];
-                            if (!_.isNil(selectedWorkbook)) {
-                                setSelected({ workbook: selectedWorkbook });
-                            } else {
+                            currentWorkbook = userProblemWorkbooks[selectedWorkbookId];
+                            if (_.isNil(currentWorkbook)) {
                                 logger.error(`we were supposed to get workbook #${selectedWorkbookId}, but failed.`);
+                            } else {
+                                // console.log(currentWorkbook.id);
+                                currentPath = undefined;
+                                currentSeed = undefined;
                             }
                         } else {
                             logger.error(`student #${selected.user.id} has workbooks for problem #${selected.problem.id} but no target-able id`);
+                            // console.log(currentUserGrade);
                         }
+                    } else {
+                        // no error - student simply has no workbooks
+                        // what do we set to render instead?
+                        // console.log('student has no workbooks for this problem');
                     }
+                } else {
+                    logger.error('will anything ever trigger this? It is a problem with NO grades?!');
                 }
+            } else {
+                logger.error('User and problem are selected, but one is missing an id!');
             }
+            // console.log(`GP2: setting "selectedInfo" workbook: ${currentWorkbook?.id}`);
+            setSelectedInfo({
+                path: currentPath,
+                seed: currentSeed,
+                problem: selected.problem,
+                grade: currentUserGrade,
+                workbooks: currentWorkbooks,
+                workbook: currentWorkbook,
+            });
+            // setSelected({...selected, workbook: currentWorkbook});
         }
     }, [selected.problem, selected.user]);
 
+    useEffect(() => {
+        // console.log(`GP2: "selected" workbook is changing: ${selected.workbook?.id}, selectedInfo: ${selectedInfo.workbook?.id}`);
+        if (_.isNil(selected.workbook)) {
+            const currentPath = selectedInfo.problem?.webworkQuestionPath;
+            const currentSeed = selectedInfo.grade?.randomSeed;
+            setSelectedInfo({
+                path: currentPath,
+                seed: currentSeed,
+                problem: selected.problem,
+                grade: selectedInfo.grade,
+                workbooks: selectedInfo.workbooks,
+            });
+        } else {
+            setSelectedInfo({
+                problem: selected.problem,
+                grade: selectedInfo.grade,
+                workbooks: selectedInfo.workbooks,
+                workbook: selected.workbook,
+            });
+        }
+    }, [selected.workbook]);
+
     const fetchProblems = async (topicId: number) => {
         const res = await getAssessmentProblemsWithWorkbooks({ topicId });
-        const problems: Array<ProblemObject> = res.data.data.questions;
+        const currentProblems: Array<ProblemObject> = _(res.data.data.problems)
+            .map((p) => { return new ProblemObject(p); })
+            .sortBy(['problemNumber'],['asc'])
+            .value();
+        // currentProblems = _.map(currentProblems, (p) => {return new ProblemObject(p);});
+        setProblems(currentProblems);
 
         const currentTopic = res.data.data.topic;
+        setTopic(currentTopic);
 
-        if (currentTopic.studentTopicOverride?.length > 0) {
-            _.assign(currentTopic, currentTopic.studentTopicOverride[0]);
-        }
-
-        if (!_.isEmpty(problems)) {
+        if (!_.isEmpty(currentProblems)) {
             // const problemDictionary = deepKeyBy(problems, 'id') as Record<number, ProblemObject>;
             // https://stackoverflow.com/questions/40937961/lodash-keyby-for-multiple-nested-level-arrays
-            const problemDictionary = _(problems)
+            const problemDictionary = _(currentProblems)
                 .map( (obj) => {
                     return _.mapValues(obj, (val) => {
                         if (_.isArray(val)) {
@@ -91,13 +165,13 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                                 .map((obj) => {
                                     return _.mapValues(obj, (val) => {
                                         if (_.isArray(val)) {
-                                            return _.keyBy(val, 'id');
+                                            return _.keyBy(val, 'id'); // workbooks by id
                                         } else {
                                             return val;
                                         }
                                     });
                                 })
-                                .keyBy('userId')
+                                .keyBy('userId') // key grades by user
                                 .value();
                         } else {
                             return val;
@@ -106,44 +180,55 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                 })
                 .keyBy('id')
                 .value() as Record<number, ProblemDict>;
-            setProblems(problemDictionary);
-            const initialSelectedProblemId = _.sortBy(problems, ['problemNumber'], ['asc'])[0].id;
-            setSelected({ topic: currentTopic, problem: problemDictionary[initialSelectedProblemId]});
+            setProblemMap(problemDictionary);
+            const initialSelectedProblemId = _.sortBy(currentProblems, ['problemNumber'], ['asc'])[0].id;
+            setSelected({ problem: problemDictionary[initialSelectedProblemId] as ProblemObject});
         } else { 
             // setError('No problems in this topic.');
-            setSelected({ topic: currentTopic });
         }
     };
 
     return (
-        <Container style={{marginBottom: (selected.user && selected.topic) ? '25rem' : undefined}}>
+        <Grid>
             <Row>
-                <Col className='text-center'>
-                    <h1>Extensions</h1>
+                <Col className='text-left'>
+                    <h1>Grading {topic && topic.name}</h1>
                 </Col>
             </Row>
-            <MaterialBiSelect course={course} users={users} selected={selected} setSelected={setSelected} />
-            <Drawer 
-                className='black-drawer'
-                anchor='bottom' 
-                open={!!(selected.user && selected.topic)} 
-                onClose={()=>{}}
-                variant="persistent"
-                SlideProps={{style: {height: '20rem', backgroundColor: 'rgb(52, 58, 64)', color: 'rgba(255, 255, 255, 0.8)'}}}
-            >
-                <Grid container>
-                    <Grid container item>
-                        { selected.problem && selected.workbook && (
-                            < ProblemIframe
-                                problem={problemMap[selected.problem.id]}
-                                readonly={true}
-                                workbookId={selected.workbook.id}
-                            />
-                        )}
-                    </Grid>
+            <Grid container spacing={1}>
+                <Grid container item md={4}>
+                    {problems && users &&
+                        <MaterialBiSelect problems={problems} users={users} selected={selected} setSelected={setSelected} />
+                    }
                 </Grid>
-            </Drawer>
-        </Container>
+                <Grid container item md={8} style={{paddingLeft: '1rem'}}>
+                    { selectedInfo.grade &&
+                        < GradeInfoHeader
+                            grade={selectedInfo.grade}
+                            workbookId={selectedInfo.workbook?.id}
+                            selected={selected}
+                            setSelected={setSelected}
+                            onSuccess={() => {}}
+                        />
+                    }
+                    {selectedInfo.problem && selected.user && selectedInfo.workbook && selectedInfo.workbook.id && (
+                        < ProblemIframe
+                            problem={selectedInfo.problem}
+                            readonly={true}
+                            workbookId={selectedInfo.workbook.id}
+                        />
+                    )}
+                    {selectedInfo.problem && selectedInfo.path && selectedInfo.seed && (
+                        < ProblemIframe
+                            problem={selectedInfo.problem}
+                            readonly={true}
+                            previewPath={selectedInfo.path}
+                            previewSeed={selectedInfo.seed}
+                        />
+                    )}
+                </Grid>
+            </Grid>
+        </Grid>
     );
 };
 
