@@ -369,7 +369,7 @@ export interface ExamProblemSettingsFields {
 
 export class ProblemAttachments {
     id?: number;
-    cloudFilename?: string;
+    cloudFileName?: string;
     userLocalFilename?: string;
     active?: boolean;
     createdAt?: Date;

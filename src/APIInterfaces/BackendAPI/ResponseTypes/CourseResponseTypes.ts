@@ -100,14 +100,14 @@ export type GetQuestionResponse = BackendAPIResponse<Partial<ProblemObject>>;
 
 interface GetUploadURL {
     uploadURL: URL;
-    cloudFilename: string;
+    cloudFileName: string;
 }
 
 export type GetUploadURLResponse = BackendAPIResponse<GetUploadURL>;
 
 interface ListAttachmentsInterface {
     attachments: ProblemAttachments[];
-    baseUrl: URL;
+    baseUrl: string;
 }
 
 export type ListAttachmentsResponse = BackendAPIResponse<ListAttachmentsInterface>;
