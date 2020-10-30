@@ -25,7 +25,7 @@ interface AttachmentsSidebarProps {
 export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, openDrawer, setOpenDrawer, gradeId, gradeInstanceId}) => {
     const [attachedFiles, setAttachedFiles] = useState<Array<ProblemAttachments>>([]);
 
-    // TODO: Get list of attached files.
+    // Get list of attached files.
     useEffect(()=>{
         (async () => {
             try {
