@@ -18,16 +18,17 @@ interface TopicGradingPageProps {
 }
 
 export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
-    enum pin {
+    enum Pin {
         STUDENT,
         PROBLEM
     } 
     const params = useParams<TopicGradingPageProps>();
     const {users} = useCourseContext();
     const qs = useQuery();
+    const [error, setError] = useState<string | null>(null);
     const [problemMap, setProblemMap] = useState<Record<number, ProblemDict>>({});
     const [gradeOverride, setGradeOverride] = useState<Partial<StudentGrade>>({});
-    const [isPinned, setIsPinned] = useState<pin | null>(null); // pin one or the other, not both
+    const [isPinned, setIsPinned] = useState<Pin | null>(null); // pin one or the other, not both
     const [topic, setTopic] = useState<TopicObject | null>(null);
     const [problems, setProblems] = useState<ProblemObject[] | null>(null);
     const [selected, setSelected] = useState<{
@@ -91,24 +92,25 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                             if (_.isNil(currentWorkbook)) {
                                 logger.error(`we were supposed to get workbook #${selectedWorkbookId}, but failed.`);
                             } else {
-                                // logger.debug(currentWorkbook.id);
+                                // stop the iframe from rendering using "preview" information
                                 currentPath = undefined;
                                 currentSeed = undefined;
                             }
                         } else {
-                            logger.error(`student #${selected.user.id} has workbooks for problem #${selected.problem.id} but no target-able id`);
-                            logger.debug(currentUserGrade);
+                            logger.error(`TSNH: student #${selected.user.id} has workbooks for problem #${selected.problem.id} but no target-able id`);
+                            setError(`There is a problem with the history of submissions for ${selected.user.name}.`);
                         }
                     } else {
                         // no error - student simply has no workbooks
-                        // what do we set to render instead?
                         logger.info('student has no workbooks for this problem');
                     }
                 } else {
-                    logger.error('will anything ever trigger this? It is a problem with NO grades?!');
+                    logger.error('TSNH: It is a problem with NO grades?!');
+                    setError(`Something went wrong with the grades for problem #${selected.problem.id}.`);
                 }
             } else {
-                logger.error('User and problem are selected, but one is missing an id!');
+                logger.error('TSNH: User and problem are selected, but one is missing an id!');
+                setError('The grades information for this topic did not load properly. Please refresh the page.');
             }
             logger.debug(`GP2: setting "selectedInfo" workbook: ${currentWorkbook?.id} or preview path: ${currentPath}`);
             setSelectedInfo({
@@ -237,6 +239,12 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
             // setError('No problems in this topic.');
         }
     };
+
+    if (!_.isNil(error)) {
+        return (
+            <h3>{error}</h3>
+        );
+    }
 
     return (
         <Grid>
