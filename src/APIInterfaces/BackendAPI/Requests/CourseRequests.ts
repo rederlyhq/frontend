@@ -1,9 +1,9 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions, ListAttachmentOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse, ListAttachmentsResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 import _ from 'lodash';
@@ -21,6 +21,7 @@ const COURSE_ENROLL_PATH = url.resolve(COURSE_PATH, 'enroll/');
 const COURSE_ASSESS_PATH = url.resolve(COURSE_PATH, 'assessment/');
 const COURSE_ATTACHMENTS_PATH = url.resolve(COURSE_PATH, 'attachments/');
 const COURSE_ATTACHMENTS_GET_UPLOAD_PATH = url.resolve(COURSE_ATTACHMENTS_PATH, 'upload-url/');
+const COURSE_ATTACHMENTS_LIST_PATH = url.resolve(COURSE_ATTACHMENTS_PATH, 'list/');
 
 /* *************** *************** */
 /* *********** Courses *********** */
@@ -483,6 +484,28 @@ export const getUploadURL = async (): Promise<AxiosResponse<GetUploadURLResponse
 export const postConfirmAttachmentUpload = async (options: PostConfirmAttachmentUploadOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
         return await AxiosRequest.post(COURSE_ATTACHMENTS_PATH, options);
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+// Workbooks is an auditing field and there isn't a practical frontend use for them right now.
+// 
+export const getAttachments = async ({
+    studentGradeId,
+    studentGradeInstanceId,
+    // studentWorkbookId,
+}: ListAttachmentOptions): Promise<AxiosResponse<ListAttachmentsResponse>> => {
+    try {
+        return await AxiosRequest.get(COURSE_ATTACHMENTS_LIST_PATH, {
+            params: {
+                ...(studentGradeInstanceId ?
+                    {studentGradeInstanceId: studentGradeInstanceId} :
+                    {studentGradeId: studentGradeId}
+                ),
+                // studentWorkbookId,
+            }
+        });
     } catch (e) {
         throw new BackendAPIError(e);
     }

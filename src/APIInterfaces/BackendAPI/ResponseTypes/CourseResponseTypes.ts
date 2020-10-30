@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, TopicObject, ProblemObject, NewProblemObject, StudentGrade, StudentGradeInstance } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, TopicObject, ProblemObject, NewProblemObject, StudentGrade, StudentGradeInstance, ProblemAttachments } from '../../../Courses/CourseInterfaces';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 
 /* *************** *************** */
@@ -104,3 +104,10 @@ interface GetUploadURL {
 }
 
 export type GetUploadURLResponse = BackendAPIResponse<GetUploadURL>;
+
+interface ListAttachmentsInterface {
+    attachments: ProblemAttachments[];
+    baseUrl: URL;
+}
+
+export type ListAttachmentsResponse = BackendAPIResponse<ListAttachmentsInterface>;
