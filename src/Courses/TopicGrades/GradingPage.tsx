@@ -10,6 +10,7 @@ import { UserObject, TopicObject, ProblemObject, StudentWorkbookInterface, Probl
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import { getAssessmentProblemsWithWorkbooks } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { GradeInfoHeader } from './GradeInfoHeader';
+import { useQuery } from '../../Hooks/UseQuery';
 
 interface TopicGradingPageProps {
     topicId?: string;
@@ -23,6 +24,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     } 
     const params = useParams<TopicGradingPageProps>();
     const {users} = useCourseContext();
+    const qs = useQuery();
     const [problemMap, setProblemMap] = useState<Record<number, ProblemDict>>({});
     const [gradeOverride, setGradeOverride] = useState<Partial<StudentGrade>>({});
     const [isPinned, setIsPinned] = useState<pin | null>(null); // pin one or the other, not both
@@ -56,7 +58,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                 logger.error(e.message, e);
             }
         })();
-    }, [params.topicId]);
+    }, [params.topicId, users]);
 
     useEffect(() => {
         logger.debug('GP2: different user or problem was selected');
@@ -205,8 +207,26 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                 .keyBy('id')
                 .value() as Record<number, ProblemDict>;
             setProblemMap(problemDictionary);
-            const initialSelectedProblemId = _.sortBy(currentProblems, ['problemNumber'], ['asc'])[0].id;
-            setSelected({ problem: problemDictionary[initialSelectedProblemId] as ProblemObject});
+
+            const problemIdString = qs.get('problemId');
+            let initialSelectedProblem: ProblemObject | undefined;
+
+            const userIdString = qs.get('userId');
+            let initialSelectedUser: UserObject | undefined;
+
+            if (_.isNil(problemIdString)) {
+                const initialSelectedProblemId = _.sortBy(currentProblems, ['problemNumber'], ['asc'])[0].id;
+                initialSelectedProblem = problemDictionary[initialSelectedProblemId] as ProblemObject;
+            } else {
+                const initialSelectedProblemId = parseInt(problemIdString, 10);
+                initialSelectedProblem = problemDictionary[initialSelectedProblemId] as ProblemObject;
+            }
+            if (!_.isNil(userIdString)) {
+                const initialSelectedUserId = parseInt(userIdString, 10);
+                initialSelectedUser = _.find(users, {'id': initialSelectedUserId});
+                console.warn(`GP: attempting to set intial user #${initialSelectedUserId}`, initialSelectedUser, users);
+            }
+            setSelected({ user: initialSelectedUser, problem: initialSelectedProblem});
         } else { 
             // setError('No problems in this topic.');
         }
