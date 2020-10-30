@@ -175,6 +175,10 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                                 color: 'red',
                                 backgroundColor: 'rgba(255, 0, 0, 0.1)',
                             };
+                            const successStyle = {
+                                color: 'green',
+                                backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                            };
 
                             if (_.isNil(attachment.file) && _.isNil(attachment.id)) {
                                 logger.error('An Attachment in state has neither file nor id. (TSNH).');
@@ -187,8 +191,12 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                                 );
                             }
 
+                            const cardStyle = isInError ? errorStyle : (
+                                attachment.file && attachment.progress >= 100 ? successStyle : {}
+                            );
+
                             return (
-                                <Card key={attachment.file?.name ?? attachment.id} style={isInError ? errorStyle : {}}>
+                                <Card key={attachment.file?.name ?? attachment.id} style={cardStyle}>
                                     <CardContent>
                                         {isInError ? <MdError /> : <BsFileEarmarkMinus />} {attachment.file?.name ?? attachment.userLocalFilename}
                                         {attachment.file && 
