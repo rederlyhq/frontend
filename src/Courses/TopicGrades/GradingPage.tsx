@@ -46,7 +46,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     }>({});
 
     useEffect(() => {
-        logger.debug('GP2: topicId changed');
+        logger.debug('GradingPage: topicId changed');
         (async () => {
             try {
                 if (_.isNil(params.topicId)) {
@@ -62,7 +62,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     }, [params.topicId, users]);
 
     useEffect(() => {
-        logger.debug('GP2: different user or problem was selected');
+        logger.debug('GradingPage: different user or problem was selected');
         // when user and problem are selected - set the available workbooks and 
         // pick one workbook as the default for rendering
         // TODO: adjust for different policies -- best individual / best attempt
@@ -112,7 +112,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                 logger.error('TSNH: User and problem are selected, but one is missing an id!');
                 setError('The grades information for this topic did not load properly. Please refresh the page.');
             }
-            logger.debug(`GP2: setting "selectedInfo" workbook: ${currentWorkbook?.id} or preview path: ${currentPath}`);
+            logger.debug(`GradingPage: setting "selectedInfo" workbook: ${currentWorkbook?.id} or preview path: ${currentPath}`);
             setSelectedInfo({
                 path: currentPath,
                 seed: currentSeed,
@@ -126,7 +126,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     }, [selected.problem, selected.user]);
 
     useEffect(() => {
-        logger.debug(`GP2: "selected" workbook is changing: ${selected.workbook?.id}, selectedInfo: ${selectedInfo.workbook?.id}`);
+        logger.debug(`GradingPage: "selected" workbook is changing: ${selected.workbook?.id}, selectedInfo: ${selectedInfo.workbook?.id}`);
         if (_.isNil(selected.workbook)) {
             const currentPath = selectedInfo.problem?.webworkQuestionPath;
             const currentSeed = selectedInfo.grade?.randomSeed;
@@ -148,7 +148,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     }, [selected.workbook]);
 
     useEffect(() => {
-        logger.debug('GP2: overriding grade', gradeOverride.effectiveScore);
+        logger.debug('GradingPage: overriding grade', gradeOverride.effectiveScore);
         let currentMap = problemMap;
         if (!_.isNil(selectedInfo.problem) &&
             !_.isNil(currentMap[selectedInfo.problem.id])

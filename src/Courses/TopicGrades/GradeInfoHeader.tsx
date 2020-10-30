@@ -71,7 +71,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     });
 
     useEffect(() => {
-        logger.debug('GIH: selectedInfo has changed my grade.', grade);
+        logger.debug('GradeInfoHeader: selectedInfo has changed my grade.', grade);
         const workbooks = grade.workbooks;
         let currentAttemptsCount: number | undefined;
         let currentAverageScore: number | undefined;
@@ -103,7 +103,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             currentAverageScore = 0;
         }
         const currentWorkbookList = workbookList(currentVersionMap);
-        logger.debug('GIH: setting workbook list: ', currentWorkbookList);
+        logger.debug('GradeInfoHeader: setting workbook list: ', currentWorkbookList);
         setInfo({
             legalScore: grade.legalScore,
             overallBestScore: grade.overallBestScore,
@@ -120,11 +120,10 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     useEffect(() => {
         if (!_.isNil(grade.workbooks) && !_.isNil(info.workbookId) && !_.isNil(grade.workbooks[info.workbookId])) {
             const newWorkbook = grade.workbooks[info.workbookId];
-            logger.debug('GIH: local "info" attempting to set new workbook: ', newWorkbook);
+            logger.debug('GradeInfoHeader: local "info" attempting to set new workbook: ', newWorkbook);
             setSelected(selected => ({ ...selected, workbook: newWorkbook }));
         } else {
-            logger.debug('GIH: current grade.workbooks:', grade.workbooks);
-            console.error(`GIH: local "info" failed to set desired workbook: ${info.workbookId} - what about "selected": ${selected.workbook?.id}?`);
+            logger.error(`GradeInfoHeader: local "info" failed to set desired workbook: ${info.workbookId} - what about "selected": ${selected.workbook?.id}?`);
         }
     }, [info.workbookId]);
 
@@ -184,12 +183,13 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 Score from best exam submission: <strong>{(info.legalScore * 100).toFixed(1)}</strong>
             </Grid>
             <Grid item xs={6}>
-                {info.workbookList && !_.isEmpty(info.workbookList) && info.workbookId &&
+                {(info.workbookList && !_.isEmpty(info.workbookList) && info.workbookId)?
                     <WorkbookSelect
                         options={info.workbookList}
                         value={info.workbookId}
                         onChange={setInfo}
-                    />
+                    /> : 
+                    `${selected.user?.name} has not attempted this problem.`
                 }
             </Grid>
             <Grid item xs={6}>
@@ -212,7 +212,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                     onClick={() => setShowGradeModal(true)}
                     // disabled={(parseFloat(newScorePercentInput) / 100) === info.effectiveScore}
                 >
-                    Set new score for grades:
+                    Set new score for grades
                 </Button>
                 <OverrideGradeModal
                     show={showGradeModal}
@@ -225,15 +225,6 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                         }
                     }}
                 />
-                {/* <TextField
-                    id="standard-number"
-                    defaultValue={(info.effectiveScore * 100).toFixed(1)}
-                    type="number"
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                    onChange={onNewScoreChange}
-                /> */}
             </Grid>
         </Grid>
     );

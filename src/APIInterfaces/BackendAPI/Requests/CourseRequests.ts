@@ -425,7 +425,7 @@ export const generateNewVersion = async ({
 }: GenerateNewVersionOptions): Promise<AxiosResponse<BackendAPIResponse<StudentTopicAssessmentFields>>> => {
     try {
         return await AxiosRequest.get(
-            url.resolve(COURSE_ASSESS_PATH, `${topicId}/start`),
+            url.resolve(COURSE_ASSESS_PATH, `topic/${topicId}/start`),
             {
                 headers: {
                     /**
@@ -449,7 +449,7 @@ export const submitVersion = async ({
 }: SubmitVersionOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
         return await AxiosRequest.post(
-            url.resolve(COURSE_ASSESS_PATH, `${topicId}/submit/${versionId}`)
+            url.resolve(COURSE_ASSESS_PATH, `topic/${topicId}/submit/${versionId}`)
         );
     } catch (e) {
         throw new BackendAPIError(e);
@@ -461,7 +461,7 @@ export const endVersion = async ({
 }: EndVersionOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
         return await AxiosRequest.get(
-            url.resolve(COURSE_ASSESS_PATH, `end/${versionId}`)
+            url.resolve(COURSE_ASSESS_PATH, `topic/end/${versionId}`)
         );
     } catch (e) {
         throw new BackendAPIError(e);
