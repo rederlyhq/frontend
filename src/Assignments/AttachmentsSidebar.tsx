@@ -2,14 +2,16 @@ import { Card, CardContent, Drawer, Grid, LinearProgress } from '@material-ui/co
 import { Button } from 'react-bootstrap';
 import React, { useCallback, useEffect, useState } from 'react';
 import { DropEvent, FileRejection, useDropzone } from 'react-dropzone';
-import { TopicObject } from '../Courses/CourseInterfaces';
+import { ProblemAttachments, TopicObject } from '../Courses/CourseInterfaces';
 import { FaFileUpload } from 'react-icons/fa';
 import { BsFileEarmarkMinus } from 'react-icons/bs';
 import { MdError } from 'react-icons/md';
-import { getUploadURL, postConfirmAttachmentUpload } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { getUploadURL, postConfirmAttachmentUpload, getAttachments } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../Utilities/Logger';
 import _ from 'lodash';
 import { putUploadWork } from '../APIInterfaces/AWS/Requests/StudentUpload';
+
+import './AttachmentsSidebar.css';
 
 interface AttachmentsSidebarProps {
     topic: TopicObject;
@@ -21,22 +23,39 @@ interface AttachmentsSidebarProps {
 }
 
 export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, openDrawer, setOpenDrawer, gradeId, gradeInstanceId}) => {
-    const [attachedFiles, setAttachedFiles] = useState<Array<{file: File, progress: number}>>([]);
+    const [attachedFiles, setAttachedFiles] = useState<Array<ProblemAttachments>>([]);
 
-    // TODO: Get list of attached files.
+    // Get list of attached files.
     useEffect(()=>{
-        const res: any[] = [];
-        setAttachedFiles(res.map(file => ({file: file, progress: 100})));
-    }, [topic]);
+        (async () => {
+            try {
+                const res = await getAttachments({ 
+                    studentGradeId: gradeId, 
+                    studentGradeInstanceId: gradeInstanceId,
+                });
 
-    const updateIndexProgressWithOffset = (index: number, value: number, offset: number) => {
+                const alreadyAttachedFiles = res.data.data.attachments;
+                setAttachedFiles(alreadyAttachedFiles.map(file => new ProblemAttachments(file)));
+            } catch (e) {
+                logger.error('Failed to get attachments.', e);
+            }
+        })();
+    }, [topic, gradeId, gradeInstanceId]);
+
+    // Whenever the length changes, rerun uploads for everything in state.
+    // If delete, everything should have progress 100.
+    useEffect(() => {
+        uploadFilesWithProgress();
+    }, [attachedFiles.length]);
+
+    const updateIndexProgressWithPartial = (index: number, partial: Partial<ProblemAttachments>) => {
         setAttachedFiles(attachedFiles => {
             if (index >= attachedFiles.length) {
                 return attachedFiles;
             }
 
             const localAttachedFiles = [...attachedFiles];
-            localAttachedFiles[index] = {...attachedFiles[index], progress: offset + value};
+            localAttachedFiles[index] = {...attachedFiles[index], ...partial};
             return localAttachedFiles;
         });
     };
@@ -49,20 +68,21 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
             }
             const progressPercent = Math.round((progressEvent.loaded / progressEvent.total) * 70);
             const localAttachedFiles = [...attachedFiles];
-            localAttachedFiles[index] = {...attachedFiles[index], progress: 10 + progressPercent};
+            localAttachedFiles[index] = new ProblemAttachments({...attachedFiles[index], progress: 10 + progressPercent});
             return localAttachedFiles;
         });
     };
 
-    const uploadFilesWIthProgress = async (attachedFiles: Array<{file: File, progress: number}>) => {
+    const uploadFilesWithProgress = async () => {
         attachedFiles.forEach(async (file, index) => {
-            // Skip in-progress files.
-            if (file.progress > 0) return;
+            // Skip in-progress files or files that failed to upload correctly..
+            if (file.progress > 0 || _.isNil(file.file)) return;
+
             try {
                 const onUploadProgress = _.partial(updateIndexProgress, index);
                 const res = await getUploadURL();
-                logger.debug(res);
-                updateIndexProgressWithOffset(index, 20, 0);
+
+                updateIndexProgressWithPartial(index, {progress: 10});
                     
                 await putUploadWork({
                     presignedUrl: res.data.data.uploadURL,
@@ -81,23 +101,21 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                     ),
                 });
 
-                updateIndexProgressWithOffset(index, 10, 90);
+                updateIndexProgressWithPartial(index, {progress: 100, cloudFilename: res.data.data.cloudFilename});
             } catch (e) {
                 // Catch on an individual file basis
-                updateIndexProgressWithOffset(index, -1, 0);
+                updateIndexProgressWithPartial(index, {progress: -1});
                 logger.error('A user encountered an error during attachment upload.', e.message);
             }
         });
     };
 
     const onDrop: <T extends File>(acceptedFiles: T[], fileRejections: FileRejection[], event: DropEvent) => void = useCallback(
-        (acceptedFiles, fileRejections) => {
-            const processingFiles = acceptedFiles.map(file => ({file: file, progress: 0}));
-            setAttachedFiles(attachedFiles => {
-                const fullAttachedState = [...attachedFiles, ...processingFiles];
-                uploadFilesWIthProgress(fullAttachedState);
-                return fullAttachedState;
-            });
+        // TODO: Nicer UI for file rejections.
+        (acceptedFiles, /*fileRejections*/) => {
+            const processingFiles = acceptedFiles.map(file => new ProblemAttachments({file: file}));
+            const fullAttachedState = [...attachedFiles, ...processingFiles];
+            setAttachedFiles(fullAttachedState);
         }, [attachedFiles]);
     
     const { getRootProps, getInputProps, isDragActive, open } = useDropzone({ onDrop,
@@ -121,35 +139,68 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
             onClose={()=>setOpenDrawer(false)}
             SlideProps={{style: {width: '30rem'}}}
         >
-            <Grid container md={12} style={isDragActive ? {
-                position: 'absolute', 
-                width: '100%', 
-                height: '100%', 
-                border: '5px dashed lightblue', 
-                borderRadius: '3px',
-                textAlign: 'center',
-                backgroundColor: '#343a40',
-                opacity: 0.9
-            } : {}}>
+            {isDragActive && (
+                <div style={{
+                    position: 'absolute', 
+                    width: '100%', 
+                    height: '100%', 
+                    border: '5px dashed lightblue', 
+                    borderRadius: '3px',
+                    textAlign: 'center',
+                    zIndex: 2,
+                    backgroundColor: 'white',
+                    opacity: 0.9
+                }} 
+                >
+                    <div style={{position: 'relative', margin: '0 auto', top: '30%', fontSize: '1.3em'}}>
+                        Drop your attachments here to upload your work!
+                        <FaFileUpload style={{position: 'relative', margin: '0 auto', top: '30%', display: 'block', fontSize: '2em'}}/>
+                    </div>
+                </div>
+            )}
+            <Grid container md={12}>
                 <Grid item md={12}>
                     <div className='text-center'>
                         <h1>Attachments</h1>
                         <p>Drag and drop files to upload your work for this problem.</p>
                     </div>
                     <input type="file" {...getInputProps()} />
-                    <Grid>
-                        {attachedFiles.map((fileAndProgress: {file: File, progress: number}, i: number) => {
-                            const isInError = fileAndProgress.progress < 0;
+                    <Grid style={{
+                        height: '83vh',
+                        overflowY: 'auto',
+                    }}>
+                        {attachedFiles.map((attachment: ProblemAttachments, i: number) => {
+                            const isInError = attachment.progress < 0;
                             const errorStyle = {
                                 color: 'red',
                                 backgroundColor: 'rgba(255, 0, 0, 0.1)',
                             };
+                            const successStyle = {
+                                color: 'green',
+                                backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                            };
+
+                            if (_.isNil(attachment.file) && _.isNil(attachment.id)) {
+                                logger.error('An Attachment in state has neither file nor id. (TSNH).');
+                                return (
+                                    <Card key={`error-${i}`} style={errorStyle}>
+                                        <CardContent>
+                                            There was an error loading this attachment.
+                                        </CardContent>
+                                    </Card>
+                                );
+                            }
+
+                            const cardStyle = isInError ? errorStyle : (
+                                attachment.file && attachment.progress >= 100 ? successStyle : {}
+                            );
+
                             return (
-                                <Card key={fileAndProgress.file.name} style={isInError ? errorStyle : {}}>
+                                <Card key={attachment.file?.name ?? attachment.id} style={cardStyle}>
                                     <CardContent>
-                                        {isInError ? <MdError /> : <BsFileEarmarkMinus />} {fileAndProgress.file.name}
-                                        {fileAndProgress.progress < 100 && 
-                                            <LinearProgress variant="determinate" value={fileAndProgress.progress} />}
+                                        {isInError ? <MdError /> : <BsFileEarmarkMinus />} {attachment.file?.name ?? attachment.userLocalFilename}
+                                        {attachment.file && 
+                                            <LinearProgress variant="determinate" value={attachment.progress} />}
                                     </CardContent>
                                 </Card>
                             );

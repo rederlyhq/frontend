@@ -366,3 +366,25 @@ export interface ExamProblemSettingsFields {
         randomSeedSet?: number[],
     }
 }
+
+export class ProblemAttachments {
+    id?: number;
+    cloudFilename?: string;
+    userLocalFilename?: string;
+    active?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+
+    // When created on the frontend, the File object contains the file that was uploaded.
+    file?: File;
+    progress!: number;
+
+    public constructor(init?:Partial<ProblemAttachments>) {
+        Object.assign(this, init);
+
+        // If Backend-specific properties are filled, treat as already uploaded.
+        if (_.isNil(init?.progress)) {
+            this.progress = _.isNil(init?.id) ? 0 : 100;
+        }
+    }
+}

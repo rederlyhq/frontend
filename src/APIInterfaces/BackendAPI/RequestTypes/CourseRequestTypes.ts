@@ -171,3 +171,9 @@ export interface PostConfirmAttachmentUploadOptions {
     studentGradeId?: number;
     studentGradeInstanceId?: number;
 }
+
+export interface ListAttachmentOptions {
+    studentGradeId?: number;
+    studentGradeInstanceId?: number;
+    studentWorkbookId?: number;
+}
