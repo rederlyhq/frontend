@@ -149,7 +149,10 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                         <p>Drag and drop files to upload your work for this problem.</p>
                     </div>
                     <input type="file" {...getInputProps()} />
-                    <Grid>
+                    <Grid style={{
+                        height: '83vh',
+                        overflowY: 'auto',
+                    }}>
                         {attachedFiles.map((attachment: ProblemAttachments, i: number) => {
                             const isInError = attachment.progress < 0;
                             const errorStyle = {
