@@ -23,6 +23,7 @@ import { version } from '../../package.json';
 import CourseProvider from '../Courses/CourseProvider';
 import TopicSettingsPage from '../Courses/TopicSettings/TopicSettingsPage';
 import logger from '../Utilities/Logger';
+import TopicGradingPage from '../Courses/TopicGrades/GradingPage';
 
 interface NavWrapperProps {
 
@@ -117,6 +118,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                     <Switch>
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/settings`}>
                                             <TopicSettingsPage />
+                                        </Route>
+                                        <Route path={`${path}/courses/:courseId/topic/:topicId/grading`}>
+                                            <TopicGradingPage />
                                         </Route>
                                         <Route path={`${path}/courses/:courseId/topic/:topicId`}>
                                             <SimpleProblemPage />
