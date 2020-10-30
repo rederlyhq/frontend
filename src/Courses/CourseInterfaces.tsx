@@ -156,6 +156,13 @@ export class StudentTopicAssessmentFields {
     }
 }
 
+export class TopicOverride {
+    id?: number;
+    startDate?: Date;
+    endDate?: Date;
+    deadDate?: Date;
+}
+
 const newTopicUniqueGen = uniqueGen();
 export class TopicObject {
     name: string = '';
@@ -170,7 +177,7 @@ export class TopicObject {
     endDate: Date = new Date();
     deadDate: Date = new Date();
     partialExtend: boolean = false;
-    studentTopicOverride: any[] = [];
+    studentTopicOverride: TopicOverride[] = [];
     topicAssessmentInfo?: TopicAssessmentFields = new TopicAssessmentFields();
     
     public constructor(init?:Partial<TopicObject>) {
@@ -204,7 +211,29 @@ export class UnitObject {
 export class NewCourseUnitObj extends UnitObject {
 }
 
-const newProblemUniqueGen = uniqueGen();
+export interface StudentWorkbookInterface {
+    id: number;
+    active: boolean;
+    studentGradeId: number;
+    userId: number;
+    courseWWTopicQuestionId: number;
+    studentGradeInstanceId?: number;
+    randomSeed: number;
+
+    // This is a jsonb field so it could be any (from db)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    submitted: any;
+    result: number;
+    time: Date;
+    wasLate: boolean;
+    wasExpired: boolean;
+    wasAfterAttemptLimit: boolean;
+    wasLocked: boolean;
+    wasAutoSubmitted: boolean;
+
+    createdAt: Date;
+    updatedAt: Date;
+}
 
 export interface StudentGradeInstance {
     id: number;
@@ -226,6 +255,22 @@ export interface StudentGradeInstance {
     bestVersionAttemptId: number;
 }
 
+export interface StudentGradeDict {
+    id: number;
+    randomSeed: number;
+    overallBestScore: number;
+    effectiveScore: number;
+    bestScore: number;
+    legalScore: number;
+    partialCreditBestScore: number;
+    numAttempts: number;
+    numLegalAttempts: number;
+    locked: boolean;
+    lastInfluencingAttemptId?: number;
+    workbooks?: Record<number, StudentWorkbookInterface>;
+    overrides?: number;
+}
+
 export class StudentGrade {
     gradeInstances?: StudentGradeInstance[];
     overallBestScore: number = 0;
@@ -236,12 +281,27 @@ export class StudentGrade {
     locked: boolean = false;
     currentProblemState?: unknown;
     id?: number;
+    randomSeed?: number;
+    lastInfluencingAttemptId?: number;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
     }
 }
 
+export interface ProblemDict {
+    id: number;
+    problemNumber: number;
+    webworkQuestionPath: string; // This is the same as path, currently.
+    path: string;
+    weight: number;
+    maxAttempts: number;
+    hidden: boolean;
+    optional: boolean;
+    grades?: Record<number, StudentGradeDict>;
+}
+
+const newProblemUniqueGen = uniqueGen();
 export class ProblemObject implements IProblemObject {
     id: number = 0;
     problemNumber: number = 1;
