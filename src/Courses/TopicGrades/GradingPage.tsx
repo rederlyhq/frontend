@@ -220,12 +220,18 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
             } else {
                 const initialSelectedProblemId = parseInt(problemIdString, 10);
                 initialSelectedProblem = problemDictionary[initialSelectedProblemId] as ProblemObject;
+                logger.debug(`GP: attempting to set intial user #${initialSelectedProblemId}`);
             }
-            if (!_.isNil(userIdString)) {
+            // if (!_.isEmpty(users)) {
+            if (_.isNil(userIdString)) {
+                const initialSelectedUserId = _.sortBy(users, ['lastName'], ['desc'])[0].id;
+                initialSelectedUser = _.find(users, { 'id': initialSelectedUserId });
+            } else {
                 const initialSelectedUserId = parseInt(userIdString, 10);
                 initialSelectedUser = _.find(users, {'id': initialSelectedUserId});
-                console.warn(`GP: attempting to set intial user #${initialSelectedUserId}`, initialSelectedUser, users);
+                logger.debug(`GP: attempting to set intial user #${initialSelectedUserId}`);
             }
+            // }
             setSelected({ user: initialSelectedUser, problem: initialSelectedProblem});
         } else { 
             // setError('No problems in this topic.');
