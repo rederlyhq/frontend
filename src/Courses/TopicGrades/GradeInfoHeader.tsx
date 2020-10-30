@@ -2,15 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import _ from 'lodash';
 import { ProblemObject, StudentGrade, StudentGradeDict, StudentWorkbookInterface, UserObject } from '../CourseInterfaces';
 import logger from '../../Utilities/Logger';
-import { Button, FormControl, Grid, InputLabel, makeStyles, Modal, Select, TextField } from '@material-ui/core';
+import { Button, FormControl, Grid, InputLabel, makeStyles, Select } from '@material-ui/core';
 import { OverrideGradeModal } from '../CourseDetailsTabs/OverrideGradeModal';
 
-enum OverrideGradePhase {
-    PROMPT = 'PROMPT',
-    CONFIRM = 'CONFIRM',
-    LOCK = 'LOCK',
-    LOCK_CONFIRM = 'LOCK_CONFIRM',
-}
 interface GradeInfoHeaderProps {
     grade: StudentGradeDict;
     workbookId?: number;
@@ -58,7 +52,6 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     }
     const classes = useStyles();
     const [showGradeModal, setShowGradeModal] = useState<boolean>(false);
-    const [newScorePercentInput, setNewScorePercentInput] = useState<string>(displayCurrentScore.current ?? '');
     const [info, setInfo] = useState<{
         legalScore: number;
         overallBestScore: number;
@@ -128,7 +121,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         if (!_.isNil(grade.workbooks) && !_.isNil(info.workbookId) && !_.isNil(grade.workbooks[info.workbookId])) {
             const newWorkbook = grade.workbooks[info.workbookId];
             logger.debug('GIH: local "info" attempting to set new workbook: ', newWorkbook);
-            setSelected({ ...selected, workbook: newWorkbook });
+            setSelected(selected => ({ ...selected, workbook: newWorkbook }));
         } else {
             logger.debug('GIH: current grade.workbooks:', grade.workbooks);
             console.error(`GIH: local "info" failed to set desired workbook: ${info.workbookId} - what about "selected": ${selected.workbook?.id}?`);
