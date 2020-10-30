@@ -323,6 +323,8 @@ export class ProblemAttachments {
         Object.assign(this, init);
 
         // If Backend-specific properties are filled, treat as already uploaded.
-        this.progress = _.isNil(init?.id) ? 0 : 100;
+        if (_.isNil(init?.progress)) {
+            this.progress = _.isNil(init?.id) ? 0 : 100;
+        }
     }
 }

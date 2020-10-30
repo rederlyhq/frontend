@@ -11,6 +11,8 @@ import logger from '../Utilities/Logger';
 import _ from 'lodash';
 import { putUploadWork } from '../APIInterfaces/AWS/Requests/StudentUpload';
 
+import './AttachmentsSidebar.css';
+
 interface AttachmentsSidebarProps {
     topic: TopicObject;
     openDrawer: boolean;
@@ -40,6 +42,12 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
         })();
     }, [topic, gradeId, gradeInstanceId]);
 
+    // Whenever the length changes, rerun uploads for everything in state.
+    // If delete, everything should have progress 100.
+    useEffect(() => {
+        uploadFilesWithProgress();
+    }, [attachedFiles.length]);
+
     const updateIndexProgressWithPartial = (index: number, partial: Partial<ProblemAttachments>) => {
         setAttachedFiles(attachedFiles => {
             if (index >= attachedFiles.length) {
@@ -65,7 +73,7 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
         });
     };
 
-    const uploadFilesWithProgress = async (attachedFiles: Array<ProblemAttachments>) => {
+    const uploadFilesWithProgress = async () => {
         attachedFiles.forEach(async (file, index) => {
             // Skip in-progress files or files that failed to upload correctly..
             if (file.progress > 0 || _.isNil(file.file)) return;
@@ -103,13 +111,11 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
     };
 
     const onDrop: <T extends File>(acceptedFiles: T[], fileRejections: FileRejection[], event: DropEvent) => void = useCallback(
-        (acceptedFiles, fileRejections) => {
+        // TODO: Nicer UI for file rejections.
+        (acceptedFiles, /*fileRejections*/) => {
             const processingFiles = acceptedFiles.map(file => new ProblemAttachments({file: file}));
-            setAttachedFiles(attachedFiles => {
-                const fullAttachedState = [...attachedFiles, ...processingFiles];
-                uploadFilesWithProgress(fullAttachedState);
-                return fullAttachedState;
-            });
+            const fullAttachedState = [...attachedFiles, ...processingFiles];
+            setAttachedFiles(fullAttachedState);
         }, [attachedFiles]);
     
     const { getRootProps, getInputProps, isDragActive, open } = useDropzone({ onDrop,
@@ -133,16 +139,26 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
             onClose={()=>setOpenDrawer(false)}
             SlideProps={{style: {width: '30rem'}}}
         >
-            <Grid container md={12} style={isDragActive ? {
-                position: 'absolute', 
-                width: '100%', 
-                height: '100%', 
-                border: '5px dashed lightblue', 
-                borderRadius: '3px',
-                textAlign: 'center',
-                backgroundColor: '#343a40',
-                opacity: 0.9
-            } : {}}>
+            {isDragActive && (
+                <div style={{
+                    position: 'absolute', 
+                    width: '100%', 
+                    height: '100%', 
+                    border: '5px dashed lightblue', 
+                    borderRadius: '3px',
+                    textAlign: 'center',
+                    zIndex: 2,
+                    backgroundColor: 'white',
+                    opacity: 0.9
+                }} 
+                >
+                    <div style={{position: 'relative', margin: '0 auto', top: '30%', fontSize: '1.3em'}}>
+                        Drop your attachments here to upload your work!
+                        <FaFileUpload style={{position: 'relative', margin: '0 auto', top: '30%', display: 'block', fontSize: '2em'}}/>
+                    </div>
+                </div>
+            )}
+            <Grid container md={12}>
                 <Grid item md={12}>
                     <div className='text-center'>
                         <h1>Attachments</h1>
@@ -175,7 +191,7 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                                 <Card key={attachment.file?.name ?? attachment.id} style={isInError ? errorStyle : {}}>
                                     <CardContent>
                                         {isInError ? <MdError /> : <BsFileEarmarkMinus />} {attachment.file?.name ?? attachment.userLocalFilename}
-                                        {attachment.progress < 100 && 
+                                        {attachment.file && 
                                             <LinearProgress variant="determinate" value={attachment.progress} />}
                                     </CardContent>
                                 </Card>
