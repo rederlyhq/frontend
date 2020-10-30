@@ -83,7 +83,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                             <Col>
                                 <Row>
                                     <Link to={loc =>(userType !== UserRole.STUDENT ?
-                                        {pathname: `${loc.pathname}/topic/${topic.id}/settings`} :
+                                        {pathname: `${loc.pathname}/topic/${topic.id}/grading`} :
                                         {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
                                     )}>
                                         <Col>
