@@ -23,6 +23,7 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
     useEffect(()=>{
         if (!_.isNil(defaultPath)) {
             setPreviewSettings(settings => ({...settings, path: defaultPath}));
+            forceUpdate();
         }
     }, [defaultPath]);
 
