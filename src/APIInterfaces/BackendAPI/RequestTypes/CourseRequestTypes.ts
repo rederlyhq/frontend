@@ -116,8 +116,11 @@ export interface PostDefFileOptions {
 }
 
 export interface PreviewQuestionOptions {
-    webworkQuestionPath: string;
+    webworkQuestionPath?: string;
+    problemSource?: string;
     problemSeed?: number;
+    showHints?: boolean;
+    showSolutions?: boolean;
     formData?: FormData;
 }
 
@@ -160,7 +163,7 @@ export interface getAssessmentProblemsWithWorkbooksOptions {
 }
 
 /* *************** *************** */
-/* ********** Attachments ********** */
+/* ********* Attachments ********* */
 /* *************** *************** */
 
 export interface PostConfirmAttachmentUploadOptions {
@@ -176,4 +179,25 @@ export interface ListAttachmentOptions {
     studentGradeId?: number;
     studentGradeInstanceId?: number;
     studentWorkbookId?: number;
+}
+
+export interface ListAttachmentOptions {
+    studentGradeId?: number;
+    studentGradeInstanceId?: number;
+    studentWorkbookId?: number;
+}
+
+/* *************** *************** */
+/* *********** Editor  *********** */
+/* *************** *************** */
+export interface ReadQuestionOptions {
+    filePath: string;
+}
+
+export interface SaveQuestionOptions {
+    problemSource: string;
+    relativePath: string;
+}
+
+export interface CatalogOptions {
 }

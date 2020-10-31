@@ -24,6 +24,7 @@ import CourseProvider from '../Courses/CourseProvider';
 import TopicSettingsPage from '../Courses/TopicSettings/TopicSettingsPage';
 import logger from '../Utilities/Logger';
 import TopicGradingPage from '../Courses/TopicGrades/GradingPage';
+import { ProblemEditor } from '../Assignments/ProblemEditor';
 
 interface NavWrapperProps {
 
@@ -81,6 +82,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     <Nav className="float-right">
                         <NavDropdown title={`Welcome, ${userName}`} id='account-dropdown'>
                             <NavDropdown.Item onClick={()=>{history.push(`${path}/account`);}}>My Account</NavDropdown.Item>
+                            <NavDropdown.Item onClick={()=>{history.push(`${path}/editor`);}}>Problem Editor</NavDropdown.Item>
                             <NavDropdown.Item onClick={logout}>Log out</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
@@ -94,6 +96,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                         <Switch>
                             <Route exact path={`${path}/account`}>
                                 <AccountWrapper />
+                            </Route>
+                            <Route exact path={`${path}/editor`}>
+                                <ProblemEditor />
                             </Route>
                             <Route exact path={`${path}/adviser`}>
                                 <AdviserPage />

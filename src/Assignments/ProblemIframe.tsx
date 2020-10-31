@@ -16,6 +16,9 @@ interface ProblemIframeProps {
     setProblemStudentGrade?: (val: any) => void;
     previewPath?: string;
     previewSeed?: number;
+    previewProblemSource?: string;
+    previewShowHints?: boolean;
+    previewShowSolutions?: boolean;
     workbookId?: number;
     readonly?: boolean;
 }
@@ -31,6 +34,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     problem,
     previewPath,
     previewSeed,
+    previewProblemSource,
+    previewShowHints,
+    previewShowSolutions,
     setProblemStudentGrade = ()=>{},
     workbookId,
     readonly = false,
@@ -65,8 +71,14 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 }
 
                 let res;
-                if (previewPath) {
-                    res = await postPreviewQuestion({webworkQuestionPath: previewPath, problemSeed: previewSeed});
+                if (previewPath || previewProblemSource) {
+                    res = await postPreviewQuestion({
+                        webworkQuestionPath: previewPath,
+                        problemSeed: previewSeed,
+                        problemSource: previewProblemSource,
+                        showHints: previewShowHints,
+                        showSolutions: previewShowSolutions
+                    });
                 } else {
                     res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
                 }
@@ -82,7 +94,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
         setLastSubmission({});
-    }, [problem, problem.id, workbookId]);
+    }, [problem, problem.id, workbookId, previewPath, previewProblemSource]);
 
     const isPrevious = (_value: any, key: string): boolean => {
         return /^previous_/.test(key);
@@ -156,7 +168,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             formData.set(clickedButton.name, clickedButton.value);
             try {
                 let result: any;
-                if (_.isNil(previewPath)) {
+                if (_.isNil(previewPath) && _.isNil(previewProblemSource)) {
                     result = await postQuestionSubmission({
                         id: problem.id,
                         data: formData,
@@ -166,6 +178,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                         webworkQuestionPath: previewPath,
                         problemSeed: previewSeed,
                         formData,
+                        problemSource: previewProblemSource,
+                        showHints: previewShowHints,
+                        showSolutions: previewShowSolutions
                     });
                 }
 
