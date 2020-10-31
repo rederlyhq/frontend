@@ -1,15 +1,18 @@
-import { Card, CardContent, Drawer, Grid, LinearProgress } from '@material-ui/core';
+import { Card, CardContent, Drawer, Grid, IconButton, LinearProgress } from '@material-ui/core';
 import { Button } from 'react-bootstrap';
 import React, { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { DropEvent, FileRejection, useDropzone } from 'react-dropzone';
 import { ProblemAttachments, TopicObject } from '../Courses/CourseInterfaces';
 import { FaFileUpload } from 'react-icons/fa';
-import { BsFileEarmarkMinus } from 'react-icons/bs';
 import { MdError } from 'react-icons/md';
-import { getUploadURL, postConfirmAttachmentUpload, getAttachments } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { BsBoxArrowUpRight } from 'react-icons/bs';
+import { DeleteOutlined } from '@material-ui/icons';
+import { getUploadURL, postConfirmAttachmentUpload, getAttachments, deleteAttachments } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../Utilities/Logger';
 import _ from 'lodash';
 import { putUploadWork } from '../APIInterfaces/AWS/Requests/StudentUpload';
+import url from 'url';
 
 import './AttachmentsSidebar.css';
 
@@ -24,6 +27,7 @@ interface AttachmentsSidebarProps {
 
 export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, openDrawer, setOpenDrawer, gradeId, gradeInstanceId}) => {
     const [attachedFiles, setAttachedFiles] = useState<Array<ProblemAttachments>>([]);
+    const [baseUrl, setBaseUrl] = useState<string>(window.location.host);
 
     // Get list of attached files.
     useEffect(()=>{
@@ -35,6 +39,9 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                 });
 
                 const alreadyAttachedFiles = res.data.data.attachments;
+                const baseUrl = res.data.data.baseUrl;
+
+                setBaseUrl(baseUrl);
                 setAttachedFiles(alreadyAttachedFiles.map(file => new ProblemAttachments(file)));
             } catch (e) {
                 logger.error('Failed to get attachments.', e);
@@ -90,9 +97,9 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                     onUploadProgress: onUploadProgress
                 });
 
-                await postConfirmAttachmentUpload({
+                const confirmRes = await postConfirmAttachmentUpload({
                     attachment: {
-                        cloudFileName: res.data.data.cloudFilename,
+                        cloudFileName: res.data.data.cloudFileName,
                         userLocalFilename: file.file.name,
                     },
                     ...(gradeInstanceId ?
@@ -100,8 +107,8 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                         {studentGradeId: gradeId}
                     ),
                 });
-
-                updateIndexProgressWithPartial(index, {progress: 100, cloudFilename: res.data.data.cloudFilename});
+                const attachmentData = confirmRes.data.data;
+                updateIndexProgressWithPartial(index, {...attachmentData, progress: 100, cloudFileName: res.data.data.cloudFileName});
             } catch (e) {
                 // Catch on an individual file basis
                 updateIndexProgressWithPartial(index, {progress: -1});
@@ -130,6 +137,19 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
         noClick: true,
         noKeyboard: true
     });
+
+    const deleteAttachment = async (attachment: ProblemAttachments) => {
+        if (_.isNil(attachment.id)) {
+            logger.error('Attempted to delete attachment with no id. Was it uploaded successfully?');
+            return;
+        }
+        try {
+            await deleteAttachments({id: attachment.id});
+            setAttachedFiles(attachedFiles => _.reject(attachedFiles, ['id', attachment.id]));
+        } catch (e) {
+            logger.error('Failed to delete an attachment.', e.message);
+        }
+    };
 
     return (
         <Drawer 
@@ -198,9 +218,18 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                             return (
                                 <Card key={attachment.file?.name ?? attachment.id} style={cardStyle}>
                                     <CardContent>
-                                        {isInError ? <MdError /> : <BsFileEarmarkMinus />} {attachment.file?.name ?? attachment.userLocalFilename}
-                                        {attachment.file && 
-                                            <LinearProgress variant="determinate" value={attachment.progress} />}
+                                        {isInError && <MdError />} {attachment.file?.name ?? attachment.userLocalFilename}
+                                        <IconButton color="secondary" aria-label="delete" onClick={()=>deleteAttachment(attachment)} style={{float: 'right'}}>
+                                            <DeleteOutlined />
+                                        </IconButton>
+
+                                        <a href={(baseUrl && attachment.cloudFileName) ? url.resolve(baseUrl.toString(), attachment.cloudFileName) : '/404'} target="_blank" rel='noopener noreferrer'>
+                                            <IconButton color="primary" aria-label="preview" style={{float: 'right'}}>
+                                                <BsBoxArrowUpRight />
+                                            </IconButton>
+                                        </a>
+
+                                        {attachment.file && <LinearProgress variant="determinate" value={attachment.progress} />}
                                     </CardContent>
                                 </Card>
                             );
