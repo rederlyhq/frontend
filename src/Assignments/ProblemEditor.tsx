@@ -18,11 +18,11 @@ import { FaCopy } from 'react-icons/fa';
 import path from 'path';
 import { Alert, Modal } from 'react-bootstrap';
 import useAlertState from '../Hooks/useAlertState';
+import { useLocation } from 'react-router-dom';
 
 const defaultLoadPath = 'private/templates/barebones.pg';
-const defaultUserPath = path.basename(defaultLoadPath);
 
-const dumbyProblem = new ProblemObject();
+const dummyProblem = new ProblemObject();
 interface PreviewProps {
     seedValue: number;
     problemSource?: string;
@@ -35,7 +35,12 @@ export interface ProblemEditorInputs extends PreviewProps {
     userPath: string;
 }
 
+export interface LocationProps {
+    loadPath?: string;
+}
+
 export const ProblemEditor: React.FC = () => {
+    const location = useLocation<LocationProps>();
     const savePathAdornmentText = `private/my/${getUserId()}/`;
     const getSavePathForLoadPath = (userPath: string): string => {
         let result = userPath;
@@ -60,12 +65,13 @@ export const ProblemEditor: React.FC = () => {
     const [myCatalog, setMyCatalog] = useState<Array<string>>([]);
     const [catalogOpen, setCatalogOpen] = useState<boolean>(false);
 
+    const loadPath = location.state?.loadPath ?? defaultLoadPath;
     const problemEditorForm = useForm<ProblemEditorInputs>({
         mode: 'onSubmit', 
         shouldFocusError: true,
         defaultValues: {
-            loadPath: defaultLoadPath,
-            userPath: getSavePathForLoadPath(defaultLoadPath),
+            loadPath: loadPath,
+            userPath: getSavePathForLoadPath(loadPath),
             ...previewState
         },
     });
@@ -376,7 +382,7 @@ export const ProblemEditor: React.FC = () => {
                     previewSeed={previewState.seedValue}
                     previewShowHints={previewState.showHints}
                     previewShowSolutions={previewState.showSolutions}
-                    problem={dumbyProblem}
+                    problem={dummyProblem}
                 />}
             </Grid>
         </Grid>
