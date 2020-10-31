@@ -36,6 +36,19 @@ export interface ProblemEditorInputs extends PreviewProps {
 }
 
 export const ProblemEditor: React.FC = () => {
+    const savePathAdornmentText = `private/my/${getUserId()}/`;
+    const getSavePathForLoadPath = (userPath: string): string => {
+        let result = userPath;
+        if (userPath.startsWith(savePathAdornmentText)) {
+            result = userPath.substring(savePathAdornmentText.length);
+        } else if (userPath.startsWith('private/templates')) {
+            result = path.basename(userPath);
+        } else {
+            logger.debug('User path stays the same');
+        }
+        return result;
+    };
+
     const [alertState, setAlertState] = useAlertState();
     const [previewState, setPreviewState] = useState<PreviewProps>({
         seedValue: 666,
@@ -52,13 +65,12 @@ export const ProblemEditor: React.FC = () => {
         shouldFocusError: true,
         defaultValues: {
             loadPath: defaultLoadPath,
-            userPath: defaultUserPath,
+            userPath: getSavePathForLoadPath(defaultLoadPath),
             ...previewState
         },
     });
 
     const { register, control } = problemEditorForm;
-    const savePathAdornmentText = `private/my/${getUserId()}/`;
 
     const render = () => {
         setPreviewState({
@@ -75,11 +87,7 @@ export const ProblemEditor: React.FC = () => {
                 filePath: problemEditorForm.getValues().loadPath
             });
             problemEditorForm.setValue(nameof<ProblemEditorInputs>('problemSource'), result.data.data.problemSource);
-            // let userPath = problemEditorForm.getValues().loadPath;
-            // if (userPath.startsWith(savePathAdornmentText)) {
-            //     userPath = userPath.substring(savePathAdornmentText.length);
-            // }
-            const userPath = path.basename(problemEditorForm.getValues().loadPath);
+            const userPath = getSavePathForLoadPath(problemEditorForm.getValues().loadPath);
             problemEditorForm.setValue(nameof<ProblemEditorInputs>('userPath'), userPath);
             render();
         } catch(e) {
@@ -223,7 +231,7 @@ export const ProblemEditor: React.FC = () => {
                     inputRef={register({
                         required: true, 
                     })}
-                    label='userPath'
+                    label='Problem Path to Save'
                     type='text'
                     fullWidth={true}
                     InputProps={{
