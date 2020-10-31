@@ -39,11 +39,11 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                     inputProps={{style: {fontSize: '2.5rem'}}}
                 />
             </Grid>
-            <Grid item container md={12}><h2>Core Topic Settings</h2></Grid>
+            <Grid item container md={12}><h2>Topic Settings</h2></Grid>
             {/* This is a workaround because setValue doesn't seem to cause a UI rerender. */}
-            <Grid item md={12} style={{display: topicTypeId === 'exam' ? 'none' : undefined}}>
+            <Grid item md={12} style={{display: topicTypeId === TopicTypeId.EXAM ? 'none' : undefined}}>
                 {/* ${partialCreditScore} = ((${gradeCandidate}- ${legalScore}) * ${topicLateScalar}) + ${legalScore} */}
-                Allow students to receive partial credit after the end date of this topic. Partial credit is scaled for up to half the original weight of the topic.<br/>
+                Set a 50% partial credit time window after the end of this topic.<br/>
 
                 {/* <Switch color='primary' inputProps={{type: 'checkbox'}} name='partialExtend' inputRef={register()} /> */}
                 <Controller 
@@ -53,7 +53,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                     render={({ onChange, onBlur, value, name }) => (
                         <FormControlLabel 
                             name='partialExtend'
-                            label={'Allow Partial Extensions'} 
+                            label={'Partial Credit Extension'} 
                             labelPlacement='end' 
                             disabled={topicTypeId === TopicTypeId.EXAM}
                             control={
@@ -80,8 +80,9 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         variant='inline'
                         inputVariant='outlined'
                         fullWidth={false}
-                        label='Start Date'
+                        label='Start'
                         maxDate={endDate}
+                        maxDateMessage='Start date must come before end date'
                         onAccept={() => {setUpdateAlert({message: '', variant: 'warning'});}}
                         rules={{
                             required: true,
@@ -103,8 +104,9 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         variant="inline"
                         inputVariant='outlined'
                         fullWidth={false}
-                        label='End Date'
+                        label={partialExtend ? 'End (full credit)' : 'End'}
                         minDate={moment.max([startDate, moment()])}
+                        minDateMessage='End date should not be set in the past'
                         onAccept={() => {setUpdateAlert({message: '', variant: 'warning'});}}
                         rules={{
                             required: true,
@@ -115,7 +117,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                                 },
                                 isAfterDead: (endDate: Moment) => {
                                     if (_.isNil(deadDate)) return true;
-                                    return endDate.isSameOrBefore(deadDate) || 'End date cannot be after Dead date';
+                                    return endDate.isSameOrBefore(deadDate) || 'End (full credit) date cannot be after End (partial credit) date';
                                 }
                             }
                         }}
@@ -131,7 +133,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         variant='inline'
                         inputVariant='outlined'
                         fullWidth={false}
-                        label='Dead Date'
+                        label='End (partial credit)'
                         minDate={moment.max([endDate, moment()])}
                         onAccept={() => {setUpdateAlert({message: '', variant: 'warning'});}}
                         rules={{
@@ -140,7 +142,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                                 isDate: (data: any) => moment(data).isValid() || 'Invalid date',
                                 isLatest: (deadDate: Moment) => {
                                     const { endDate, startDate } = getValues();
-                                    return startDate.isSameOrBefore(deadDate) && endDate.isSameOrBefore(deadDate) || 'Dead date cannot be before Start or End dates';
+                                    return startDate.isSameOrBefore(deadDate) && endDate.isSameOrBefore(deadDate) || 'End (partial credit) date cannot be before Start or End (full credit) dates';
                                 }
                             }
                         }}
