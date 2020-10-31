@@ -361,6 +361,7 @@ export const ProblemEditor: React.FC = () => {
                                 // dark theme
                                 // theme: 'material',
                                 lineNumbers: true,
+                                viewportMargin: Infinity
                             }}
                             // According to the documentation example this is how you handle uncontrolled state
                             // putting this in onchange causes a page crash

@@ -25,7 +25,7 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
     const [previewSettings, setPreviewSettings] = useState({path: '', seed: 1});
     const [forcedUpdate, setForcedUpdate] = React.useState(new ProblemObject());
     const forceUpdate = React.useCallback(() => setForcedUpdate(new ProblemObject()), []);
-    const pgRegex = /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/;
+    const pgRegex = /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/my|private\/templates|private\/rederly).*\.pg$/;
     const controls = useAnimation();
     const [flipped, cycleFlipped] = useCycle(-1, 1);
 
@@ -75,7 +75,7 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
                             value={previewSettings.path}
                             inputProps={{
                                 form: 'null',
-                                pattern: /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/
+                                pattern: /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/my|private\/templates|private\/rederly).*\.pg$/
                             }}
                             InputProps={{
                                 endAdornment: <InputAdornment position="end">
