@@ -502,7 +502,6 @@ export const postConfirmAttachmentUpload = async (options: PostConfirmAttachment
 };
 
 // Workbooks is an auditing field and there isn't a practical frontend use for them right now.
-// 
 export const getAttachments = async ({
     studentGradeId,
     studentGradeInstanceId,
@@ -518,6 +517,16 @@ export const getAttachments = async ({
                 // studentWorkbookId,
             }
         });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const deleteAttachments = async ({
+    id
+}: {id: number}): Promise<AxiosResponse<any>> => {
+    try {
+        return await AxiosRequest.delete(url.resolve(COURSE_ATTACHMENTS_PATH, `${id}/`));
     } catch (e) {
         throw new BackendAPIError(e);
     }
