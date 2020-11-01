@@ -11,6 +11,7 @@ import ProblemIframe from '../../Assignments/ProblemIframe';
 import { getAssessmentProblemsWithWorkbooks } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { GradeInfoHeader } from './GradeInfoHeader';
 import { useQuery } from '../../Hooks/UseQuery';
+import AttachmentsPreview from './AttachmentsPreview';
 
 interface TopicGradingPageProps {
     topicId?: string;
@@ -284,6 +285,16 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                             previewSeed={selectedInfo.seed}
                         />
                     )}
+                    <Grid container item md={12}>
+                        <AttachmentsPreview 
+                            gradeId={selected.workbook?.studentGradeId ?? selectedInfo?.grade?.id}
+                            gradeInstanceId={selected.workbook?.studentGradeInstanceId}
+                            // Workbooks don't seem to be loading in the database right now,
+                            // but a professor shouldn't really care about this level. Attachments should show the same for
+                            // all attempts, maybe even all versions?
+                            // workbookId={selected.workbook?.id} 
+                        /> 
+                    </Grid>
                 </Grid>
             </Grid>
         </Grid>
