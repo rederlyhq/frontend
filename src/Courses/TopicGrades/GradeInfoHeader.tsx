@@ -82,21 +82,19 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             currentAverageScore = _.reduce(workbooks, (sum, wb) => {
                 return sum + wb.result;
             }, 0) / currentAttemptsCount;
-            if (!_.isEmpty(workbookKeys) && _.hasIn(workbooks, [workbookKeys[0], 'studentGradeInstanceId'])) {
+            if (!_.isEmpty(workbookKeys)) {
                 currentVersionMap = _.reduce(workbooks, (map, wb, id) => {
                     if (!_.isNil(wb.studentGradeInstanceId)) {
                         (map[wb.studentGradeInstanceId] || (map[wb.studentGradeInstanceId] = [])).push(parseInt(id, 10));
+                    } else {
+                        // there should only be one studentGradeId in this case...
+                        (map[wb.studentGradeId] || (map[wb.studentGradeId] = [])).push(parseInt(id, 10));
+                        if (wb.studentGradeId !== grade.id) logger.error(`Workbooks for grade ${grade.id} are out of sync with the corresponding grade object.`);
                     }
                     return map;
                 }, {} as { [k: number]: number[] });
             } else {
-                // in this case, there should be only one key on currentVersionMap
-                currentVersionMap = _.reduce(workbooks, (map, wb, id) => {
-                    if (!_.isNil(wb.studentGradeId)) {
-                        (map[wb.studentGradeId] || (map[wb.studentGradeId] = [])).push(parseInt(id, 10));
-                    }
-                    return map;
-                }, {} as { [k: number]: number[] });
+                logger.error(`User ${grade.userId} has non-empty workbooks for grade ${grade.id} but none of them have ids.`);
             }
         } else {
             currentAttemptsCount = 0;
@@ -169,48 +167,21 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     }
 
     return (
-        <Grid container spacing={1} style={{ paddingLeft: '1rem' }}>
-            <Grid item xs={6}>
-                Number of attempts: <strong>{info.attemptsCount}</strong>
-            </Grid>
-            <Grid item xs={6}>
-                Best overall score: <strong>{(info.overallBestScore * 100).toFixed(1)}</strong>
-            </Grid>
-            <Grid item xs={6}>
+        <Grid container spacing={1} style={{ paddingLeft: '1rem' }} alignItems='flex-start'>
+            <Grid item xs={6} alignItems='flex-start'>
+                <h4>Statistics</h4>
+                Number of attempts: <strong>{info.attemptsCount}</strong><br />
+                Best overall score: <strong>{(info.overallBestScore * 100).toFixed(1)}</strong><br />
+                Score from best exam submission: <strong>{(info.legalScore * 100).toFixed(1)}</strong><br />
                 Average score: <strong>{info.averageScore && (info.averageScore * 100).toFixed(1)}</strong>
             </Grid>
             <Grid item xs={6}>
-                Score from best exam submission: <strong>{(info.legalScore * 100).toFixed(1)}</strong>
-            </Grid>
-            <Grid item xs={6}>
-                {(info.workbookList && !_.isEmpty(info.workbookList) && info.workbookId)?
-                    <WorkbookSelect
-                        options={info.workbookList}
-                        value={info.workbookId}
-                        onChange={setInfo}
-                    /> : 
-                    `${selected.user?.name} has not attempted this problem.`
-                }
-            </Grid>
-            <Grid item xs={6}>
-                Effective score for grades: <strong>{(info.effectiveScore * 100).toFixed(1)}</strong>
-            </Grid>
-            {grade.workbooks && !_.isEmpty(grade.workbooks) &&
-                <Grid item xs={6}>
-                    Score on this attempt: 
-                    {(!_.isNil(info.workbookId) && !_.isNil(grade.workbooks[info.workbookId])) ?
-                        <strong>{(grade.workbooks[info.workbookId].result * 100).toFixed(1)}</strong> :
-                        (!_.isNil(workbookId) && !_.isNil(grade.workbooks[workbookId])) ?
-                            <strong>{(grade.workbooks[workbookId].result * 100).toFixed(1)}</strong> :
-                            'Something went wrong here.'
-                    }
-                </Grid>
-            }
-            <Grid item xs={_.isNil(grade.workbooks) ? 12 : 6}>
+                <h4>Grades</h4>
+                Effective score for grades: <strong>{(info.effectiveScore * 100).toFixed(1)}</strong><br />
                 <Button
                     variant='outlined'
                     onClick={() => setShowGradeModal(true)}
-                    // disabled={(parseFloat(newScorePercentInput) / 100) === info.effectiveScore}
+                // disabled={(parseFloat(newScorePercentInput) / 100) === info.effectiveScore}
                 >
                     Set new score for grades
                 </Button>
@@ -220,11 +191,27 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                     grade={grade}
                     onSuccess={(newGrade: Partial<StudentGrade>) => {
                         if (!_.isNil(newGrade.effectiveScore)) {
-                            setInfo({...info, effectiveScore: newGrade.effectiveScore});
+                            setInfo({ ...info, effectiveScore: newGrade.effectiveScore });
                             onSuccess(newGrade);
                         }
                     }}
-                />
+                /><br />
+                {grade.workbooks && !_.isEmpty(grade.workbooks) && info.workbookId &&
+                    <p>
+                        Score on this attempt:
+                        <strong>{(grade.workbooks[info.workbookId].result * 100).toFixed(1)}</strong>
+                    </p>
+                }
+            </Grid>
+            <Grid item xs={12}>
+                {(info.workbookList && !_.isEmpty(info.workbookList) && info.workbookId)?
+                    <WorkbookSelect
+                        options={info.workbookList}
+                        value={info.workbookId}
+                        onChange={setInfo}
+                    /> : 
+                    `${selected.user?.name} has not attempted this problem.`
+                }
             </Grid>
         </Grid>
     );
