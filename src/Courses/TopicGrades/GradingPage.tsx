@@ -293,6 +293,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                                 previewSeed={selectedInfo.seed}
                             />
                         )}
+                    </Grid>
                     <Grid container item md={12}>
                         <AttachmentsPreview 
                             gradeId={selected.workbook?.studentGradeId ?? selectedInfo?.grade?.id}
