@@ -84,12 +84,11 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                     if (!_.isNil(currentUserGrade.randomSeed)) {
                         currentSeed = currentUserGrade.randomSeed;
                     }
-                    const userProblemWorkbooks = currentUserGrade.workbooks;
-                    const selectedWorkbookId = currentUserGrade.lastInfluencingAttemptId; // this can be expanded
-                    if (!_.isNil(userProblemWorkbooks) && (!_.isEmpty(userProblemWorkbooks))) {
-                        currentWorkbooks = userProblemWorkbooks;
+                    const currentWorkbooks = currentUserGrade.workbooks;
+                    let selectedWorkbookId = currentUserGrade.lastInfluencingAttemptId; // this can be expanded
+                    if (!_.isNil(currentWorkbooks) && (!_.isEmpty(currentWorkbooks))) {
                         if (!_.isNil(selectedWorkbookId)) {
-                            currentWorkbook = userProblemWorkbooks[selectedWorkbookId];
+                            currentWorkbook = currentWorkbooks[selectedWorkbookId];
                             if (_.isNil(currentWorkbook)) {
                                 logger.error(`we were supposed to get workbook #${selectedWorkbookId}, but failed.`);
                             } else {
@@ -98,8 +97,16 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                                 currentSeed = undefined;
                             }
                         } else {
-                            logger.error(`TSNH: student #${selected.user.id} has workbooks for problem #${selected.problem.id} but no target-able id`);
-                            setError(`There is a problem with the history of submissions for ${selected.user.name}.`);
+                            logger.warn(`Student #${selected.user.id} has bad workbook history for problem #${selected.problem.id} -- selecting the most recent instead.`);
+                            selectedWorkbookId = parseInt(_.keys(currentWorkbooks).sort().reverse()[0], 10);
+                            currentWorkbook = currentWorkbooks[selectedWorkbookId];
+                            if (_.isNil(selectedWorkbookId) || _.isNil(currentWorkbook)) {
+                                logger.error(`Student #${selected.user.id} has workbooks for problem #${selected.problem.id} but we failed to ID any of them.`);
+                                setError(`There is a problem with the history of submissions for ${selected.user.name}.`);
+                            } else {
+                                currentPath = undefined;
+                                currentSeed = undefined;
+                            }
                         }
                     } else {
                         // no error - student simply has no workbooks
@@ -260,7 +267,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                         <MaterialBiSelect problems={problems} users={users} selected={selected} setSelected={setSelected} />
                     }
                 </Grid>
-                <Grid container item md={8} style={{paddingLeft: '1rem'}}>
+                <Grid container md={8} style={{paddingLeft: '1rem', height: 'min-content'}}>
                     { selectedInfo.grade &&
                         < GradeInfoHeader
                             grade={selectedInfo.grade}
@@ -270,21 +277,22 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                             onSuccess={setGradeOverride}
                         />
                     }
-                    {selectedInfo.problem && selected.user && selectedInfo.workbook && selectedInfo.workbook.id && (
-                        < ProblemIframe
-                            problem={selectedInfo.problem}
-                            readonly={true}
-                            workbookId={selectedInfo.workbook.id}
-                        />
-                    )}
-                    {selectedInfo.problem && selectedInfo.path && selectedInfo.seed && (
-                        < ProblemIframe
-                            problem={selectedInfo.problem}
-                            readonly={true}
-                            previewPath={selectedInfo.path}
-                            previewSeed={selectedInfo.seed}
-                        />
-                    )}
+                    <Grid container alignItems='stretch'>
+                        {selectedInfo.problem && selected.user && selectedInfo.workbook && selectedInfo.workbook.id && (
+                            < ProblemIframe
+                                problem={selectedInfo.problem}
+                                readonly={true}
+                                workbookId={selectedInfo.workbook.id}
+                            />
+                        )}
+                        {selectedInfo.problem && selectedInfo.path && selectedInfo.seed && (
+                            < ProblemIframe
+                                problem={selectedInfo.problem}
+                                readonly={true}
+                                previewPath={selectedInfo.path}
+                                previewSeed={selectedInfo.seed}
+                            />
+                        )}
                     <Grid container item md={12}>
                         <AttachmentsPreview 
                             gradeId={selected.workbook?.studentGradeId ?? selectedInfo?.grade?.id}

@@ -257,6 +257,7 @@ export interface StudentGradeInstance {
 
 export interface StudentGradeDict {
     id: number;
+    userId: number;
     randomSeed: number;
     overallBestScore: number;
     effectiveScore: number;
