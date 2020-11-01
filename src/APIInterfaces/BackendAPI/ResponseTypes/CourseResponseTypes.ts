@@ -100,7 +100,7 @@ export type GetQuestionResponse = BackendAPIResponse<Partial<ProblemObject>>;
 
 interface GetUploadURL {
     uploadURL: URL;
-    cloudFileName: string;
+    cloudFilename: string;
 }
 
 export type GetUploadURLResponse = BackendAPIResponse<GetUploadURL>;

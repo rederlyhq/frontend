@@ -285,15 +285,16 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                             previewSeed={selectedInfo.seed}
                         />
                     )}
-                </Grid>
-                <Grid container item md={12}>
-                    TODO: FIXME
-                    {selected.workbook && (
+                    <Grid container item md={12}>
                         <AttachmentsPreview 
-                            // gradeId={}
-                            // gradeInstanceId={}
-                            workbookId={selected.workbook.id} />
-                    )}
+                            gradeId={selected.workbook?.studentGradeId ?? selectedInfo?.grade?.id}
+                            gradeInstanceId={selected.workbook?.studentGradeInstanceId}
+                            // Workbooks don't seem to be loading in the database right now,
+                            // but a professor shouldn't really care about this level. Attachments should show the same for
+                            // all attempts, maybe even all versions?
+                            // workbookId={selected.workbook?.id} 
+                        /> 
+                    </Grid>
                 </Grid>
             </Grid>
         </Grid>

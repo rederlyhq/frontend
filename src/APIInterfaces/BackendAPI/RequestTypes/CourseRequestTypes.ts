@@ -165,7 +165,7 @@ export interface getAssessmentProblemsWithWorkbooksOptions {
 
 export interface PostConfirmAttachmentUploadOptions {
     attachment: {
-        cloudFileName: string;
+        cloudFilename: string;
         userLocalFilename: string;
     },
     studentGradeId?: number;

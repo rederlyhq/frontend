@@ -99,7 +99,7 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
 
                 const confirmRes = await postConfirmAttachmentUpload({
                     attachment: {
-                        cloudFileName: res.data.data.cloudFileName,
+                        cloudFilename: res.data.data.cloudFilename,
                         userLocalFilename: file.file.name,
                     },
                     ...(gradeInstanceId ?
@@ -108,7 +108,7 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                     ),
                 });
                 const attachmentData = confirmRes.data.data;
-                updateIndexProgressWithPartial(index, {...attachmentData, progress: 100, cloudFileName: res.data.data.cloudFileName});
+                updateIndexProgressWithPartial(index, {...attachmentData, progress: 100, cloudFilename: res.data.data.cloudFilename});
             } catch (e) {
                 // Catch on an individual file basis
                 updateIndexProgressWithPartial(index, {progress: -1});
@@ -223,7 +223,7 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                                             <DeleteOutlined />
                                         </IconButton>
 
-                                        <a href={(baseUrl && attachment.cloudFileName) ? url.resolve(baseUrl.toString(), attachment.cloudFileName) : '/404'} target="_blank" rel='noopener noreferrer'>
+                                        <a href={(baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404'} target="_blank" rel='noopener noreferrer'>
                                             <IconButton color="primary" aria-label="preview" style={{float: 'right'}}>
                                                 <BsBoxArrowUpRight />
                                             </IconButton>
