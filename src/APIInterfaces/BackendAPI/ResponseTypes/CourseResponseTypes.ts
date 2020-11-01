@@ -107,7 +107,25 @@ export type GetUploadURLResponse = BackendAPIResponse<GetUploadURL>;
 
 interface ListAttachmentsInterface {
     attachments: ProblemAttachments[];
-    baseUrl: URL;
+    baseUrl: string;
 }
 
 export type ListAttachmentsResponse = BackendAPIResponse<ListAttachmentsInterface>;
+
+/* *************** *************** */
+/* *********** Editor  *********** */
+/* *************** *************** */
+interface ReadQuestion {
+    problemSource: string;
+}
+export type ReadQuestionResponse = BackendAPIResponse<ReadQuestion>;
+
+export interface SaveQuestion {
+    filePath: string;
+}
+export type SaveQuestionResponse = BackendAPIResponse<SaveQuestion>;
+
+export interface Catalog {
+    problems: Array<string>;
+}
+export type CatalogResponse = BackendAPIResponse<Catalog>;
