@@ -4,6 +4,7 @@ import './index.css';
 import * as serviceWorker from './serviceWorker';
 import { Router } from './Router';
 import './Utilities/DateExtension';
+import GlobalErrorBoundaryState from './Utilities/ErrorBoundaries/GlobalErrorBoundary';
 
 // if (process.env.NODE_ENV !== 'production') {
 //     var axe = require('react-axe');
@@ -12,7 +13,9 @@ import './Utilities/DateExtension';
 
 ReactDOM.render(
     <React.StrictMode>
-        <Router />
+        <GlobalErrorBoundaryState>
+            <Router />
+        </GlobalErrorBoundaryState>
     </React.StrictMode>,
     document.getElementById('root')
 );
