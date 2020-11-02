@@ -64,7 +64,7 @@ export const ProvideFeedback: React.FC<any> = () => {
     return (
         <>
             <Button variant="outline-light" onClick={() => setShowFeedbackModal(true)}>
-                Provide feedback
+                Rederly Support
             </Button>
 
             <Modal
@@ -75,7 +75,7 @@ export const ProvideFeedback: React.FC<any> = () => {
                 <Form noValidate validated={validated} onSubmit={submit}>
                     <Modal.Header closeButton>
                         <Modal.Title>
-                        Provide Feedback
+                            Provide Feedback to Rederly Support
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
