@@ -8,19 +8,19 @@ import { FaDice, FaFile } from 'react-icons/fa';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import { ProblemObject } from '../CourseInterfaces';
 import { useHistory } from 'react-router-dom';
+import * as qs from 'querystring';
+
 interface RendererPreviewProps {
     defaultPath?: string;
 }
 
 export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) => {
-    const history = useHistory();
-
     const navigateToEditor = (problemPath: string) => {
         // We use useRouteMatch().path elsewhere but that didn't give desired results
         // TODO is this safe if it is hosted under an endpoints and not at root
-        history.push('/common/editor', {
-            loadPath: problemPath
-        });
+        window.open(`/common/editor?${qs.stringify({
+            loadPath: problemPath.toBase64()
+        })}`, '_blank');
     };
     const [previewSettings, setPreviewSettings] = useState({path: '', seed: 1});
     const [forcedUpdate, setForcedUpdate] = React.useState(new ProblemObject());

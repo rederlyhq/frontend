@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
 import { Router } from './Router';
-import './Utilities/DateExtension';
+import './Extensions';
 
 // if (process.env.NODE_ENV !== 'production') {
 //     var axe = require('react-axe');
