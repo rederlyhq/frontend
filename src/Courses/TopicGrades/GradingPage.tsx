@@ -273,7 +273,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                         <MaterialBiSelect problems={problems} users={users} selected={selected} setSelected={setSelected} />
                     }
                 </Grid>
-                <Grid container md={8} style={{paddingLeft: '1rem', height: 'min-content'}}>
+                <Grid container item md={8} style={{paddingLeft: '1rem', height: 'min-content'}}>
                     { selectedInfo.grade &&
                         < GradeInfoHeader
                             grade={selectedInfo.grade}
