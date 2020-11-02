@@ -76,8 +76,10 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         let currentAttemptsCount: number | undefined;
         let currentAverageScore: number | undefined;
         let currentVersionMap: Record<number, Array<number>> = {};
+        let versioned = false;
         if (!_.isNil(workbooks) && !_.isEmpty(workbooks)) {
             const workbookKeys = Object.keys(workbooks);
+            versioned = !_.isNil(Object.values(workbooks)[0].studentGradeInstanceId);
             currentAttemptsCount = workbookKeys.length;
             currentAverageScore = _.reduce(workbooks, (sum, wb) => {
                 return sum + wb.result;
@@ -100,7 +102,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             currentAttemptsCount = 0;
             currentAverageScore = 0;
         }
-        const currentWorkbookList = workbookList(currentVersionMap);
+        const currentWorkbookList = workbookList(currentVersionMap, versioned);
         logger.debug('GradeInfoHeader: setting workbook list: ', currentWorkbookList);
         setInfo({
             legalScore: grade.legalScore,
@@ -121,14 +123,14 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             logger.debug('GradeInfoHeader: local "info" attempting to set new workbook: ', newWorkbook);
             setSelected(selected => ({ ...selected, workbook: newWorkbook }));
         } else {
-            logger.error(`GradeInfoHeader: local "info" failed to set desired workbook: ${info.workbookId} - what about "selected": ${selected.workbook?.id}?`);
+            setSelected(selected => ({...selected, workbook: undefined})); // 
+            logger.debug(`GradeInfoHeader: No workbooks to select from or ${info.workbookId} cannot be found.`);
         }
     }, [info.workbookId]);
 
-    const workbookList = (vMap: Record<number, Array<number>>) => {
+    const workbookList = (vMap: Record<number, Array<number>>, versioned: boolean) => {
         const options: WorkbookOption[] = [];
         const versionKeys = _.keys(vMap).map((v) => { return parseInt(v, 10); }).sort();
-        const versioned = versionKeys.length > 1;
         versionKeys.forEach((key, i) => {
             let prefix = '';
             if (versioned) prefix = `Version #${(i + 1)} - `;
@@ -168,7 +170,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 
     return (
         <Grid container spacing={1} style={{ paddingLeft: '1rem' }} alignItems='flex-start'>
-            <Grid item xs={6} alignItems='flex-start'>
+            <Grid item xs={6}>
                 <h4>Statistics</h4>
                 Number of attempts: <strong>{info.attemptsCount}</strong><br />
                 Best overall score: <strong>{(info.overallBestScore * 100).toFixed(1)}</strong><br />
@@ -196,7 +198,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                         }
                     }}
                 /><br />
-                {grade.workbooks && !_.isEmpty(grade.workbooks) && info.workbookId &&
+                {grade.workbooks && !_.isEmpty(grade.workbooks) && info.workbookId && !_.isNil(grade.workbooks[info.workbookId]) &&
                     <p>
                         Score on this attempt:
                         <strong>{(grade.workbooks[info.workbookId].result * 100).toFixed(1)}</strong>

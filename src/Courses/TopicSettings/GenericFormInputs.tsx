@@ -194,7 +194,7 @@ export const DurationField: React.FC<{}> = () => {
             inputRef={register()}
             label={'Time Limit (minutes)'}
             type='number'
-            inputProps={{min: 10}}
+            inputProps={{min: 2}}
         />
     );
 };
