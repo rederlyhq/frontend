@@ -210,10 +210,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     const confirmEndVersion = (actualAttemptsRemaining?: number) => {
         actualAttemptsRemaining = actualAttemptsRemaining ?? attemptsRemaining;
-        let message = '';
+        let message = 'You have successfully completed this exam.';
         if (actualAttemptsRemaining > 0) {
             const nit = (actualAttemptsRemaining === 1) ? 'attempt' : 'attempts';
-            message = `You still have ${actualAttemptsRemaining} graded ${nit} remaining. If you end the exam now, you will no longer be able to improve your score on this version. `;
+            message = `You still have ${actualAttemptsRemaining} graded ${nit} remaining. If you end the exam now, you will no longer be able to improve your score on this version. Are you sure you want to end this exam?`;
         }
         if (_.isNil(versionId)) {
             logger.error('This should never happen - ending a version without versionId set.');
@@ -221,7 +221,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             setConfirmationParameters({
                 show: true,
                 headerContent: <h5>End this exam</h5>,
-                bodyContent: `${message}Are you sure you want to end this exam?`,
+                bodyContent: `${message}`,
                 onConfirm: async () => await endCurrentVersion(versionId),
                 onHide: clearModal,
             });
@@ -250,7 +250,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     // buttons should be end exam / continue (+number of attempts remaining)
                     onHide: () => fetchProblems(topicId),
                     secondaryVariant: (actualAttemptsRemaining === 0) ? 'secondary' : 'danger',
-                    cancelText: 'End Exam',
+                    cancelText: (actualAttemptsRemaining === 0) ? 'Close' : 'End Exam',
                     onSecondary: () => confirmEndVersion(actualAttemptsRemaining),
                     confirmVariant: 'success',
                     confirmText: (actualAttemptsRemaining === 0) ? 'New version' : 'Continue',
@@ -452,11 +452,14 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                             <Button variant='success'
                                                 tabIndex={0}
                                                 onClick={() => confirmStartNewVersion(topic)}
+                                                disabled={versionsRemaining <= 0}
                                             >
-                                                New Version
+                                                {(versionsRemaining>0) ? 'New Version' : 'Exam Completed'}
                                             </Button>
                                         }
-                                        { topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion && attemptsRemaining < topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion &&
+                                        { topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion && 
+                                        attemptsRemaining !== 0 && 
+                                        attemptsRemaining < topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion &&
                                             <Button variant='danger'
                                                 tabIndex={0}
                                                 onClick={() => confirmEndVersion()}
