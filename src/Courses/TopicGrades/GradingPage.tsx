@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import logger from '../../Utilities/Logger';
 import MaterialBiSelect from '../../Components/MaterialBiSelect';
 import { useCourseContext } from '../CourseProvider';
-import { UserObject, TopicObject, ProblemObject, StudentWorkbookInterface, ProblemDict, StudentGradeDict, StudentGrade } from '../CourseInterfaces';
+import { UserObject, TopicObject, ProblemObject, StudentWorkbookInterface, ProblemDict, StudentGradeDict, StudentGrade, NewProblemObject } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import { getAssessmentProblemsWithWorkbooks } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { GradeInfoHeader } from './GradeInfoHeader';
@@ -31,7 +31,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     const [gradeOverride, setGradeOverride] = useState<Partial<StudentGrade>>({});
     const [isPinned, setIsPinned] = useState<Pin | null>(null); // pin one or the other, not both
     const [topic, setTopic] = useState<TopicObject | null>(null);
-    const [problems, setProblems] = useState<ProblemObject[] | null>(null);
+    const [problems, setProblems] = useState<NewProblemObject[] | null>(null);
     const [selected, setSelected] = useState<{
         problem?: ProblemObject, 
         user?: UserObject,
@@ -179,21 +179,27 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     }, [gradeOverride]);
 
     const fetchProblems = async (topicId: number) => {
-        const res = await getAssessmentProblemsWithWorkbooks({ topicId });
-        const currentProblems: Array<ProblemObject> = _(res.data.data.problems)
-            .map((p) => { return new ProblemObject(p); })
-            .sortBy(['problemNumber'],['asc'])
-            .value();
-        // currentProblems = _.map(currentProblems, (p) => {return new ProblemObject(p);});
-        setProblems(currentProblems);
+        let currentProblems = problems;
+        // don't re-fetch the topic if we've already got it...
+        if (_.isEmpty(currentProblems) || currentProblems?.[0].courseTopicContentId !== params.topicId) {
+            const res = await getAssessmentProblemsWithWorkbooks({ topicId });
+            currentProblems = _(res.data.data.problems)
+                .map((p) => { return new NewProblemObject(p); })
+                .sortBy(['problemNumber'],['asc'])
+                .value();
+            // currentProblems = _.map(currentProblems, (p) => {return new ProblemObject(p);});
+            setProblems(currentProblems);
 
-        const currentTopic = res.data.data.topic;
-        setTopic(currentTopic);
+            const currentTopic = res.data.data.topic;
+            setTopic(currentTopic);
+        }
 
-        if (!_.isEmpty(currentProblems)) {
-            // const problemDictionary = deepKeyBy(problems, 'id') as Record<number, ProblemObject>;
+        let currentProblemMap = problemMap;
+        // do we have problems for this topic -- and are they absent from our existing problemMap? Then make a new map.
+        if (!_.isNil(currentProblems) && !_.isEmpty(currentProblems) && _.isNil(currentProblemMap[currentProblems[0].id])) {
+            // const currentProblemMap = deepKeyBy(problems, 'id') as Record<number, ProblemObject>;
             // https://stackoverflow.com/questions/40937961/lodash-keyby-for-multiple-nested-level-arrays
-            const problemDictionary = _(currentProblems)
+            currentProblemMap = _(currentProblems)
                 .map( (obj) => {
                     return _.mapValues(obj, (val) => {
                         if (_.isArray(val)) {
@@ -216,23 +222,26 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                 })
                 .keyBy('id')
                 .value() as Record<number, ProblemDict>;
-            setProblemMap(problemDictionary);
+            setProblemMap(currentProblemMap);
+        }
 
-            const problemIdString = qs.get('problemId');
-            let initialSelectedProblem: ProblemObject | undefined;
+        const problemIdString = qs.get('problemId');
+        let initialSelectedProblem: ProblemObject | undefined;
 
-            const userIdString = qs.get('userId');
-            let initialSelectedUser: UserObject | undefined;
+        const userIdString = qs.get('userId');
+        let initialSelectedUser: UserObject | undefined;
 
+        if (!_.isEmpty(currentProblems)) {
             if (_.isNil(problemIdString)) {
                 const initialSelectedProblemId = _.sortBy(currentProblems, ['problemNumber'], ['asc'])[0].id;
-                initialSelectedProblem = problemDictionary[initialSelectedProblemId] as ProblemObject;
+                initialSelectedProblem = currentProblemMap[initialSelectedProblemId] as ProblemObject;
             } else {
                 const initialSelectedProblemId = parseInt(problemIdString, 10);
-                initialSelectedProblem = problemDictionary[initialSelectedProblemId] as ProblemObject;
+                initialSelectedProblem = currentProblemMap[initialSelectedProblemId] as ProblemObject;
                 logger.debug(`GP: attempting to set intial user #${initialSelectedProblemId}`);
             }
-            // if (!_.isEmpty(users)) {
+        }
+        if (!_.isEmpty(users)) {
             if (_.isNil(userIdString)) {
                 const initialSelectedUserId = _.sortBy(users, ['lastName'], ['desc'])[0].id;
                 initialSelectedUser = _.find(users, { 'id': initialSelectedUserId });
@@ -241,11 +250,8 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                 initialSelectedUser = _.find(users, {'id': initialSelectedUserId});
                 logger.debug(`GP: attempting to set intial user #${initialSelectedUserId}`);
             }
-            // }
-            setSelected({ user: initialSelectedUser, problem: initialSelectedProblem});
-        } else { 
-            // setError('No problems in this topic.');
         }
+        setSelected({ user: initialSelectedUser, problem: initialSelectedProblem});
     };
 
     if (!_.isNil(error)) {
@@ -294,16 +300,18 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                             />
                         )}
                     </Grid>
-                    <Grid container item md={12}>
-                        <AttachmentsPreview 
-                            gradeId={selected.workbook?.studentGradeId ?? selectedInfo?.grade?.id}
-                            gradeInstanceId={selected.workbook?.studentGradeInstanceId}
-                            // Workbooks don't seem to be loading in the database right now,
-                            // but a professor shouldn't really care about this level. Attachments should show the same for
-                            // all attempts, maybe even all versions?
-                            // workbookId={selected.workbook?.id} 
-                        /> 
-                    </Grid>
+                    {(selected.workbook || selectedInfo.grade) && 
+                        <Grid container item md={12}>
+                            <AttachmentsPreview 
+                                gradeId={selected.workbook?.studentGradeId ?? selectedInfo?.grade?.id}
+                                gradeInstanceId={selected.workbook?.studentGradeInstanceId}
+                                // Workbooks don't seem to be loading in the database right now,
+                                // but a professor shouldn't really care about this level. Attachments should show the same for
+                                // all attempts, maybe even all versions?
+                                // workbookId={selected.workbook?.id} 
+                            /> 
+                        </Grid>
+                    }
                 </Grid>
             </Grid>
         </Grid>
