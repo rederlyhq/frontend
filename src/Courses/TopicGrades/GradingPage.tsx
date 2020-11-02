@@ -296,8 +296,8 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                     </Grid>
                     <Grid container item md={12}>
                         <AttachmentsPreview 
-                            gradeId={selected.workbook?.studentGradeId ?? selectedInfo?.grade?.id}
-                            gradeInstanceId={selected.workbook?.studentGradeInstanceId}
+                            gradeId={selectedInfo?.grade?.id}
+                            gradeInstanceId={selectedInfo.workbook?.studentGradeInstanceId}
                             // Workbooks don't seem to be loading in the database right now,
                             // but a professor shouldn't really care about this level. Attachments should show the same for
                             // all attempts, maybe even all versions?
