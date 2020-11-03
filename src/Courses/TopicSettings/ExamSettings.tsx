@@ -29,9 +29,9 @@ export const ExamSettings: React.FC<ExamSettingsProps> = ({register, control}) =
                 <Grid md={12} item><h4>Attempts & Submissions</h4></Grid>
                 <Grid md={12} item>
                     <p>
-                    The &quot;number of attempts&quot; determines how many different versions of the test that a student is allowed to take. <br/>
-                    &quot;Graded submissions per attempt&quot; sets the amount of times that a student may submit answers during each attempt. <br/>
-                    &quot;Delay between attempts&quot; is the amount of time (in minutes) that students must wait between starting one attempt and beginning another attempt, if multiple attempts are provided.
+                    The &quot;number of versions&quot; determines how many different versions of the test that a student is allowed to take. <br/>
+                    &quot;Submissions per version&quot; sets the amount of times that a student may submit answers during each attempt. <br/>
+                    &quot;Delay between versions&quot; is the amount of time (in minutes) that students must wait between starting one attempt and beginning another attempt, if multiple attempts are provided.
                     </p>
                 </Grid>
                 <Grid md={3} item><MaxGradedAttemptsPerVersionField /></Grid>
