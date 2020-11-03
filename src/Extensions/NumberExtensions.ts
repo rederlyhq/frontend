@@ -10,7 +10,7 @@ declare global {
  */
 Number.prototype.toPercentString = function (): string {
     // Number vs number discrepancy
-    return (this as number * 100).toFixed(1);
+    return `${(this as number * 100).toFixed(1)}%`;
 };
 
 export {};

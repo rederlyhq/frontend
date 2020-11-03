@@ -191,7 +191,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     return (
         <Grid container spacing={1} style={{ paddingLeft: '1rem' }} alignItems='flex-start'>
             <Grid item xs={12}>
-                <h3>Topic Score: {topicGrade?.toPercentString() ?? '--'}</h3>
+                <h3>Total Topic Score: {topicGrade?.toPercentString() ?? '--'}</h3>
             </Grid>
             <Grid item xs={6}>
                 <h4>Statistics</h4>
