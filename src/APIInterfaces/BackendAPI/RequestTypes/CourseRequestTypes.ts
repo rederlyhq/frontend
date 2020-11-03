@@ -201,3 +201,13 @@ export interface SaveQuestionOptions {
 
 export interface CatalogOptions {
 }
+
+/* *************** *************** */
+/* *********** Grades  *********** */
+/* *************** *************** */
+export interface GetGradesOptions {
+    userId?: number;
+    topicId?: number;
+    unitId?: number;
+    questionId?: number;
+}
