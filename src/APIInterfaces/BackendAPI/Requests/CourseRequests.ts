@@ -588,10 +588,11 @@ export const deleteAttachments = async ({
 };
 
 export const getAllContentForVersion = async ({
-    gradeInstanceId
-}: {gradeInstanceId: number}): Promise<AxiosResponse<any>> => {
+    gradeId
+}: {gradeId: number}): Promise<AxiosResponse<any>> => {
     try {
-        return await AxiosRequest.get(url.resolve(COURSE_VERSION_PATH, `${gradeInstanceId}/`));
+        console.log(gradeId);
+        return await AxiosRequest.get(url.resolve(COURSE_VERSION_PATH, `${gradeId}/`));
     } catch (e) {
         throw new BackendAPIError(e);
     }

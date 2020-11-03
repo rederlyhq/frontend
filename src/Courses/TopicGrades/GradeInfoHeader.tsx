@@ -120,6 +120,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     useEffect(() => {
         if (!_.isNil(grade.workbooks) && !_.isNil(info.workbookId) && !_.isNil(grade.workbooks[info.workbookId])) {
             const newWorkbook = grade.workbooks[info.workbookId];
+            newWorkbook.workbookDescriptor = _.find(info.workbookList, ['value', info.workbookId])?.label;
             logger.debug('GradeInfoHeader: local "info" attempting to set new workbook: ', newWorkbook);
             setSelected(selected => ({ ...selected, workbook: newWorkbook }));
         } else {

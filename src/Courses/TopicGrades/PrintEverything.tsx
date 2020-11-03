@@ -6,6 +6,7 @@ import { ProblemAttachments, ProblemObject } from '../CourseInterfaces';
 import url from 'url';
 import { getAllContentForVersion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
+import { useQuery } from '../../Hooks/UseQuery';
 
 import './PrintEverything.css';
 
@@ -14,7 +15,11 @@ interface PrintEverythingProps {
 }
 
 export const PrintEverything: React.FC<PrintEverythingProps> = ({gradeId}) => {
+    const qs = useQuery();
+    const topicName = qs.get('topicName');
+    const workbookName = qs.get('workbookName');
     const params = useParams<{gradeId?: string}>();
+
     if (params.gradeId)
         gradeId = parseInt(params.gradeId, 10);
     const [gradeData, setGradeData] = useState<any>();
@@ -26,12 +31,14 @@ export const PrintEverything: React.FC<PrintEverythingProps> = ({gradeId}) => {
             return;
         }
         (async () => {
-            const res = await getAllContentForVersion({gradeInstanceId: gradeId});
+            console.log(gradeId);
+            const res = await getAllContentForVersion({gradeId: gradeId});
             setGradeData(res.data.data);
 
+            // TODO: pdf.js in the embeds warns that the PDF hasn't fully loaded.
             setTimeout(()=>{
                 window.print();
-            }, 5000);
+            }, 8000);
         })();
     }, [gradeId]);
 
@@ -39,20 +46,23 @@ export const PrintEverything: React.FC<PrintEverythingProps> = ({gradeId}) => {
 
     return (
         <>
-            <h1>Grades for {gradeData[0].user.firstName} {gradeData[0].user.lastName}</h1>
-            <h2 className='dont-print'>Printing will begin in several seconds...</h2>
+            <h1>{topicName?.fromBase64()} -- {gradeData[0].user.firstName} {gradeData[0].user.lastName}</h1>
+            <h2>{workbookName?.fromBase64()}</h2>
+            <h3 className='dont-print'>Printing will begin in several seconds...</h3>
             {gradeData.map((problem: any)=>{
                 const bestAttempt = problem.bestVersionAttempt;
                 const attachments = problem.studentGradeInstanceProblemAttachments;
                 // TODO: Get from call
                 const baseUrl = 'https://staging.rederly.com/work/';
                 return (
-                    <div key={problem.id} >
+                    <div key={problem.id}>
+                        <h4>Problem {problem.problemNumber}</h4>
                         <ProblemIframe 
                             problem={new ProblemObject({id: bestAttempt.courseWWTopicQuestionId})}
                             workbookId={bestAttempt.id}
                             readonly={true}
                         />
+                        <h5>Problem {problem.problemNumber} Attachments</h5>
                         {attachments.map((y: any) => {
                             const attachment = y.problemAttachment;
                             const cloudFilename = attachment.cloudFilename ?? attachment.cloudF;

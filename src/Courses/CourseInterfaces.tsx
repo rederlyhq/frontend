@@ -233,6 +233,10 @@ export interface StudentWorkbookInterface {
 
     createdAt: Date;
     updatedAt: Date;
+
+    // This is a custom field that describes the workbook as a function
+    // of version and attempt.
+    workbookDescriptor?: string;
 }
 
 export interface StudentGradeInstance {

@@ -124,11 +124,11 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             <Route path={`${path}/courses/:courseId`}>
                                 <CourseProvider>
                                     <Switch>
-                                        <Route path={`${path}/courses/:courseId/print/:gradeId`}>
-                                            <PrintEverything />
-                                        </Route>
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/settings`}>
                                             <TopicSettingsPage />
+                                        </Route>
+                                        <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading/print/:gradeId`}>
+                                            <PrintEverything />
                                         </Route>
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/grading`}>
                                             <TopicGradingPage />
