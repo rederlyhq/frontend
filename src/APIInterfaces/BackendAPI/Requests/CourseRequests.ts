@@ -10,6 +10,7 @@ import _ from 'lodash';
 import { StudentTopicAssessmentFields } from '../../../Courses/CourseInterfaces';
 
 const COURSE_PATH = '/courses/';
+const COURSE_VERSION_PATH = url.resolve(COURSE_PATH, 'version/');
 const COURSE_UNIT_PATH = url.resolve(COURSE_PATH, 'unit/');
 const COURSE_TOPIC_PATH = url.resolve(COURSE_PATH, 'topic/');
 const COURSE_QUESTION_PATH = url.resolve(COURSE_PATH, 'question/');
@@ -582,6 +583,16 @@ export const deleteAttachments = async ({
 }: {id: number}): Promise<AxiosResponse<any>> => {
     try {
         return await AxiosRequest.delete(url.resolve(COURSE_ATTACHMENTS_PATH, `${id}/`));
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getAllContentForVersion = async ({
+    gradeId
+}: {gradeId: number}): Promise<AxiosResponse<any>> => {
+    try {
+        return await AxiosRequest.get(url.resolve(COURSE_VERSION_PATH, `${gradeId}/`));
     } catch (e) {
         throw new BackendAPIError(e);
     }

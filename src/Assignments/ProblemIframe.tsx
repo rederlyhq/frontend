@@ -346,7 +346,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     }
                 }}
                 title='Problem Frame'
-                style={{width: '100%', height: height, border: 'none', minHeight: '350px', visibility: (loading || error) ? 'hidden' : 'visible'}}
+                style={{width: '100%', height: height, border: 'none', minHeight: readonly ? '' : '350px', visibility: (loading || error) ? 'hidden' : 'visible'}}
                 sandbox='allow-same-origin allow-forms allow-scripts allow-popups'
                 srcDoc={renderedHTML}
                 onLoad={onLoadHandlers}

@@ -4,6 +4,7 @@ import logger from '../../Utilities/Logger';
 import { ProblemAttachments } from '../CourseInterfaces';
 import url from 'url';
 import { Grid, CardActionArea, CardMedia, CardContent, CardActions, Button, Card } from '@material-ui/core';
+import PrintingPage from './PrintingPage';
 
 
 interface AttachmentsPreviewProps {
@@ -16,6 +17,7 @@ interface AttachmentsPreviewProps {
 export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, gradeInstanceId, workbookId}) => {
     const [attachedFiles, setAttachedFiles] = useState<Array<ProblemAttachments>>([]);
     const [baseUrl, setBaseUrl] = useState<string>(window.location.host);
+    const [shouldPrint, setShouldPrint] = useState<boolean>(false);
 
     // Get list of attached files.
     useEffect(()=>{
@@ -41,7 +43,14 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
 
     return (
         <Grid container style={{paddingLeft: '1rem'}}>
-            <Grid item md={12}><h1>Attachments</h1></Grid>
+            <Grid item md={12}><h1>Attachments</h1>
+                <PrintingPage 
+                    debug={false}
+                    open={shouldPrint} 
+                    attachmentsUrls={attachedFiles.map(attachment => (baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404')}
+                />
+                <Button onClick={()=>setShouldPrint(true)}>Export All</Button>
+            </Grid>
             {
                 attachedFiles.map(attachment => (
                     <Grid item md={4} key={attachment.userLocalFilename}>

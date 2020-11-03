@@ -25,6 +25,7 @@ import TopicSettingsPage from '../Courses/TopicSettings/TopicSettingsPage';
 import logger from '../Utilities/Logger';
 import TopicGradingPage from '../Courses/TopicGrades/GradingPage';
 import { ProblemEditor } from '../Assignments/ProblemEditor';
+import PrintEverything from '../Courses/TopicGrades/PrintEverything';
 
 interface NavWrapperProps {
 
@@ -83,7 +84,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                         <NavDropdown title={`Welcome, ${userName}`} id='account-dropdown'>
                             <NavDropdown.Item onClick={()=>{history.push(`${path}/account`);}}>My Account</NavDropdown.Item>
                             {getUserRole() !== UserRole.STUDENT &&
-                            <NavDropdown.Item onClick={()=>{history.push(`${path}/editor`);}}>Problem Editor</NavDropdown.Item>
+                                <NavDropdown.Item onClick={()=>{history.push(`${path}/editor`);}}>Problem Editor</NavDropdown.Item>
                             }
                             <NavDropdown.Item onClick={logout}>Log out</NavDropdown.Item>
                         </NavDropdown>
@@ -125,6 +126,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                     <Switch>
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/settings`}>
                                             <TopicSettingsPage />
+                                        </Route>
+                                        <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading/print/:gradeId`}>
+                                            <PrintEverything />
                                         </Route>
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/grading`}>
                                             <TopicGradingPage />
