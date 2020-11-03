@@ -28,6 +28,10 @@ export const PrintEverything: React.FC<PrintEverythingProps> = ({gradeId}) => {
         (async () => {
             const res = await getAllContentForVersion({gradeInstanceId: gradeId});
             setGradeData(res.data.data);
+
+            setTimeout(()=>{
+                window.print();
+            }, 5000);
         })();
     }, [gradeId]);
 
@@ -36,6 +40,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = ({gradeId}) => {
     return (
         <>
             <h1>Grades for {gradeData[0].user.firstName} {gradeData[0].user.lastName}</h1>
+            <h2 className='dont-print'>Printing will begin in several seconds...</h2>
             {gradeData.map((problem: any)=>{
                 const bestAttempt = problem.bestVersionAttempt;
                 const attachments = problem.studentGradeInstanceProblemAttachments;
