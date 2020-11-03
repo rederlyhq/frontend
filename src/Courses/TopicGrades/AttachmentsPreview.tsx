@@ -45,7 +45,7 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
         <Grid container style={{paddingLeft: '1rem'}}>
             <Grid item md={12}><h1>Attachments</h1>
                 <PrintingPage 
-                    debug={true}
+                    debug={false}
                     open={shouldPrint} 
                     attachmentsUrls={attachedFiles.map(attachment => (baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404')}
                 />
