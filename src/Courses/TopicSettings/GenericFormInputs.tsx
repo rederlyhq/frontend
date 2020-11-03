@@ -206,7 +206,7 @@ export const MaxGradedAttemptsPerVersionField: React.FC<{}> = () => {
         <TextField 
             name={`${examFieldNamePrefix}.maxGradedAttemptsPerVersion`}
             inputRef={register()}
-            label={'Number of Attempts'}
+            label={'Graded Submissions per Attempt'}
             type='number'
             InputLabelProps={{style: {width: 'max-content'}, shrink: true}}
         />
@@ -221,7 +221,7 @@ export const MaxVersionsField: React.FC<{}> = () => {
             name={`${examFieldNamePrefix}.maxVersions`}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
-            label={'Graded Submissions per Attempt'}
+            label={'Number of Attempts'}
             type='number'
         />
     );
