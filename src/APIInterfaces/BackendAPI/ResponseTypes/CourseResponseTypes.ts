@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, TopicObject, ProblemObject, NewProblemObject, StudentGrade, StudentGradeInstance } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, TopicObject, ProblemObject, NewProblemObject, StudentGrade, StudentGradeInstance, ProblemAttachments } from '../../../Courses/CourseInterfaces';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 
 /* *************** *************** */
@@ -11,6 +11,12 @@ interface PutCourseUpdates {
 }
 
 export type PutCourseUpdatesResponse = BackendAPIResponse<PutCourseUpdates>;
+
+interface SuccessResponse {
+    message: string;
+}
+
+export type PostEmailProfResponse = BackendAPIResponse<SuccessResponse>;
 
 /* *************** *************** */
 /* ************ Units ************ */
@@ -87,3 +93,47 @@ interface GetQuestions {
 export type GetQuestionsResponse = BackendAPIResponse<GetQuestions>;
 
 export type GetQuestionResponse = BackendAPIResponse<Partial<ProblemObject>>;
+
+/* *************** *************** */
+/* ********** Questions ********** */
+/* *************** *************** */
+
+interface GetUploadURL {
+    uploadURL: URL;
+    cloudFilename: string;
+}
+
+export type GetUploadURLResponse = BackendAPIResponse<GetUploadURL>;
+
+interface ListAttachmentsInterface {
+    attachments: ProblemAttachments[];
+    baseUrl: string;
+}
+
+export type ListAttachmentsResponse = BackendAPIResponse<ListAttachmentsInterface>;
+
+/* *************** *************** */
+/* *********** Editor  *********** */
+/* *************** *************** */
+interface ReadQuestion {
+    problemSource: string;
+}
+export type ReadQuestionResponse = BackendAPIResponse<ReadQuestion>;
+
+export interface SaveQuestion {
+    filePath: string;
+}
+export type SaveQuestionResponse = BackendAPIResponse<SaveQuestion>;
+
+export interface Catalog {
+    problems: Array<string>;
+}
+export type CatalogResponse = BackendAPIResponse<Catalog>;
+
+/* *************** *************** */
+/* *********** Grades  *********** */
+/* *************** *************** */
+type Grades = Array<{
+    average: number;
+}>
+export type GradesResponse = BackendAPIResponse<Grades>;

@@ -1,15 +1,16 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, getAssessmentProblemsWithWorkbooksOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions, ListAttachmentOptions, ReadQuestionOptions, SaveQuestionOptions, CatalogOptions, GetGradesOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse, ListAttachmentsResponse, ReadQuestionResponse, SaveQuestionResponse, CatalogResponse, GradesResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 import _ from 'lodash';
 import { StudentTopicAssessmentFields } from '../../../Courses/CourseInterfaces';
 
 const COURSE_PATH = '/courses/';
+const COURSE_VERSION_PATH = url.resolve(COURSE_PATH, 'version/');
 const COURSE_UNIT_PATH = url.resolve(COURSE_PATH, 'unit/');
 const COURSE_TOPIC_PATH = url.resolve(COURSE_PATH, 'topic/');
 const COURSE_QUESTION_PATH = url.resolve(COURSE_PATH, 'question/');
@@ -19,6 +20,14 @@ const COURSE_QUESTIONS_PATH = url.resolve(COURSE_PATH, 'questions/');
 const COURSE_DEF_PATH = url.resolve(COURSE_PATH, 'def/');
 const COURSE_ENROLL_PATH = url.resolve(COURSE_PATH, 'enroll/');
 const COURSE_ASSESS_PATH = url.resolve(COURSE_PATH, 'assessment/');
+const COURSE_ATTACHMENTS_PATH = url.resolve(COURSE_PATH, 'attachments/');
+const COURSE_ATTACHMENTS_GET_UPLOAD_PATH = url.resolve(COURSE_ATTACHMENTS_PATH, 'upload-url/');
+const COURSE_ATTACHMENTS_LIST_PATH = url.resolve(COURSE_ATTACHMENTS_PATH, 'list/');
+const COURSE_PROBLEM_EDITOR = url.resolve(COURSE_PATH, 'question/editor/');
+const COURSE_PROBLEM_EDITOR_READ = url.resolve(COURSE_PROBLEM_EDITOR, 'read/');
+const COURSE_PROBLEM_EDITOR_SAVE = url.resolve(COURSE_PROBLEM_EDITOR, 'save/');
+const COURSE_PROBLEM_EDITOR_CATALOG = url.resolve(COURSE_PROBLEM_EDITOR, 'catalog/');
+const COURSE_GRADES_PATH = url.resolve(COURSE_PATH, 'grades/');
 
 /* *************** *************** */
 /* *********** Courses *********** */
@@ -56,6 +65,20 @@ export const putCourse = async ({
     } catch (e) {
         throw new BackendAPIError(e);
     }
+};
+
+export const postEmailProfessor = async ({
+    courseId,
+    content,
+    question
+}: PostEmailProfOptions): Promise<AxiosResponse<PostEmailProfResponse>> => {
+    return await AxiosRequest.post(
+        url.resolve(
+            COURSE_PATH,
+            `${courseId}/email`
+        ),
+        {content, question}
+    );
 };
 
 /* *************** *************** */
@@ -326,7 +349,21 @@ export const postPreviewQuestion = async ({
     webworkQuestionPath,
     problemSeed,
     formData,
+    problemSource,
+    showHints,
+    showSolutions
 }: PreviewQuestionOptions): Promise<AxiosResponse<GetQuestionResponse>> => {
+    if (_.isNil(problemSource) === _.isNil(webworkQuestionPath)) {
+        throw new Error('Either problem source or webwork question path must be defined, not neither, not both');
+    }
+
+    if (!_.isNil(problemSource)) {
+        formData = formData ?? new FormData();
+        formData.set('problemSource', Buffer.from(problemSource).toString('base64'));
+        !_.isNil(showHints) && formData.set('showHints', showHints.toString());
+        !_.isNil(showSolutions) && formData.set('showSolutions', showSolutions.toString());
+    }
+
     try {
         return await AxiosRequest.post(
             url.resolve(COURSE_PATH, 'preview'), formData, {
@@ -447,6 +484,137 @@ export const endVersion = async ({
         return await AxiosRequest.get(
             url.resolve(COURSE_ASSESS_PATH, `topic/end/${versionId}`)
         );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getAssessmentProblemsWithWorkbooks = async ({
+    topicId
+}: getAssessmentProblemsWithWorkbooksOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(COURSE_ASSESS_PATH, `topic/grade/${topicId}`)
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+/* *************** *************** */
+/* ********** Attachments ********** */
+/* *************** *************** */
+
+export const getUploadURL = async (): Promise<AxiosResponse<GetUploadURLResponse>> => {
+    try {
+        return await AxiosRequest.get(COURSE_ATTACHMENTS_GET_UPLOAD_PATH);
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const postConfirmAttachmentUpload = async (options: PostConfirmAttachmentUploadOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.post(COURSE_ATTACHMENTS_PATH, options);
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+// Workbooks is an auditing field and there isn't a practical frontend use for them right now.
+export const getAttachments = async ({
+    studentGradeId,
+    studentGradeInstanceId,
+    studentWorkbookId,
+}: ListAttachmentOptions): Promise<AxiosResponse<ListAttachmentsResponse>> => {
+    try {
+        const gradeParams = {
+            ...(studentGradeInstanceId ?
+                {studentGradeInstanceId: studentGradeInstanceId} :
+                {studentGradeId: studentGradeId}
+            ),
+        }
+        const params = studentWorkbookId ? { studentWorkbookId } : gradeParams;
+    
+        return await AxiosRequest.get(COURSE_ATTACHMENTS_LIST_PATH, {
+            params,
+        });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const readProblem = async ({
+    filePath
+}: ReadQuestionOptions): Promise<AxiosResponse<ReadQuestionResponse>> => {
+    try {
+        return await AxiosRequest.post(COURSE_PROBLEM_EDITOR_READ, {
+            filePath: filePath
+        });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const saveProblem = async ({
+    problemSource,
+    relativePath,
+}: SaveQuestionOptions): Promise<AxiosResponse<SaveQuestionResponse>> => {
+    try {
+        return await AxiosRequest.post(COURSE_PROBLEM_EDITOR_SAVE, {
+            problemSource: problemSource,
+            relativePath: relativePath,
+        });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const catalog = async (): Promise<AxiosResponse<CatalogResponse>> => {
+    try {
+        return await AxiosRequest.post(COURSE_PROBLEM_EDITOR_CATALOG);
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const deleteAttachments = async ({
+    id
+}: {id: number}): Promise<AxiosResponse<any>> => {
+    try {
+        return await AxiosRequest.delete(url.resolve(COURSE_ATTACHMENTS_PATH, `${id}/`));
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getAllContentForVersion = async ({
+    gradeId
+}: {gradeId: number}): Promise<AxiosResponse<any>> => {
+    try {
+        return await AxiosRequest.get(url.resolve(COURSE_VERSION_PATH, `${gradeId}/`));
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getGrades = async ({
+    userId,
+    questionId,
+    topicId,
+    unitId,
+}: GetGradesOptions): Promise<AxiosResponse<GradesResponse>> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(
+                COURSE_GRADES_PATH,
+                `?${qs.stringify(_.omitBy({
+                    userId: userId,
+                    questionId: questionId,
+                    topicId: topicId,
+                    unitId: unitId,
+                }, _.isUndefined))}`
+            ));
     } catch (e) {
         throw new BackendAPIError(e);
     }

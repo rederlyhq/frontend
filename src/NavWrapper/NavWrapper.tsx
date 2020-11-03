@@ -8,7 +8,7 @@ import CourseDetailsPage from '../Courses/CourseDetailsPage';
 import { AnimatePresence } from 'framer-motion';
 import './NavWrapper.css';
 import NavbarCollapse from 'react-bootstrap/NavbarCollapse';
-import { getUserRole } from '../Enums/UserRole';
+import { getUserRole, UserRole } from '../Enums/UserRole';
 import CourseCreationPage from '../Courses/CourseCreation/CourseCreationPage';
 import CourseEditPage from '../Courses/CourseCreation/CourseEditPage';
 import SimpleProblemPage from '../Assignments/SimpleProblemPage';
@@ -23,6 +23,9 @@ import { version } from '../../package.json';
 import CourseProvider from '../Courses/CourseProvider';
 import TopicSettingsPage from '../Courses/TopicSettings/TopicSettingsPage';
 import logger from '../Utilities/Logger';
+import TopicGradingPage from '../Courses/TopicGrades/GradingPage';
+import { ProblemEditor } from '../Assignments/ProblemEditor';
+import PrintEverything from '../Courses/TopicGrades/PrintEverything';
 
 interface NavWrapperProps {
 
@@ -80,6 +83,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     <Nav className="float-right">
                         <NavDropdown title={`Welcome, ${userName}`} id='account-dropdown'>
                             <NavDropdown.Item onClick={()=>{history.push(`${path}/account`);}}>My Account</NavDropdown.Item>
+                            {getUserRole() !== UserRole.STUDENT &&
+                                <NavDropdown.Item onClick={()=>{history.push(`${path}/editor`);}}>Problem Editor</NavDropdown.Item>
+                            }
                             <NavDropdown.Item onClick={logout}>Log out</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
@@ -93,6 +99,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                         <Switch>
                             <Route exact path={`${path}/account`}>
                                 <AccountWrapper />
+                            </Route>
+                            <Route exact path={`${path}/editor`}>
+                                <ProblemEditor />
                             </Route>
                             <Route exact path={`${path}/adviser`}>
                                 <AdviserPage />
@@ -117,6 +126,12 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                     <Switch>
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/settings`}>
                                             <TopicSettingsPage />
+                                        </Route>
+                                        <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading/print/:gradeId`}>
+                                            <PrintEverything />
+                                        </Route>
+                                        <Route path={`${path}/courses/:courseId/topic/:topicId/grading`}>
+                                            <TopicGradingPage />
                                         </Route>
                                         <Route path={`${path}/courses/:courseId/topic/:topicId`}>
                                             <SimpleProblemPage />

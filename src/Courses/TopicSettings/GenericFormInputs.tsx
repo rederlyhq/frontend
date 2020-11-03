@@ -192,9 +192,9 @@ export const DurationField: React.FC<{}> = () => {
             name={`${examFieldNamePrefix}.duration`}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
-            label={'Duration'}
+            label={'Time Limit (minutes)'}
             type='number'
-            inputProps={{min: 10}}
+            inputProps={{min: 2}}
         />
     );
 };
@@ -206,7 +206,7 @@ export const MaxGradedAttemptsPerVersionField: React.FC<{}> = () => {
         <TextField 
             name={`${examFieldNamePrefix}.maxGradedAttemptsPerVersion`}
             inputRef={register()}
-            label={'Max Graded Attempts Per Version'}
+            label={'Number of Attempts'}
             type='number'
             InputLabelProps={{style: {width: 'max-content'}, shrink: true}}
         />
@@ -221,7 +221,7 @@ export const MaxVersionsField: React.FC<{}> = () => {
             name={`${examFieldNamePrefix}.maxVersions`}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
-            label={'Max Versions'}
+            label={'Graded Submissions per Attempt'}
             type='number'
         />
     );
@@ -233,7 +233,7 @@ export const RandomizationDelayField: React.FC<{}> = () => {
     return (
         <TextField 
             name={`${examFieldNamePrefix}.versionDelay`}
-            label={'Version Delay'}
+            label={'Delay Between Attempts (minutes)'}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
             type='number'
@@ -243,7 +243,7 @@ export const RandomizationDelayField: React.FC<{}> = () => {
 
 // Generic Generators
 
-export const GenerateSwitchField: React.FC<{fieldName: string}> = ({fieldName}) => {
+export const GenerateSwitchField: React.FC<{fieldName: string, label: string}> = ({fieldName, label}) => {
     const { control, errors } = useFormContext();
     
     return (
@@ -253,8 +253,9 @@ export const GenerateSwitchField: React.FC<{fieldName: string}> = ({fieldName}) 
             defaultValue={false}
             render={({ onChange, onBlur, value, name }) => (
                 <FormControlLabel
-                    label={_.startCase(fieldName)}
-                    labelPlacement='start'
+                    // label={_.startCase(fieldName)}
+                    label={label}
+                    labelPlacement='end'
                     control={<Switch 
                         onBlur={onBlur}
                         onChange={e => onChange(e.target.checked)}

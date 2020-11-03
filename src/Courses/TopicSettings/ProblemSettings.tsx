@@ -161,18 +161,18 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                         <Grid item container md={12}><h1>Problem Settings</h1></Grid>
                         <Grid item md={8}>
                             Enter the path to the problem on the Rederly server. This is prefaced either 
-                            with <code>Library/</code> or <code>Contrib/</code> if this problem is included 
+                            with <code>Library/</code> or <code>Contrib/</code> if the desired problem is included 
                             in the <Link to='https://github.com/openwebwork/webwork-open-problem-library'>OPL</Link> or <code>private/</code> if 
                             this problem has been uploaded to your private Rederly folder.
                             {topic.topicTypeId === TopicTypeId.EXAM ? 
                                 <MultipleProblemPaths /> :
                                 <ProblemPath />
                             }
-                        </Grid><Grid item md={12}>
-                            Enter the max attempts for a problem, or 0 or -1 for unlimited attempts.<br/>
+                        </Grid>{topic.topicTypeId !== TopicTypeId.EXAM && (<Grid item md={12}>
+                            Enter the maximum number of graded attempts for a problem, use 0 or -1 to give students unlimited attempts.<br/>
                             <ProblemMaxAttempts />
-                        </Grid><Grid item md={12}>
-                            Enter the grading weight for this problem. Optional problems with weights will be treated as extra credit.<br/>
+                        </Grid>)}<Grid item md={12}>
+                            Enter the number of points available for this problem. If the problem is marked as &quot;optional&quot;, these points will be treated as extra credit.<br/>
                             <ProblemWeight />
                         </Grid><Grid item md={12}>
                             This problem is {optional ? 'optional' : 'required'}.<br/>
@@ -181,8 +181,8 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                         {topic.topicTypeId === TopicTypeId.EXAM && (
                             <Grid item md={12}>
                                 <Grid item md={10}>
-                                    You can optionally limit the seeds used for this problem to specific, individual values by entering numeric values between 1 and 999999 into the text field below. 
-                                    You can add multiple numbers by pressing enter or using a comma to separate them.<br/>
+                                    You can optionally limit the randomization of this problem by entering specific &quot;random seeds&quot; (numeric values between 1 and 999999) into the text field below. 
+                                    Use the problem preview pane below to see how different &quot;seeds&quot; affect the randomization. You can add multiple numbers by pressing enter or using a comma to separate them.<br/>
                                 </Grid>
                                 <RandomSeedSet />
                             </Grid>

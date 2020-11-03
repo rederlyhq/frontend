@@ -14,6 +14,14 @@ export interface PutCourseOptions {
     data: Partial<CourseObject>;
 }
 
+export interface PostEmailProfOptions {
+    courseId: number;
+    content: string;
+    question: {
+        id: number;
+    };
+}
+
 /* *************** *************** */
 /* ************ Units ************ */
 /* *************** *************** */
@@ -108,8 +116,11 @@ export interface PostDefFileOptions {
 }
 
 export interface PreviewQuestionOptions {
-    webworkQuestionPath: string;
+    webworkQuestionPath?: string;
+    problemSource?: string;
     problemSeed?: number;
+    showHints?: boolean;
+    showSolutions?: boolean;
     formData?: FormData;
 }
 
@@ -145,4 +156,58 @@ export interface SubmitVersionOptions {
 
 export interface EndVersionOptions {
     versionId: number;
+}
+
+export interface getAssessmentProblemsWithWorkbooksOptions {
+    topicId: number;
+}
+
+/* *************** *************** */
+/* ********* Attachments ********* */
+/* *************** *************** */
+
+export interface PostConfirmAttachmentUploadOptions {
+    attachment: {
+        cloudFilename: string;
+        userLocalFilename: string;
+    },
+    studentGradeId?: number;
+    studentGradeInstanceId?: number;
+}
+
+export interface ListAttachmentOptions {
+    studentGradeId?: number;
+    studentGradeInstanceId?: number;
+    studentWorkbookId?: number;
+}
+
+export interface ListAttachmentOptions {
+    studentGradeId?: number;
+    studentGradeInstanceId?: number;
+    studentWorkbookId?: number;
+}
+
+/* *************** *************** */
+/* *********** Editor  *********** */
+/* *************** *************** */
+export interface ReadQuestionOptions {
+    filePath: string;
+}
+
+export interface SaveQuestionOptions {
+    problemSource: string;
+    relativePath: string;
+}
+
+export interface CatalogOptions {
+}
+
+/* *************** *************** */
+/* *********** Grades  *********** */
+/* *************** *************** */
+export interface GetGradesOptions {
+    userId?: number;
+    topicId?: number;
+    unitId?: number;
+    questionId?: number;
 }
