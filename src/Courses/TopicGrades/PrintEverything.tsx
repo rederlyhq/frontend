@@ -31,7 +31,6 @@ export const PrintEverything: React.FC<PrintEverythingProps> = ({gradeId}) => {
             return;
         }
         (async () => {
-            console.log(gradeId);
             const res = await getAllContentForVersion({gradeId: gradeId});
             setGradeData(res.data.data);
 
