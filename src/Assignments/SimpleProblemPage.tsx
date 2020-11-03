@@ -200,6 +200,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             headerContent: <h5>Begin a new version</h5>,
             bodyContent: <div>
                 {message} <br />
+                {/* Should we use the term "version attempt"? */}
                 You have {actualVersionsRemaining} {(actualVersionsRemaining === 1) ? ' version ' : ' versions '} remaining.<br />
                 Are you ready to begin a new version of this assessment?
             </div>,
@@ -469,7 +470,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                         }
                                     </div>
                                     <div className='flex-row'>
-                                        Attempts remaining: {attemptsRemaining}
+                                        Submissions remaining: {attemptsRemaining}
                                     </div>
                                 </div>
                             )
