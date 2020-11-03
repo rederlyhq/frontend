@@ -129,3 +129,11 @@ export interface Catalog {
     problems: Array<string>;
 }
 export type CatalogResponse = BackendAPIResponse<Catalog>;
+
+/* *************** *************** */
+/* *********** Grades  *********** */
+/* *************** *************** */
+type Grades = Array<{
+    average: number;
+}>
+export type GradesResponse = BackendAPIResponse<Grades>;

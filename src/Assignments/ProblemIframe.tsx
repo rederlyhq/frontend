@@ -94,7 +94,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
         setLastSubmission({});
-    }, [problem, problem.id, workbookId, previewPath, previewProblemSource]);
+    }, [problem, problem.id, workbookId, previewPath, previewProblemSource, previewSeed]);
 
     const isPrevious = (_value: any, key: string): boolean => {
         return /^previous_/.test(key);

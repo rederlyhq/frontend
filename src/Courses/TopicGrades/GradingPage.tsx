@@ -294,6 +294,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                             selected={selected}
                             setSelected={setSelected}
                             onSuccess={setGradeOverride}
+                            topicId={topic?.id}
                         />
                     }
                     <Grid container alignItems='stretch'>

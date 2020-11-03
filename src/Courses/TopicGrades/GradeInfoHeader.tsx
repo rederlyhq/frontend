@@ -4,9 +4,11 @@ import { ProblemObject, StudentGrade, StudentGradeDict, StudentWorkbookInterface
 import logger from '../../Utilities/Logger';
 import { Button, FormControl, Grid, InputLabel, makeStyles, Select } from '@material-ui/core';
 import { OverrideGradeModal } from '../CourseDetailsTabs/OverrideGradeModal';
+import { getGrades } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface GradeInfoHeaderProps {
     grade: StudentGradeDict;
+    topicId?: number;
     workbookId?: number;
     selected: {
         problem?: ProblemObject,
@@ -44,7 +46,8 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     workbookId,
     selected,
     setSelected,
-    onSuccess
+    onSuccess,
+    topicId
 }) => {
     const displayCurrentScore = useRef<string | null>(null);
     if (_.isNil(displayCurrentScore.current)) {
@@ -52,6 +55,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     }
     const classes = useStyles();
     const [showGradeModal, setShowGradeModal] = useState<boolean>(false);
+    const [topicGrade, setTopicGrade] = useState<number | null>(null);
     const [info, setInfo] = useState<{
         legalScore: number;
         overallBestScore: number;
@@ -129,6 +133,22 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         }
     }, [info.workbookId]);
 
+    useEffect(() => {
+        (async () => {
+            setTopicGrade(null);
+            if (_.isNil(topicId)) {
+                logger.debug('GradeInfoHeader topicId id is nil, skipping grades call');
+            }
+
+            const params = {
+                topicId: topicId,
+                userId: grade.userId
+            };
+            const result = await getGrades(params);
+            setTopicGrade(result.data.data.first?.average ?? null);
+        })();
+    }, [grade.userId, topicId]);
+
     const workbookList = (vMap: Record<number, Array<number>>, versioned: boolean) => {
         const options: WorkbookOption[] = [];
         const versionKeys = _.keys(vMap).map((v) => { return parseInt(v, 10); }).sort();
@@ -171,6 +191,9 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 
     return (
         <Grid container spacing={1} style={{ paddingLeft: '1rem' }} alignItems='flex-start'>
+            <Grid item xs={12}>
+                <h3>Total Topic Score: {topicGrade?.toPercentString() ?? '--'}</h3>
+            </Grid>
             <Grid item xs={6}>
                 <h4>Statistics</h4>
                 Number of attempts: <strong>{info.attemptsCount}</strong><br />
