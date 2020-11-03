@@ -276,7 +276,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                             })}`}
                             target="_blank" rel='noopener noreferrer'
                         >
-                            <Button variant='contained'>Export/Print</Button>
+                            <Button variant='contained' color='primary'>Export/Print</Button>
                         </Link>}
                 </Col>
             </Row>
