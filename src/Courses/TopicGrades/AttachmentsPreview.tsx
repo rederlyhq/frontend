@@ -43,12 +43,14 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
 
     return (
         <Grid container style={{paddingLeft: '1rem'}}>
-            <Grid item md={12}><h1>Attachments</h1></Grid>
-            <PrintingPage 
-                open={shouldPrint} 
-                attachmentsUrls={attachedFiles.map(attachment => (baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404')}
-            />
-            <Button onClick={()=>setShouldPrint(true)}>Export All</Button>
+            <Grid item md={12}><h1>Attachments</h1>
+                <PrintingPage 
+                    debug={true}
+                    open={shouldPrint} 
+                    attachmentsUrls={attachedFiles.map(attachment => (baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404')}
+                />
+                <Button onClick={()=>setShouldPrint(true)}>Export All</Button>
+            </Grid>
             {
                 attachedFiles.map(attachment => (
                     <Grid item md={4} key={attachment.userLocalFilename}>
