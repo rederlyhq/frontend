@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
-import { TextField, Button, Grid, FormControlLabel, Switch, InputAdornment, SwipeableDrawer } from '@material-ui/core';
+import { TextField, Button, Grid, FormControlLabel, Switch, InputAdornment, SwipeableDrawer, IconButton, Tooltip } from '@material-ui/core';
 import _ from 'lodash';
 import { getUserId } from '../Enums/UserRole';
 import logger from '../Utilities/Logger';
@@ -14,11 +14,13 @@ import 'codemirror/mode/perl/perl';
 import 'codemirror/mode/javascript/javascript';
 import { catalog, readProblem, saveProblem } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { nameof } from '../Utilities/TypescriptUtils';
-import { FaCopy } from 'react-icons/fa';
+import { FaCopy, FaDice } from 'react-icons/fa';
 import path from 'path';
 import { Alert, Modal } from 'react-bootstrap';
 import useAlertState from '../Hooks/useAlertState';
 import { useQuery } from '../Hooks/UseQuery';
+import { motion, useAnimation, useCycle } from 'framer-motion';
+import { Refresh } from '@material-ui/icons';
 
 const defaultLoadPath = 'private/templates/barebones.pg';
 
@@ -36,6 +38,8 @@ export interface ProblemEditorInputs extends PreviewProps {
 }
 
 export const ProblemEditor: React.FC = () => {
+    const controls = useAnimation();
+    const [flipped, cycleFlipped] = useCycle(-1, 1);
     const queryParams = useQuery();
     const savePathAdornmentText = `private/my/${getUserId()}/`;
     const getSavePathForLoadPath = (userPath: string): string => {
@@ -279,7 +283,7 @@ export const ProblemEditor: React.FC = () => {
             <Grid item md={2} style ={{
                 marginLeft: 'auto'
             }}>
-                <TextField
+                {/* <TextField
                     name="seedValue" 
                     inputRef={register({
                         required: true, 
@@ -287,10 +291,53 @@ export const ProblemEditor: React.FC = () => {
                     label='seedValue'
                     type='number'
                     fullWidth={true}
+                /> */}
+                <TextField
+                    inputRef={register({
+                        required: true, 
+                    })}
+                    name="seedValue"
+                    aria-label="Problem Seed"
+                    variant='outlined'
+                    onClick={(event: any) => event.stopPropagation()}
+                    onFocus={(event: any) => event.stopPropagation()}
+                    label='Problem Seed'
+                    type='number'
+                    style={{width:'100%'}}
+                    // className='hideNumberSpinners'
+                    InputProps={{
+                        startAdornment: <InputAdornment position='start'>
+                            <Tooltip title='Randomize'>
+                                <IconButton
+                                    aria-label='reload problem with a random seed'
+                                    onClick={(event: any)=>{
+                                        event.stopPropagation();
+                                        problemEditorForm.setValue(nameof<ProblemEditorInputs>('seedValue'), _.random(0, 999999, false));
+                                        cycleFlipped();
+                                    }}
+                                >
+                                    <motion.div animate={{scaleX: flipped}} ><FaDice/></motion.div>
+                                </IconButton>
+                            </Tooltip>
+                        </InputAdornment>,
+                        // endAdornment: <InputAdornment position='end'>
+                        //     <Tooltip title='Reload'>
+                        //         <IconButton
+                        //             aria-label='reload problem with current seed'
+                        //             onClick={(event: any)=>{
+                        //                 event.stopPropagation();
+                        //                 controls.start({rotate: 360, transition: {duration: 0.5}});
+                        //             }}
+                        //         >
+                        //             <motion.div animate={controls}><Refresh /></motion.div>
+                        //         </IconButton>
+                        //     </Tooltip>
+                        // </InputAdornment>
+                    }}
                 />
             </Grid>
 
-            <Grid item md={4}>
+            {/* <Grid item md={4}>
                 <Controller 
                     name="showHints"
                     control={control} 
@@ -330,7 +377,7 @@ export const ProblemEditor: React.FC = () => {
                         />
                     )}
                 />
-            </Grid>
+            </Grid> */}
             <Grid item md={2}>
                 <Button
                     fullWidth={true}
