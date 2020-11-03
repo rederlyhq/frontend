@@ -35,6 +35,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = ({gradeId}) => {
 
     return (
         <>
+            <h1>Grades for {gradeData[0].user.firstName} {gradeData[0].user.lastName}</h1>
             {gradeData.map((problem: any)=>{
                 const bestAttempt = problem.bestVersionAttempt;
                 const attachments = problem.studentGradeInstanceProblemAttachments;
