@@ -133,20 +133,21 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         }
     }, [info.workbookId]);
 
-    useEffect(() => {
-        (async () => {
-            setTopicGrade(null);
-            if (_.isNil(topicId)) {
-                logger.debug('GradeInfoHeader topicId id is nil, skipping grades call');
-            }
+    const fetchTopicGrade = async () => {
+        setTopicGrade(null);
+        if (_.isNil(topicId)) {
+            logger.debug('GradeInfoHeader topicId id is nil, skipping grades call');
+        }
 
-            const params = {
-                topicId: topicId,
-                userId: grade.userId
-            };
-            const result = await getGrades(params);
-            setTopicGrade(result.data.data.first?.average ?? null);
-        })();
+        const params = {
+            topicId: topicId,
+            userId: grade.userId
+        };
+        const result = await getGrades(params);
+        setTopicGrade(result.data.data.first?.average ?? null);
+    };
+    useEffect(() => {
+        fetchTopicGrade();
     }, [grade.userId, topicId]);
 
     const workbookList = (vMap: Record<number, Array<number>>, versioned: boolean) => {
@@ -219,6 +220,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                         if (!_.isNil(newGrade.effectiveScore)) {
                             setInfo({ ...info, effectiveScore: newGrade.effectiveScore });
                             onSuccess(newGrade);
+                            fetchTopicGrade();
                         }
                     }}
                 /><br />
