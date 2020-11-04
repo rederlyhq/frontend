@@ -61,7 +61,8 @@
     "eject": "react-scripts eject",
     "build": "react-scripts build",
     "rebuild_renderer": "(cd ../renderer-docker && ./rebuild_docker.sh)",
-    "lint": "eslint src/ --ext ts,tsx"
+    "lint": "eslint src/ --ext ts,tsx",
+    "postbuild": "node postbuild.js"
   },
   "eslintConfig": {
     "extends": "react-app"
