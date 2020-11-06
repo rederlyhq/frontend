@@ -4,8 +4,10 @@ import logger from './Logger';
 import { version as packageVersion } from '../../package.json';
 import moment from 'moment';
 import _ from 'lodash';
+import localPreferences from '../Utilities/LocalPreferences';
 
-const VERSION_CHECK_DATE = 'VERSION_CHECK_DATE'; 
+const { versionCheck } = localPreferences;
+
 const getVersionFile = async () => {
     return axios.get<string>(`/version.txt?cache_bust=${new Date().getTime()}`);
 };
@@ -23,7 +25,7 @@ const versionRefresh = async () => {
         const versionResponse = versionAxiosResponse.data;
         if (packageVersion.trim() !== versionResponse.trim()) {
             logger.warn(`Version Check: Version mismatch packageVersion ${packageVersion} !== versionResponse ${versionResponse}`);
-            const versionCheckDate = localStorage.getItem(VERSION_CHECK_DATE);
+            const versionCheckDate = versionCheck.nextCheckDate;
             let shouldReload = false;
             if (_.isNil(versionCheckDate)) {
                 shouldReload = true;
@@ -38,13 +40,12 @@ const versionRefresh = async () => {
     
             if (shouldReload) {
                 // set the next time to the future
-                localStorage.setItem(VERSION_CHECK_DATE, moment().utc().add(1, 'days').format());
-                // TODO force reload is deprecated
-                window.location.reload(true);
+                versionCheck.nextCheckDate = moment().utc().add(1, 'days').format();
+                window.location.reload();
             }
         } else {
             logger.debug('Version Check: Version matched');
-            localStorage.removeItem(VERSION_CHECK_DATE);
+            versionCheck.nextCheckDate = null;
         }
         return packageVersion;
     } catch (e) {

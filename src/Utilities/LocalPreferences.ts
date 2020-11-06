@@ -2,6 +2,7 @@ import _ from 'lodash';
 
 const STUDENT_TOPIC_PREFERENCES_USE_SECONDS = 'STUDENT_TOPIC_PREFERENCES_USE_SECONDS';
 const LOGGING_LEVEL = 'LOGGING_LEVEL';
+const VERSION_CHECK_DATE = 'VERSION_CHECK_DATE'; 
 
 const getItemWithDefaultValue = (key: string, defaultValue?: string) => {
     const value = localStorage.getItem(key);
@@ -52,7 +53,22 @@ const localPreferences = {
         set loggingLevel(value: string) {
             localStorage.setItem(LOGGING_LEVEL, value);
         }
+    },
+    versionCheck: {
+        get nextCheckDate() {
+            return localStorage.getItem(VERSION_CHECK_DATE);
+        },
+        set nextCheckDate(value: string | null) {
+            if (_.isNil(value)) {
+                localStorage.removeItem(VERSION_CHECK_DATE);
+            } else {
+                localStorage.setItem(VERSION_CHECK_DATE, value);
+            }
+        }
     }
 };
+
+// THIS SHOULD BE COMMENTED OUT, it can be helpful for testing
+// (window as any).localPreferences = localPreferences;
 
 export default localPreferences;
