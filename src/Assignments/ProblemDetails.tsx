@@ -8,6 +8,9 @@ import { MomentReacter } from '../Components/MomentReacter';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import logger from '../Utilities/Logger';
 import EmailProfessor from './EmailProfessor';
+import localPreferences from '../Utilities/LocalPreferences';
+
+const { topicPreferences } = localPreferences;
 
 const INFINITE_MAX_ATTEMPT_VALUE = 0;
 
@@ -105,22 +108,20 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         marginBottom: '8px',
                     }}>
                         <MomentReacter
-                            // TODO Instead of using an interval it might be nice to have a way to calculate the next fromNow text change
-                            intervalInMillis={60000} // fromNow changes at it's most granular by the minute
-                            offsetInMillis={30000} // fromNow rounds though so it changes on the 30 second of every minute
-                            absolute={true} // Since it occurs on the 30th second of the minute if less than an hour
+                            intervalInMillis={1000}
                             stopMoment={solutionsMoment} // Once solutions are available this timer means nothing
                             significantMoments={[endDate, deadDate, solutionsMoment]}
                             logTag='dueMessage'
                         >
                             {(currentMoment: moment.Moment) => {
                                 let message = '';
+                                const formatKey = topicPreferences.useSeconds ? 'formattedFromNow': 'fromNow';
                                 if (currentMoment.isBefore(endDate) && (_.isNil(attemptsRemaining) || (attemptsRemaining > 0 && !isClosed))) {
-                                    message = `Due ${endDate.fromNow()}`;
+                                    message = `Due ${endDate[formatKey]()}`;
                                 } else if (currentMoment.isBefore(deadDate) && (_.isNil(attemptsRemaining) || (attemptsRemaining > 0 && !isClosed))) {
-                                    message = `Partial credit expires ${deadDate.fromNow()}`;
+                                    message = `Partial credit expires ${deadDate[formatKey]()}`;
                                 } else if (currentMoment.isBefore(solutionsMoment) && (_.isNil(attemptsRemaining) || (attemptsRemaining > 0 && !isClosed))) {
-                                    message = `Solutions available ${solutionsMoment.fromNow()}`;
+                                    message = `Solutions available ${solutionsMoment[formatKey]()}`;
                                 } else if (currentMoment.isAfter(solutionsMoment)) {
                                     message = (isVersionedAssessment) ? 'Time expired for this version' : 'Past due';
                                     if (isVersionedAssessment) setAttemptsRemaining?.(0);
