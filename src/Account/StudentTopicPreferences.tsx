@@ -54,7 +54,7 @@ export const StudentTopicPreferences: React.FC<StudentTopicPreferencesProps> = (
             </Grid>
             <Grid item md={12}>
                 <p>
-                    <strong>Use Seconds Countdown</strong> when on will display <em>hours:minutes:seconds</em> on the day the topic is due (example <em>Due in 5:09:04</em>). 
+                    <strong>Use Seconds Countdown</strong>, when on, will display <em>hours:minutes:seconds</em> on the day the topic is due (example <em>Due in 5:09:04</em>). 
                     If this option is turned off, you will get a less granular countdown (examples: <em>Due in 5 minutes</em>, <em>Due in a minute</em>, <em>Due in a few seconds</em>).
                 </p>
                 <p>
