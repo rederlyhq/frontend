@@ -9,29 +9,35 @@ import logger from '../../Utilities/Logger';
 import { useQuery } from '../../Hooks/UseQuery';
 
 import './PrintEverything.css';
+import { GetAllVersionAttachmentsResponse, GetAllVersionDataResponse } from '../../APIInterfaces/BackendAPI/ResponseTypes/CourseResponseTypes';
 
 interface PrintEverythingProps {
-    gradeId?: number;
 }
 
-export const PrintEverything: React.FC<PrintEverythingProps> = ({gradeId}) => {
+export const PrintEverything: React.FC<PrintEverythingProps> = () => {
+    let userId: number = 0;
+    let topicId: number = 0;;
     const qs = useQuery();
     const topicName = qs.get('topicName');
     const workbookName = qs.get('workbookName');
-    const params = useParams<{gradeId?: string}>();
+    const params = useParams<{userId?: string, topicId?: string}>();
 
-    if (params.gradeId)
-        gradeId = parseInt(params.gradeId, 10);
-    const [gradeData, setGradeData] = useState<any>();
+    if (params.userId)
+        userId = parseInt(params.userId, 10);
+        
+    if (params.topicId)
+        topicId = parseInt(params.topicId, 10);
+        
+    const [gradeData, setGradeData] = useState<GetAllVersionAttachmentsResponse | null>(null);
 
 
     useEffect(()=>{
-        if (_.isNil(gradeId)) {
-            logger.debug('Grade ID is null.');
+        if (_.isNil(userId) || _.isNil(topicId)) {
+            logger.error(`Got to page without User ${userId} or Topic ${topicId}`);
             return;
         }
         (async () => {
-            const res = await getAllContentForVersion({gradeId: gradeId});
+            const res = await getAllContentForVersion({userId, topicId});
             setGradeData(res.data.data);
 
             // TODO: pdf.js in the embeds warns that the PDF hasn't fully loaded.
@@ -39,32 +45,37 @@ export const PrintEverything: React.FC<PrintEverythingProps> = ({gradeId}) => {
                 window.print();
             }, 8000);
         })();
-    }, [gradeId]);
+    }, [userId, topicId]);
 
     if (_.isNil(gradeData)) return null;
 
     return (
         <>
-            <h1>{topicName?.fromBase64()} -- {gradeData[0].user.firstName} {gradeData[0].user.lastName}</h1>
+            <h1>{gradeData.topic.name} -- {gradeData.user.firstName} {gradeData.user.lastName}</h1>
             <h2>{workbookName?.fromBase64()}</h2>
             <h3 className='dont-print'>Printing will begin in several seconds...</h3>
-            {gradeData.map((problem: any)=>{
-                const bestAttempt = problem.bestVersionAttempt;
-                const attachments = problem.studentGradeInstanceProblemAttachments;
+            {gradeData.topic.questions.map((problem)=>{
+                if (problem.grades.length > 1) {
+                    logger.warn('More grades were found for a problem at a specific version.');
+                    return;
+                }
+                const bestAttemptWorkbook = problem.grades[0].last_influencing_attempt_workbook_id;
+                // WARNING: Truncation
+                const problemPath = problem.grades[0].lastInfluencingAttempt.studentGradeInstance.we;
+                const attachments = problem.grades[0].lastInfluencingAttempt.studentGradeInstance.problemAttachments;
                 // TODO: Get from call
                 const baseUrl = 'https://staging.rederly.com/work/';
                 return (
                     <div key={problem.id}>
                         <h4>Problem {problem.problemNumber}</h4>
                         <ProblemIframe 
-                            problem={new ProblemObject({id: bestAttempt.courseWWTopicQuestionId})}
-                            workbookId={bestAttempt.id}
+                            problem={new ProblemObject({id: problem.id, path: problemPath})}
+                            workbookId={bestAttemptWorkbook}
                             readonly={true}
                         />
                         <h5>Problem {problem.problemNumber} Attachments</h5>
-                        {attachments.map((y: any) => {
-                            const attachment = y.problemAttachment;
-                            const cloudFilename = attachment.cloudFilename ?? attachment.cloudF;
+                        {attachments.map((attachment) => {
+                            const cloudFilename = attachment.cloudFilename;
                             return (
                                 <>
                                     <embed

@@ -270,10 +270,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                 <Col>
                     {selectedInfo.workbook?.studentGradeInstanceId && 
                         <Link 
-                            to={path => `${path.pathname}/print/${selectedInfo.workbook?.studentGradeId}?${qs.stringify({
-                                topicName: topic?.name.toBase64(),
-                                workbookName: selectedInfo.workbook?.workbookDescriptor?.toBase64(),
-                            })}`}
+                            to={path => `${path.pathname}/print/${selected.user?.id}`}
                             target="_blank" rel='noopener noreferrer'
                         >
                             <Button variant='contained' color='primary'>Export/Print</Button>
