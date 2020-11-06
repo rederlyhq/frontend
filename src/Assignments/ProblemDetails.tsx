@@ -151,11 +151,11 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                 overlay={(props: any) => {
                                     let message = null;
                                     if (_.isNil(maxAttempts) || _.isNil(usedAttempts)) {
-                                        message = 'Students would see information about how many attempts they have used here';
+                                        message = 'Students would see information about how many submissions they have used here';
                                     } else if (maxAttempts > INFINITE_MAX_ATTEMPT_VALUE) {
-                                        message = `You have used ${usedAttempts} of ${maxAttempts} graded attempts`;
+                                        message = `You have used ${usedAttempts} of ${maxAttempts} graded submissions`;
                                     } else {
-                                        message = `You have attempted this problem ${usedAttempts} time${usedAttempts === 1 ? '' : 's'}`;
+                                        message = `You have submitted this problem ${usedAttempts} time${usedAttempts === 1 ? '' : 's'}`;
                                     }
                                     return (
                                         <Tooltip id="attempts-tooltip" {...props}>
@@ -174,10 +174,10 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                             return 'This question does not have an attempt limit.';
                                         } else {
                                             if (_.isNil(usedAttempts)) {
-                                                return `This problem allows ${maxAttempts} attempt${maxAttempts === 1 ? '' : 's'}.`;
+                                                return `This problem allows ${maxAttempts} submission${maxAttempts === 1 ? '' : 's'}.`;
                                             }
                                             const remainingAttempts = maxAttempts - usedAttempts;
-                                            return `You have ${Math.max(remainingAttempts, 0)} graded attempt${remainingAttempts === 1 ? '' : 's'} remaining.`;
+                                            return `You have ${Math.max(remainingAttempts, 0)} graded submission${remainingAttempts === 1 ? '' : 's'} remaining.`;
                                         }
                                     })()}
                                 </div>
@@ -218,7 +218,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                 {(currentMoment) => {
                                     // TODO move this logic to a utility function that is shared between the backend and front end
                                     // initally I was thinking the backend would send it, however it has to react to the current time so it probably would be better in a shared module
-                                    const applicationError = 'An unknown error has occurred and it is unclear if your attempt will be graded.';
+                                    const applicationError = 'An unknown error has occurred and it is unclear if your submissions will be graded.';
                                     let message = null;
                                     if (_.isNil(problem)) {
                                         // The user should never see this
@@ -228,32 +228,32 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                     // ******************** NOT RECORDING ********************
                                     else if (_.isNil(grade)) {
                                         if (getUserRole() === UserRole.STUDENT) {
-                                            message = 'This problem is not eligible for a grade. Your attempts will not be recorded.';
+                                            message = 'This problem is not eligible for a grade. Your submissions will not be recorded.';
                                         } else {
                                             // Professors will not have a grade so this is an expected result
                                             return (<></>);
                                         }
                                     } else if (grade.overallBestScore >= 1) {
-                                        message = 'You have completed this problem. Your attempts will no longer be recorded.';
+                                        message = 'You have completed this problem. Your submissions will no longer be recorded.';
                                     } else if (currentMoment.isAfter(solutionsMoment)) {
                                         // TODO get solutionsMoment from backend
-                                        message = 'Solutions are available, your attempts will not be recorded.';
+                                        message = 'Solutions are available, your submissions will not be recorded.';
                                     }
                                     // ******************** RECORDING BUT NOT UPDATING GRADE \/\/\/\/********************
                                     else if (grade.locked === true) {
-                                        message = 'Your grade on this problem has been locked. Your attempts will be recorded but your grade will not update. Contact your professor if you think this is an error.';
+                                        message = 'Your grade on this problem has been locked. Your submissions will be recorded but your grade will not update. Contact your professor if you think this is an error.';
                                     } else if (problem.maxAttempts > 0 && grade.numAttempts >= problem.maxAttempts) {
-                                        message = 'You have exceeded the attempt limit. Your attempts on this problem will not be graded but will count toward completion.';
+                                        message = 'You have exceeded the attempt limit. Your submissions on this problem will not be graded but will count toward completion.';
                                     } else if (currentMoment.isBefore(solutionsMoment) && currentMoment.isAfter(deadDate)) {
-                                        message = 'The topic is past due. Your attempts on this problem will not be graded but will count toward completion.';
+                                        message = 'The topic is past due. Your submissions on this problem will not be graded but will count toward completion.';
                                     }
                                     // ******************** RECORDING AND UPDATING GRADE (PARTIAL CREDIT) \/\/\/\/********************
                                     else if (currentMoment.isBefore(deadDate) && currentMoment.isAfter(endDate)) {
-                                        message = 'The topic is past due but partial credit is available. Your attempts will be graded with a penalty.';
+                                        message = 'The topic is past due but partial credit is available. Your submissions will be graded with a penalty.';
                                     // ******************** RECORDING AND UPDATING GRADE \/\/\/\/********************
                                     } else if (grade.overallBestScore < 1 && currentMoment.isBefore(endDate) && (grade.numAttempts < problem.maxAttempts || problem.maxAttempts <= INFINITE_MAX_ATTEMPT_VALUE)) {
                                         // All of these situations should already be handled, just making it more defensive
-                                        message = 'Your attempts on this problem will be graded.';
+                                        message = 'Your submissions on this problem will be graded.';
                                     }
                                     // ******************** APPLICATION ERROR \/\/\/\/********************
                                     else {

@@ -221,7 +221,7 @@ export const MaxVersionsField: React.FC<{}> = () => {
             name={`${examFieldNamePrefix}.maxVersions`}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
-            label={'Number of Versions'}
+            label={'Max Versions'}
             type='number'
         />
     );
