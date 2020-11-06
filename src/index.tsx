@@ -5,6 +5,7 @@ import * as serviceWorker from './serviceWorker';
 import { Router } from './Router';
 import './Extensions';
 import GlobalErrorBoundaryState from './Utilities/ErrorBoundaries/GlobalErrorBoundary';
+import { VersionCheck } from './Utilities/VersionCheck';
 
 // if (process.env.NODE_ENV !== 'production') {
 //     var axe = require('react-axe');
@@ -14,7 +15,9 @@ import GlobalErrorBoundaryState from './Utilities/ErrorBoundaries/GlobalErrorBou
 ReactDOM.render(
     <React.StrictMode>
         <GlobalErrorBoundaryState>
-            <Router />
+            <VersionCheck>
+                <Router />
+            </VersionCheck>
         </GlobalErrorBoundaryState>
     </React.StrictMode>,
     document.getElementById('root')
