@@ -4,8 +4,11 @@ import AxiosRequest from '../Hooks/AxiosRequest';
 import AxiosBatchTransport from './AxiosBatchTransport';
 import BrowserConsoleLoggerTransport from './BrowserConsoleLoggerTransport';
 import { version } from '../../package.json';
+import localPreferences from '../Utilities/LocalPreferences';
 
-let level = process.env.NODE_ENV === 'production' ? 'error' : 'debug';
+const { loggingPreferences } = localPreferences;
+
+let level = loggingPreferences.loggingLevel;
 
 const transports = {
     console: new BrowserConsoleLoggerTransport(
@@ -46,7 +49,16 @@ declare global {
 
 window.logger = logger;
 window.setLogLevel = (level: string) => {
+    const availableLoggingLevels = Object.keys(logger.levels);
+    if(availableLoggingLevels.indexOf(level) < 0) {
+        // Since you are changing the logger this log should not go through the logger
+        // We do not want this sent to the server and furthermore we want to make sure it gets output to the console
+        // This is a developer only feature and should be interfaced with through the console
+        console.error(`Client Logger: Unexpected logging level ${level}, valid values are [${availableLoggingLevels}]`);
+        return;
+    }
     transports.console.level = level;
+    loggingPreferences.loggingLevel = level;
 };
 
 
