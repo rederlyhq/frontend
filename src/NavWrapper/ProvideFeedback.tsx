@@ -22,8 +22,10 @@ export const ProvideFeedback: React.FC<any> = () => {
             setEnabled(false);
             logger.info(history);
             await AxiosRequest.post('/support', {
-                description: `${description} (Sent from: ${window.location.origin}${history.location.pathname} using v${version})`,
-                summary,
+                description: description,
+                summary: summary,
+                url: `${window.location.origin}${history.location.pathname}`,
+                version: version,
             });
             setMessage('Thank you, your feedback has been submitted.');
             setSubmitting(false);
