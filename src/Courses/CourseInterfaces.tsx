@@ -319,7 +319,10 @@ export class ProblemObject implements IProblemObject {
     unique: number = newProblemUniqueGen.next().value || 0;
     grades?: StudentGrade[];
     studentTopicQuestionOverride: any[] = [];
-    courseQuestionAssessmentInfo?: any = {};
+    courseQuestionAssessmentInfo?: {
+        additionalProblemPaths?: Array<string>;
+        randomSeedSet?: number[];
+    }
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
