@@ -112,6 +112,40 @@ interface ListAttachmentsInterface {
 
 export type ListAttachmentsResponse = BackendAPIResponse<ListAttachmentsInterface>;
 
+export interface GetAllVersionAttachmentsResponse {
+    user: {
+        id: number;
+        firstName: string;
+        lastName: string;
+    },
+    topic: {
+        id: number;
+        name: string;
+        questions: {
+            id: number;
+            problemNumber: number;
+            grades: {
+                id: number;
+                last_influencing_attempt_workbook_id: number;
+                lastInfluencingAttempt: {
+                    id: number,
+                    studentGradeInstance: {
+                        // This is a truncated webworkPath
+                        we: string;
+                        problemAttachments: {
+                            id: number;
+                            cloudFilename: string;
+                            userLocalFilename: string;
+                        }[];
+                    }
+                }
+            }[];
+        }[];
+    }
+}
+
+export type GetAllVersionDataResponse = BackendAPIResponse<GetAllVersionAttachmentsResponse>;
+
 /* *************** *************** */
 /* *********** Editor  *********** */
 /* *************** *************** */

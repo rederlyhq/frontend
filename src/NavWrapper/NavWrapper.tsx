@@ -129,7 +129,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/settings`}>
                                             <TopicSettingsPage />
                                         </Route>
-                                        <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading/print/:gradeId`}>
+                                        <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading/print/:userId`}>
                                             <PrintEverything />
                                         </Route>
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/grading`}>
