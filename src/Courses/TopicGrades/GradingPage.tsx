@@ -263,11 +263,11 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
 
     return (
         <Grid>
-            <Row>
-                <Col className='text-left'>
+            <Grid container spacing={1} alignItems='center'>
+                <Grid item className='text-left'>
                     <h1>Grading {topic && topic.name}</h1>
-                </Col>
-                <Col>
+                </Grid>
+                <Grid item>
                     {selectedInfo.workbook?.studentGradeInstanceId && 
                         <Link 
                             to={path => `${path.pathname}/print/${selected.user?.id}`}
@@ -275,8 +275,8 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                         >
                             <Button variant='contained' color='primary'>Export/Print</Button>
                         </Link>}
-                </Col>
-            </Row>
+                </Grid>
+            </Grid>
             <Grid container spacing={1}>
                 <Grid container item md={4}>
                     {problems && users &&
