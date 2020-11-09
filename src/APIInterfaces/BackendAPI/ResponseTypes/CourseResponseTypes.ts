@@ -113,6 +113,7 @@ interface ListAttachmentsInterface {
 export type ListAttachmentsResponse = BackendAPIResponse<ListAttachmentsInterface>;
 
 export interface GetAllVersionAttachmentsResponse {
+    baseUrl: string;
     user: {
         id: number;
         firstName: string;
