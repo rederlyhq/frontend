@@ -8,7 +8,7 @@ import CourseDetailsPage from '../Courses/CourseDetailsPage';
 import { AnimatePresence } from 'framer-motion';
 import './NavWrapper.css';
 import NavbarCollapse from 'react-bootstrap/NavbarCollapse';
-import { getUserRole, UserRole } from '../Enums/UserRole';
+import { getUserRole, unauthorizedRedirect, UserRole } from '../Enums/UserRole';
 import CourseCreationPage from '../Courses/CourseCreation/CourseCreationPage';
 import CourseEditPage from '../Courses/CourseCreation/CourseEditPage';
 import SimpleProblemPage from '../Assignments/SimpleProblemPage';
@@ -47,15 +47,17 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     // TODO: Check if the user has been deauthenticated (ex: expired) and display a message.
     if (!sessionCookie) {
         logger.info('Logging out due to missing session token.');
+        unauthorizedRedirect();
         return <Redirect to={{
             pathname: '/'
         }} />;
     }
 
     const logout = async () => {
-        let res = await AxiosRequest.post('/users/logout');
-        if (res.status !== 200) {
-            logger.warn('Unnecessary call to logout.');
+        try {
+            await AxiosRequest.post('/users/logout');
+        } catch (e) {
+            logger.error('Error logging out', e);
         }
         history.push('/');
     };
