@@ -3,6 +3,7 @@ import _ from 'lodash';
 const STUDENT_TOPIC_PREFERENCES_USE_SECONDS = 'STUDENT_TOPIC_PREFERENCES_USE_SECONDS';
 const LOGGING_LEVEL = 'LOGGING_LEVEL';
 const VERSION_CHECK_DATE = 'VERSION_CHECK_DATE'; 
+const GENERAL_LOGIN_REDIRECT_URL = 'GENERAL_LOGIN_REDIRECT_URL'; 
 
 const getItemWithDefaultValue = (key: string, defaultValue?: string) => {
     const value = localStorage.getItem(key);
@@ -52,6 +53,18 @@ const localPreferences = {
         },
         set loggingLevel(value: string) {
             localStorage.setItem(LOGGING_LEVEL, value);
+        }
+    },
+    general: {
+        get loginRedirectURL(): string | null {
+            return localStorage.getItem(GENERAL_LOGIN_REDIRECT_URL);
+        },
+        set loginRedirectURL(value: string | null) {
+            if (_.isNil(value)) {
+                localStorage.removeItem(GENERAL_LOGIN_REDIRECT_URL);
+            } else {
+                localStorage.setItem(GENERAL_LOGIN_REDIRECT_URL, value);
+            }
         }
     },
     versionCheck: {

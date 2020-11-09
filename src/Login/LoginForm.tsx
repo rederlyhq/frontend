@@ -10,6 +10,9 @@ import { postLogin } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import BackendAPIError, { isAxiosError } from '../APIInterfaces/BackendAPI/BackendAPIError';
 import ResendVerificationModal from './ResendVerificationModal';
 import logger from '../Utilities/Logger';
+import _ from 'lodash';
+import localPreferences from '../Utilities/LocalPreferences';
+const { general } = localPreferences;
 
 interface LoginFormProps {
 
@@ -94,7 +97,13 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
         if (token) {
             logger.info('Already logged in, pushing to Courses.');
             // TODO: Check user type
-            history.push('/common/courses');
+            const { loginRedirectURL } = general;
+            if (_.isNil(loginRedirectURL)) {
+                history.push('/common/courses');
+            } else {
+                general.loginRedirectURL = null;
+                history.push(loginRedirectURL);
+            }
         }
     });
 
