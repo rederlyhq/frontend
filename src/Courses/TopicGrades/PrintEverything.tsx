@@ -63,7 +63,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                 // WARNING: Truncation
                 const problemPath = problem.grades[0].lastInfluencingAttempt.studentGradeInstance.we;
                 const attachments = problem.grades[0].lastInfluencingAttempt.studentGradeInstance.problemAttachments;
-                // TODO: Get from call
+
                 const baseUrl = gradeData.baseUrl;
                 return (
                     <div key={problem.id}>
