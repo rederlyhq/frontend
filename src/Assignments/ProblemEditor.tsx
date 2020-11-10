@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
 import { TextField, Button, Grid, InputAdornment, IconButton, Tooltip } from '@material-ui/core';
 import _ from 'lodash';
@@ -14,12 +14,13 @@ import 'codemirror/mode/perl/perl';
 import 'codemirror/mode/javascript/javascript';
 import { catalog, readProblem, saveProblem } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { nameof } from '../Utilities/TypescriptUtils';
-import { FaCopy, FaDice } from 'react-icons/fa';
+import { FaCopy, FaDice, FaFileUpload } from 'react-icons/fa';
 import path from 'path';
 import { Alert, Modal } from 'react-bootstrap';
 import useAlertState from '../Hooks/useAlertState';
 import { useQuery } from '../Hooks/UseQuery';
 import { motion, useCycle } from 'framer-motion';
+import { useDropzone } from 'react-dropzone';
 
 const defaultLoadPath = 'private/templates/barebones.pg';
 
@@ -84,6 +85,29 @@ export const ProblemEditor: React.FC = () => {
             problemSource: problemEditorForm.getValues().problemSource,
         });
     };
+
+    const onDrop = useCallback(acceptedFiles => {
+        (async () => {
+            if (_.isNil(acceptedFiles.first)) {
+                return;
+            }
+            const path: string = acceptedFiles.first.path;
+            // The renderer does not like when there are return characters in there
+            // I think this is a windows line ending issue so it only matters on file upload
+            const problemSource: string = (await acceptedFiles.first.text()).replace(/\r/gm, '');
+            problemEditorForm.setValue(nameof<ProblemEditorInputs>('problemSource'), problemSource);
+            const userPath = getSavePathForLoadPath(path);
+            problemEditorForm.setValue(nameof<ProblemEditorInputs>('userPath'), userPath);
+            problemEditorForm.setValue(nameof<ProblemEditorInputs>('loadPath'), `${savePathAdornmentText}${userPath}`);
+            render();
+        })();
+    }, [problemEditorForm, savePathAdornmentText, getSavePathForLoadPath, render, savePathAdornmentText]);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop: onDrop,
+        accept: '.pg',
+        multiple: false
+    });
 
     const load = async () => {
         try {
@@ -276,6 +300,37 @@ export const ProblemEditor: React.FC = () => {
                     onClick={() => setCatalogOpen(true)}
                 >
                     Open
+                </Button>
+            </Grid>
+            <Grid item md={2} style={{position: 'relative'}} {...getRootProps()}>
+                {isDragActive && (
+                    <div style={{
+                        position: 'absolute', 
+                        width: '100%', 
+                        height: '100%', 
+                        border: '5px dashed lightblue', 
+                        borderRadius: '3px',
+                        textAlign: 'center',
+                        zIndex: 2,
+                        backgroundColor: 'white',
+                        opacity: 0.9
+                    }} 
+                    >
+                        <div style={{position: 'relative', margin: '0 auto', top: '15%', fontSize: '1em'}}>
+                            Drop your pg file to load!
+                            <FaFileUpload style={{position: 'relative', margin: '0 auto', top: '15%', display: 'block', fontSize: '1em'}}/>
+                        </div>
+                    </div>
+                )}
+                <Button
+                    fullWidth={true}
+                    style={{
+                        height: '100%'
+                    }}
+                    variant="outlined"
+                >
+                    <input {...getInputProps()} />
+                    Load PG File
                 </Button>
             </Grid>
             <Grid item md={2} style ={{
