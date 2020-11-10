@@ -169,7 +169,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 setError(`${res.data.message} You have used all available versions for this assessment.`);
             }
         } else {
-            const message = res.data.message || 'There was an error loading this topic.';
+            const message = res.data.message || 'This topic does not contain any problems. Please contact your professor.';
             setError(message);
         }
     };
