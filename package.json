@@ -57,7 +57,7 @@
     "server": "npm run start:watch --prefix ../backend/",
     "renderer": "(cd ../renderer && sudo morbo ./script/render_app)",
     "renderer-docker": "(cd ../renderer-docker && ./start_docker.sh)",
-    "test": "react-scripts test",
+    "test": "npx eslint 'src/**'",
     "eject": "react-scripts eject",
     "build": "react-scripts build",
     "rebuild_renderer": "(cd ../renderer-docker && ./rebuild_docker.sh)",
