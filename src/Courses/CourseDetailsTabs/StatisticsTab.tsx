@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import React, { useState, forwardRef, useEffect } from 'react';
-import { Alert, Button, Col, Nav, Spinner } from 'react-bootstrap';
+import { Alert, Button, Col, Nav } from 'react-bootstrap';
 import MaterialTable, { Column } from 'material-table';
 // import { MdSearch, MdFirstPage, MdLastPage, MdClear, MdFilterList, MdChevronRight, MdChevronLeft, MdArrowDownward, MdFileDownload} from 'react-icons/md';
 import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from '@material-ui/icons';
@@ -18,6 +18,7 @@ import { IAlertModalState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
+import { CircularProgress } from '@material-ui/core';
 
 const FILTERED_STRING = '_FILTERED';
 
@@ -517,7 +518,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     />
                 </>}
                 { loading ? 
-                    <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner> :
+                    <CircularProgress /> :
                     <MaterialTable
                         icons={icons}
                         title={(
