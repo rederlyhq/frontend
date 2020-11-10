@@ -138,7 +138,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
 
     useEffect(() => {
-        logger.silly(`Stats tab: [useEffect] course.id ${course.id}, globalView ${globalView}, idFilter ${idFilter}, userId ${userId}, userType ${userType}`);
+        logger.info(`Stats tab: [useEffect] course.id ${course.id}, globalView ${globalView}, idFilter ${idFilter}, userId ${userId}, userType ${userType}`);
         if (course?.id === 0) return;
 
         let url = '/courses/statistics';
@@ -201,7 +201,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         const satisfiesIdFilter = idFilter ? grade.courseWWTopicQuestionId === idFilter : true;
                         return hasAttempts && satisfiesIdFilter;
                     });
-                    logger.silly('Stats tab: [useEffect] setting grade.');
+                    logger.info('Stats tab: [useEffect] setting grade.');
                     setGrade(grades[0]);
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
@@ -215,7 +215,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     data = _.flatten(data);
                     data = data.sort((a: any, b: any) => moment(b.time).diff(moment(a.time)));
                 } else {
-                    logger.silly('Stats tab: [useEffect] setting gradesstate and grade');
+                    logger.info('Stats tab: [useEffect] setting gradesstate and grade');
                     setGradesState(defaultGradesState);
                     setGrade(null);
                     data = data.map((d: any) => ({
@@ -225,19 +225,18 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         completionPercent: formatNumberString(d.completionPercent, true)
                     }));
                 }
-                logger.silly('Stats tab: [useEffect] setting rowData');
+                logger.info('Stats tab: [useEffect] setting rowData');
                 setRowData(data);
-                setLoading(false);
             } catch (e) {
                 logger.error('Failed to get statistics.', e);
+            } finally {
                 setLoading(false);
-                return;
             }
         })();
     }, [course.id, globalView, idFilter, userId, userType]);
 
     const renderProblemPreview = (rowData: any) => {
-        logger.silly('Stats tab: renderProblemPreview called'); 
+        logger.info('Stats tab: renderProblemPreview called'); 
         switch (view) {
         case StatisticsViewFilter.TOPICS_FILTERED:
         case StatisticsView.PROBLEMS:
@@ -257,7 +256,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     };
 
     const resetBreadCrumbs = (selectedKey: string, newBreadcrumb?: BreadCrumbFilter) => {
-        logger.silly('Stats tab: resetting breadcrumbs');
+        logger.info('Stats tab: resetting breadcrumbs');
         let globalSelectedKey: StatisticsView = statisticsViewFromAllStatisticsViewFilter(selectedKey as StatisticsViewAll);
         let key: StatisticsView = StatisticsView.UNITS;
         let lastFilter: number | null = null;
@@ -279,7 +278,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 }
             }
         }
-        logger.silly('Stats tab: setting Breadcrumb Filter');
+        logger.info('Stats tab: setting Breadcrumb Filter');
         setBreadcrumbFilters(newBreadcrumbFilter);
         return {
             lastFilter,
@@ -288,7 +287,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     };
 
     const nextView = (event: any, rowData: any, togglePanel: any) => {
-        logger.silly('Stats tab: [nextView] proceeding to next view.');
+        logger.info('Stats tab: [nextView] proceeding to next view.');
         setLoading(true);
         const newBreadcrumb = {
             id: rowData.id,
@@ -296,14 +295,14 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         };
         switch (view) {
         case StatisticsView.UNITS:
-            logger.silly('Stats tab: [nextView] setting IdFilter and View');
+            logger.info('Stats tab: [nextView] setting IdFilter and View');
             setIdFilter(rowData.id);
             resetBreadCrumbs(StatisticsView.UNITS, newBreadcrumb);
             setView(StatisticsViewFilter.UNITS_FILTERED);
             break;
         case StatisticsViewFilter.UNITS_FILTERED:
         case StatisticsView.TOPICS:
-            logger.silly('Stats tab: [nextView] setting IdFilter and View');
+            logger.info('Stats tab: [nextView] setting IdFilter and View');
             setIdFilter(rowData.id);
             resetBreadCrumbs(StatisticsView.TOPICS, newBreadcrumb);
             setView(StatisticsViewFilter.TOPICS_FILTERED);
@@ -311,13 +310,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         case StatisticsViewFilter.TOPICS_FILTERED:
         case StatisticsView.PROBLEMS:
             if (userId !== undefined) {
-                logger.silly('Stats tab: [nextView] setting IdFilter and View');
+                logger.info('Stats tab: [nextView] setting IdFilter and View');
                 setIdFilter(rowData.id);
                 logger.debug('Switching to Attempts');
                 resetBreadCrumbs(StatisticsView.PROBLEMS, newBreadcrumb);
                 setView(StatisticsViewFilter.PROBLEMS_FILTERED);
             } else {
-                logger.silly('showing a panel.');
+                logger.info('showing a panel.');
                 logger.debug('Showing a panel.');
                 togglePanel();
             }
@@ -352,7 +351,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         });
     }
     if (!_.isNil(userId) && view === StatisticsViewFilter.TOPICS_FILTERED) {
-        logger.silly('Stats tab: [root] preparing table actions');
+        logger.info('Stats tab: [root] preparing table actions');
         if (userType === UserRole.PROFESSOR) {
             actions.push((rowData: any) => {
                 // Don't show until the override information is available
@@ -363,7 +362,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     icon: () => <BsPencilSquare />,
                     tooltip: 'Override grade',
                     onClick: (_event: any, rowData: any) => {
-                        logger.silly('Stats tab: [root] setting grade and gradesstate');
+                        logger.info('Stats tab: [root] setting grade and gradesstate');
                         setGrade(rowData.grades[0]);
                         setGradesState({
                             ...gradesState,
@@ -395,7 +394,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             // Don't include the onclick event for non professors
             const onClick = userType === UserRole.PROFESSOR ?
                 () => {
-                    logger.silly('Stats tab: [rowData onClick] setting grade and gradesstate');
+                    logger.info('Stats tab: [rowData onClick] setting grade and gradesstate');
                     setGrade(rowData.grades[0]);
                     setGradesState({
                         ...gradesState,
@@ -421,7 +420,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     return (
         <>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
-                logger.silly('Stats tab: [nav1] setting IdFilter and view');
+                logger.info('Stats tab: [nav1] setting IdFilter and view');
                 setView(selectedKey as StatisticsViewAll);
                 setBreadcrumbFilters({});
                 setIdFilter(null);
@@ -439,7 +438,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             </Nav>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
                 const { lastFilter } = resetBreadCrumbs(selectedKey);
-                logger.silly('Stats tab: [nav2] setting IdFilter and view');
+                logger.info('Stats tab: [nav2] setting IdFilter and view');
                 setView(selectedKey as StatisticsViewFilter);
                 setIdFilter(lastFilter);
             }}>
@@ -551,11 +550,12 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                         variant={grade.locked ? 'warning' : 'danger'}
                                         className="ml-1 mr-1"
                                         onClick={() => {
-                                            logger.silly('Stats tab: [table button] setting gradesstate');
+                                            logger.info('Stats tab: [table button] setting gradesstate');
                                             setGradesState({
                                                 ...gradesState,
                                                 view: GradesStateView.LOCK
-                                            });}}
+                                            });
+                                        }}
                                     >
                                         {grade.locked ? <><BsLock/> Unlock</>: <><BsUnlock/> Lock</>}
                                     </Button>
