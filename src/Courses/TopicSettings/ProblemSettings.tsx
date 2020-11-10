@@ -33,15 +33,11 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
         courseQuestionAssessmentInfo: {
             randomSeedSet: [],
             ...selected.courseQuestionAssessmentInfo,
-            ...(
-                additionalProblemPathsArrayIsEmpty ?
-                    {
-                        additionalProblemPaths: [{path: selected.webworkQuestionPath || ''}]
-                    } : 
-                    {
-                        additionalProblemPaths: additionalProblemPathsArray.map((s: string) => ({path: s})),
-                    }
-            ),
+            additionalProblemPaths: [
+                {path: selected.webworkQuestionPath}, 
+                ...additionalProblemPathsArray?.map((s: string) => ({path: s})) || [], 
+                {path: ''}
+            ],
         }
     };
 
@@ -60,14 +56,17 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
     useEffect(()=>{
-        let defaultAdditionalProblemPaths = [{path: selected.webworkQuestionPath || ''}];
-        // Force renders to always include one empty path at the end.
-        if (!additionalProblemPathsArrayIsEmpty) {
-            const additionalProblemPathsArrayWithPadding = additionalProblemPathsArray.map((s: string) => ({path: s}));
-            defaultAdditionalProblemPaths = [...additionalProblemPathsArrayWithPadding, {path: ''}];
-        }
+        let defaultAdditionalProblemPaths = [
+            {path: selected.webworkQuestionPath}, 
+            ...additionalProblemPathsArray?.map((s: string) => ({path: s})) || [],
+            {path: ''}
+        ];
+
+        // Manually override the fields to be in the correct form below.
+        const selectedWithoutAssessmentInfo = _.omit(selected, ['courseQuestionAssessmentInfo']);
+
         reset({
-            ...selected,
+            ...selectedWithoutAssessmentInfo,
             ...(topic.topicTypeId === TopicTypeId.EXAM && {
                 courseQuestionAssessmentInfo: {
                     additionalProblemPaths: defaultAdditionalProblemPaths,
@@ -76,6 +75,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             }
             )
         });
+
         setUpdateAlert({message: '', variant: 'warning'});
     }, [selected, additionalProblemPathsArray, additionalProblemPathsArrayIsEmpty, reset, setUpdateAlert, topic.topicTypeId]);
 
@@ -86,19 +86,28 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
         }
 
         // React Hook Forms only supports nested field array structures, so we have to flatten it ourselves.
-        const fieldArray = data.courseQuestionAssessmentInfo?.additionalProblemPaths?.map?.(f => f.path);
+        const fieldArray = _.compact(data.courseQuestionAssessmentInfo?.additionalProblemPaths?.map?.(f => f.path));
+        // The first path should be set to the Webwork Question path.
+        const firstPath = fieldArray?.shift();
         const updateAssessmentInfo = (data.courseQuestionAssessmentInfo && {
             courseQuestionAssessmentInfo: {
-                ...(data.courseQuestionAssessmentInfo.additionalProblemPaths && {additionalProblemPaths: _.compact(fieldArray)}),
+                ...(data.courseQuestionAssessmentInfo.additionalProblemPaths && {additionalProblemPaths: fieldArray}),
                 randomSeedSet: data.courseQuestionAssessmentInfo.randomSeedSet,
             }
         });
+
+        if (!_.isNil(firstPath)) {
+            data.webworkQuestionPath = firstPath;
+        }
+
+        // updateAssessmentInfo has all the fields in the correct format for react-hook-forms
+        const dataWithoutAssessmentInfo = _.omit(data, ['courseQuestionAssessmentInfo']);
 
         try {
             const res = await putQuestion({
                 id: selected.id,
                 data: {
-                    ...data,
+                    ...dataWithoutAssessmentInfo,
                     ...updateAssessmentInfo
                 }
             });
