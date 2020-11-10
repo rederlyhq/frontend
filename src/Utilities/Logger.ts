@@ -18,7 +18,7 @@ const transports = {
         },
     ),
     server: new AxiosBatchTransport({
-        level: 'error',
+        level: 'warn',
         axios: AxiosRequest,
         loggingEndpoint: '/utility/client-logs',
         format: winston.format.simple(),
