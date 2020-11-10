@@ -168,6 +168,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 // no problems were sent back, and user has used the maximum versions allowed
                 setError(`${res.data.message} You have used all available versions for this assessment.`);
             }
+        } else {
+            const message = res.data.message || 'This topic does not contain any problems. Please contact your professor.';
+            setError(message);
         }
     };
 
