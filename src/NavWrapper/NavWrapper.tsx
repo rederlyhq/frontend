@@ -47,7 +47,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     // TODO: Check if the user has been deauthenticated (ex: expired) and display a message.
     if (!sessionCookie) {
         logger.info('Logging out due to missing session token.');
-        unauthorizedRedirect();
+        unauthorizedRedirect(false);
         return <Redirect to={{
             pathname: '/'
         }} />;
