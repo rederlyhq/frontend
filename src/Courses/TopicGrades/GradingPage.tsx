@@ -1,7 +1,6 @@
 import { Button, Grid } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
-import { Row, Col } from 'react-bootstrap';
 import { Link, useParams } from 'react-router-dom';
 import logger from '../../Utilities/Logger';
 import MaterialBiSelect from '../../Components/MaterialBiSelect';
@@ -12,7 +11,6 @@ import { getAssessmentProblemsWithWorkbooks } from '../../APIInterfaces/BackendA
 import { GradeInfoHeader } from './GradeInfoHeader';
 import { useQuery } from '../../Hooks/UseQuery';
 import AttachmentsPreview from './AttachmentsPreview';
-import * as qs from 'querystring';
 
 interface TopicGradingPageProps {
     topicId?: string;
