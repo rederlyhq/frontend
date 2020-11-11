@@ -1,15 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import _ from 'lodash';
 import { Spinner } from 'react-bootstrap';
-import * as qs from 'querystring';
-import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance, postPreviewQuestion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance, postPreviewQuestion, getQuestion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import moment from 'moment';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import { xRayVision } from '../Utilities/NakedPromise';
 import IframeResizer, { IFrameComponent } from 'iframe-resizer-react';
 import logger from '../Utilities/Logger';
+import BackendAPIError from '../APIInterfaces/BackendAPI/BackendAPIError';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
@@ -72,7 +71,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 logger.debug(`Problem Iframe: The request for problem #${problem.id} was cancelled early.`);
                 return;
             } else if (_.isNil(rendererHTML)) {
-                logger.error(`Problem Iframe: Request for problem #${problem.id} came back null`);
+                // Preview Problems won't return a rendererHTML when the path is bad.
+                if (_.isNil(previewPath) && _.isNil(previewProblemSource)) {
+                    logger.error(`Problem Iframe: Request for problem #${problem.id} came back null`);
+                }
                 return;
             } else {
                 pendingReq.current = null;
@@ -100,15 +102,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
     const getHTML = async () => {
         try {
-            let queryString = qs.stringify(_({
-                workbookId,
-                readonly
-            }).omitBy(_.isUndefined).value());
-            if (!_.isEmpty(queryString)) {
-                queryString = `?${queryString}`;
-            }
-
             let res;
+
             if (previewPath || previewProblemSource) {
                 res = await postPreviewQuestion({
                     webworkQuestionPath: previewPath,
@@ -118,13 +113,21 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     showSolutions: previewShowSolutions
                 });
             } else {
-                res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
+                res = await getQuestion({
+                    id: problem.id,
+                    workbookId,
+                    readonly
+                });
             }
             return res.data.data.rendererData.renderedHTML as string;
 
         } catch (e) {
             setError(e.message);
-            logger.error('Error posting preview', e, e.message);
+            
+            if (!BackendAPIError.isBackendAPIError(e) || (e.status !== 200 && e.status !== 400)) {
+                logger.error(`An error occurred with retrieving ${(previewPath || previewProblemSource) ? 'a preview' : 'a problem'}. ${e.message}`);
+            }
+
             setLoading(false);
         }
     };
