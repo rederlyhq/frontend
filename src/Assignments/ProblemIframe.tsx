@@ -23,6 +23,11 @@ interface ProblemIframeProps {
     readonly?: boolean;
 }
 
+interface PendingRequest {
+    cancelled?: boolean;
+    problemId?: number;
+}
+
 /**
  * The most important part- rendering the problem.
  * We used the document.write strategy before for backwards compatibility, but modern browsers now block it.
@@ -31,7 +36,7 @@ interface ProblemIframeProps {
  * Important reference: https://medium.com/the-thinkmill/how-to-safely-inject-html-in-react-using-an-iframe-adc775d458bc
  */
 export const ProblemIframe: React.FC<ProblemIframeProps> = ({
-    problem: problemProp,
+    problem,
     previewPath,
     previewSeed,
     previewProblemSource,
@@ -42,8 +47,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     readonly = false,
 }) => {
     const iframeRef = useRef<IFrameComponent>(null);
+    const pendingReq = useRef<PendingRequest | null>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
-    const [problem, setProblem] = useState<ProblemObject>(problemProp);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [lastSubmission, setLastSubmission] = useState({});
@@ -52,32 +57,28 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
     const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
-    useEffect(() => {
-        setProblem(problemProp);
-    }, [problemProp]);
-
     useEffect(()=>{
         const fetchHTML = async () => {
-            const rendererHTML = await getHTML();
-            setProblem(problem => {
-                const matchString = `action="/backend-api/courses/question/${problem.id}\\?`;
-                const re = new RegExp(matchString);
-                const match = rendererHTML?.match(re);
+            if (pendingReq.current !== null) {
+                logger.debug(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId}`);
+                pendingReq.current.cancelled = true;
+            }
+            const currentReq = {problemId: problem.id} as PendingRequest;
+            pendingReq.current = currentReq;
 
-                // don't need to check if workbook ID is nil -- always is paired with appropriate problem object **MAINTAIN THIS EXPECTATION**
-                if (!_.isNil(rendererHTML) && 
-                    (!_.isNil(previewPath) || 
-                    !_.isNil(previewProblemSource) || 
-                    !_.isNil(match))
-                ) {
-                    // we match or else we're in a situation where there's nothing relevant to match *to*
-                    setRenderedHTML(rendererHTML);
-                } else {
-                    // do we want any notification of our state conflict or should we ditch this?
-                    if (!_.isNil(rendererHTML)) logger.warn('Someone has been rifling through the problems too quickly!');
-                }
-                return problem;
-            });
+            const rendererHTML = await getHTML();
+
+            if (currentReq.cancelled) {
+                logger.debug(`Problem Iframe: The request for problem #${problem.id} was cancelled early.`);
+                return;
+            } else if (_.isNil(rendererHTML)) {
+                logger.error(`Problem Iframe: Request for problem #${problem.id} came back null`);
+                return;
+            } else {
+                pendingReq.current = null;
+                setRenderedHTML(rendererHTML);
+            }
+
         };
 
         // We need to reset the error state since a new call means no error
