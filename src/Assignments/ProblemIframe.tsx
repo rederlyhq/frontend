@@ -124,7 +124,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         } catch (e) {
             setError(e.message);
             
-            if (_.isNil((e as BackendAPIError).status) || ((e as BackendAPIError).status !== 200 && (e as BackendAPIError).status !== 400)) {
+            if (!BackendAPIError.isBackendAPIError(e) || (e.status !== 200 && e.status !== 400)) {
                 logger.error(`An error occurred with retrieving ${(previewPath || previewProblemSource) ? 'a preview' : 'a problem'}. ${e.message}`);
             }
 

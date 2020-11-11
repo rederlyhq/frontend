@@ -48,4 +48,8 @@ export default class BackendAPIError extends Error {
         this.originalError = e;
         this.name = 'BackendAPIError';
     }
+
+    static isBackendAPIError(obj: unknown): obj is BackendAPIError {
+        return obj instanceof BackendAPIError;
+    }
 }
