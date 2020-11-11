@@ -31,7 +31,7 @@ interface ProblemIframeProps {
  * Important reference: https://medium.com/the-thinkmill/how-to-safely-inject-html-in-react-using-an-iframe-adc775d458bc
  */
 export const ProblemIframe: React.FC<ProblemIframeProps> = ({
-    problem,
+    problem: problemProp,
     previewPath,
     previewSeed,
     previewProblemSource,
@@ -43,6 +43,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 }) => {
     const iframeRef = useRef<IFrameComponent>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
+    const [problem, setProblem] = useState<ProblemObject>(problemProp);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [lastSubmission, setLastSubmission] = useState({});
@@ -51,7 +52,34 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
     const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
+    useEffect(() => {
+        setProblem(problemProp);
+    }, [problemProp]);
+
     useEffect(()=>{
+        const fetchHTML = async () => {
+            const rendererHTML = await getHTML();
+            setProblem(problem => {
+                const matchString = `action="/backend-api/courses/question/${problem.id}\\?`;
+                const re = new RegExp(matchString);
+                const match = rendererHTML?.match(re);
+
+                // don't need to check if workbook ID is nil -- always is paired with appropriate problem object **MAINTAIN THIS EXPECTATION**
+                if (!_.isNil(rendererHTML) && 
+                    (!_.isNil(previewPath) || 
+                    !_.isNil(previewProblemSource) || 
+                    !_.isNil(match))
+                ) {
+                    // we match or else we're in a situation where there's nothing relevant to match *to*
+                    setRenderedHTML(rendererHTML);
+                } else {
+                    // do we want any notification of our state conflict or should we ditch this?
+                    if (!_.isNil(rendererHTML)) logger.warn('Someone has been rifling through the problems too quickly!');
+                }
+                return problem;
+            });
+        };
+
         // We need to reset the error state since a new call means no error
         setError('');
         // If you don't reset the rendered html you won't get the load event
@@ -60,41 +88,45 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setRenderedHTML('');
         // srcdoc='' triggers onLoad with setLoading(false) so setLoading(true) isn't effective until now
         setLoading(true); 
-        (async () => {
-            try {
-                let queryString = qs.stringify(_({
-                    workbookId,
-                    readonly
-                }).omitBy(_.isUndefined).value());
-                if (!_.isEmpty(queryString)) {
-                    queryString = `?${queryString}`;
-                }
 
-                let res;
-                if (previewPath || previewProblemSource) {
-                    res = await postPreviewQuestion({
-                        webworkQuestionPath: previewPath,
-                        problemSeed: previewSeed,
-                        problemSource: previewProblemSource,
-                        showHints: previewShowHints,
-                        showSolutions: previewShowSolutions
-                    });
-                } else {
-                    res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
-                }
-                // TODO: Error handling.
-                setRenderedHTML(res.data.data.rendererData.renderedHTML);
-            } catch (e) {
-                setError(e.message);
-                logger.error('Error posting preview', e, e.message);
-                setLoading(false);
-            }
-        })();
+        fetchHTML();
+
         // when problem changes, reset lastsubmitted and lastsaved
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
         setLastSubmission({});
     }, [problem, problem.id, workbookId, previewPath, previewProblemSource, previewSeed]);
+
+    const getHTML = async () => {
+        try {
+            let queryString = qs.stringify(_({
+                workbookId,
+                readonly
+            }).omitBy(_.isUndefined).value());
+            if (!_.isEmpty(queryString)) {
+                queryString = `?${queryString}`;
+            }
+
+            let res;
+            if (previewPath || previewProblemSource) {
+                res = await postPreviewQuestion({
+                    webworkQuestionPath: previewPath,
+                    problemSeed: previewSeed,
+                    problemSource: previewProblemSource,
+                    showHints: previewShowHints,
+                    showSolutions: previewShowSolutions
+                });
+            } else {
+                res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
+            }
+            return res.data.data.rendererData.renderedHTML as string;
+
+        } catch (e) {
+            setError(e.message);
+            logger.error('Error posting preview', e, e.message);
+            setLoading(false);
+        }
+    };
 
     const isPrevious = (_value: any, key: string): boolean => {
         return /^previous_/.test(key);
@@ -289,8 +321,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             if (checkId && parseInt(checkId[1],10) !== problem.id) {
                 // Need more context for this error -- but I think we're trying to make this "too smart"
                 logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
-                setError('This problem ID is out of sync.');
-                return;
+                // setError('This problem ID is out of sync.');
+                // return;
             }
             insertListeners(problemForm);
             updateSubmitActive();
