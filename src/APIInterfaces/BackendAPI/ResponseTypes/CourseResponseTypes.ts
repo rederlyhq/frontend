@@ -172,3 +172,11 @@ type Grades = Array<{
     average: number;
 }>
 export type GradesResponse = BackendAPIResponse<Grades>;
+
+/* *************** *************** */
+/* ********* Enrollment  ********* */
+/* *************** *************** */
+type EnrollByCode = {
+    courseId: number;
+};
+export type EnrollByCodeResponse = BackendAPIResponse<EnrollByCode>;

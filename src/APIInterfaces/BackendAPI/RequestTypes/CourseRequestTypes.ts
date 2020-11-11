@@ -137,6 +137,10 @@ export interface GetQuestionsOptions {
     courseTopicContentId: number;
 }
 
+export interface EnrollByCodeOptions {
+    enrollCode: string;
+}
+
 export interface DeleteEnrollmentOptions {
     userId: number;
     courseId: number;
