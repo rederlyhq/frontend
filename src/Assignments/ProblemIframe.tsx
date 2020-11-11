@@ -10,6 +10,7 @@ import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import { xRayVision } from '../Utilities/NakedPromise';
 import IframeResizer, { IFrameComponent } from 'iframe-resizer-react';
 import logger from '../Utilities/Logger';
+import { AxiosResponse } from 'axios';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
