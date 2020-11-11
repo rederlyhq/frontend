@@ -23,6 +23,11 @@ interface ProblemIframeProps {
     readonly?: boolean;
 }
 
+interface PendingRequest {
+    cancelled?: boolean;
+    problemId?: number;
+}
+
 /**
  * The most important part- rendering the problem.
  * We used the document.write strategy before for backwards compatibility, but modern browsers now block it.
@@ -42,6 +47,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     readonly = false,
 }) => {
     const iframeRef = useRef<IFrameComponent>(null);
+    const pendingReq = useRef<PendingRequest | null>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -52,6 +58,29 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
     useEffect(()=>{
+        const fetchHTML = async () => {
+            if (pendingReq.current !== null) {
+                logger.debug(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId}`);
+                pendingReq.current.cancelled = true;
+            }
+            const currentReq = {problemId: problem.id} as PendingRequest;
+            pendingReq.current = currentReq;
+
+            const rendererHTML = await getHTML();
+
+            if (currentReq.cancelled) {
+                logger.debug(`Problem Iframe: The request for problem #${problem.id} was cancelled early.`);
+                return;
+            } else if (_.isNil(rendererHTML)) {
+                logger.error(`Problem Iframe: Request for problem #${problem.id} came back null`);
+                return;
+            } else {
+                pendingReq.current = null;
+                setRenderedHTML(rendererHTML);
+            }
+
+        };
+
         // We need to reset the error state since a new call means no error
         setError('');
         // If you don't reset the rendered html you won't get the load event
@@ -60,41 +89,45 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setRenderedHTML('');
         // srcdoc='' triggers onLoad with setLoading(false) so setLoading(true) isn't effective until now
         setLoading(true); 
-        (async () => {
-            try {
-                let queryString = qs.stringify(_({
-                    workbookId,
-                    readonly
-                }).omitBy(_.isUndefined).value());
-                if (!_.isEmpty(queryString)) {
-                    queryString = `?${queryString}`;
-                }
 
-                let res;
-                if (previewPath || previewProblemSource) {
-                    res = await postPreviewQuestion({
-                        webworkQuestionPath: previewPath,
-                        problemSeed: previewSeed,
-                        problemSource: previewProblemSource,
-                        showHints: previewShowHints,
-                        showSolutions: previewShowSolutions
-                    });
-                } else {
-                    res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
-                }
-                // TODO: Error handling.
-                setRenderedHTML(res.data.data.rendererData.renderedHTML);
-            } catch (e) {
-                setError(e.message);
-                logger.error('Error posting preview', e, e.message);
-                setLoading(false);
-            }
-        })();
+        fetchHTML();
+
         // when problem changes, reset lastsubmitted and lastsaved
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
         setLastSubmission({});
     }, [problem, problem.id, workbookId, previewPath, previewProblemSource, previewSeed]);
+
+    const getHTML = async () => {
+        try {
+            let queryString = qs.stringify(_({
+                workbookId,
+                readonly
+            }).omitBy(_.isUndefined).value());
+            if (!_.isEmpty(queryString)) {
+                queryString = `?${queryString}`;
+            }
+
+            let res;
+            if (previewPath || previewProblemSource) {
+                res = await postPreviewQuestion({
+                    webworkQuestionPath: previewPath,
+                    problemSeed: previewSeed,
+                    problemSource: previewProblemSource,
+                    showHints: previewShowHints,
+                    showSolutions: previewShowSolutions
+                });
+            } else {
+                res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
+            }
+            return res.data.data.rendererData.renderedHTML as string;
+
+        } catch (e) {
+            setError(e.message);
+            logger.error('Error posting preview', e, e.message);
+            setLoading(false);
+        }
+    };
 
     const isPrevious = (_value: any, key: string): boolean => {
         return /^previous_/.test(key);
@@ -287,7 +320,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             const submitUrl = problemForm.getAttribute('action');
             const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
             if (checkId && parseInt(checkId[1],10) !== problem.id) {
-                // Need more context for this error -- but I think we're trying to make this "too smart"
+                // if this still happens, we have bigger problems
                 logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
                 setError('This problem ID is out of sync.');
                 return;
