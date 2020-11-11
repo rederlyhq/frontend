@@ -23,3 +23,6 @@ type RegisterUser = {
     verificationBypass: boolean;
 };
 export type RegisterUserResponse = AxiosResponse<BackendAPIResponse<RegisterUser>>;
+
+type GetVerification = unknown;
+export type GetVerificationResponse = AxiosResponse<BackendAPIResponse<GetVerification>>;

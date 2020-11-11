@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Jumbotron } from 'react-bootstrap';
 import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
-import Axios from '../Hooks/AxiosRequest';
+import { getVerification } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import logger from '../Utilities/Logger';
 
 interface VerificationLandingPageProps {
@@ -11,7 +11,9 @@ interface VerificationLandingPageProps {
 
 // TODO: Use Axios.Request JSX to selectively render success or failure.
 export const VerificationLandingPage: React.FC<VerificationLandingPageProps> = () => {
-    const { uid } = useParams();
+    const { uid } = useParams<{
+        uid: string;
+    }>();
     const [{verifyData, verifyError}, setVerifyState] = useState({verifyData: '', verifyError: ''});
     
     // Async functions return promises regardlessly, and this angers Typescript. IIFE is the workaround.
@@ -19,13 +21,15 @@ export const VerificationLandingPage: React.FC<VerificationLandingPageProps> = (
         if (!uid) return;
         (async () => {
             try {
-                const res = await Axios.get(`/users/verify?verifyToken=${uid}`);
-                if (res.status === 200) {
-                    logger.info(res.data);
-                    setVerifyState({verifyData: 'Success', verifyError: ''});
+                const res = await getVerification({
+                    verifyToken: uid
+                });
+                if (res.status !== 200) {
+                    logger.warn(`Verification succeeded but got a non 200 status code: ${res.status}`);
                 }
+                setVerifyState({verifyData: 'Success', verifyError: ''});
             } catch (e) {
-                setVerifyState({verifyError: 'An error occurred.', verifyData: ''});
+                setVerifyState({verifyError: e.message, verifyData: ''});
             }
         })();
     }, [uid]);

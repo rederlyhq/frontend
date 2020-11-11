@@ -1,8 +1,9 @@
-import { PostForgotPasswordOptions, PutUpdatePasswordOptions, PutUpdateForgottonPasswordOptions, PostLoginOptions, PostResendVerificationOptions, GetUsersOptions, RegisterUserOptions } from '../RequestTypes/UserRequestTypes';
-import { PostForgotPasswordResponse, PutUpdatePasswordResponse, PutUpdateForgottonPasswordResponse, PostLoginResponse, PostResendVerificationResponse, GetUserResponse, RegisterUserResponse } from '../ResponseTypes/UserResponseTypes';
+import { PostForgotPasswordOptions, PutUpdatePasswordOptions, PutUpdateForgottonPasswordOptions, PostLoginOptions, PostResendVerificationOptions, GetUsersOptions, RegisterUserOptions, GetVerificationOptions } from '../RequestTypes/UserRequestTypes';
+import { PostForgotPasswordResponse, PutUpdatePasswordResponse, PutUpdateForgottonPasswordResponse, PostLoginResponse, PostResendVerificationResponse, GetUserResponse, RegisterUserResponse, GetVerificationResponse } from '../ResponseTypes/UserResponseTypes';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import url from 'url';
+import * as qs from 'querystring';
 
 const USER_PATH = '/users/';
 const USER_FORGOT_PASSWORD_PATH = url.resolve(
@@ -24,6 +25,10 @@ const USER_LOGIN_PATH = url.resolve(
 const USER_RESEND_VERIFICATION_PATH = url.resolve(
     USER_PATH,
     'resend-verification'
+);
+const USER_VERIFICATION_PATH = url.resolve(
+    USER_PATH,
+    'verify'
 );
 const USER_REGISTER_PATH = url.resolve(
     USER_PATH,
@@ -108,6 +113,22 @@ export const postResendVerification = async ({
                 email,
             }
         );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getVerification = async ({
+    verifyToken
+}: GetVerificationOptions): Promise<GetVerificationResponse> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(
+                USER_VERIFICATION_PATH,
+                `?${qs.stringify({
+                    verifyToken: verifyToken
+                })}`
+            ));
     } catch (e) {
         throw new BackendAPIError(e);
     }
