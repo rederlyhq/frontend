@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
-import { Spinner } from 'react-bootstrap';
+import { Alert, Spinner } from 'react-bootstrap';
 import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance, postPreviewQuestion, getQuestion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import moment from 'moment';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
@@ -9,6 +9,7 @@ import { xRayVision } from '../Utilities/NakedPromise';
 import IframeResizer, { IFrameComponent } from 'iframe-resizer-react';
 import logger from '../Utilities/Logger';
 import BackendAPIError from '../APIInterfaces/BackendAPI/BackendAPIError';
+import useAlertState from '../Hooks/useAlertState';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
@@ -50,6 +51,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [alert, setAlert] = useAlertState();
     const [lastSubmission, setLastSubmission] = useState({});
     const height = '100vh';
     const currentMutationObserver = useRef<MutationObserver> (null);
@@ -84,8 +86,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         };
 
         // We need to reset the error state since a new call means no error
-        setError('');
-        // If you don't reset the rendered html you won't get the load event
+        setAlert({
+            variant: 'info',
+            message: ''
+        });        // If you don't reset the rendered html you won't get the load event
         // Thus if you go to an error state and back to the success state
         // The rendered html will never call load handler which will never stop loading
         setRenderedHTML('');
@@ -122,8 +126,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             return res.data.data.rendererData.renderedHTML as string;
 
         } catch (e) {
-            setError(e.message);
-            
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });            
             if (!BackendAPIError.isBackendAPIError(e) || (e.status !== 200 && e.status !== 400)) {
                 logger.error(`An error occurred with retrieving ${(previewPath || previewProblemSource) ? 'a preview' : 'a problem'}. ${e.message}`);
             }
@@ -222,7 +228,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
                 if(_.isNil(iframeRef?.current)) {
                     logger.error('Hijacker: Could not find the iframe ref');
-                    setError('An error occurred');
+                    setAlert({
+                        variant: 'danger',
+                        message: 'There was an error with the problem iframe.'
+                    });
                     return;
                 }
 
@@ -234,7 +243,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     setLastSubmittedAt?.(moment());
                 }
             } catch (e) {
-                setError(e.message);
+                setAlert({
+                    variant: 'danger',
+                    message: e.message
+                });
                 return;
             }
         } else {
@@ -242,7 +254,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             if (_.isNil(problem.grades[0])) {return;} // not enrolled - do not save
             if (_.isNil(problem.grades[0].id)) {
                 // TODO: impossi-log logger.error()
-                setError(`No grades id for problem #${problem.id}`);
+                setAlert({
+                    variant: 'danger',
+                    message: `No grade id found for this problem #${problem.id}`
+                });
                 return;
             }
             const reqBody = {
@@ -264,7 +279,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     setLastSavedAt?.(moment());
                 }
             } catch (e) {
-                setError(e.message);
+                setAlert({
+                    variant: 'danger',
+                    message: e.message
+                });
                 return;
             }
         }
@@ -325,8 +343,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             if (checkId && parseInt(checkId[1],10) !== problem.id) {
                 // if this still happens, we have bigger problems
                 logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
-                setError('This problem ID is out of sync.');
-                return;
+                setAlert({
+                    variant: 'danger',
+                    message: `This problem ID (${problem.id}) is out of sync.`
+                });
             }
             insertListeners(problemForm);
             updateSubmitActive();
@@ -364,14 +384,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     return (
         <>
             { loading && <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>}
-            {error &&
-                <div style={{ color: 'crimson' }}>
-                    <br />
-                    <h3>An error occurred:</h3>
-                    {error}<br />
-                    Please refresh your page.
-                </div>
-            }
+            <Alert variant={alert.variant} show={alert.message.length > 0}>{alert.message} -- Please refresh your page.</Alert>
             <IframeResizer
                 // Using onInit instead of ref because:
                 // ref never get's set and a warning saying to use `forwardRef` comes up in the console
