@@ -319,10 +319,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             const submitUrl = problemForm.getAttribute('action');
             const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
             if (checkId && parseInt(checkId[1],10) !== problem.id) {
-                // Need more context for this error -- but I think we're trying to make this "too smart"
+                // if this still happens, we have bigger problems
                 logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
-                // setError('This problem ID is out of sync.');
-                // return;
+                setError('This problem ID is out of sync.');
+                return;
             }
             insertListeners(problemForm);
             updateSubmitActive();
