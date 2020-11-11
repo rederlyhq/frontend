@@ -25,3 +25,10 @@ export interface PostResendVerificationOptions {
 export interface GetUsersOptions {
     courseId: number;
 }
+
+export interface RegisterUserOptions {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+}
