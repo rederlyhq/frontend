@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
-import { TextField, Button, Grid, FormControlLabel, Switch, InputAdornment, SwipeableDrawer, IconButton, Tooltip } from '@material-ui/core';
+import { TextField, Button, Grid, InputAdornment, IconButton, Tooltip } from '@material-ui/core';
 import _ from 'lodash';
 import { getUserId } from '../Enums/UserRole';
 import logger from '../Utilities/Logger';
@@ -14,13 +14,13 @@ import 'codemirror/mode/perl/perl';
 import 'codemirror/mode/javascript/javascript';
 import { catalog, readProblem, saveProblem } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { nameof } from '../Utilities/TypescriptUtils';
-import { FaCopy, FaDice } from 'react-icons/fa';
+import { FaCopy, FaDice, FaFileUpload } from 'react-icons/fa';
 import path from 'path';
 import { Alert, Modal } from 'react-bootstrap';
 import useAlertState from '../Hooks/useAlertState';
 import { useQuery } from '../Hooks/UseQuery';
-import { motion, useAnimation, useCycle } from 'framer-motion';
-import { Refresh } from '@material-ui/icons';
+import { motion, useCycle } from 'framer-motion';
+import { useDropzone } from 'react-dropzone';
 
 const defaultLoadPath = 'private/templates/barebones.pg';
 
@@ -38,7 +38,6 @@ export interface ProblemEditorInputs extends PreviewProps {
 }
 
 export const ProblemEditor: React.FC = () => {
-    const controls = useAnimation();
     const [flipped, cycleFlipped] = useCycle(-1, 1);
     const queryParams = useQuery();
     const savePathAdornmentText = `private/my/${getUserId()}/`;
@@ -56,7 +55,7 @@ export const ProblemEditor: React.FC = () => {
 
     const [alertState, setAlertState] = useAlertState();
     const [previewState, setPreviewState] = useState<PreviewProps>({
-        seedValue: 666,
+        seedValue: 1,
         showHints: false,
         showSolutions: false,
         problemSource: undefined
@@ -86,6 +85,29 @@ export const ProblemEditor: React.FC = () => {
             problemSource: problemEditorForm.getValues().problemSource,
         });
     };
+
+    const onDrop = useCallback(acceptedFiles => {
+        (async () => {
+            if (_.isNil(acceptedFiles.first)) {
+                return;
+            }
+            const path: string = acceptedFiles.first.path;
+            // The renderer does not like when there are return characters in there
+            // I think this is a windows line ending issue so it only matters on file upload
+            const problemSource: string = (await acceptedFiles.first.text()).replace(/\r/gm, '');
+            problemEditorForm.setValue(nameof<ProblemEditorInputs>('problemSource'), problemSource);
+            const userPath = getSavePathForLoadPath(path);
+            problemEditorForm.setValue(nameof<ProblemEditorInputs>('userPath'), userPath);
+            problemEditorForm.setValue(nameof<ProblemEditorInputs>('loadPath'), `${savePathAdornmentText}${userPath}`);
+            render();
+        })();
+    }, [problemEditorForm, savePathAdornmentText, getSavePathForLoadPath, render, savePathAdornmentText]);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop: onDrop,
+        accept: '.pg',
+        multiple: false
+    });
 
     const load = async () => {
         try {
@@ -280,18 +302,40 @@ export const ProblemEditor: React.FC = () => {
                     Open
                 </Button>
             </Grid>
+            <Grid item md={2} style={{position: 'relative'}} {...getRootProps()}>
+                {isDragActive && (
+                    <div style={{
+                        position: 'absolute', 
+                        width: '100%', 
+                        height: '100%', 
+                        border: '5px dashed lightblue', 
+                        borderRadius: '3px',
+                        textAlign: 'center',
+                        zIndex: 2,
+                        backgroundColor: 'white',
+                        opacity: 0.9
+                    }} 
+                    >
+                        <div style={{position: 'relative', margin: '0 auto', top: '15%', fontSize: '1em'}}>
+                            Drop your pg file to load!
+                            <FaFileUpload style={{position: 'relative', margin: '0 auto', top: '15%', display: 'block', fontSize: '1em'}}/>
+                        </div>
+                    </div>
+                )}
+                <Button
+                    fullWidth={true}
+                    style={{
+                        height: '100%'
+                    }}
+                    variant="outlined"
+                >
+                    <input {...getInputProps()} />
+                    Load PG File
+                </Button>
+            </Grid>
             <Grid item md={2} style ={{
                 marginLeft: 'auto'
             }}>
-                {/* <TextField
-                    name="seedValue" 
-                    inputRef={register({
-                        required: true, 
-                    })}
-                    label='seedValue'
-                    type='number'
-                    fullWidth={true}
-                /> */}
                 <TextField
                     inputRef={register({
                         required: true, 
@@ -320,64 +364,9 @@ export const ProblemEditor: React.FC = () => {
                                 </IconButton>
                             </Tooltip>
                         </InputAdornment>,
-                        // endAdornment: <InputAdornment position='end'>
-                        //     <Tooltip title='Reload'>
-                        //         <IconButton
-                        //             aria-label='reload problem with current seed'
-                        //             onClick={(event: any)=>{
-                        //                 event.stopPropagation();
-                        //                 controls.start({rotate: 360, transition: {duration: 0.5}});
-                        //             }}
-                        //         >
-                        //             <motion.div animate={controls}><Refresh /></motion.div>
-                        //         </IconButton>
-                        //     </Tooltip>
-                        // </InputAdornment>
                     }}
                 />
             </Grid>
-
-            {/* <Grid item md={4}>
-                <Controller 
-                    name="showHints"
-                    control={control} 
-                    defaultValue={false}
-                    render={({ onChange, onBlur, value, name }) => (
-                        <FormControlLabel
-                            label="Show hints"
-                            labelPlacement='start'
-                            control={<Switch 
-                                onBlur={onBlur}
-                                onChange={e => onChange(e.target.checked)}
-                                color='primary'
-                                checked={value}
-                                value={value}
-                                name={name}
-                            />}
-                        />
-                    )}
-                />
-
-                <Controller 
-                    name="showSolutions"
-                    control={control} 
-                    defaultValue={false}
-                    render={({ onChange, onBlur, value, name }) => (
-                        <FormControlLabel
-                            label="Show Solutions"
-                            labelPlacement='start'
-                            control={<Switch 
-                                onBlur={onBlur}
-                                onChange={e => onChange(e.target.checked)}
-                                color='primary'
-                                checked={value}
-                                value={value}
-                                name={name}
-                            />}
-                        />
-                    )}
-                />
-            </Grid> */}
             <Grid item md={2}>
                 <Button
                     fullWidth={true}

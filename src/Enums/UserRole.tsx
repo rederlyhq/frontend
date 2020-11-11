@@ -9,12 +9,14 @@ export enum UserRole {
     ADMIN     = 'ADMIN'
 }
 
-export const unauthorizedRedirect = () => {
+export const unauthorizedRedirect = (doRedirect: boolean = true) => {
     // TODO: Generic redirect to handle clearing cookies.
     general.loginRedirectURL = `${window.location.pathname}${window.location.search}`;
     Cookies.remove(CookieEnum.USERTYPE);
-    Cookies.remove(CookieEnum.SESSION);    
-    window.location.assign('/');
+    Cookies.remove(CookieEnum.SESSION);
+    if (doRedirect) {
+        window.location.assign('/');        
+    }
 };
 
 export const getUserRoleFromServer = (roleFromServer: number): UserRole => {
