@@ -1,5 +1,5 @@
-import { PostForgotPasswordOptions, PutUpdatePasswordOptions, PutUpdateForgottonPasswordOptions, PostLoginOptions, PostResendVerificationOptions, GetUsersOptions } from '../RequestTypes/UserRequestTypes';
-import { PostForgotPasswordResponse, PutUpdatePasswordResponse, PutUpdateForgottonPasswordResponse, PostLoginResponse, PostResendVerificationResponse, GetUserResponse } from '../ResponseTypes/UserResponseTypes';
+import { PostForgotPasswordOptions, PutUpdatePasswordOptions, PutUpdateForgottonPasswordOptions, PostLoginOptions, PostResendVerificationOptions, GetUsersOptions, RegisterUserOptions } from '../RequestTypes/UserRequestTypes';
+import { PostForgotPasswordResponse, PutUpdatePasswordResponse, PutUpdateForgottonPasswordResponse, PostLoginResponse, PostResendVerificationResponse, GetUserResponse, RegisterUserResponse } from '../ResponseTypes/UserResponseTypes';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import url from 'url';
@@ -24,6 +24,10 @@ const USER_LOGIN_PATH = url.resolve(
 const USER_RESEND_VERIFICATION_PATH = url.resolve(
     USER_PATH,
     'resend-verification'
+);
+const USER_REGISTER_PATH = url.resolve(
+    USER_PATH,
+    'register'
 );
 
 export const postForgotPassword = async ({
@@ -114,6 +118,14 @@ export const getUsersForCourse = async ({
 }: GetUsersOptions): Promise<GetUserResponse> => {
     try {
         return await AxiosRequest.get(USER_PATH, {params: { courseId }});
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const registerUser = async (data: RegisterUserOptions): Promise<RegisterUserResponse> => {
+    try {
+        return await AxiosRequest.post(USER_REGISTER_PATH, data);
     } catch (e) {
         throw new BackendAPIError(e);
     }
