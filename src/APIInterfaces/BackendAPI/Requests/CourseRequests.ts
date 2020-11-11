@@ -378,13 +378,19 @@ export const postPreviewQuestion = async ({
 
 export const getQuestion = async ({
     id, 
-    userId
+    userId,
+    readonly,
+    workbookId,
+    studentTopicAssessmentInfoId,
 }: GetQuestionOptions): Promise<AxiosResponse<GetQuestionResponse>> => {
     try {
         return await AxiosRequest.get(
             url.resolve(COURSE_QUESTION_PATH, `${id}`), {
                 params: {
                     userId,
+                    readonly,
+                    workbookId,
+                    studentTopicAssessmentInfoId,
                 }
             });
     } catch (e) {
@@ -532,7 +538,7 @@ export const getAttachments = async ({
                 {studentGradeInstanceId: studentGradeInstanceId} :
                 {studentGradeId: studentGradeId}
             ),
-        }
+        };
         const params = studentWorkbookId ? { studentWorkbookId } : gradeParams;
     
         return await AxiosRequest.get(COURSE_ATTACHMENTS_LIST_PATH, {

@@ -127,6 +127,9 @@ export interface PreviewQuestionOptions {
 export interface GetQuestionOptions {
     id: number;
     userId?: number;
+    workbookId?: number,
+    readonly?: boolean,
+    studentTopicAssessmentInfoId?: number,
 }
 
 export interface GetQuestionsOptions {

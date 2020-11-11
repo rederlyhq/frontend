@@ -323,6 +323,7 @@ export class ProblemObject implements IProblemObject {
         additionalProblemPaths?: Array<string>;
         randomSeedSet?: number[];
     }
+    rendererData?: any;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
