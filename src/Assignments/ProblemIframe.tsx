@@ -352,7 +352,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             updateSubmitActive();
         } else {
             if (renderedHTML !== '') {
-                logger.error('this problem has no problemMainForm', renderedHTML); // should NEVER happen when renderedHTML is non-empty
+                logger.error(`This problem has no problemMainForm: ${renderedHTML}`); // should NEVER happen when renderedHTML is non-empty
             }
         }
 
