@@ -230,7 +230,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     logger.error('Hijacker: Could not find the iframe ref');
                     setAlert({
                         variant: 'danger',
-                        message: 'There was an error with the problem iframe.'
+                        message: 'There was an error rendering this problem.'
                     });
                     return;
                 }
