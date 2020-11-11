@@ -332,7 +332,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             updateSubmitActive();
         } else {
             if (renderedHTML !== '') {
-                logger.error('this problem has no problemMainForm'); // should NEVER happen when renderedHTML is non-empty
+                logger.error('this problem has no problemMainForm', renderedHTML); // should NEVER happen when renderedHTML is non-empty
             }
         }
 
@@ -364,7 +364,14 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     return (
         <>
             { loading && <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>}
-            {error && <div>{error}</div>}
+            {error &&
+                <div style={{ color: 'crimson' }}>
+                    <br />
+                    <h3>An error occurred:</h3>
+                    {error}<br />
+                    Please refresh your page.
+                </div>
+            }
             <IframeResizer
                 // Using onInit instead of ref because:
                 // ref never get's set and a warning saying to use `forwardRef` comes up in the console
