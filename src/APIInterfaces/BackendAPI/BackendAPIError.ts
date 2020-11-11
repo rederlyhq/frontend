@@ -8,9 +8,19 @@ export function isAxiosError(error: any): error is AxiosError {
 
 export default class BackendAPIError extends Error {
     public name: string;
-    public status?: number;
     public originalError: any;
     public data?: unknown;
+
+    get axiosError(): AxiosError | null {
+        if (isAxiosError(this.originalError)) {
+            return this.originalError;
+        }
+        return null;
+    }
+
+    get status(): number | undefined {
+        return this.axiosError?.response?.status;
+    }
 
     constructor(e: any) {
         // This should be constructed from the error in a catch
@@ -34,7 +44,6 @@ export default class BackendAPIError extends Error {
         // Super needs to be called before I can call this
         if (isAxiosError(e)) {
             (this.data as any) = e.response?.data?.data;
-            this.status = e.response?.status;
         }
         this.originalError = e;
         this.name = 'BackendAPIError';

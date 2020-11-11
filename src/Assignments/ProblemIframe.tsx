@@ -71,7 +71,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 logger.debug(`Problem Iframe: The request for problem #${problem.id} was cancelled early.`);
                 return;
             } else if (_.isNil(rendererHTML)) {
-                logger.error(`Problem Iframe: Request for problem #${problem.id} came back null`);
+                // Preview Problems won't return a rendererHTML when the path is bad.
+                if (_.isNil(previewPath) && _.isNil(previewProblemSource)) {
+                    logger.error(`Problem Iframe: Request for problem #${problem.id} came back null`);
+                }
                 return;
             } else {
                 pendingReq.current = null;
