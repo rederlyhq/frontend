@@ -22,6 +22,10 @@ export interface PostResendVerificationOptions {
     email: string;
 }
 
+export interface GetVerificationOptions {
+    verifyToken: string;
+}
+
 export interface GetUsersOptions {
     courseId: number;
 }

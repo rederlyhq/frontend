@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Jumbotron } from 'react-bootstrap';
 import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
-import Axios from '../Hooks/AxiosRequest';
 import Cookies from 'js-cookie';
 import { CookieEnum } from '../Enums/CookieEnum';
 import logger from '../Utilities/Logger';
