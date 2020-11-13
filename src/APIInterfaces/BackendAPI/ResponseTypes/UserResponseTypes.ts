@@ -18,3 +18,11 @@ export type PostResendVerificationResponse = AxiosResponse<PostResendVerificatio
 
 type GetUser = any;
 export type GetUserResponse = AxiosResponse<GetUser>;
+
+type RegisterUser = {
+    verificationBypass: boolean;
+};
+export type RegisterUserResponse = AxiosResponse<BackendAPIResponse<RegisterUser>>;
+
+type GetVerification = unknown;
+export type GetVerificationResponse = AxiosResponse<BackendAPIResponse<GetVerification>>;

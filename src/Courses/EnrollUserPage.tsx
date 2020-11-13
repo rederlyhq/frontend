@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Jumbotron } from 'react-bootstrap';
 import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
-import Axios from '../Hooks/AxiosRequest';
 import Cookies from 'js-cookie';
 import { CookieEnum } from '../Enums/CookieEnum';
 import logger from '../Utilities/Logger';
+import { enrollByCode } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface EnrollUserPageProps {
 
@@ -13,7 +13,9 @@ interface EnrollUserPageProps {
 
 // TODO: Use Axios.Request JSX to selectively render success or failure.
 export const EnrollUserPage: React.FC<EnrollUserPageProps> = () => {
-    const { enrollCode } = useParams();
+    const { enrollCode } = useParams<{
+        enrollCode: string
+    }>();
     const [{enrollData, enrollError}, setVerifyState] = useState({enrollData: {courseId: -1}, enrollError: ''});
     const userId: string | undefined = Cookies.get(CookieEnum.USERID);
     
@@ -25,16 +27,23 @@ export const EnrollUserPage: React.FC<EnrollUserPageProps> = () => {
                 // The param was double uri encoded
                 // grabbing it from the params peels off the first layer
                 // express peels off the second layer
-                const url = `/courses/enroll/${enrollCode}`;
-                const res = await Axios.post(url);
-                if (res.status === 200) {
-                    logger.info(res.data);
-                    setVerifyState({enrollData: res.data.data, enrollError: ''});
+                const res = await enrollByCode({
+                    enrollCode: enrollCode
+                });
+
+                if (res.status !== 200) {
+                    logger.warn(`Enroll by code Succeeded with a non 200 status code: ${res.status}`);
                 }
-            } catch (e) {
-                logger.error('Enrollment failed', e);
+                
                 setVerifyState({
-                    enrollError: 'An error occurred. Please contact your professor for assistance.', 
+                    enrollData: res.data.data,
+                    enrollError: ''
+                });
+            } catch (e) {
+                // This is not an error, this can be triggered by giving an invalid code
+                logger.debug('Enrollment failed', e);
+                setVerifyState({
+                    enrollError: e.message, 
                     enrollData: {courseId: -1}
                 });
             }

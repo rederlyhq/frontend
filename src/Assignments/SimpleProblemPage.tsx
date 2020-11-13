@@ -9,10 +9,12 @@ import _ from 'lodash';
 import { endVersion, generateNewVersion, getQuestions, submitVersion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { ProblemDetails } from './ProblemDetails';
 import { ProblemStateProvider } from '../Contexts/CurrentProblemState';
+import { useCourseContext } from '../Courses/CourseProvider';
 import { ConfirmationModalProps, ConfirmationModal } from '../Components/ConfirmationModal';
 import moment from 'moment';
 import logger from '../Utilities/Logger';
 import AttachmentsSidebar from './AttachmentsSidebar';
+import { getUserId } from '../Enums/UserRole';
 
 interface SimpleProblemPageProps {
 }
@@ -44,6 +46,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [error, setError] = useState('');
     const [confirmationParameters, setConfirmationParameters] = useState<ConfirmationModalProps>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
+    const {users} = useCourseContext();
 
     useEffect(() => {
         setLoading(true);
@@ -168,6 +171,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 // no problems were sent back, and user has used the maximum versions allowed
                 setError(`${res.data.message} You have used all available versions for this assessment.`);
             }
+        } else {
+            const message = res.data.message || 'This topic does not contain any problems. Please contact your professor.';
+            setError(message);
         }
     };
 
@@ -200,6 +206,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             headerContent: <h5>Begin a new version</h5>,
             bodyContent: <div>
                 {message} <br />
+                {/* Should we use the term "version attempt"? */}
                 You have {actualVersionsRemaining} {(actualVersionsRemaining === 1) ? ' version ' : ' versions '} remaining.<br />
                 Are you ready to begin a new version of this assessment?
             </div>,
@@ -365,9 +372,15 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             grade?.numAttempts;
 
         if (_.isNil(numAttempts)) {
-            logger.error(`no number of attempts found for problem #${problem.id}`);
+            // This is only an error if the user is enrolled in this course.
+            if (!_.isNil(_.find(users, ['id', getUserId()]))) {
+                logger.error(`No number of attempts found for User ${getUserId()} + Problem #${problem.id}`);
+            }
         } else if (_.isNil(overallBestScore)) {
-            logger.error(`no overall best score found for problem #${problem.id}`);
+            // This is only an error if the user is enrolled in this course.
+            if (!_.isNil(_.find(users, ['id', getUserId()]))) {
+                logger.error(`No overall best score found for User ${getUserId()} + Problem #${problem.id}`);
+            }
         } else if (numAttempts === 0 || topic?.topicAssessmentInfo?.showItemizedResults === false) {
             // Do nothing but skip everything else
         } else if (overallBestScore === 1) {
@@ -469,7 +482,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                         }
                                     </div>
                                     <div className='flex-row'>
-                                        Attempts remaining: {attemptsRemaining}
+                                        Submissions remaining: {attemptsRemaining}
                                     </div>
                                 </div>
                             )

@@ -1,15 +1,15 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import _ from 'lodash';
-import { Spinner } from 'react-bootstrap';
-import * as qs from 'querystring';
-import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance, postPreviewQuestion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { Alert, Spinner } from 'react-bootstrap';
+import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance, postPreviewQuestion, getQuestion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import moment from 'moment';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import { xRayVision } from '../Utilities/NakedPromise';
 import IframeResizer, { IFrameComponent } from 'iframe-resizer-react';
 import logger from '../Utilities/Logger';
+import BackendAPIError from '../APIInterfaces/BackendAPI/BackendAPIError';
+import useAlertState from '../Hooks/useAlertState';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
@@ -21,6 +21,11 @@ interface ProblemIframeProps {
     previewShowSolutions?: boolean;
     workbookId?: number;
     readonly?: boolean;
+}
+
+interface PendingRequest {
+    cancelled?: boolean;
+    problemId?: number;
 }
 
 /**
@@ -42,9 +47,11 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     readonly = false,
 }) => {
     const iframeRef = useRef<IFrameComponent>(null);
+    const pendingReq = useRef<PendingRequest | null>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [alert, setAlert] = useAlertState();
     const [lastSubmission, setLastSubmission] = useState({});
     const height = '100vh';
     const currentMutationObserver = useRef<MutationObserver> (null);
@@ -52,49 +59,84 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
     useEffect(()=>{
+        const fetchHTML = async () => {
+            if (pendingReq.current !== null) {
+                logger.debug(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId}`);
+                pendingReq.current.cancelled = true;
+            }
+            const currentReq = {problemId: problem.id} as PendingRequest;
+            pendingReq.current = currentReq;
+
+            const rendererHTML = await getHTML();
+
+            if (currentReq.cancelled) {
+                logger.debug(`Problem Iframe: The request for problem #${problem.id} was cancelled early.`);
+                return;
+            } else if (_.isNil(rendererHTML)) {
+                // Preview Problems won't return a rendererHTML when the path is bad.
+                if (_.isNil(previewPath) && _.isNil(previewProblemSource)) {
+                    logger.error(`Problem Iframe: Request for problem #${problem.id} came back null`);
+                }
+                return;
+            } else {
+                pendingReq.current = null;
+                setRenderedHTML(rendererHTML);
+            }
+
+        };
+
         // We need to reset the error state since a new call means no error
-        setError('');
-        // If you don't reset the rendered html you won't get the load event
+        setAlert({
+            variant: 'info',
+            message: ''
+        });        // If you don't reset the rendered html you won't get the load event
         // Thus if you go to an error state and back to the success state
         // The rendered html will never call load handler which will never stop loading
         setRenderedHTML('');
         // srcdoc='' triggers onLoad with setLoading(false) so setLoading(true) isn't effective until now
         setLoading(true); 
-        (async () => {
-            try {
-                let queryString = qs.stringify(_({
-                    workbookId,
-                    readonly
-                }).omitBy(_.isUndefined).value());
-                if (!_.isEmpty(queryString)) {
-                    queryString = `?${queryString}`;
-                }
 
-                let res;
-                if (previewPath || previewProblemSource) {
-                    res = await postPreviewQuestion({
-                        webworkQuestionPath: previewPath,
-                        problemSeed: previewSeed,
-                        problemSource: previewProblemSource,
-                        showHints: previewShowHints,
-                        showSolutions: previewShowSolutions
-                    });
-                } else {
-                    res = await AxiosRequest.get(`/courses/question/${problem.id}${queryString}`);
-                }
-                // TODO: Error handling.
-                setRenderedHTML(res.data.data.rendererData.renderedHTML);
-            } catch (e) {
-                setError(e.message);
-                logger.error('Error posting preview', e, e.message);
-                setLoading(false);
-            }
-        })();
+        fetchHTML();
+
         // when problem changes, reset lastsubmitted and lastsaved
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
         setLastSubmission({});
     }, [problem, problem.id, workbookId, previewPath, previewProblemSource, previewSeed]);
+
+    const getHTML = async () => {
+        try {
+            let res;
+
+            if (previewPath || previewProblemSource) {
+                res = await postPreviewQuestion({
+                    webworkQuestionPath: previewPath,
+                    problemSeed: previewSeed,
+                    problemSource: previewProblemSource,
+                    showHints: previewShowHints,
+                    showSolutions: previewShowSolutions
+                });
+            } else {
+                res = await getQuestion({
+                    id: problem.id,
+                    workbookId,
+                    readonly
+                });
+            }
+            return res.data.data.rendererData.renderedHTML as string;
+
+        } catch (e) {
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });            
+            if (!BackendAPIError.isBackendAPIError(e) || (e.status !== 200 && e.status !== 400)) {
+                logger.error(`An error occurred with retrieving ${(previewPath || previewProblemSource) ? 'a preview' : 'a problem'}. ${e.message}`);
+            }
+
+            setLoading(false);
+        }
+    };
 
     const isPrevious = (_value: any, key: string): boolean => {
         return /^previous_/.test(key);
@@ -186,7 +228,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
                 if(_.isNil(iframeRef?.current)) {
                     logger.error('Hijacker: Could not find the iframe ref');
-                    setError('An error occurred');
+                    setAlert({
+                        variant: 'danger',
+                        message: 'There was an error rendering this problem.'
+                    });
                     return;
                 }
 
@@ -198,7 +243,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     setLastSubmittedAt?.(moment());
                 }
             } catch (e) {
-                setError(e.message);
+                setAlert({
+                    variant: 'danger',
+                    message: e.message
+                });
                 return;
             }
         } else {
@@ -206,7 +254,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             if (_.isNil(problem.grades[0])) {return;} // not enrolled - do not save
             if (_.isNil(problem.grades[0].id)) {
                 // TODO: impossi-log logger.error()
-                setError(`No grades id for problem #${problem.id}`);
+                setAlert({
+                    variant: 'danger',
+                    message: `No grade id found for this problem #${problem.id}`
+                });
                 return;
             }
             const reqBody = {
@@ -228,7 +279,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     setLastSavedAt?.(moment());
                 }
             } catch (e) {
-                setError(e.message);
+                setAlert({
+                    variant: 'danger',
+                    message: e.message
+                });
                 return;
             }
         }
@@ -287,16 +341,18 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             const submitUrl = problemForm.getAttribute('action');
             const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
             if (checkId && parseInt(checkId[1],10) !== problem.id) {
-                // Need more context for this error -- but I think we're trying to make this "too smart"
+                // if this still happens, we have bigger problems
                 logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
-                setError('This problem ID is out of sync.');
-                return;
+                setAlert({
+                    variant: 'danger',
+                    message: `This problem ID (${problem.id}) is out of sync.`
+                });
             }
             insertListeners(problemForm);
             updateSubmitActive();
         } else {
             if (renderedHTML !== '') {
-                logger.error('this problem has no problemMainForm'); // should NEVER happen when renderedHTML is non-empty
+                logger.error(`This problem has no problemMainForm: ${renderedHTML}`); // should NEVER happen when renderedHTML is non-empty
             }
         }
 
@@ -328,7 +384,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     return (
         <>
             { loading && <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>}
-            {error && <div>{error}</div>}
+            <Alert variant={alert.variant} show={alert.message.length > 0}>{alert.message} -- Please refresh your page.</Alert>
             <IframeResizer
                 // Using onInit instead of ref because:
                 // ref never get's set and a warning saying to use `forwardRef` comes up in the console

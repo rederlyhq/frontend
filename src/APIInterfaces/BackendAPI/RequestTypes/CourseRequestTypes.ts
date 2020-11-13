@@ -127,11 +127,18 @@ export interface PreviewQuestionOptions {
 export interface GetQuestionOptions {
     id: number;
     userId?: number;
+    workbookId?: number,
+    readonly?: boolean,
+    studentTopicAssessmentInfoId?: number,
 }
 
 export interface GetQuestionsOptions {
     userId: number | 'me';
     courseTopicContentId: number;
+}
+
+export interface EnrollByCodeOptions {
+    enrollCode: string;
 }
 
 export interface DeleteEnrollmentOptions {

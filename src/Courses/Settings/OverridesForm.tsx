@@ -325,7 +325,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                             min: -1
                         })}
                         defaultValue={topicAssessmentInfo.maxGradedAttemptsPerVersion} 
-                        label='Max Graded Attempts Per Version'
+                        label='Submissions Per Version'
                         type='number'
                         fullWidth={true}
                     />
@@ -361,10 +361,10 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                         name="duration" 
                         inputRef={register({
                             required: true, 
-                            min: 0 // TODO what should we make the min
+                            min: 2
                         })}
                         defaultValue={topicAssessmentInfo.duration} 
-                        label='Duration'
+                        label='Time Limit (minutes)'
                         type='number'
                         fullWidth={true}
                     />

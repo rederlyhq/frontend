@@ -22,6 +22,17 @@ export interface PostResendVerificationOptions {
     email: string;
 }
 
+export interface GetVerificationOptions {
+    verifyToken: string;
+}
+
 export interface GetUsersOptions {
     courseId: number;
+}
+
+export interface RegisterUserOptions {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
 }

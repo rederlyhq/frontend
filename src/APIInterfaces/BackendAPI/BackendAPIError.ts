@@ -11,6 +11,17 @@ export default class BackendAPIError extends Error {
     public originalError: any;
     public data?: unknown;
 
+    get axiosError(): AxiosError | null {
+        if (isAxiosError(this.originalError)) {
+            return this.originalError;
+        }
+        return null;
+    }
+
+    get status(): number | undefined {
+        return this.axiosError?.response?.status;
+    }
+
     constructor(e: any) {
         // This should be constructed from the error in a catch
         // You cannot put a type annotation and anything can be be thrown
@@ -36,5 +47,9 @@ export default class BackendAPIError extends Error {
         }
         this.originalError = e;
         this.name = 'BackendAPIError';
+    }
+
+    static isBackendAPIError(obj: unknown): obj is BackendAPIError {
+        return obj instanceof BackendAPIError;
     }
 }

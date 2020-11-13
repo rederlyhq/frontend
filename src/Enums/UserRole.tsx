@@ -1,11 +1,23 @@
 import Cookies from 'js-cookie';
 import { CookieEnum } from './CookieEnum';
+import localPreferences from '../Utilities/LocalPreferences';
+const { general } = localPreferences;
 
 export enum UserRole {
     STUDENT   = 'STUDENT',
     PROFESSOR = 'PROFESSOR',
     ADMIN     = 'ADMIN'
 }
+
+export const unauthorizedRedirect = (doRedirect: boolean = true) => {
+    // TODO: Generic redirect to handle clearing cookies.
+    general.loginRedirectURL = `${window.location.pathname}${window.location.search}`;
+    Cookies.remove(CookieEnum.USERTYPE);
+    Cookies.remove(CookieEnum.SESSION);
+    if (doRedirect) {
+        window.location.assign('/');        
+    }
+};
 
 export const getUserRoleFromServer = (roleFromServer: number): UserRole => {
     switch (roleFromServer) {
@@ -23,11 +35,12 @@ export const getUserRole = (): UserRole => {
     const roleFromCookie = Cookies.get(CookieEnum.USERTYPE);
     // eslint-disable-next-line eqeqeq
     if (roleFromCookie == undefined) {
-        // TODO: Generic redirect to handle clearing cookies.
-        window.location.assign('/');
-        Cookies.remove(CookieEnum.USERTYPE);
-        Cookies.remove(CookieEnum.SESSION);
-        throw Error('Cookie is missing. Please return to Login.');
+        unauthorizedRedirect();
+        // They should already be redirected
+        // But if they are not give them the lowest permission
+        return UserRole.STUDENT;
+    } else {
+        general.loginRedirectURL = null;
     }
 
     switch (roleFromCookie.toLocaleUpperCase()) {
@@ -46,11 +59,9 @@ export const getUserId = () => {
     let userIdValue = 0; 
 
     if (userId === undefined || isNaN(userIdValue = parseInt(userId, 10))) {
-        // TODO: Generic redirect to handle clearing cookies.
-        window.location.assign('/');
-        Cookies.remove(CookieEnum.USERTYPE);
-        Cookies.remove(CookieEnum.SESSION);
-        throw Error('Cookie is missing. Please return to Login.');
+        unauthorizedRedirect();
+    } else {
+        general.loginRedirectURL = null;
     }
 
     return userIdValue;
