@@ -16,7 +16,7 @@ interface ProblemDetailsProps {
     topic: TopicObject | null;
     attemptsRemaining?: number;
     setAttemptsRemaining?: React.Dispatch<React.SetStateAction<number>>;
-    setOpenDrawer: React.Dispatch<React.SetStateAction<boolean>>;
+    setOpenDrawer?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
@@ -60,7 +60,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
     const solutionsMoment = (_.isNil(versionEndTime)) ? moment(deadDate).add(1, 'days') : moment(versionEndTime);
 
     const grade: StudentGrade | undefined = problem.grades?.[0];
-    const {lastSavedAt, lastSubmittedAt} = useCurrentProblemState(); 
+    const {lastSavedAt, lastSubmittedAt} = useCurrentProblemState();
 
     const maxAttempts = problem?.maxAttempts;
     const usedAttempts = grade?.numAttempts;
@@ -133,7 +133,14 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         </MomentReacter>
                     </div>
                 </OverlayTrigger>
-                <Button style={{ marginLeft: 'auto' }} onClick={()=>setOpenDrawer(true)}>Attach Work</Button>
+                <Button
+                    style={{ marginLeft: 'auto' }}
+                    onClick={()=>setOpenDrawer?.(true)}
+                    disabled={_.isNil(setOpenDrawer)}
+                    title={_.isNil(setOpenDrawer) ? 'You must be enrolled in this course to upload attachments.' : 'Click here to open the Attachments sidebar.'}
+                >
+                    Attach Work
+                </Button>
                 <EmailProfessor topic={topic} problem={problem} />
                 <div style={{ marginLeft: '1em' }}>
                     <Badge pill variant="dark">
@@ -194,7 +201,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                 } else if (problem.optional) {
                                     // optional and no weight
                                     return 'This problem is optional.';
-                                } 
+                                }
                             })()}
                         </div>
                         {_.isNil(grade) ? null : (
