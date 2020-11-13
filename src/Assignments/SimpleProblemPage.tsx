@@ -525,7 +525,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         </ProblemStateProvider>
                     </Col>
                 </Row>
-                <AttachmentsSidebar topic={topic || new TopicObject()} openDrawer={openDrawer} setOpenDrawer={setOpenDrawer} gradeId={selectedGradeId} gradeInstanceId={selectedGradeInstanceId} />
+                {selectedGradeId &&
+                    <AttachmentsSidebar topic={topic || new TopicObject()} openDrawer={openDrawer} setOpenDrawer={setOpenDrawer} gradeId={selectedGradeId} gradeInstanceId={selectedGradeInstanceId} />
+                }
             </Container>
         </>
     );
