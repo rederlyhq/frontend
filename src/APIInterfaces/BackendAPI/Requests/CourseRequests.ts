@@ -1,4 +1,4 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, getAssessmentProblemsWithWorkbooksOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions, ListAttachmentOptions, ReadQuestionOptions, SaveQuestionOptions, CatalogOptions, GetGradesOptions, EnrollByCodeOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, getAssessmentProblemsWithWorkbooksOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions, ListAttachmentOptions, ReadQuestionOptions, SaveQuestionOptions, GetGradesOptions, EnrollByCodeOptions, GetRawQuestionOptions, QuestionGradeResponse, GetQuestionGradeOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
@@ -376,8 +376,24 @@ export const postPreviewQuestion = async ({
     }
 };
 
+export const getRawQuestion = async ({
+    id,
+    userId,
+}: GetRawQuestionOptions): Promise<AxiosResponse<GetQuestionResponse>> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(COURSE_QUESTION_PATH, `${id}/raw`), {
+                params: {
+                    userId,
+                }
+            });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
 export const getQuestion = async ({
-    id, 
+    id,
     userId,
     readonly,
     workbookId,
@@ -634,6 +650,25 @@ export const getGrades = async ({
                     questionId: questionId,
                     topicId: topicId,
                     unitId: unitId,
+                }, _.isUndefined))}`
+            ));
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getQuestionGrade = async ({
+    userId,
+    questionId,
+    includeWorkbooks,
+}: GetQuestionGradeOptions): Promise<AxiosResponse<QuestionGradeResponse>> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(
+                COURSE_QUESTION_PATH,
+                `${questionId}?${qs.stringify(_.omitBy({
+                    userId,
+                    includeWorkbooks,
                 }, _.isUndefined))}`
             ));
     } catch (e) {

@@ -21,6 +21,8 @@ interface ProblemIframeProps {
     previewShowSolutions?: boolean;
     workbookId?: number;
     readonly?: boolean;
+    userId?: number;
+    studentTopicAssessmentInfoId?: number;
 }
 
 interface PendingRequest {
@@ -45,6 +47,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     setProblemStudentGrade = ()=>{},
     workbookId,
     readonly = false,
+    userId,
+    studentTopicAssessmentInfoId,
 }) => {
     const iframeRef = useRef<IFrameComponent>(null);
     const pendingReq = useRef<PendingRequest | null>(null);
@@ -119,7 +123,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             } else {
                 res = await getQuestion({
                     id: problem.id,
+                    userId,
                     workbookId,
+                    studentTopicAssessmentInfoId,
                     readonly
                 });
             }

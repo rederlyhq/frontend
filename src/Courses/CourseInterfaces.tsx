@@ -278,16 +278,25 @@ export interface StudentGradeDict {
 
 export class StudentGrade {
     gradeInstances?: StudentGradeInstance[];
+    workbooks?: StudentWorkbookInterface[];
+    bestScore: number = 0; // should be deprecated?
     overallBestScore: number = 0;
     effectiveScore: number = 0;
-    bestScore: number = 0;
+    partialCreditBestScore: number = 0;
+    legalScore: number = 0;
     numAttempts: number = 0;
     numLegalAttempts: number = 0;
     locked: boolean = false;
     currentProblemState?: unknown;
     id?: number;
+    userId?: number;
     randomSeed?: number;
-    lastInfluencingAttemptId?: number;
+    // Updated with legalScore
+    public lastInfluencingLegalAttemptId: number | null = null;
+    // Updated with partialCreditBestScore
+    public lastInfluencingCreditedAttemptId: number | null = null;
+    // Updated with overallBestScore
+    public lastInfluencingAttemptId: number | null = null;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
@@ -309,6 +318,7 @@ export interface ProblemDict {
 const newProblemUniqueGen = uniqueGen();
 export class ProblemObject implements IProblemObject {
     id: number = 0;
+    courseTopicContentId: number = 0;
     problemNumber: number = 1;
     webworkQuestionPath: string = ''; // This is the same as path, currently.
     path: string = '';
@@ -328,10 +338,6 @@ export class ProblemObject implements IProblemObject {
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
     }
-}
-
-export class NewProblemObject extends ProblemObject {
-    courseTopicContentId: number = 0;
 }
 
 export type SettingsComponentType = UnitObject | UserObject | TopicObject | ProblemObject;
@@ -396,4 +402,11 @@ export class ProblemAttachments {
             this.progress = _.isNil(init?.id) ? 0 : 100;
         }
     }
+}
+
+export interface ProblemState {
+    studentTopicAssessmentInfoId?: number;
+    workbookId?: number;
+    previewPath?: string;
+    previewSeed?: number;
 }

@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, TopicObject, ProblemObject, NewProblemObject, StudentGrade, StudentGradeInstance, ProblemAttachments } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, TopicObject, ProblemObject, StudentGrade, StudentGradeInstance, ProblemAttachments } from '../../../Courses/CourseInterfaces';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 
 /* *************** *************** */
@@ -45,7 +45,7 @@ export type PutCourseTopicUpdatesResponse = BackendAPIResponse<PutCourseTopicUpd
 /* *************** *************** */
 /* ********** Questions ********** */
 /* *************** *************** */
-export type CreateQuestionResponse = BackendAPIResponse<Partial<NewProblemObject>>;
+export type CreateQuestionResponse = BackendAPIResponse<Partial<ProblemObject>>;
 
 interface PostQuestionSubmission {
     studentGrade: Partial<StudentGrade>;
