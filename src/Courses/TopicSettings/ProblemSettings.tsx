@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Grid } from '@material-ui/core';
+import { Button, Grid, Snackbar } from '@material-ui/core';
 import { MultipleProblemPaths, OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
 import { Link } from 'react-router-dom';
 import { ProblemObject, TopicObject, TopicTypeId } from '../CourseInterfaces';
@@ -165,7 +165,16 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
                 <DevTool control={control} />
                 <Grid container item md={12} spacing={3}>
-                    {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
+                    <Snackbar
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                        open={updateAlertMsg !== ''}
+                        autoHideDuration={6000}
+                        onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                    >
+                        <Alert onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))} variant={updateAlertType}>
+                            {updateAlertMsg}
+                        </Alert>
+                    </Snackbar>
                     <Grid container item md={12} spacing={3}>
                         <Grid item container md={12}><h1>Problem Settings</h1></Grid>
                         <Grid item md={8}>

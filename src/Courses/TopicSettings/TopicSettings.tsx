@@ -1,4 +1,5 @@
-import { Grid, Button } from '@material-ui/core';
+import { Grid, Button, Snackbar } from '@material-ui/core';
+import { Alert as MUIAlert } from '@material-ui/lab';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -20,7 +21,7 @@ interface TopicSettingsProps {
 
 export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}) => {
     const topicForm = useForm<TopicSettingsInputs>({
-        mode: 'onSubmit', 
+        mode: 'onSubmit',
         shouldFocusError: true,
         defaultValues: {
             ...selected,
@@ -69,7 +70,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
         obj.topicAssessmentInfo = _.pickBy(data.topicAssessmentInfo, (val) => {
             return !(_.isNil(val) || (typeof(val) === 'string' && val === ''));
         });
-        
+
         // TODO: Make a getter
         obj.topicTypeId = data.topicTypeId === TopicTypeId.HOMEWORK ? 1 : 2;
 
@@ -101,7 +102,16 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
                 {/* <DevTool control={control} /> */}
                 <Grid container item md={12} spacing={3}>
-                    {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
+                    <Snackbar
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                        open={updateAlertMsg !== ''}
+                        autoHideDuration={6000}
+                        onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                    >
+                        <Alert onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))} variant={updateAlertType}>
+                            {updateAlertMsg}
+                        </Alert>
+                    </Snackbar>
                     <CommonSettings formObject={topicForm} setUpdateAlert={setUpdateAlert} />
                     {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end">
