@@ -231,5 +231,5 @@ export interface GetQuestionGradeOptions {
 }
 
 export interface QuestionGradeResponse {
-    grade: StudentGrade;
+    data: StudentGrade;
 }

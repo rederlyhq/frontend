@@ -292,27 +292,15 @@ export class StudentGrade {
     userId?: number;
     randomSeed?: number;
     // Updated with legalScore
-    public lastInfluencingLegalAttemptId: number | null = null;
+    lastInfluencingLegalAttemptId?: number;
     // Updated with partialCreditBestScore
-    public lastInfluencingCreditedAttemptId: number | null = null;
+    lastInfluencingCreditedAttemptId?: number;
     // Updated with overallBestScore
-    public lastInfluencingAttemptId: number | null = null;
+    lastInfluencingAttemptId?: number;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
     }
-}
-
-export interface ProblemDict {
-    id: number;
-    problemNumber: number;
-    webworkQuestionPath: string; // This is the same as path, currently.
-    path: string;
-    weight: number;
-    maxAttempts: number;
-    hidden: boolean;
-    optional: boolean;
-    grades?: Record<number, StudentGradeDict>;
 }
 
 const newProblemUniqueGen = uniqueGen();

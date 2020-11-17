@@ -666,7 +666,7 @@ export const getQuestionGrade = async ({
         return await AxiosRequest.get(
             url.resolve(
                 COURSE_QUESTION_PATH,
-                `${questionId}?${qs.stringify(_.omitBy({
+                `${questionId}/grade?${qs.stringify(_.omitBy({
                     userId,
                     includeWorkbooks,
                 }, _.isUndefined))}`

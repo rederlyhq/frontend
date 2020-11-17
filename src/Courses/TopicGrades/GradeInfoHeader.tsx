@@ -54,6 +54,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         partialCreditBestScore?: number;
         effectiveScore?: number;
         workbookId?: number;
+        studentGradeId?: number;
         studentGradeInstanceId?: number;
         averageScore?: number;
         attemptsCount?: number;
@@ -65,6 +66,29 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     if (_.isNil(displayCurrentScore.current) && !_.isNil(grade)) {
         displayCurrentScore.current = (grade?.effectiveScore * 100).toFixed(1);
     }
+
+    const fetchGrade = async () => {
+        setGrade(null);
+        if (!_.isNil(selected.user) && !_.isNil(selected.problem)) {
+            const res = await getQuestionGrade({
+                userId: selected.user.id,
+                questionId: selected.problem.id,
+                includeWorkbooks: true,
+            });
+
+            if (_.isNil(res.data)) {
+                logger.error(`Failed to retrieve grade for user #${selected.user.id} on problem #${selected.problem.id}`);
+            } else {
+                setGrade(res.data.data);
+            }
+        } else {
+            setGrade(null);
+        }
+    };
+    useEffect(() => {
+        logger.debug(`GradeInfoHeader: there has been a change in user (${selected.user?.id}) or problem (${selected.problem?.id}), fetching new problem grade info.`);
+        fetchGrade();
+    }, [selected.problem, selected.user]);
 
     useEffect(() => {
         logger.debug('GradeInfoHeader: student grade object has been updated.', grade);
@@ -109,12 +133,14 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 studentGradeInstanceId = workbooks[workbookId].studentGradeInstanceId;
             }
 
+            logger.debug('GradeInfoHeader: Setting local info from new grade object.');
             setInfo({
                 legalScore: grade.legalScore,
                 overallBestScore: grade.overallBestScore,
                 partialCreditBestScore: grade.partialCreditBestScore,
                 effectiveScore: grade.effectiveScore,
                 workbookId,
+                studentGradeId: grade.id,
                 studentGradeInstanceId,
                 attemptsCount: currentAttemptsCount,
                 averageScore: currentAverageScore,
@@ -122,13 +148,15 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 // workbookList: currentWorkbookList,
             });
         } else {
-            logger.warn(`GradeInfoHeader: Student grade has not been set for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
+            // this should not be a warning -- grade.id is initially null...
+            // logger.warn(`GradeInfoHeader: Student grade has not been set for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
         }
     }, [grade?.id]);
 
     useEffect(() => {
         logger.debug('GradeInfoHeader: setting new problem state from updated Workbook ID or Grade Instance ID');
         const newProblemState: ProblemState = {};
+        const currentGrade = (grade) ? grade : undefined;
 
         if (_.isNil(grade)) {
             // no grade for this user/problem combo -> error
@@ -150,30 +178,9 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         }
 
         const newGradeInstance = (info.studentGradeInstanceId) ? _.find(grade?.gradeInstances, ['id', info.studentGradeInstanceId]) : undefined;
-        setSelected(selected => ({ ...selected, problemState: newProblemState, gradeInstance: newGradeInstance }));
-    }, [info.workbookId, info.studentGradeInstanceId]);
-
-    const fetchGrade = async () => {
-        if (!_.isNil(selected.user) && !_.isNil(selected.problem)) {
-            const res = await getQuestionGrade({
-                userId: selected.user.id,
-                questionId: selected.problem.id,
-                includeWorkbooks: true,
-            });
-            
-            if (_.isNil(res.data.grade)) {
-                logger.error(`Failed to retrieve grade for user #${selected.user.id} on problem #${selected.problem.id}`);
-            } else {
-                setGrade(res.data.grade);
-            }
-        } else {
-            setGrade(null);
-        }
-    };
-    useEffect(() => {
-        logger.debug('GradeInfoHeader: there has been a change in user or problem, fetching new problem grade info.');
-        fetchGrade();
-    }, [selected.problem, selected.user]);
+        logger.debug('GradeInfoHeader: setting new selected grades', newProblemState, newGradeInstance);
+        setSelected(selected => ({ ...selected, problemState: newProblemState, grade: currentGrade, gradeInstance: newGradeInstance }));
+    }, [info.workbookId, info.studentGradeId, info.studentGradeInstanceId]);
 
     const fetchTopicGrade = async () => {
         setTopicGrade(null);
@@ -291,13 +298,13 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             <Grid item xs={6}>
                 <h4>Statistics</h4>
                 Number of attempts: <strong>{info.attemptsCount}</strong><br />
-                Best overall score: <strong>{(info.overallBestScore || 0 * 100).toFixed(1)}</strong><br />
-                Score from best exam submission: <strong>{(info.legalScore || 0 * 100).toFixed(1)}</strong><br />
-                Average score: <strong>{info.averageScore && (info.averageScore || 0 * 100).toFixed(1)}</strong>
+                Best overall score: <strong>{info.overallBestScore?.toPercentString()}</strong><br />
+                Score from best exam submission: <strong>{info.legalScore?.toPercentString()}</strong><br />
+                Average score: <strong>{info.averageScore?.toPercentString()}</strong>
             </Grid>
             <Grid item xs={6}>
                 <h4>Grades</h4>
-                Effective score for grades: <strong>{(info.effectiveScore || 0 * 100).toFixed(1)}</strong><br />
+                Effective score for grades: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
                 {grade && 
                 <>
                     <Button
