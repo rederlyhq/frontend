@@ -1,5 +1,5 @@
 import { Grid, Button, Snackbar } from '@material-ui/core';
-import { Alert as MUIAlert, Color } from '@material-ui/lab';
+import { Alert as MUIAlert } from '@material-ui/lab';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
