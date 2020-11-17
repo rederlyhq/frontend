@@ -207,7 +207,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             headerContent: <h5>Begin a new version</h5>,
             bodyContent: <div>
                 {message} {message && <br />}
-                <MUIAlert severity='warning'>You will no longer be able to upload attachments for this version of the exam once you have started a new version.</MUIAlert>
+                <MUIAlert severity='warning'>You will <u><b>not</b></u> be able to upload attachments for this version of the exam once you have started a new version.</MUIAlert>
                 {/* Should we use the term "version attempt"? */}
                 You have <b>{actualVersionsRemaining}</b> {(actualVersionsRemaining === 1) ? ' version ' : ' versions '} remaining.<br />
                 Are you ready to begin a new version of this assessment?
