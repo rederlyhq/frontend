@@ -83,8 +83,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         }
         // apply assessment overrides: duration, maxAttempts, maxVersions, versionDelay
         // only maxVersions is relevant -- the others are accounted for in version (studentTopicAssessmentInfo)
-        if (!_.isNil(currentTopic.topicAssessmentInfo) && 
-            !_.isNil(currentTopic.topicAssessmentInfo.studentTopicAssessmentOverride) && 
+        if (!_.isNil(currentTopic.topicAssessmentInfo) &&
+            !_.isNil(currentTopic.topicAssessmentInfo.studentTopicAssessmentOverride) &&
             !_.isEmpty(currentTopic.topicAssessmentInfo.studentTopicAssessmentOverride)
         ) {
             const override = currentTopic.topicAssessmentInfo?.studentTopicAssessmentOverride[0];
@@ -162,8 +162,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 actualVersionsRemaining = currentTopic.topicAssessmentInfo.maxVersions - usedVersions;
                 setVersionsRemaining(actualVersionsRemaining);
             }
-            
-            if (actualVersionsRemaining > 0 && 
+
+            if (actualVersionsRemaining > 0 &&
                 moment().isBetween(currentTopic.startDate.toMoment(), currentTopic.endDate.toMoment())
             ) {
                 confirmStartNewVersion(currentTopic, actualVersionsRemaining, res.data.message);
@@ -367,8 +367,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         const grade = problem.grades?.[0];
         const instance = grade?.gradeInstances?.[0];
         const overallBestScore = (topic?.topicTypeId === 2) ? instance?.overallBestScore : grade?.overallBestScore;
-        const numAttempts = (topic?.topicTypeId === 2) ? 
-            _.maxBy(topic.topicAssessmentInfo?.studentTopicAssessmentInfo, 'startTime')?.numAttempts : 
+        const numAttempts = (topic?.topicTypeId === 2) ?
+            _.maxBy(topic.topicAssessmentInfo?.studentTopicAssessmentInfo, 'startTime')?.numAttempts :
             grade?.numAttempts;
 
         if (_.isNil(numAttempts)) {
@@ -413,8 +413,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     }
 
     // there's a serious problem if we get a topic, but no problems, and the topicType isn't an assessment
-    if (_.isEmpty(problems) && 
-        !_.isNil(topic) && 
+    if (_.isEmpty(problems) &&
+        !_.isNil(topic) &&
         topic.topicTypeId !== 2) return <div>There was an error loading this assignment.</div>;
 
     if (problems === null || selectedProblemId === null) return (
@@ -426,10 +426,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 >
                     Begin Exam
                 </Button>
-            }            
+            }
             { (topic?.topicTypeId === 2 && (versionsRemaining === 0 || topic.endDate.toMoment().isBefore(moment()))) &&
                 <div>There are no more versions of this assessment available.</div>
-            }            
+            }
             <ConfirmationModal
                 {...confirmationParameters}
                 onConfirm={() => {
@@ -470,8 +470,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                                 {(versionsRemaining>0) ? 'New Version' : 'Exam Completed'}
                                             </Button>
                                         }
-                                        { topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion && 
-                                        attemptsRemaining !== 0 && 
+                                        { topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion &&
+                                        attemptsRemaining !== 0 &&
                                         attemptsRemaining < topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion &&
                                             <Button variant='danger'
                                                 tabIndex={0}
@@ -525,7 +525,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 topic={topic}
                                 attemptsRemaining={attemptsRemaining}
                                 setAttemptsRemaining={setAttemptsRemaining}
-                                setOpenDrawer={setOpenDrawer}
+                                setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
                             />
                             {/* Temporarily disabled for release.  */}
                             {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
@@ -538,7 +538,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         </ProblemStateProvider>
                     </Col>
                 </Row>
-                <AttachmentsSidebar topic={topic || new TopicObject()} openDrawer={openDrawer} setOpenDrawer={setOpenDrawer} gradeId={selectedGradeId} gradeInstanceId={selectedGradeInstanceId} />
+                {selectedGradeId &&
+                    <AttachmentsSidebar topic={topic || new TopicObject()} openDrawer={openDrawer} setOpenDrawer={setOpenDrawer} gradeId={selectedGradeId} gradeInstanceId={selectedGradeInstanceId} />
+                }
             </Container>
         </>
     );
