@@ -99,7 +99,10 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
 
     return (
         <FormProvider {...topicForm}>
-            <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', severity: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
+            <form
+                onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', severity: 'warning'});}}
+                onSubmit={handleSubmit(onSubmit)}
+            >
                 {/* <DevTool control={control} /> */}
                 <Grid container item md={12} spacing={3}>
                     <Snackbar
@@ -108,7 +111,12 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                         autoHideDuration={6000}
                         onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
                     >
-                        <MUIAlert onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))} severity={updateAlertType}>
+                        <MUIAlert
+                            onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                            severity={updateAlertType}
+                            variant='filled'
+                            style={{fontSize: '1.1em'}}
+                        >
                             {updateAlertMsg}
                         </MUIAlert>
                     </Snackbar>
