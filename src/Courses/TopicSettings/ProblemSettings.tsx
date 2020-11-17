@@ -167,12 +167,18 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                 <DevTool control={control} />
                 <Grid container item md={12} spacing={3}>
                     <Snackbar
-                        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
                         open={updateAlertMsg !== ''}
-                        autoHideDuration={6000}
+                        autoHideDuration={updateAlertType === 'success' ? 6000 : undefined}
                         onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                        style={{maxWidth: '50vw'}}
                     >
-                        <MUIAlert onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))} severity={updateAlertType}>
+                        <MUIAlert
+                            onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                            severity={updateAlertType}
+                            variant='filled'
+                            style={{fontSize: '1.1em'}}
+                        >
                             {updateAlertMsg}
                         </MUIAlert>
                     </Snackbar>

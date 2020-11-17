@@ -106,10 +106,11 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                 {/* <DevTool control={control} /> */}
                 <Grid container item md={12} spacing={3}>
                     <Snackbar
-                        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
                         open={updateAlertMsg !== ''}
-                        autoHideDuration={6000}
+                        autoHideDuration={updateAlertType === 'success' ? 6000 : undefined}
                         onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                        style={{maxWidth: '50vw'}}
                     >
                         <MUIAlert
                             onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
