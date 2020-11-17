@@ -5,17 +5,17 @@ import moment, { Moment } from 'moment';
 import { Controller } from 'react-hook-form';
 import { TopicTypeId } from '../../Enums/TopicType';
 import _ from 'lodash';
-import { IAlertModalState } from '../../Hooks/useAlertState';
+import { IMUIAlertModalState } from '../../Hooks/useAlertState';
 
 interface CommonSettingsProps {
     // This is the register function from react-hook-forms.
     formObject: any;
-    setUpdateAlert: React.Dispatch<React.SetStateAction<IAlertModalState>>;
+    setUpdateAlert: React.Dispatch<React.SetStateAction<IMUIAlertModalState>>;
 }
 
 /**
  * This component renders settings that are common to all Topic objects.
- * 
+ *
  */
 export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUpdateAlert}) => {
     const { register, getValues, errors, control, setValue, watch, formState, reset } = formObject;
@@ -30,10 +30,10 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
     return (
         <Grid container item md={12} spacing={3}>
             <Grid item md={12}>
-                <TextField 
-                    fullWidth 
-                    name='name' 
-                    inputRef={register()} 
+                <TextField
+                    fullWidth
+                    name='name'
+                    inputRef={register()}
                     label='Topic Title'
                     InputLabelProps={{ shrink: true }}
                     inputProps={{style: {fontSize: '2.5rem'}}}
@@ -46,18 +46,18 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                 Set a 50% partial credit time window after the end of this topic.<br/>
 
                 {/* <Switch color='primary' inputProps={{type: 'checkbox'}} name='partialExtend' inputRef={register()} /> */}
-                <Controller 
+                <Controller
                     name='partialExtend'
                     control={control}
                     defaultValue={false}
                     render={({ onChange, onBlur, value, name }) => (
-                        <FormControlLabel 
+                        <FormControlLabel
                             name='partialExtend'
-                            label={'Partial Credit Extension'} 
-                            labelPlacement='end' 
+                            label={'Partial Credit Extension'}
+                            labelPlacement='end'
                             disabled={topicTypeId === TopicTypeId.EXAM}
                             control={
-                                <Switch 
+                                <Switch
                                     onBlur={onBlur}
                                     onChange={e => onChange(e.target.checked)}
                                     color='primary'
@@ -67,7 +67,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                                 />
                             }
                         />
-                    )} 
+                    )}
                 />
             </Grid>
             <Grid item container md={12} spacing={3}>
@@ -83,7 +83,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         label='Start'
                         maxDate={endDate}
                         maxDateMessage='Start date must come before end date'
-                        onAccept={() => {setUpdateAlert({message: '', variant: 'warning'});}}
+                        onAccept={() => {setUpdateAlert({message: '', severity: 'warning'});}}
                         rules={{
                             required: true,
                             validate: {
@@ -107,7 +107,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         label={partialExtend ? 'End (full credit)' : 'End'}
                         minDate={moment.max([startDate, moment()])}
                         minDateMessage='End date should not be set in the past'
-                        onAccept={() => {setUpdateAlert({message: '', variant: 'warning'});}}
+                        onAccept={() => {setUpdateAlert({message: '', severity: 'warning'});}}
                         rules={{
                             required: true,
                             validate: {
@@ -124,7 +124,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                     />
                 </Grid>
                 <Grid item>
-                    {partialExtend && 
+                    {partialExtend &&
                     <Controller
                         as={<DateTimePicker value="" onChange={() => {}} />}
                         name="deadDate"
@@ -135,7 +135,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         fullWidth={false}
                         label='End (partial credit)'
                         minDate={moment.max([endDate, moment()])}
-                        onAccept={() => {setUpdateAlert({message: '', variant: 'warning'});}}
+                        onAccept={() => {setUpdateAlert({message: '', severity: 'warning'});}}
                         rules={{
                             required: true,
                             validate: {

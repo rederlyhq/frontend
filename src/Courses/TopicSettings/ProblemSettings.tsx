@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Grid, Snackbar } from '@material-ui/core';
 import { MultipleProblemPaths, OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
+import { Alert as MUIAlert, Color } from '@material-ui/lab';
 import { Link } from 'react-router-dom';
 import { ProblemObject, TopicObject, TopicTypeId } from '../CourseInterfaces';
 import { ProblemSettingsInputs } from './TopicSettingsPage';
 import { useForm, FormProvider } from 'react-hook-form';
 import { deleteQuestion, putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
-import useAlertState from '../../Hooks/useAlertState';
+import { useMUIAlertState } from '../../Hooks/useAlertState';
 import { Alert } from 'react-bootstrap';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { DevTool } from '@hookform/devtools';
@@ -52,7 +53,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const { handleSubmit, control, watch, reset } = topicForm;
     const { optional, webworkQuestionPath } = watch();
     const additionalProblemPaths = watch('courseQuestionAssessmentInfo.additionalProblemPaths', [{path: ''}]);
-    const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
+    const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
     useEffect(()=>{
@@ -76,7 +77,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             )
         });
 
-        setUpdateAlert({message: '', variant: 'warning'});
+        setUpdateAlert({message: '', severity: 'warning'});
     }, [selected, additionalProblemPathsArray, additionalProblemPathsArrayIsEmpty, reset, setUpdateAlert, topic.topicTypeId]);
 
     const onSubmit = async (data: ProblemSettingsInputs) => {
@@ -113,7 +114,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             });
 
             const dataFromBackend = res.data.data.updatesResult?.[0];
-            setUpdateAlert({message: 'Successfully updated', variant: 'success'});
+            setUpdateAlert({message: 'Successfully updated', severity: 'success'});
 
             // Overwrite fields from the original object. This resets the state object when clicking between options.
             const newTopic = new TopicObject(topic);
@@ -125,12 +126,12 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             setTopic(newTopic);
         } catch (e) {
             logger.error('Error updating topic.', e);
-            setUpdateAlert({message: e.message, variant: 'danger'});
+            setUpdateAlert({message: e.message, severity: 'error'});
         }
     };
 
     const onDelete = async () => {
-        setUpdateAlert({message: '', variant: 'warning'});
+        setUpdateAlert({message: '', severity: 'warning'});
         try {
             const problemId = selected.id;
             const problemNumber = selected.problemNumber;
@@ -154,15 +155,15 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                 setSelected(problemNumber < newTopic.questions.length ? newTopic.questions[problemNumber - 1] : newTopic.questions[problemNumber - 2]);
             }
 
-            setUpdateAlert({message: 'Successfully deleted question', variant: 'success'});
+            setUpdateAlert({message: 'Successfully deleted question', severity: 'success'});
         } catch (e) {
-            setUpdateAlert({message: e.message, variant: 'danger'});
+            setUpdateAlert({message: e.message, severity: 'error'});
         }
     };
 
     return (
         <FormProvider {...topicForm}>
-            <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
+            <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', severity: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
                 <DevTool control={control} />
                 <Grid container item md={12} spacing={3}>
                     <Snackbar
@@ -171,9 +172,9 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                         autoHideDuration={6000}
                         onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
                     >
-                        <Alert onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))} variant={updateAlertType}>
+                        <MUIAlert onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))} severity={updateAlertType}>
                             {updateAlertMsg}
-                        </Alert>
+                        </MUIAlert>
                     </Snackbar>
                     <Grid container item md={12} spacing={3}>
                         <Grid item container md={12}><h1>Problem Settings</h1></Grid>
