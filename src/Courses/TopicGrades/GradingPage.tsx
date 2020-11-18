@@ -11,6 +11,8 @@ import { getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests
 import { GradeInfoHeader } from './GradeInfoHeader';
 import { useQuery } from '../../Hooks/UseQuery';
 import AttachmentsPreview from './AttachmentsPreview';
+import useAlertState from '../../Hooks/useAlertState';
+import { Alert } from 'react-bootstrap';
 
 interface TopicGradingPageProps {
     topicId?: string;
@@ -30,7 +32,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     const params = useParams<TopicGradingPageProps>();
     const {users} = useCourseContext();
     const queryParams = useQuery();
-    const [error, setError] = useState<string | null>(null);
+    const [alert, setAlert] = useAlertState();
     const [isPinned, setIsPinned] = useState<Pin | null>(null); // pin one or the other, not both
     const [topic, setTopic] = useState<TopicObject | null>(null);
     const [problems, setProblems] = useState<ProblemObject[] | null>(null);
@@ -44,69 +46,65 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
 
     useEffect(() => {
         logger.debug('GradingPage: topicId changed');
-        (async () => {
-            try {
-                if (_.isNil(params.topicId)) {
-                    logger.error('topicId is null');
-                    throw new Error('An unexpected error has occurred');
-                } else {
-                    await fetchProblems(parseInt(params.topicId, 10));
-                }
-            } catch (e) {
-                logger.error(e.message, e);
-            }
-        })();
+        if (_.isNil(params.topicId)) {
+            logger.error('topicId is null');
+            throw new Error('An unexpected error has occurred');
+        } else {
+            fetchProblems(parseInt(params.topicId, 10));
+        }
     }, [params.topicId, users]);
 
     const fetchProblems = async (topicId: number) => {
         // fetchProblems is only called when topicId changes ()
-        const res = await getTopic({ id: topicId, includeQuestions: true });
-        const currentProblems = _(res.data.data.questions)
-            .map((p) => { return new ProblemObject(p); })
-            .sortBy(['problemNumber'], ['asc'])
-            .value();
-        // currentProblems = _.map(currentProblems, (p) => {return new ProblemObject(p);});
-        setProblems(currentProblems);
+        try {
+            const res = await getTopic({ id: topicId, includeQuestions: true });
+            const currentProblems = _(res.data.data.questions)
+                .map((p) => { return new ProblemObject(p); })
+                .sortBy(['problemNumber'], ['asc'])
+                .value();
+            // currentProblems = _.map(currentProblems, (p) => {return new ProblemObject(p);});
+            setProblems(currentProblems);
 
-        const currentTopic = res.data.data as TopicObject;
-        setTopic(currentTopic);
+            const currentTopic = res.data.data as TopicObject;
+            setTopic(currentTopic);
 
-        const problemIdString = queryParams.get('problemId');
-        let initialSelectedProblem: ProblemObject | undefined;
+            const problemIdString = queryParams.get('problemId');
+            let initialSelectedProblem: ProblemObject | undefined;
 
-        const userIdString = queryParams.get('userId');
-        let initialSelectedUser: UserObject | undefined;
+            const userIdString = queryParams.get('userId');
+            let initialSelectedUser: UserObject | undefined;
 
-        if (!_.isEmpty(currentProblems)) {
-            if (_.isNil(problemIdString)) {
-                initialSelectedProblem = currentProblems[0];
-            } else {
-                const initialSelectedProblemId = parseInt(problemIdString, 10);
-                initialSelectedProblem = _.find(currentProblems, ['id', initialSelectedProblemId]);
-                logger.debug(`GP: attempting to set intial user #${initialSelectedProblemId}`);
+            if (!_.isEmpty(currentProblems)) {
+                if (_.isNil(problemIdString)) {
+                    initialSelectedProblem = currentProblems.first;
+                } else {
+                    const initialSelectedProblemId = parseInt(problemIdString, 10);
+                    initialSelectedProblem = _.find(currentProblems, ['id', initialSelectedProblemId]);
+                    logger.debug(`GP: attempting to set intial user #${initialSelectedProblemId}`);
+                }
             }
-        }
-        if (!_.isEmpty(users)) {
-            if (_.isNil(userIdString)) {
-                const initialSelectedUserId = _.sortBy(users, ['lastName'], ['desc'])[0].id;
-                initialSelectedUser = _.find(users, { 'id': initialSelectedUserId });
-            } else {
-                const initialSelectedUserId = parseInt(userIdString, 10);
-                initialSelectedUser = _.find(users, {'id': initialSelectedUserId});
-                logger.debug(`GP: attempting to set intial user #${initialSelectedUserId}`);
+            if (!_.isEmpty(users)) {
+                if (_.isNil(userIdString)) {
+                    const initialSelectedUserId = _.sortBy(users, ['lastName'], ['desc'])[0].id;
+                    initialSelectedUser = _.find(users, { 'id': initialSelectedUserId });
+                } else {
+                    const initialSelectedUserId = parseInt(userIdString, 10);
+                    initialSelectedUser = _.find(users, { 'id': initialSelectedUserId });
+                    logger.debug(`GP: attempting to set intial user #${initialSelectedUserId}`);
+                }
             }
+            setSelected({ user: initialSelectedUser, problem: initialSelectedProblem });
+        } catch (e) {
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
         }
-        setSelected({ user: initialSelectedUser, problem: initialSelectedProblem});
     };
-
-    if (!_.isNil(error)) {
-        return (
-            <h3>{error}</h3>
-        );
-    }
 
     return (
         <Grid>
+            <Alert variant={alert.variant} show={alert.message.length > 0}>{alert.message}</Alert>
             <Grid container spacing={1} alignItems='center'>
                 <Grid item className='text-left'>
                     <h1>Grading {topic && topic.name}</h1>

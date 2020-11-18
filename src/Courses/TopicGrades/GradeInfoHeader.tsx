@@ -65,7 +65,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     const displayCurrentScore = useRef<string | null>(null);
     // fetch grade first
     if (_.isNil(displayCurrentScore.current) && !_.isNil(grade)) {
-        displayCurrentScore.current = (grade?.effectiveScore * 100).toFixed(1);
+        displayCurrentScore.current = grade.effectiveScore.toPercentString();
     }
 
     const fetchGrade = async () => {
@@ -294,9 +294,10 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     if (_.isNil(grade)) {
         return ( <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>) ;
     }
-    
+
     return (
         <Grid container spacing={1} style={{ paddingLeft: '1rem' }} alignItems='flex-start'>
+            
             <Grid item xs={12}>
                 <h3>Total Topic Score: {topicGrade?.toPercentString() ?? '--'}</h3>
             </Grid>

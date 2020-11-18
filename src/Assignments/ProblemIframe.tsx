@@ -54,7 +54,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const pendingReq = useRef<PendingRequest | null>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
     const [alert, setAlert] = useAlertState();
     const [lastSubmission, setLastSubmission] = useState({});
     const height = '100vh';
@@ -408,7 +407,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     }
                 }}
                 title='Problem Frame'
-                style={{width: '100%', height: height, border: 'none', minHeight: readonly ? '' : '350px', visibility: (loading || error) ? 'hidden' : 'visible'}}
+                style={{ width: '100%', height: height, border: 'none', minHeight: readonly ? '' : '350px', visibility: (loading || alert.message.length > 0) ? 'hidden' : 'visible'}}
                 sandbox='allow-same-origin allow-forms allow-scripts allow-popups'
                 srcDoc={renderedHTML}
                 onLoad={onLoadHandlers}
