@@ -74,3 +74,7 @@ export const getUserId = () => {
 export const getUserIdNoRedirect = () => {
     return Cookies.get(CookieEnum.USERID);
 };
+
+export const getUserRoleNoRedirect = () => {
+    return Cookies.get(CookieEnum.USERTYPE);
+};
