@@ -10,7 +10,7 @@ interface AccountWrapperProps {
 
 export const AccountWrapper: React.FC<AccountWrapperProps> = () => {
     const [tabKey, setTabKey] = React.useState<number>(0);
-    
+
     const renderTab = () => {
         switch(tabKey) {
         case 0:
@@ -20,8 +20,6 @@ export const AccountWrapper: React.FC<AccountWrapperProps> = () => {
             return <AccountChangePasswordPage />;
         case 2:
             return <StudentTopicPreferences />;
-        case 3:
-            return <Grid container item spacing={3} xs={6} justify='center'><h3>Sorry! This content is not ready yet.</h3></Grid>;
         }
     };
 
@@ -39,7 +37,6 @@ export const AccountWrapper: React.FC<AccountWrapperProps> = () => {
                         <Tab label={'Details'} />
                         <Tab label={'Change Password'} />
                         <Tab label={'Settings'} />
-                        <Tab label={'Grades'} />
                     </Tabs>
                 </Grid>
                 {renderTab()}

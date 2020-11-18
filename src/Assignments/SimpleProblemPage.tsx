@@ -15,6 +15,7 @@ import moment from 'moment';
 import logger from '../Utilities/Logger';
 import AttachmentsSidebar from './AttachmentsSidebar';
 import { getUserId } from '../Enums/UserRole';
+import { Alert as MUIAlert } from '@material-ui/lab';
 
 interface SimpleProblemPageProps {
 }
@@ -205,9 +206,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             show: true,
             headerContent: <h5>Begin a new version</h5>,
             bodyContent: <div>
-                {message} <br />
+                {message} {message && <br />}
+                <MUIAlert severity='warning'>You will <u><b>not</b></u> be able to upload attachments for this version of the exam once you have started a new version.</MUIAlert>
                 {/* Should we use the term "version attempt"? */}
-                You have {actualVersionsRemaining} {(actualVersionsRemaining === 1) ? ' version ' : ' versions '} remaining.<br />
+                You have <b>{actualVersionsRemaining}</b> {(actualVersionsRemaining === 1) ? ' version ' : ' versions '} remaining.<br />
                 Are you ready to begin a new version of this assessment?
             </div>,
             onHide: clearModal,
