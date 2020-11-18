@@ -1,4 +1,5 @@
-import { Grid, Button } from '@material-ui/core';
+import { Grid, Button, Snackbar } from '@material-ui/core';
+import { Alert as MUIAlert } from '@material-ui/lab';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -10,7 +11,7 @@ import { TopicSettingsInputs } from './TopicSettingsPage';
 import { putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
 import { Alert } from 'react-bootstrap';
-import useAlertState from '../../Hooks/useAlertState';
+import { useMUIAlertState } from '../../Hooks/useAlertState';
 import logger from '../../Utilities/Logger';
 
 interface TopicSettingsProps {
@@ -20,7 +21,7 @@ interface TopicSettingsProps {
 
 export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}) => {
     const topicForm = useForm<TopicSettingsInputs>({
-        mode: 'onSubmit', 
+        mode: 'onSubmit',
         shouldFocusError: true,
         defaultValues: {
             ...selected,
@@ -35,7 +36,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
         }
     });
     const { register, handleSubmit, control, watch, reset, errors } = topicForm;
-    const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
+    const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
     // This is a hack to allow us to update the selected TopicObject with DEF file information but not
     // lose all the user input that might be in the form.
     const [oldSelectedState, setOldSelectedState] = useState<TopicObject>(selected);
@@ -69,7 +70,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
         obj.topicAssessmentInfo = _.pickBy(data.topicAssessmentInfo, (val) => {
             return !(_.isNil(val) || (typeof(val) === 'string' && val === ''));
         });
-        
+
         // TODO: Make a getter
         obj.topicTypeId = data.topicTypeId === TopicTypeId.HOMEWORK ? 1 : 2;
 
@@ -84,13 +85,13 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                 data: obj
             });
 
-            setUpdateAlert({message: 'Successfully updated', variant: 'success'});
+            setUpdateAlert({message: 'Successfully updated', severity: 'success'});
 
             // Overwrite fields from the original object. This resets the state object when clicking between options.
             setTopic(new TopicObject({...selected, ...obj}));
         } catch (e) {
             logger.error('Error updating topic.', e);
-            setUpdateAlert({message: e.message, variant: 'danger'});
+            setUpdateAlert({message: e.message, severity: 'error'});
         }
     };
 
@@ -98,10 +99,28 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
 
     return (
         <FormProvider {...topicForm}>
-            <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
+            <form
+                onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', severity: 'warning'});}}
+                onSubmit={handleSubmit(onSubmit)}
+            >
                 {/* <DevTool control={control} /> */}
                 <Grid container item md={12} spacing={3}>
-                    {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
+                    <Snackbar
+                        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                        open={updateAlertMsg !== ''}
+                        autoHideDuration={updateAlertType === 'success' ? 6000 : undefined}
+                        onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                        style={{maxWidth: '50vw'}}
+                    >
+                        <MUIAlert
+                            onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                            severity={updateAlertType}
+                            variant='filled'
+                            style={{fontSize: '1.1em'}}
+                        >
+                            {updateAlertMsg}
+                        </MUIAlert>
+                    </Snackbar>
                     <CommonSettings formObject={topicForm} setUpdateAlert={setUpdateAlert} />
                     {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end">

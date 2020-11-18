@@ -24,9 +24,9 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
         logger.debug('Attachments Preview: Loading attachments for workbook');
         (async () => {
             try {
-                const res = await getAttachments({ 
+                const res = await getAttachments({
                     studentWorkbookId: workbookId,
-                    studentGradeId : gradeId, 
+                    studentGradeId : gradeId,
                     studentGradeInstanceId: gradeInstanceId,
                 });
 
@@ -44,12 +44,13 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
     return (
         <Grid container style={{paddingLeft: '1rem'}}>
             <Grid item md={12}><h1>Attachments</h1>
-                <PrintingPage 
+                {/* This is hidden because printing attachments for a specific version is not currently supported. */}
+                {false && <><PrintingPage
                     debug={false}
-                    open={shouldPrint} 
+                    open={shouldPrint}
                     attachmentsUrls={attachedFiles.map(attachment => (baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404')}
                 />
-                <Button onClick={()=>setShouldPrint(true)}>Export All</Button>
+                <Button onClick={()=>setShouldPrint(true)}>Export All</Button></>}
             </Grid>
             {
                 attachedFiles.map(attachment => (
@@ -69,12 +70,12 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
                                 </CardContent>
                             </CardActionArea>
                             <CardActions>
-                                <Button 
+                                <Button
                                     variant='text'
-                                    size='small' 
-                                    color='primary' 
+                                    size='small'
+                                    color='primary'
                                     href={(baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404'}
-                                    target="_blank" 
+                                    target="_blank"
                                     rel='noopener noreferrer'
                                 >
                                         Open in a new tab

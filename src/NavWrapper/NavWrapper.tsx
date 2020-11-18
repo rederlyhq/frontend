@@ -95,7 +95,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
             </Navbar>
             {/* Routing for the page content */}
             <Container fluid role='main'>
-                <Provider value={{userType: getUserRole()}}>    
+                <Provider value={{userType: getUserRole()}}>
                     <AnimatePresence initial={false}>
                         <URLBreadcrumb key='URLBreadcrumb' />
                         <Switch>
@@ -126,15 +126,18 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             <Route path={`${path}/courses/:courseId`}>
                                 <CourseProvider>
                                     <Switch>
+                                        {getUserRole() !== UserRole.STUDENT &&
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/settings`}>
                                             <TopicSettingsPage />
-                                        </Route>
+                                        </Route>}
+                                        {getUserRole() !== UserRole.STUDENT &&
                                         <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading/print/:userId`}>
                                             <PrintEverything />
-                                        </Route>
+                                        </Route>}
+                                        {getUserRole() !== UserRole.STUDENT &&
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/grading`}>
                                             <TopicGradingPage />
-                                        </Route>
+                                        </Route>}
                                         <Route path={`${path}/courses/:courseId/topic/:topicId`}>
                                             <SimpleProblemPage />
                                         </Route>
