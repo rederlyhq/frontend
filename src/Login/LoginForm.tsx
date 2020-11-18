@@ -66,7 +66,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
             let handled = false;
             if (err instanceof BackendAPIError && isAxiosError(err.originalError)) {
                 if (err.originalError.response?.status === 401) {
-                    setLoginAlertMsg({ message: 'Login Failed. Incorrect email and/or password', variant: 'danger' });
+                    setLoginAlertMsg({ message: 'Login Failed. Incorrect email and/or password.', variant: 'danger' });
                     handled = true;
                 } else if(err.originalError.response?.status === 403) {
                     setShowResendVerificationModal(true);

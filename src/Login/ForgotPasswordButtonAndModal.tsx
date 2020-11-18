@@ -56,7 +56,7 @@ export const ForgotPasswordButtonAndModal: React.FC<ForgotPasswordButtonAndModal
                 email: formState.email
             });
             setForgotPasswordAlertMsg({
-                message: 'Forgot password email sent successfully!',
+                message: 'Forgot password email sent successfully!  Please check your spam folder if you do not see it in your inbox.',
                 variant: 'success'
             });
             setTimeout(() => {

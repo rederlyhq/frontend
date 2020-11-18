@@ -60,9 +60,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
             if (resp.status !== 201) {
                 logger.warn(`handleRegister: Registration succeeded however got unexpected status code ${resp.status} instead of 201`);
             }
-            let message = 'Registration succeeded!';
+            let message = 'You have been successfully registered.';
             if (!resp.data.data.verificationBypass) {
-                message =`${message} Please check your email to continue.`;
+                message =`${message} A verification email has been sent to you. Please check your spam folder if you do not see it in your inbox.`;
+            } else {
+                message =`${message} Please log in.`;
             }
             setRegistrationAlert({message, variant: 'success'});
 
