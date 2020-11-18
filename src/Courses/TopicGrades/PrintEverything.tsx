@@ -9,25 +9,24 @@ import logger from '../../Utilities/Logger';
 import { useQuery } from '../../Hooks/UseQuery';
 
 import './PrintEverything.css';
-import { GetAllVersionAttachmentsResponse, GetAllVersionDataResponse } from '../../APIInterfaces/BackendAPI/ResponseTypes/CourseResponseTypes';
+import { GetAllVersionAttachmentsResponse } from '../../APIInterfaces/BackendAPI/ResponseTypes/CourseResponseTypes';
 
 interface PrintEverythingProps {
 }
 
 export const PrintEverything: React.FC<PrintEverythingProps> = () => {
     let userId: number = 0;
-    let topicId: number = 0;;
+    let topicId: number = 0;
     const qs = useQuery();
-    const topicName = qs.get('topicName');
     const workbookName = qs.get('workbookName');
     const params = useParams<{userId?: string, topicId?: string}>();
 
     if (params.userId)
         userId = parseInt(params.userId, 10);
-        
+
     if (params.topicId)
         topicId = parseInt(params.topicId, 10);
-        
+
     const [gradeData, setGradeData] = useState<GetAllVersionAttachmentsResponse | null>(null);
 
 
@@ -68,7 +67,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                 return (
                     <div key={problem.id}>
                         <h4>Problem {problem.problemNumber}</h4>
-                        <ProblemIframe 
+                        <ProblemIframe
                             problem={new ProblemObject({id: problem.id, path: problemPath})}
                             workbookId={bestAttemptWorkbook}
                             readonly={true}

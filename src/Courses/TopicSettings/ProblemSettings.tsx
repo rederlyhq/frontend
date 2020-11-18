@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Grid } from '@material-ui/core';
+import { Button, Grid, Snackbar } from '@material-ui/core';
 import { MultipleProblemPaths, OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
+import { Alert as MUIAlert, Color } from '@material-ui/lab';
 import { Link } from 'react-router-dom';
 import { ProblemObject, TopicObject, TopicTypeId } from '../CourseInterfaces';
 import { ProblemSettingsInputs } from './TopicSettingsPage';
 import { useForm, FormProvider } from 'react-hook-form';
 import { deleteQuestion, putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
-import useAlertState from '../../Hooks/useAlertState';
+import { useMUIAlertState } from '../../Hooks/useAlertState';
 import { Alert } from 'react-bootstrap';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { DevTool } from '@hookform/devtools';
@@ -34,15 +35,15 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             randomSeedSet: [],
             ...selected.courseQuestionAssessmentInfo,
             additionalProblemPaths: [
-                {path: selected.webworkQuestionPath}, 
-                ...additionalProblemPathsArray?.map((s: string) => ({path: s})) || [], 
+                {path: selected.webworkQuestionPath},
+                ...additionalProblemPathsArray?.map((s: string) => ({path: s})) || [],
                 {path: ''}
             ],
         }
     };
 
     const formSettings: {mode: 'onSubmit', shouldFocusError: boolean, defaultValues: ProblemSettingsInputs} = {
-        mode: 'onSubmit', 
+        mode: 'onSubmit',
         shouldFocusError: true,
         defaultValues: defaultValues
     };
@@ -52,12 +53,12 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const { handleSubmit, control, watch, reset } = topicForm;
     const { optional, webworkQuestionPath } = watch();
     const additionalProblemPaths = watch('courseQuestionAssessmentInfo.additionalProblemPaths', [{path: ''}]);
-    const [{ message: updateAlertMsg, variant: updateAlertType }, setUpdateAlert] = useAlertState();
+    const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
     useEffect(()=>{
         let defaultAdditionalProblemPaths = [
-            {path: selected.webworkQuestionPath}, 
+            {path: selected.webworkQuestionPath},
             ...additionalProblemPathsArray?.map((s: string) => ({path: s})) || [],
             {path: ''}
         ];
@@ -76,7 +77,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             )
         });
 
-        setUpdateAlert({message: '', variant: 'warning'});
+        setUpdateAlert({message: '', severity: 'warning'});
     }, [selected, additionalProblemPathsArray, additionalProblemPathsArrayIsEmpty, reset, setUpdateAlert, topic.topicTypeId]);
 
     const onSubmit = async (data: ProblemSettingsInputs) => {
@@ -113,7 +114,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             });
 
             const dataFromBackend = res.data.data.updatesResult?.[0];
-            setUpdateAlert({message: 'Successfully updated', variant: 'success'});
+            setUpdateAlert({message: 'Successfully updated', severity: 'success'});
 
             // Overwrite fields from the original object. This resets the state object when clicking between options.
             const newTopic = new TopicObject(topic);
@@ -125,18 +126,18 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             setTopic(newTopic);
         } catch (e) {
             logger.error('Error updating topic.', e);
-            setUpdateAlert({message: e.message, variant: 'danger'});
+            setUpdateAlert({message: e.message, severity: 'error'});
         }
     };
 
     const onDelete = async () => {
-        setUpdateAlert({message: '', variant: 'warning'});
+        setUpdateAlert({message: '', severity: 'warning'});
         try {
             const problemId = selected.id;
             const problemNumber = selected.problemNumber;
             await deleteQuestion({
                 id: problemId
-            });    
+            });
             let newProblems = [...topic.questions];
             const deletedProblem = _.find(newProblems, ['id', problemId]);
             // Decrement everything after
@@ -154,26 +155,41 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                 setSelected(problemNumber < newTopic.questions.length ? newTopic.questions[problemNumber - 1] : newTopic.questions[problemNumber - 2]);
             }
 
-            setUpdateAlert({message: 'Successfully deleted question', variant: 'success'});
+            setUpdateAlert({message: 'Successfully deleted question', severity: 'success'});
         } catch (e) {
-            setUpdateAlert({message: e.message, variant: 'danger'});
+            setUpdateAlert({message: e.message, severity: 'error'});
         }
     };
 
     return (
         <FormProvider {...topicForm}>
-            <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', variant: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
+            <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', severity: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
                 <DevTool control={control} />
                 <Grid container item md={12} spacing={3}>
-                    {(updateAlertMsg !== '') && <Grid md={12} item><Alert variant={updateAlertType}>{updateAlertMsg}</Alert></Grid>}
+                    <Snackbar
+                        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                        open={updateAlertMsg !== ''}
+                        autoHideDuration={updateAlertType === 'success' ? 6000 : undefined}
+                        onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                        style={{maxWidth: '50vw'}}
+                    >
+                        <MUIAlert
+                            onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                            severity={updateAlertType}
+                            variant='filled'
+                            style={{fontSize: '1.1em'}}
+                        >
+                            {updateAlertMsg}
+                        </MUIAlert>
+                    </Snackbar>
                     <Grid container item md={12} spacing={3}>
                         <Grid item container md={12}><h1>Problem Settings</h1></Grid>
                         <Grid item md={8}>
-                            Enter the path to the problem on the Rederly server. This is prefaced either 
-                            with <code>Library/</code> or <code>Contrib/</code> if the desired problem is included 
-                            in the <Link to='https://github.com/openwebwork/webwork-open-problem-library'>OPL</Link> or <code>private/</code> if 
+                            Enter the path to the problem on the Rederly server. This is prefaced either
+                            with <code>Library/</code> or <code>Contrib/</code> if the desired problem is included
+                            in the <Link to='https://github.com/openwebwork/webwork-open-problem-library'>OPL</Link> or <code>private/</code> if
                             this problem has been uploaded to your private Rederly folder.
-                            {topic.topicTypeId === TopicTypeId.EXAM ? 
+                            {topic.topicTypeId === TopicTypeId.EXAM ?
                                 <MultipleProblemPaths /> :
                                 <ProblemPath />
                             }
@@ -181,7 +197,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                             Enter the maximum number of graded attempts for a problem, use 0 or -1 to give students unlimited attempts.<br/>
                             <ProblemMaxAttempts />
                         </Grid>)}<Grid item md={12}>
-                            Enter the number of points available for this problem. If the problem is marked as &quot;optional&quot;, these points will be treated as extra credit.<br/>
+                            Enter the number of points available for this problem. If the problem is marked as <b>optional</b>, these points will be treated as extra credit.<br/>
                             <ProblemWeight />
                         </Grid><Grid item md={12}>
                             This problem is {optional ? 'optional' : 'required'}.<br/>
@@ -190,17 +206,17 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                         {topic.topicTypeId === TopicTypeId.EXAM && (
                             <Grid item md={12}>
                                 <Grid item md={10}>
-                                    You can optionally limit the randomization of this problem by entering specific &quot;random seeds&quot; (numeric values between 1 and 999999) into the text field below. 
-                                    Use the problem preview pane below to see how different &quot;seeds&quot; affect the randomization. You can add multiple numbers by pressing enter or using a comma to separate them.<br/>
+                                    You can optionally limit the randomization of this problem by entering specific <b>random seeds</b> (numeric values between 1 and 999999) into the text field below.
+                                    Use the problem preview pane below to see how different <b>seeds</b> affect the randomization. You can add multiple numbers by pressing enter or using a comma to separate them.<br/>
                                 </Grid>
                                 <RandomSeedSet />
                             </Grid>
                         )}
                     </Grid><Grid item xs={12}>
-                        <RendererPreview 
-                            defaultPath={topic.topicTypeId === TopicTypeId.EXAM ? 
-                                additionalProblemPaths?.[0].path || '' : 
-                                webworkQuestionPath} 
+                        <RendererPreview
+                            defaultPath={topic.topicTypeId === TopicTypeId.EXAM ?
+                                additionalProblemPaths?.[0].path || '' :
+                                webworkQuestionPath}
                         />
                     </Grid>
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
