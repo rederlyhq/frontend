@@ -1,4 +1,5 @@
-import { Button, Grid } from '@material-ui/core';
+import { Grid, Button, Snackbar } from '@material-ui/core';
+import { Alert as MUIAlert } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 import { Link, useParams } from 'react-router-dom';
@@ -11,8 +12,7 @@ import { getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests
 import { GradeInfoHeader } from './GradeInfoHeader';
 import { useQuery } from '../../Hooks/UseQuery';
 import AttachmentsPreview from './AttachmentsPreview';
-import useAlertState from '../../Hooks/useAlertState';
-import { Alert } from 'react-bootstrap';
+import { useMUIAlertState } from '../../Hooks/useAlertState';
 
 interface TopicGradingPageProps {
     topicId?: string;
@@ -32,7 +32,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     const params = useParams<TopicGradingPageProps>();
     const {users} = useCourseContext();
     const queryParams = useQuery();
-    const [alert, setAlert] = useAlertState();
+    const [gradeAlert, setGradeAlert] = useMUIAlertState();
     const [isPinned, setIsPinned] = useState<Pin | null>(null); // pin one or the other, not both
     const [topic, setTopic] = useState<TopicObject | null>(null);
     const [problems, setProblems] = useState<ProblemObject[] | null>(null);
@@ -95,8 +95,8 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
             }
             setSelected({ user: initialSelectedUser, problem: initialSelectedProblem });
         } catch (e) {
-            setAlert({
-                variant: 'danger',
+            setGradeAlert({
+                severity: 'error',
                 message: e.message
             });
         }
@@ -104,7 +104,22 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
 
     return (
         <Grid>
-            <Alert variant={alert.variant} show={alert.message.length > 0}>{alert.message}</Alert>
+            <Snackbar
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                open={gradeAlert.message !== ''}
+                autoHideDuration={gradeAlert.severity === 'success' ? 6000 : undefined}
+                onClose={() => setGradeAlert(alertState => ({ ...alertState, message: '' }))}
+                style={{ maxWidth: '50vw' }}
+            >
+                <MUIAlert
+                    onClose={() => setGradeAlert(alertState => ({ ...alertState, message: '' }))}
+                    severity={gradeAlert.severity}
+                    variant='filled'
+                    style={{ fontSize: '1.1em' }}
+                >
+                    {gradeAlert.message}
+                </MUIAlert>
+            </Snackbar>
             <Grid container spacing={1} alignItems='center'>
                 <Grid item className='text-left'>
                     <h1>Grading {topic && topic.name}</h1>
@@ -131,6 +146,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                             selected={selected}
                             setSelected={setSelected}
                             topic={topic}
+                            setGradeAlert={setGradeAlert}
                         />
                     }
                     <Grid container alignItems='stretch'>

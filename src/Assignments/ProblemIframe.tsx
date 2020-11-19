@@ -28,6 +28,7 @@ interface ProblemIframeProps {
 interface PendingRequest {
     cancelled?: boolean;
     problemId?: number;
+    workbookId?: number;
 }
 
 /**
@@ -64,16 +65,16 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     useEffect(()=>{
         const fetchHTML = async () => {
             if (pendingReq.current !== null) {
-                logger.debug(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId}`);
+                console.log(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId} workbook #${pendingReq.current.workbookId}`);
                 pendingReq.current.cancelled = true;
             }
-            const currentReq = {problemId: problem.id} as PendingRequest;
+            const currentReq = {problemId: problem.id, workbookId} as PendingRequest;
             pendingReq.current = currentReq;
 
             const rendererHTML = await getHTML();
 
             if (currentReq.cancelled) {
-                logger.debug(`Problem Iframe: The request for problem #${problem.id} was cancelled early.`);
+                console.log(`Problem Iframe: The request for problem #${problem.id} and workbook #${workbookId} was cancelled early.`);
                 return;
             } else if (_.isNil(rendererHTML)) {
                 // Preview Problems won't return a rendererHTML when the path is bad.
@@ -83,16 +84,17 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 return;
             } else {
                 pendingReq.current = null;
+                // We need to reset the error state since a new call means no error
+                setAlert({
+                    variant: 'info',
+                    message: ''
+                });
                 setRenderedHTML(rendererHTML);
             }
 
         };
 
-        // We need to reset the error state since a new call means no error
-        setAlert({
-            variant: 'info',
-            message: ''
-        });        // If you don't reset the rendered html you won't get the load event
+        // If you don't reset the rendered html you won't get the load event
         // Thus if you go to an error state and back to the success state
         // The rendered html will never call load handler which will never stop loading
         setRenderedHTML('');
@@ -108,6 +110,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }, [problem, problem.id, workbookId, previewPath, previewProblemSource, previewSeed]);
 
     const getHTML = async () => {
+        console.log('ProblemIframe: Getting new renderedHTML.');
         try {
             let res;
 
@@ -403,7 +406,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                         onLoadHandlers();
                     } else {
                         // TODO I would like a logging framework that stripped these
-                        // logger.debug('Reference did not change, do not call on load, that is a workaround for first load anyway');
+                        // console.log('Reference did not change, do not call on load, that is a workaround for first load anyway');
                     }
                 }}
                 title='Problem Frame'
