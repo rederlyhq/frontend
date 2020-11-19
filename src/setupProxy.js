@@ -10,4 +10,8 @@ module.exports =  function(app) {
     app.use(createProxyMiddleware('/webwork2_files', {
         target: 'http://localhost:3000'
     }));
+
+    app.use(createProxyMiddleware('/work', {
+        target: 'http://localhost:3001'
+    }));
 };
