@@ -12,7 +12,7 @@ import ResendVerificationModal from './ResendVerificationModal';
 import logger from '../Utilities/Logger';
 import _ from 'lodash';
 import localPreferences from '../Utilities/LocalPreferences';
-const { general } = localPreferences;
+const { general, session } = localPreferences;
 
 interface LoginFormProps {
 
@@ -55,10 +55,15 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
 
             if (resp.status === 200) {
                 setLoginAlertMsg({ message: resp.data?.msg || 'Logged in!', variant: 'success' });
-                // TODO: Create a User class to massage and error-handle these fields.
-                Cookie.set(CookieEnum.USERTYPE, getUserRoleFromServer(resp.data.data.roleId));
-                Cookie.set(CookieEnum.USERID, resp.data.data.userId);
-                Cookie.set(CookieEnum.USERNAME, `${resp.data.data.firstName} ${resp.data.data.lastName}`);
+                session.userId = resp.data.data.userId;
+                session.userType = getUserRoleFromServer(resp.data.data.roleId);
+                session.userUUID = resp.data.data.uuid;
+                session.username = `${resp.data.data.firstName} ${resp.data.data.lastName}`;
+                // TODO delete this code, moving to local preferences but want to keep this for debugging
+                // // TODO: Create a User class to massage and error-handle these fields.
+                // Cookie.set(CookieEnum.USERTYPE, getUserRoleFromServer(resp.data.data.roleId));
+                // Cookie.set(CookieEnum.USERID, resp.data.data.userId);
+                // Cookie.set(CookieEnum.USERNAME, `${resp.data.data.firstName} ${resp.data.data.lastName}`);
 
                 history.replace('/common/courses');
             }

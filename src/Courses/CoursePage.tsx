@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { CookieEnum } from '../Enums/CookieEnum';
 import _ from 'lodash';
 import logger from '../Utilities/Logger';
+import localPreferences from '../Utilities/LocalPreferences';
 
 interface CoursePageProps {
 
@@ -19,7 +20,8 @@ interface CoursePageProps {
 export const CoursePage: React.FC<CoursePageProps> = () => {
     const [courses, setCourses] = useState<Array<CourseObject>>([]);
     const userType: UserRole = getUserRole();
-    const userId: string | undefined = Cookies.get(CookieEnum.USERID);
+    // const userId: string | undefined = Cookies.get(CookieEnum.USERID);
+    const userId: string | null = localPreferences.session.userId;
 
     // Get the list of courses to render.
     useEffect(() => {
