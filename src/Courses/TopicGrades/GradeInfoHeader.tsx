@@ -77,7 +77,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     const fetchGrade = async () => {
         setGrade(null);
         if (!_.isNil(selected.user) && !_.isNil(selected.problem)) {
-            console.log('GradeInfoHeader: Selected problem or user changed', selected.problem, selected.user);
+            logger.debug('GradeInfoHeader: Selected problem or user changed', selected.problem, selected.user);
             try {
                 const res = await getQuestionGrade({
                     userId: selected.user.id,
@@ -101,12 +101,12 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         }
     };
     useEffect(() => {
-        console.log(`GradeInfoHeader: there has been a change in user (${selected.user?.id}) or problem (${selected.problem?.id}), fetching new problem grade info.`);
+        logger.debug(`GradeInfoHeader: there has been a change in user (${selected.user?.id}) or problem (${selected.problem?.id}), fetching new problem grade info.`);
         fetchGrade();
     }, [selected.problem, selected.user]);
 
     useEffect(() => {
-        console.log('GradeInfoHeader: student grade object has been updated.', grade);
+        logger.debug('GradeInfoHeader: student grade object has been updated.', grade);
         if (!_.isNil(grade)) {
             const workbooks = _.keyBy(grade.workbooks, 'id');
             let currentAttemptsCount: number | undefined;
@@ -149,7 +149,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 studentGradeInstanceId = workbooks[workbookId].studentGradeInstanceId;
             }
 
-            console.log('GradeInfoHeader: Setting local info from new grade object.', currentVersionMap);
+            logger.debug('GradeInfoHeader: Setting local info from new grade object.', currentVersionMap);
             setInfo({
                 legalScore: grade.legalScore,
                 overallBestScore: grade.overallBestScore,
@@ -164,50 +164,50 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 versionMap: currentVersionMap,
             });
         } else {
-            console.log(`GradeInfoHeader: Student grade has not been set for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
+            logger.debug(`GradeInfoHeader: Student grade has not been set for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
         }
     }, [grade?.id]);
 
     useEffect(() => {
-        console.log('GradeInfoHeader: setting new problem state from updated Workbook ID or Grade Instance ID', info);
+        logger.debug('GradeInfoHeader: setting new problem state from updated Workbook ID or Grade Instance ID', info);
         const newProblemState: ProblemState = {};
         const currentGrade = (grade) ? grade : undefined;
-        let workbook: StudentWorkbookInterface | undefined;
 
         if (_.isNil(grade)) {
-            // no grade for this user/problem combo -> error
-            logger.error(`GradeInfoHeader: No grade for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
+            // no grade for this user/problem combo -> error was already caught
+            // this still happens on initial page load, so debug
+            logger.debug(`GradeInfoHeader: No grade for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
         } else if ((_.isNil(grade.workbooks) || _.isEmpty(grade.workbooks)) && 
             !_.isNil(topic.topicAssessmentInfo) && 
             (_.isNil(grade.gradeInstances) || _.isEmpty(grade.gradeInstances))
         ) {
             // no workbooks on an exam, so get previewPath and previewSeed because there cannot be a current state
-            console.log('Unattempted problem on an exam');
+            logger.debug('Unattempted problem on an exam');
             newProblemState.previewPath = selected.problem?.webworkQuestionPath;
             newProblemState.previewSeed = grade.randomSeed;
         } else if (_.isNil(grade.workbooks) || _.isNil(info.workbookId) || info.workbookId === -1) {
             // no workbooks, or none selected -> use currentProblemState (need version info if an exam... grade instance ID will not suffice)
             if (!_.isNil(info.studentGradeInstanceId) && !_.isNil(grade.gradeInstances) && !_.isEmpty(grade.gradeInstances)) {
                 newProblemState.studentTopicAssessmentInfoId = _.find(grade.gradeInstances, ['id', info.studentGradeInstanceId])?.studentTopicAssessmentInfoId;
-                console.log(`GradeInfoHeader: setting Problem State - versionId: ${newProblemState.studentTopicAssessmentInfoId}`);
+                logger.debug(`GradeInfoHeader: setting Problem State - versionId: ${newProblemState.studentTopicAssessmentInfoId}`);
             }
         } else if (_.isNil(_.find(grade.workbooks, ['id', info.workbookId]))) {
             // we have workbooks, and one is selected, but entry doesn't exist -> error
             logger.error(`GradeInfoHeader: User #${selected.user?.id} tried to set workbook #${info.workbookId} for problem #${selected.problem?.id} but I cannot find that record.`);
         } else { 
             newProblemState.workbookId = info.workbookId;
-            console.log(`GradeInfoHeader: setting Problem State - workbookId: ${newProblemState.workbookId}`);
+            logger.debug(`GradeInfoHeader: setting Problem State - workbookId: ${newProblemState.workbookId}`);
         }
 
         const newGradeInstance = (info.studentGradeInstanceId) ? _.find(grade?.gradeInstances, ['id', info.studentGradeInstanceId]) : undefined;
-        console.log('GradeInfoHeader: setting new selected grades', newProblemState, newGradeInstance);
+        logger.debug('GradeInfoHeader: setting new selected grades', newProblemState, newGradeInstance);
         setSelected(selected => ({ ...selected, problemState: newProblemState, grade: currentGrade, gradeInstance: newGradeInstance }));
     }, [info.workbookId, info.studentGradeId, info.studentGradeInstanceId]);
 
     const fetchTopicGrade = async () => {
         setTopicGrade(null);
         if (_.isNil(topic)) {
-            console.log('GradeInfoHeader: topic id is nil, skipping grades call');
+            logger.debug('GradeInfoHeader: topic id is nil, skipping grades call');
         }
 
         const params = {
@@ -225,12 +225,12 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         }
     };
     useEffect(() => {
-        console.log('GradeInfoHeader: there has been a change in user or topic, fetching new topic grade.');
+        logger.debug('GradeInfoHeader: there has been a change in user or topic, fetching new topic grade.');
         fetchTopicGrade();
     }, [selected.user, topic, info.effectiveScore]);
 
     const onSuccess = (gradeOverride: Partial<StudentGrade>) => {
-        console.log('GradeInfoHeader: overriding grade', gradeOverride.effectiveScore);
+        logger.debug('GradeInfoHeader: overriding grade', gradeOverride.effectiveScore);
         const currentGrade = grade; 
         if (!_.isNil(gradeOverride) &&
             !_.isNil(gradeOverride.effectiveScore) &&
@@ -348,7 +348,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 </>}
                 {info.workbook &&
                     <p>
-                        Score on this attempt: <strong>{info.workbook.result}</strong>
+                        Score on this attempt: <strong>{info.workbook.result.toPercentString()}</strong>
                     </p>
                 }
             </Grid>

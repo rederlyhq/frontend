@@ -65,7 +65,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     useEffect(()=>{
         const fetchHTML = async () => {
             if (pendingReq.current !== null) {
-                console.log(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId} workbook #${pendingReq.current.workbookId}`);
+                logger.debug(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId} workbook #${pendingReq.current.workbookId}`);
                 pendingReq.current.cancelled = true;
             }
             const currentReq = {problemId: problem.id, workbookId} as PendingRequest;
@@ -74,7 +74,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             const rendererHTML = await getHTML();
 
             if (currentReq.cancelled) {
-                console.log(`Problem Iframe: The request for problem #${problem.id} and workbook #${workbookId} was cancelled early.`);
+                logger.debug(`Problem Iframe: The request for problem #${problem.id} and workbook #${workbookId} was cancelled early.`);
                 return;
             } else if (_.isNil(rendererHTML)) {
                 // Preview Problems won't return a rendererHTML when the path is bad.
@@ -110,7 +110,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }, [problem, problem.id, workbookId, previewPath, previewProblemSource, previewSeed]);
 
     const getHTML = async () => {
-        console.log('ProblemIframe: Getting new renderedHTML.');
+        logger.debug('ProblemIframe: Getting new renderedHTML.');
         try {
             let res;
 
@@ -406,7 +406,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                         onLoadHandlers();
                     } else {
                         // TODO I would like a logging framework that stripped these
-                        // console.log('Reference did not change, do not call on load, that is a workaround for first load anyway');
+                        // logger.debug('Reference did not change, do not call on load, that is a workaround for first load anyway');
                     }
                 }}
                 title='Problem Frame'

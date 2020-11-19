@@ -22,9 +22,9 @@ interface MaterialBiSelectProps {
 export const MaterialBiSelect: React.FC<MaterialBiSelectProps> = ({problems, users, selected, setSelected}) => {
     const onItemClick = (type: SettingsComponentType) => {
         if (type instanceof ProblemObject) {
-            setSelected(selected => ({...selected, problem: type}));
+            setSelected(selected => ({user: selected.user, problem: type}));
         } else if (type instanceof UserObject) {
-            setSelected(selected => ({...selected, user: type}));
+            setSelected(selected => ({problem: selected.problem, user: type}));
         }
     };
 

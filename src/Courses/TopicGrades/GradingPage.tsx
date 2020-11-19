@@ -150,7 +150,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                         />
                     }
                     <Grid container alignItems='stretch'>
-                        {selected.problem && selected.user && selected.grade &&
+                        {selected.problem && selected.user && selected.grade && 
                         // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) && 
                             < ProblemIframe
                                 problem={selected.problem}
