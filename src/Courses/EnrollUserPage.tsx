@@ -6,6 +6,7 @@ import Cookies from 'js-cookie';
 import { CookieEnum } from '../Enums/CookieEnum';
 import logger from '../Utilities/Logger';
 import { enrollByCode } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import localPreferences from '../Utilities/LocalPreferences';
 
 interface EnrollUserPageProps {
 
@@ -17,7 +18,8 @@ export const EnrollUserPage: React.FC<EnrollUserPageProps> = () => {
         enrollCode: string
     }>();
     const [{enrollData, enrollError}, setVerifyState] = useState({enrollData: {courseId: -1}, enrollError: ''});
-    const userId: string | undefined = Cookies.get(CookieEnum.USERID);
+    // const userId: string | undefined = Cookies.get(CookieEnum.USERID);
+    const userId: string | null = localPreferences.session.userId;
     
     // Async functions return promises regardlessly, and this angers Typescript. IIFE is the workaround.
     useEffect(() => {

@@ -26,6 +26,8 @@ import logger from '../Utilities/Logger';
 import TopicGradingPage from '../Courses/TopicGrades/GradingPage';
 import { ProblemEditor } from '../Assignments/ProblemEditor';
 import PrintEverything from '../Courses/TopicGrades/PrintEverything';
+import localPreferences from '../Utilities/LocalPreferences';
+const { session } = localPreferences;
 
 interface NavWrapperProps {
 
@@ -41,7 +43,8 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     const { path } = useRouteMatch();
     const history = useHistory();
     const sessionCookie = Cookies.get(CookieEnum.SESSION);
-    const userName = Cookies.get(CookieEnum.USERNAME);
+    // const userName = Cookies.get(CookieEnum.USERNAME);
+    const userName = localPreferences.session.username;
     const { Provider } = userContext;
 
     // TODO: Check if the user has been deauthenticated (ex: expired) and display a message.
@@ -59,6 +62,15 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
         } catch (e) {
             logger.error('Error logging out', e);
         }
+
+        Cookies.remove(CookieEnum.SESSION);
+        session.nullifySession();
+    
+        // TODO delete these cookie removes, right now I want it to clean up browsers
+        Cookies.remove(CookieEnum.USERTYPE);
+        Cookies.remove(CookieEnum.USERID);
+        Cookies.remove(CookieEnum.USERNAME);
+    
         history.push('/');
     };
 
