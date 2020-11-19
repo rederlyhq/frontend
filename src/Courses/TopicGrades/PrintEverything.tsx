@@ -58,9 +58,9 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                     logger.warn('More grades were found for a problem at a specific version.');
                     return;
                 }
-                const bestAttemptWorkbook = problem.grades[0].lastInfluencingCreditedAttemptId;
-                const problemPath = problem.grades[0].webworkQuestionPath;
-                const attachments = problem.grades[0].problemAttachments;
+                const bestAttemptWorkbook = problem.grades.first?.lastInfluencingCreditedAttemptId;
+                const problemPath = problem.grades.first?.webworkQuestionPath;
+                const attachments = problem.grades.first?.problemAttachments;
 
                 const baseUrl = gradeData.baseUrl;
                 return (
@@ -72,12 +72,13 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                             readonly={true}
                         />
                         <h5>Problem {problem.problemNumber} Attachments</h5>
-                        {attachments && attachments.map((attachment) => {
+                        {attachments?.map((attachment) => {
                             const { cloudFilename, userLocalFilename } = attachment;
-                            const cloudUrl = url.resolve(baseUrl.toString(), cloudFilename);
                             if (!cloudFilename) {
                                 return;
                             }
+
+                            const cloudUrl = url.resolve(baseUrl.toString(), cloudFilename);
 
                             if (userLocalFilename.indexOf('.pdf') >= 0) {
                                 return <PDFInlineRender key={cloudFilename} url={cloudUrl} />;
