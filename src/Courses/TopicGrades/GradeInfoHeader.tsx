@@ -277,31 +277,34 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             props.onChange({...info, studentGradeInstanceId: value as number, workbookId: -1, workbook: undefined});
         }
         return (
-            <div>
+            <Grid container md={12} spacing={2}>
                 {(_.keys(props.versionMap).length > 1) && // don't show unless multiple versions...
-                <FormControl className={classes.formControl}>
-                    <InputLabel id='student-versions'>Viewing Version:</InputLabel>
-                    <Select labelId='student-versions' value={props.versionKey} onChange={setAttemptsForThisVersion}>
-                        {versionList(props.versionMap).map(version => (
-                            <option key={version.value} value={version.value}>
-                                {version.label}
-                            </option>
-                        ))}
-                    </Select>
-                </FormControl>}
+                <Grid item md={4}>
+                    <FormControl className={classes.formControl} fullWidth={true}>
+                        <InputLabel id='student-versions'>Viewing Version:</InputLabel>
+                        <Select labelId='student-versions' value={props.versionKey} onChange={setAttemptsForThisVersion} fullWidth={true}>
+                            {versionList(props.versionMap).map(version => (
+                                <option key={version.value} value={version.value}>
+                                    {version.label}
+                                </option>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Grid>}
                 {props.versionKey &&
-                <FormControl className={classes.formControl}>
-                    <InputLabel id='student-attempts'>Viewing Attempt:</InputLabel>
-                    <Select labelId='student-attempts' value={props.attemptKey} onChange={handleOnChange}>
-                        {versionSubList(props.versionMap, props.versionKey).map(attempt => (
-                            <option key={attempt.value} value={attempt.value}>
-                                {attempt.label}
-                            </option>
-                        ))}
-                    </Select>
-                </FormControl>
-                }
-            </div>
+                <Grid item md={4}>
+                    <FormControl className={classes.formControl} fullWidth={true}>
+                        <InputLabel id='student-attempts'>Viewing Attempt:</InputLabel>
+                        <Select labelId='student-attempts' value={props.attemptKey} onChange={handleOnChange} fullWidth={true}>
+                            {versionSubList(props.versionMap, props.versionKey).map(attempt => (
+                                <option key={attempt.value} value={attempt.value}>
+                                    {attempt.label}
+                                </option>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Grid>}
+            </Grid>
         );
     }
 
