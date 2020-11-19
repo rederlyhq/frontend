@@ -29,7 +29,7 @@ export const ResendVerificationModal: React.FC<ResendVerificationModalProps> = (
             });
 
             setVerificationAlertMsg({
-                message: 'Verification email sent out successfully! Check your email for verification link.',
+                message: 'Verification email sent out successfully! Check your email for verification link. Please check your spam folder if you do not see it in your inbox.',
                 variant: 'success'
             });
             setSuccess(true);

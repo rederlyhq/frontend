@@ -1,5 +1,5 @@
 import winston from 'winston';
-import { getUserIdNoRedirect } from '../Enums/UserRole';
+import { getUserIdNoRedirect, getUserRoleNoRedirect } from '../Enums/UserRole';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import AxiosBatchTransport from './AxiosBatchTransport';
 import BrowserConsoleLoggerTransport from './BrowserConsoleLoggerTransport';
@@ -31,6 +31,7 @@ const logger = winston.createLogger({
     defaultMeta: {
         meta: {
             get userId() { return getUserIdNoRedirect(); },
+            get userRole() { return getUserRoleNoRedirect(); },
             get location() { return window.location.href; },
             version: version
         }
