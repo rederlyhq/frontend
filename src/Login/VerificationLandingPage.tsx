@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Jumbotron } from 'react-bootstrap';
 import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
+import BackendAPIError from '../APIInterfaces/BackendAPI/BackendAPIError';
 import { getVerification } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import logger from '../Utilities/Logger';
 
@@ -29,7 +30,12 @@ export const VerificationLandingPage: React.FC<VerificationLandingPageProps> = (
                 }
                 setVerifyState({verifyData: 'Success', verifyError: ''});
             } catch (e) {
-                setVerifyState({verifyError: e.message, verifyData: ''});
+                if (e instanceof BackendAPIError && e.status === 400) {
+                    setVerifyState({verifyError: 'This verification link is invalid.', verifyData: ''});                    
+                } else {
+                    logger.error('VerificationLandingPage: expected error to be a bad request but got some other error', e);
+                    setVerifyState({verifyError: e.message, verifyData: ''});
+                }
             }
         })();
     }, [uid]);
@@ -39,10 +45,14 @@ export const VerificationLandingPage: React.FC<VerificationLandingPageProps> = (
 
     return (
         <Jumbotron>
-            {verifyError && <h2>{verifyError}</h2>}
+            {verifyError &&
+            <>
+                <h4>{verifyError}</h4>
+                <h2>Please <Link to='/'>click here</Link> and try to log in to get a new verification link if needed.</h2>
+            </>}
             {verifyData && <>
                 <h4>Your account has been registered!</h4>
-                <h2>Please <Link to='/'>click here</Link> to login and start your learning journey!</h2>
+                <h2>Please <Link to='/'>click here</Link> to log in and start your learning journey!</h2>
             </>}
         </Jumbotron>
     );

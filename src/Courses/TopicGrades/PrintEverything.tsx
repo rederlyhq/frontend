@@ -2,14 +2,14 @@ import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ProblemIframe from '../../Assignments/ProblemIframe';
-import { ProblemAttachments, ProblemObject } from '../CourseInterfaces';
+import { ProblemObject } from '../CourseInterfaces';
 import url from 'url';
 import { getAllContentForVersion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
 import { useQuery } from '../../Hooks/UseQuery';
-
 import './PrintEverything.css';
 import { GetAllVersionAttachmentsResponse } from '../../APIInterfaces/BackendAPI/ResponseTypes/CourseResponseTypes';
+import PDFInlineRender from './PDFInlineRender';
 
 interface PrintEverythingProps {
 }
@@ -58,10 +58,9 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                     logger.warn('More grades were found for a problem at a specific version.');
                     return;
                 }
-                const bestAttemptWorkbook = problem.grades[0].last_influencing_attempt_workbook_id;
-                // WARNING: Truncation
-                const problemPath = problem.grades[0].lastInfluencingAttempt.studentGradeInstance.we;
-                const attachments = problem.grades[0].lastInfluencingAttempt.studentGradeInstance.problemAttachments;
+                const bestAttemptWorkbook = problem.grades.first?.lastInfluencingCreditedAttemptId;
+                const problemPath = problem.grades.first?.webworkQuestionPath;
+                const attachments = problem.grades.first?.problemAttachments;
 
                 const baseUrl = gradeData.baseUrl;
                 return (
@@ -73,17 +72,25 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                             readonly={true}
                         />
                         <h5>Problem {problem.problemNumber} Attachments</h5>
-                        {attachments.map((attachment) => {
-                            const cloudFilename = attachment.cloudFilename;
+                        {attachments?.map((attachment) => {
+                            const { cloudFilename, userLocalFilename } = attachment;
+                            if (!cloudFilename) {
+                                return;
+                            }
+
+                            const cloudUrl = url.resolve(baseUrl.toString(), cloudFilename);
+
+                            if (userLocalFilename.indexOf('.pdf') >= 0) {
+                                return <PDFInlineRender key={cloudFilename} url={cloudUrl} />;
+                            }
+
                             return (
-                                <>
-                                    <embed
-                                        key={cloudFilename}
-                                        title={cloudFilename}
-                                        src={(baseUrl && cloudFilename) ? url.resolve(baseUrl.toString(), cloudFilename) : '/404'}
-                                        style={{maxWidth: '100%'}}
-                                    />
-                                </>
+                                <embed
+                                    key={cloudFilename}
+                                    title={cloudFilename}
+                                    src={cloudUrl}
+                                    style={{maxWidth: '100%'}}
+                                />
                             );
                         })
                         }

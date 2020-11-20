@@ -2,8 +2,12 @@ import _ from 'lodash';
 
 const STUDENT_TOPIC_PREFERENCES_USE_SECONDS = 'STUDENT_TOPIC_PREFERENCES_USE_SECONDS';
 const LOGGING_LEVEL = 'LOGGING_LEVEL';
-const VERSION_CHECK_DATE = 'VERSION_CHECK_DATE'; 
+const VERSION_CHECK_DATE = 'VERSION_CHECK_DATE';
 const GENERAL_LOGIN_REDIRECT_URL = 'GENERAL_LOGIN_REDIRECT_URL'; 
+const SESSION_USER_TYPE = 'SESSION_USER_TYPE'; 
+const SESSION_USER_ID = 'SESSION_USER_ID'; 
+const SESSION_USER_UUID = 'SESSION_USER_UUID'; 
+const SESSION_USER_USERNAME = 'SESSION_USER_USERNAME'; 
 
 const getItemWithDefaultValue = (key: string, defaultValue?: string) => {
     const value = localStorage.getItem(key);
@@ -15,6 +19,14 @@ const getItemWithDefaultValue = (key: string, defaultValue?: string) => {
         }
     } else {
         return value;
+    }
+};
+
+const setItem = (key: string, value: string | null) => {
+    if (_.isNull(value)) {
+        localStorage.removeItem(key);
+    } else {
+        localStorage.setItem(key, value);
     }
 };
 
@@ -72,11 +84,40 @@ const localPreferences = {
             return localStorage.getItem(VERSION_CHECK_DATE);
         },
         set nextCheckDate(value: string | null) {
-            if (_.isNil(value)) {
-                localStorage.removeItem(VERSION_CHECK_DATE);
-            } else {
-                localStorage.setItem(VERSION_CHECK_DATE, value);
-            }
+            setItem(VERSION_CHECK_DATE, value);
+        }
+    },
+    session: {
+        get userType(): string | null {
+            return localStorage.getItem(SESSION_USER_TYPE);
+        },
+        set userType(value: string | null) {
+            setItem(SESSION_USER_TYPE, value);
+        },
+        get userId(): string | null {
+            return localStorage.getItem(SESSION_USER_ID);
+        },
+        set userId(value: string | null) {
+            setItem(SESSION_USER_ID, value);
+        },
+        get userUUID(): string | null {
+            return localStorage.getItem(SESSION_USER_UUID);
+        },
+        set userUUID(value: string | null) {
+            setItem(SESSION_USER_UUID, value);
+        },
+        get username(): string | null {
+            return localStorage.getItem(SESSION_USER_USERNAME);
+        },
+        set username(value: string | null) {
+            setItem(SESSION_USER_USERNAME, value);
+        },
+        nullifySession: (): void => {
+            const { session } = localPreferences;
+            session.userType = null;
+            session.userId = null;
+            session.userUUID = null;
+            session.username = null;
         }
     }
 };

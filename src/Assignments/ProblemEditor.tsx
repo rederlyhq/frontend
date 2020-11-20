@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
 import { TextField, Button, Grid, InputAdornment, IconButton, Tooltip } from '@material-ui/core';
 import _ from 'lodash';
-import { getUserId } from '../Enums/UserRole';
 import logger from '../Utilities/Logger';
 import ProblemIframe from './ProblemIframe';
 import { Controller, useForm } from 'react-hook-form';
@@ -21,6 +20,8 @@ import useAlertState from '../Hooks/useAlertState';
 import { useQuery } from '../Hooks/UseQuery';
 import { motion, useCycle } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
+import localPreferences from '../Utilities/LocalPreferences';
+const { session } = localPreferences;
 
 const defaultLoadPath = 'private/templates/barebones.pg';
 
@@ -40,7 +41,7 @@ export interface ProblemEditorInputs extends PreviewProps {
 export const ProblemEditor: React.FC = () => {
     const [flipped, cycleFlipped] = useCycle(-1, 1);
     const queryParams = useQuery();
-    const savePathAdornmentText = `private/my/${getUserId()}/`;
+    const savePathAdornmentText = `private/my/${session.userUUID}/`;
     const getSavePathForLoadPath = (userPath: string): string => {
         let result = userPath;
         if (userPath.startsWith(savePathAdornmentText)) {
@@ -192,6 +193,7 @@ export const ProblemEditor: React.FC = () => {
             onShow={()=>setCatalogOpen(true)}
             onHide={()=>setCatalogOpen(false)}
             show={catalogOpen}
+            className='fullscreen-modal'
         >
             <Modal.Header closeButton>
                 <h6>My problems</h6>
