@@ -61,7 +61,7 @@ export const MaterialTriSelect: React.FC<MaterialTriSelectProps> = ({course, use
                 </Grid>}
             </AnimatePresence>
             <AnimatePresence>
-                {selected.topic !== undefined && <Grid item md={3}>
+                {selected.topic !== undefined && selected.topic.topicTypeId !== 2 && <Grid item md={3}>
                     <motion.div
                         initial={{scale: 0}}
                         animate={{scale: 1}}
