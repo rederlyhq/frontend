@@ -9,6 +9,7 @@ import { CookieEnum } from '../../Enums/CookieEnum';
 import Cookies from 'js-cookie';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import logger from '../../Utilities/Logger';
+import localPreferences from '../../Utilities/LocalPreferences';
 
 interface GradesTabProps {
     course: CourseObject;
@@ -38,7 +39,8 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
     const [view, setView] = useState<string>(GradesView.OVERVIEW);
     const [selectedObjects, setSelectedObjects] = useState<IDropdownCascade>({});
     const [viewData, setViewData] = useState<Array<any>>([]);
-    const userId: string | undefined = Cookies.get(CookieEnum.USERID);
+    // const userId: string | undefined = Cookies.get(CookieEnum.USERID);
+    const userId: string | null = localPreferences.session.userId;
     const userType: UserRole = getUserRole();
 
     const handleChangedView = (selectedView: string) => {

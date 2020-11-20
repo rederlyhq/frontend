@@ -12,9 +12,9 @@ export const ProblemMaxAttempts: React.FC<{}> = () => {
 
     return (
         <>
-            <TextField 
+            <TextField
                 name={name}
-                inputRef={register()} 
+                inputRef={register()}
                 label='Max Graded Attempts'
                 type='number'
                 inputProps={{min: -1}}
@@ -31,10 +31,10 @@ export const ProblemPath: React.FC<{}> = () => {
 
     return (
         <>
-            <TextField 
-                fullWidth 
-                name={name} 
-                inputRef={register()} 
+            <TextField
+                fullWidth
+                name={name}
+                inputRef={register()}
                 label='Problem Path'
             />
             <ErrorMessage name={name} errors={errors} />
@@ -48,9 +48,9 @@ export const ProblemWeight: React.FC<{}> = () => {
 
     return (
         <>
-            <TextField 
-                name={name} 
-                inputRef={register()} 
+            <TextField
+                name={name}
+                inputRef={register()}
                 label='Weight'
                 type='number'
                 inputProps={{min: 0}}
@@ -63,20 +63,20 @@ export const ProblemWeight: React.FC<{}> = () => {
 export const OptionalField: React.FC<{}> = () => {
     const { control, errors } = useFormContext();
     const name = 'optional';
-    
+
     return (
         <>
-            <Controller 
+            <Controller
                 name={name}
                 control={control}
                 defaultValue={false}
                 render={({ onChange, onBlur, value, name }) => (
-                    <FormControlLabel 
+                    <FormControlLabel
                         name='optional'
-                        label={'Optional'} 
+                        label={'Optional'}
                         labelPlacement='end'
                         control={
-                            <Switch 
+                            <Switch
                                 onBlur={onBlur}
                                 onChange={e => onChange(e.target.checked)}
                                 color='primary'
@@ -86,7 +86,7 @@ export const OptionalField: React.FC<{}> = () => {
                             />
                         }
                     />
-                )} 
+                )}
             />
             <ErrorMessage name={name} errors={errors} />
         </>
@@ -99,7 +99,7 @@ export const RandomSeedSet: React.FC<{}> = () => {
     const { control, errors } = useFormContext();
     const name = `${examProblemFieldNamePrefix}.randomSeedSet`;
     const errMsg = errors?.[examProblemFieldNamePrefix]?.randomSeedSet?.message;
-    
+
     return (
         <>
             <Controller
@@ -147,10 +147,10 @@ export const MultipleProblemPaths: React.FC = () => {
     return (
         <div>
             {fields.map((item, index) => (
-                <TextField 
+                <TextField
                     key={item.id}
-                    fullWidth 
-                    name={`${nestedName}[${index}].path`} 
+                    fullWidth
+                    name={`${nestedName}[${index}].path`}
                     InputLabelProps={{shrink: true}}
                     label={`Problem Path ${index + 1}`}
                     defaultValue={`${item.path}`}
@@ -159,7 +159,7 @@ export const MultipleProblemPaths: React.FC = () => {
                     inputRef={register({
                         pattern: /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/,
                         required: index === 0,
-                    })} 
+                    })}
                     onBlur={(e: any)=>{
                         // If the user deleted something and it's not the last field, remove it.
                         if (e.target.value === '' && index !== fields.length - 1) {
@@ -188,7 +188,7 @@ export const DurationField: React.FC<{}> = () => {
     const { register, errors } = useFormContext();
 
     return (
-        <TextField 
+        <TextField
             name={`${examFieldNamePrefix}.duration`}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
@@ -203,7 +203,7 @@ export const MaxGradedAttemptsPerVersionField: React.FC<{}> = () => {
     const { register, errors } = useFormContext();
 
     return (
-        <TextField 
+        <TextField
             name={`${examFieldNamePrefix}.maxGradedAttemptsPerVersion`}
             inputRef={register()}
             label={'Submissions per Version'}
@@ -217,11 +217,11 @@ export const MaxVersionsField: React.FC<{}> = () => {
     const { register, errors } = useFormContext();
 
     return (
-        <TextField 
+        <TextField
             name={`${examFieldNamePrefix}.maxVersions`}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
-            label={'Max Versions'}
+            label={'Available Versions'}
             type='number'
         />
     );
@@ -231,7 +231,7 @@ export const RandomizationDelayField: React.FC<{}> = () => {
     const { register, errors } = useFormContext();
 
     return (
-        <TextField 
+        <TextField
             name={`${examFieldNamePrefix}.versionDelay`}
             label={'Delay Between Versions (minutes)'}
             InputLabelProps={{ shrink: true }}
@@ -245,18 +245,18 @@ export const RandomizationDelayField: React.FC<{}> = () => {
 
 export const GenerateSwitchField: React.FC<{fieldName: string, label: string}> = ({fieldName, label}) => {
     const { control, errors } = useFormContext();
-    
+
     return (
-        <Controller 
+        <Controller
             name={`${examFieldNamePrefix}.${fieldName}`}
-            control={control} 
+            control={control}
             defaultValue={false}
             render={({ onChange, onBlur, value, name }) => (
                 <FormControlLabel
                     // label={_.startCase(fieldName)}
                     label={label}
                     labelPlacement='end'
-                    control={<Switch 
+                    control={<Switch
                         onBlur={onBlur}
                         onChange={e => onChange(e.target.checked)}
                         color='primary'

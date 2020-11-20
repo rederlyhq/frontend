@@ -1,15 +1,16 @@
 import React from 'react';
 import { Avatar, Grid, TextField } from '@material-ui/core';
-import { CookieEnum } from '../Enums/CookieEnum';
-import Cookies from 'js-cookie';
 import _ from 'lodash';
+import localPreferences from '../Utilities/LocalPreferences';
+const { session } = localPreferences;
 
 interface AccountDetailsPageProps {
 
 }
 
 export const AccountDetailsPage: React.FC<AccountDetailsPageProps> = () => {
-    const userName = Cookies.get(CookieEnum.USERNAME);
+    // const userName = Cookies.get(CookieEnum.USERNAME);
+    const userName = session.username;
     return (
         <Grid container item spacing={3} xs={6} justify='center'>
             <Grid container item xs={12} justify='center'>

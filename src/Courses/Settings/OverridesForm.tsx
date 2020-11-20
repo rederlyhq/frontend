@@ -42,7 +42,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
     };
     const { register, handleSubmit, getValues, errors, control, watch, formState, reset, setError, clearErrors } = useForm<Inputs>(
         {
-            mode: 'onSubmit', 
+            mode: 'onSubmit',
             shouldFocusError: true,
             defaultValues: formDefaultValues
         }
@@ -111,7 +111,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                 reset({
                     startDate: topicData.startDate?.toMoment(),
                     endDate: topicData.endDate?.toMoment(),
-                    deadDate: topicData.deadDate?.toMoment(),    
+                    deadDate: topicData.deadDate?.toMoment(),
                 });
 
                 setDefaultTopic(new TopicObject(topicData));
@@ -210,13 +210,13 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
         return (
             <Grid item container md={12} alignItems='flex-start' justify="center">
                 <Grid item md={4}>
-                    <TextField 
-                        name="maxAttempts" 
+                    <TextField
+                        name="maxAttempts"
                         inputRef={register({
-                            required: true, 
+                            required: true,
                             min: -1
                         })}
-                        defaultValue={question.maxAttempts} 
+                        defaultValue={question.maxAttempts}
                         label='Max Attempts'
                         type='number'
                     />
@@ -318,52 +318,52 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
         return (
             <>
                 <Grid item md={md}>
-                    <TextField 
-                        name="maxGradedAttemptsPerVersion" 
+                    <TextField
+                        name="maxGradedAttemptsPerVersion"
                         inputRef={register({
-                            required: true, 
+                            required: true,
                             min: -1
                         })}
-                        defaultValue={topicAssessmentInfo.maxGradedAttemptsPerVersion} 
+                        defaultValue={topicAssessmentInfo.maxGradedAttemptsPerVersion}
                         label='Submissions Per Version'
                         type='number'
                         fullWidth={true}
                     />
                 </Grid>
                 <Grid item md={md}>
-                    <TextField 
-                        name="maxVersions" 
+                    <TextField
+                        name="maxVersions"
                         inputRef={register({
-                            required: true, 
+                            required: true,
                             min: -1
                         })}
-                        defaultValue={topicAssessmentInfo.maxVersions} 
-                        label='Max Versions'
+                        defaultValue={topicAssessmentInfo.maxVersions}
+                        label='Available Versions'
                         type='number'
                         fullWidth={true}
                     />
                 </Grid>
                 <Grid item md={md}>
-                    <TextField 
-                        name="versionDelay" 
+                    <TextField
+                        name="versionDelay"
                         inputRef={register({
-                            required: true, 
+                            required: true,
                             min: 0 // TODO what should we make the min
                         })}
-                        defaultValue={topicAssessmentInfo.versionDelay} 
-                        label='Version Delay'
+                        defaultValue={topicAssessmentInfo.versionDelay}
+                        label='Delay between Versions'
                         type='number'
                         fullWidth={true}
                     />
                 </Grid>
                 <Grid item md={md}>
-                    <TextField 
-                        name="duration" 
+                    <TextField
+                        name="duration"
                         inputRef={register({
-                            required: true, 
+                            required: true,
                             min: 2
                         })}
-                        defaultValue={topicAssessmentInfo.duration} 
+                        defaultValue={topicAssessmentInfo.duration}
                         label='Time Limit (minutes)'
                         type='number'
                         fullWidth={true}
@@ -378,18 +378,18 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
         return (
             <>
                 <Grid md={md} container item spacing={1}>
-                    {renderNormalTopicOverrideForm(topic)}                
+                    {renderNormalTopicOverrideForm(topic)}
                 </Grid>
                 {
                     _.isNil(topic.topicAssessmentInfo) === false &&
                     <Grid md={md} container item spacing={1}>
-                        {renderAssessmentTopicOverrideForm(topic)}            
+                        {renderAssessmentTopicOverrideForm(topic)}
                     </Grid>
                 }
             </>
         );
     };
-  
+
     return (
         <form onChange={() => clearErrors()} onSubmit={handleSubmit(onSubmit)} style={{width: '100%', marginTop: '1.5rem'}}>
             <Grid container justify='center'>
@@ -404,29 +404,29 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                         <CircularProgress />
                     ) : (
                         <>
-                            {defaultProblem ? 
+                            {defaultProblem ?
                                 renderQuestionOverrideForm(defaultProblem) :
                                 (defaultTopic && renderTopicOverrideForm(defaultTopic))
                             }
                         </>
                     )
                     }
-            
+
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
                         <Grid item>
-                            {isSubmitting ? 
-                                (<Button 
-                                    variant="contained" 
+                            {isSubmitting ?
+                                (<Button
+                                    variant="contained"
                                     color='secondary'
                                     style={{fontSize: '1.2em'}}
                                     disabled={true}
                                 >
                                     Submitting...
                                 </Button>) :
-                                (<Button 
-                                    variant="contained" 
-                                    color='primary' 
-                                    type="submit" 
+                                (<Button
+                                    variant="contained"
+                                    color='primary'
+                                    type="submit"
                                     style={{fontSize: '1.2em'}}
                                     disabled={formLoading || (defaultProblem && defaultTopic?.topicTypeId === 2)}
                                 >
