@@ -10,48 +10,59 @@ import { useQuery } from '../../Hooks/UseQuery';
 import './PrintEverything.css';
 import { GetAllVersionAttachmentsResponse } from '../../APIInterfaces/BackendAPI/ResponseTypes/CourseResponseTypes';
 import PDFInlineRender from './PDFInlineRender';
+import { PrintLoadingProvider, usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
+import OnLoadDispatchWrapper from './onLoadDispatchWrapper';
 
 interface PrintEverythingProps {
 }
 
 export const PrintEverything: React.FC<PrintEverythingProps> = () => {
-    let userId: number = 0;
-    let topicId: number = 0;
+    const [gradeData, setGradeData] = useState<GetAllVersionAttachmentsResponse | null>(null);
+    const {dispatch, isDone} = usePrintLoadingContext();
     const qs = useQuery();
-    const workbookName = qs.get('workbookName');
     const params = useParams<{userId?: string, topicId?: string}>();
 
+    let userId: number = 0;
+    let topicId: number = 0;
     if (params.userId)
         userId = parseInt(params.userId, 10);
 
     if (params.topicId)
         topicId = parseInt(params.topicId, 10);
 
-    const [gradeData, setGradeData] = useState<GetAllVersionAttachmentsResponse | null>(null);
-
-
     useEffect(()=>{
-        if (_.isNil(userId) || _.isNil(topicId)) {
-            logger.error(`Got to page without User ${userId} or Topic ${topicId}`);
+        if (_.isNaN(userId) || _.isNaN(topicId)) {
+            logger.error(`Attempting to print a page without User ${userId} or Topic ${topicId} in the URL.`);
             return;
         }
-        (async () => {
+
+        if (_.isNil(dispatch)) {
+            logger.debug('Needs to rerender, dispatch has not been initialized.');
+            return;
+        }
+
+        const gettingData = (async () => {
             const res = await getAllContentForVersion({userId, topicId});
             setGradeData(res.data.data);
-
-            // TODO: pdf.js in the embeds warns that the PDF hasn't fully loaded.
-            setTimeout(()=>{
-                window.print();
-            }, 8000);
         })();
-    }, [userId, topicId]);
+
+        dispatch?.({type: PrintLoadingActions.ADD_PROMISE, payload: gettingData});
+
+    }, [userId, topicId, dispatch]);
+
+    useEffect(()=>{
+        console.log('isDone has been updated', isDone);
+        if (isDone && isDone.length > 1) {
+            Promise.allSettled(isDone).finally(() => console.log('********************** isDone is DONE!', isDone));
+        }
+    }, [isDone]);
+
 
     if (_.isNil(gradeData)) return null;
 
     return (
         <>
             <h1>{gradeData.topic.name} -- {gradeData.user.firstName} {gradeData.user.lastName}</h1>
-            <h2>{workbookName?.fromBase64()}</h2>
             <h3 className='dont-print'>Printing will begin in several seconds...</h3>
             {gradeData.topic.questions.map((problem)=>{
                 if (problem.grades.length > 1) {
@@ -85,12 +96,15 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                             }
 
                             return (
-                                <img
+                                <OnLoadDispatchWrapper
                                     key={cloudFilename}
-                                    alt={cloudFilename}
-                                    src={cloudUrl}
-                                    style={{maxWidth: '100%'}}
-                                />
+                                >
+                                    <img
+                                        alt={cloudFilename}
+                                        src={cloudUrl}
+                                        style={{maxWidth: '100%'}}
+                                    />
+                                </OnLoadDispatchWrapper>
                             );
 
                             /* We currently only support images and PDFs. */

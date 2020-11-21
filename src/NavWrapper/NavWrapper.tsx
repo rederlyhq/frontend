@@ -26,6 +26,7 @@ import logger from '../Utilities/Logger';
 import TopicGradingPage from '../Courses/TopicGrades/GradingPage';
 import { ProblemEditor } from '../Assignments/ProblemEditor';
 import PrintEverything from '../Courses/TopicGrades/PrintEverything';
+import { PrintLoadingProvider } from '../Contexts/PrintLoadingContext';
 import localPreferences from '../Utilities/LocalPreferences';
 const { session } = localPreferences;
 
@@ -65,12 +66,12 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
 
         Cookies.remove(CookieEnum.SESSION);
         session.nullifySession();
-    
+
         // TODO delete these cookie removes, right now I want it to clean up browsers
         Cookies.remove(CookieEnum.USERTYPE);
         Cookies.remove(CookieEnum.USERID);
         Cookies.remove(CookieEnum.USERNAME);
-    
+
         history.push('/');
     };
 
@@ -144,7 +145,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                         </Route>}
                                         {getUserRole() !== UserRole.STUDENT &&
                                         <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading/print/:userId`}>
-                                            <PrintEverything />
+                                            <PrintLoadingProvider>
+                                                <PrintEverything />
+                                            </PrintLoadingProvider>
                                         </Route>}
                                         {getUserRole() !== UserRole.STUDENT &&
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/grading`}>

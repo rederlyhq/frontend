@@ -1,3 +1,4 @@
 {
-    "editor.wordBasedSuggestions": false
+    "editor.wordBasedSuggestions": false,
+    "typescript.tsdk": "node_modules/typescript/lib"
 }
