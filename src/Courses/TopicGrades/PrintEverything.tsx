@@ -50,10 +50,9 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
     }, [userId, topicId, dispatch]);
 
     useEffect(()=>{
+        console.log('isDone has been updated', isDone);
         if (isDone && isDone.length > 1) {
-            Promise.allSettled(isDone).finally(() => {
-                window.print();
-            });
+            Promise.allSettled(isDone).finally(() => console.log('********************** isDone is DONE!', isDone));
         }
     }, [isDone]);
 
