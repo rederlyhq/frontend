@@ -140,14 +140,10 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             }
 
             // set default selection to the last attempt that impacted the user's grade
-            const workbookId = (grade.lastInfluencingAttemptId) ? grade.lastInfluencingAttemptId : undefined;
+            // if they never did the problem for credit -- fall back to the last influencing
+            const workbookId = grade.lastInfluencingCreditedAttemptId ?? grade.lastInfluencingAttemptId;
             const workbook = _.find(grade.workbooks, ['id', workbookId]);
-
-            // const workbookId = (grade.lastInfluencingCreditedAttemptId) ? grade.lastInfluencingCreditedAttemptId : undefined;
-            let studentGradeInstanceId: number | undefined;
-            if (!_.isNil(workbookId) && !_.isNil(grade.gradeInstances)) {
-                studentGradeInstanceId = workbooks[workbookId].studentGradeInstanceId;
-            }
+            const studentGradeInstanceId = workbook?.studentGradeInstanceId;
 
             logger.debug('GradeInfoHeader: Setting local info from new grade object.', currentVersionMap);
             setInfo({
