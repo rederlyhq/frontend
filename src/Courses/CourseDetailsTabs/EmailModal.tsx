@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { useState } from 'react';
 import { Modal, ModalTitle, ModalBody, Form, Button, ModalFooter, FormGroup, FormControl, FormLabel, Alert } from 'react-bootstrap';
 import ModalHeader from 'react-bootstrap/ModalHeader';
@@ -12,8 +13,8 @@ interface EmailModalProps {
 }
 
 /**
- * This modal pops up with a form to email students. 
- * The users that are emailed are chosen on another screen. 
+ * This modal pops up with a form to email students.
+ * The users that are emailed are chosen on another screen.
  */
 export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) => {
     const [subject, setSubject] = useState('');
@@ -22,7 +23,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) =
 
     const onSendEmail = async () => {
         try {
-            const res = await AxiosRequest.post('/users/email', {subject, content: body, userIds: Array.from(users)});
+            const res = await AxiosRequest.post('/users/email', {subject, content: body, userIds: _.map(users, 'id')});
             const msg = res.data?.data?.msg || 'Success';
             setSendEmailRespMsg({message: msg, variant: 'success'});
         } catch (e) {
@@ -42,7 +43,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) =
                     <div>You are sending an email to {users.length} students.</div>
                     <FormGroup controlId='Subject'>
                         <FormLabel>Subject: </FormLabel>
-                        <FormControl 
+                        <FormControl
                             type='text'
                             autoComplete='off'
                             onChange={(e: any) => setSubject(e.target.value)}
@@ -50,8 +51,8 @@ export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) =
                     </FormGroup>
                     <FormGroup>
                         <FormLabel>Message Content:</FormLabel>
-                        <FormControl 
-                            as='textarea' 
+                        <FormControl
+                            as='textarea'
                             size='sm' style={{height: '200px'}}
                             autoComplete='off'
                             onChange={(e: any) => setBody(e.target.value)}
@@ -60,8 +61,8 @@ export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) =
                 </Form>
             </ModalBody>
             <ModalFooter>
-                <Button 
-                    variant="primary" 
+                <Button
+                    variant="primary"
                     onClick={onSendEmail}
                     disabled={sendEmailRespAlertType === 'success'}
                 >
