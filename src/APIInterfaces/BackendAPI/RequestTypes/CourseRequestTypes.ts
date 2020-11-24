@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, TopicObject, ProblemObject, NewProblemObject, NewCourseUnitObj, StudentGrade, StudentGradeInstance } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, TopicObject, ProblemObject, NewCourseUnitObj, StudentGrade, StudentGradeInstance } from '../../../Courses/CourseInterfaces';
 import { Moment } from 'moment';
 
 /* *************** *************** */
@@ -102,7 +102,7 @@ export interface DeleteCourseTopicQuestionOptions {
 }
 
 export interface PostCourseTopicQuestionOptions {
-    data: Partial<NewProblemObject>;
+    data: Partial<ProblemObject>;
 }
 
 export interface PostQuestionSubmissionOptions {
@@ -122,6 +122,11 @@ export interface PreviewQuestionOptions {
     showHints?: boolean;
     showSolutions?: boolean;
     formData?: FormData;
+}
+
+export interface GetRawQuestionOptions {
+    id: number;
+    userId?: number;
 }
 
 export interface GetQuestionOptions {
@@ -217,4 +222,14 @@ export interface GetGradesOptions {
     topicId?: number;
     unitId?: number;
     questionId?: number;
+}
+
+export interface GetQuestionGradeOptions {
+    userId: number;
+    questionId: number;
+    includeWorkbooks?: boolean;
+}
+
+export interface QuestionGradeResponse {
+    data: StudentGrade;
 }

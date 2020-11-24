@@ -21,11 +21,14 @@ interface ProblemIframeProps {
     previewShowSolutions?: boolean;
     workbookId?: number;
     readonly?: boolean;
+    userId?: number;
+    studentTopicAssessmentInfoId?: number;
 }
 
 interface PendingRequest {
     cancelled?: boolean;
     problemId?: number;
+    workbookId?: number;
 }
 
 /**
@@ -45,12 +48,13 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     setProblemStudentGrade = ()=>{},
     workbookId,
     readonly = false,
+    userId,
+    studentTopicAssessmentInfoId,
 }) => {
     const iframeRef = useRef<IFrameComponent>(null);
     const pendingReq = useRef<PendingRequest | null>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>('');
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
     const [alert, setAlert] = useAlertState();
     const [lastSubmission, setLastSubmission] = useState({});
     const height = '100vh';
@@ -61,16 +65,16 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     useEffect(()=>{
         const fetchHTML = async () => {
             if (pendingReq.current !== null) {
-                logger.debug(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId}`);
+                logger.debug(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId} workbook #${pendingReq.current.workbookId}`);
                 pendingReq.current.cancelled = true;
             }
-            const currentReq = {problemId: problem.id} as PendingRequest;
+            const currentReq = {problemId: problem.id, workbookId} as PendingRequest;
             pendingReq.current = currentReq;
 
             const rendererHTML = await getHTML();
 
             if (currentReq.cancelled) {
-                logger.debug(`Problem Iframe: The request for problem #${problem.id} was cancelled early.`);
+                logger.debug(`Problem Iframe: The request for problem #${problem.id} and workbook #${workbookId} was cancelled early.`);
                 return;
             } else if (_.isNil(rendererHTML)) {
                 // Preview Problems won't return a rendererHTML when the path is bad.
@@ -80,16 +84,17 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 return;
             } else {
                 pendingReq.current = null;
+                // We need to reset the error state since a new call means no error
+                setAlert({
+                    variant: 'info',
+                    message: ''
+                });
                 setRenderedHTML(rendererHTML);
             }
 
         };
 
-        // We need to reset the error state since a new call means no error
-        setAlert({
-            variant: 'info',
-            message: ''
-        });        // If you don't reset the rendered html you won't get the load event
+        // If you don't reset the rendered html you won't get the load event
         // Thus if you go to an error state and back to the success state
         // The rendered html will never call load handler which will never stop loading
         setRenderedHTML('');
@@ -105,6 +110,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }, [problem, problem.id, workbookId, previewPath, previewProblemSource, previewSeed]);
 
     const getHTML = async () => {
+        logger.debug('ProblemIframe: Getting new renderedHTML.');
         try {
             let res;
 
@@ -119,7 +125,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             } else {
                 res = await getQuestion({
                     id: problem.id,
+                    userId,
                     workbookId,
+                    studentTopicAssessmentInfoId,
                     readonly
                 });
             }
@@ -402,7 +410,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     }
                 }}
                 title='Problem Frame'
-                style={{width: '100%', height: height, border: 'none', minHeight: readonly ? '' : '350px', visibility: (loading || error) ? 'hidden' : 'visible'}}
+                style={{ width: '100%', height: height, border: 'none', minHeight: readonly ? '' : '350px', visibility: (loading || alert.message.length > 0) ? 'hidden' : 'visible'}}
                 sandbox='allow-same-origin allow-forms allow-scripts allow-popups'
                 srcDoc={renderedHTML}
                 onLoad={onLoadHandlers}
