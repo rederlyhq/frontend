@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import _ from 'lodash';
 import { ProblemObject, ProblemState, StudentGrade, StudentGradeInstance, StudentWorkbookInterface, TopicObject, UserObject } from '../CourseInterfaces';
 import logger from '../../Utilities/Logger';
@@ -68,11 +68,6 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         attemptsCount?: number;
         versionMap?: Record<number, Array<number>>;
     }>({});
-    const displayCurrentScore = useRef<string | null>(null);
-    // fetch grade first
-    if (_.isNil(displayCurrentScore.current) && !_.isNil(grade)) {
-        displayCurrentScore.current = grade.effectiveScore.toPercentString();
-    }
 
     const fetchGrade = async () => {
         setGrade(null);
@@ -112,10 +107,8 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             let currentAttemptsCount: number | undefined;
             let currentAverageScore: number | undefined;
             let currentVersionMap: Record<number, Array<number>> = {};
-            // let versioned = false;
             if (!_.isNil(workbooks) && !_.isEmpty(workbooks)) {
                 const workbookKeys = Object.keys(workbooks);
-                // versioned = !_.isNil(Object.values(workbooks)[0].studentGradeInstanceId);
                 currentAttemptsCount = workbookKeys.length;
                 currentAverageScore = _.reduce(workbooks, (sum, wb) => {
                     return sum + wb.result;
@@ -204,6 +197,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         setTopicGrade(null);
         if (_.isNil(topic)) {
             logger.debug('GradeInfoHeader: topic id is nil, skipping grades call');
+            return;
         }
 
         const params = {
@@ -262,7 +256,6 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     };
 
     function WorkbookSelect<T extends KeyType>(props: WorkbookSelectProps) {
-        // const [version, setVersion] = useState<number>(props.versionKey);
         function handleOnChange(e: React.ChangeEvent<{ name?: string | undefined; value: unknown; }>) {
             const { value } = e.target;
             const workbook = _.find(grade?.workbooks, ['id', value]);
@@ -328,7 +321,6 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                     <Button
                         variant='outlined'
                         onClick={() => setShowGradeModal(true)}
-                        // disabled={(parseFloat(newScorePercentInput) / 100) === info.effectiveScore}
                     >
                     Set new score for grades
                     </Button>

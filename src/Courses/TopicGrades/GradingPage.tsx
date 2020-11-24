@@ -65,7 +65,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
             // currentProblems = _.map(currentProblems, (p) => {return new ProblemObject(p);});
             setProblems(currentProblems);
 
-            const currentTopic = res.data.data as TopicObject;
+            const currentTopic = new TopicObject(res.data.data);
             setTopic(currentTopic);
 
             const problemIdString = queryParams.get('problemId');
