@@ -67,6 +67,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         case 'weight':
         case 'maxAttempts':
         case 'problemNumber':
+        case 'courseTopicContentId':
         case 'id':
             probs[index][name] = parseInt(val, 10);
             break;
@@ -97,6 +98,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         case 'weight':
         case 'maxAttempts':
         case 'problemNumber':
+        case 'courseTopicContentId':
         case 'id':
             val = parseInt(val, 10);
             probs[index][name] = val;

@@ -85,13 +85,23 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                             }
 
                             return (
-                                <embed
+                                <img
                                     key={cloudFilename}
-                                    title={cloudFilename}
+                                    alt={cloudFilename}
                                     src={cloudUrl}
                                     style={{maxWidth: '100%'}}
                                 />
                             );
+
+                            /* We currently only support images and PDFs. */
+                            // return (
+                            //     <embed
+                            //         key={cloudFilename}
+                            //         title={cloudFilename}
+                            //         src={cloudUrl}
+                            //         style={{maxWidth: '100%'}}
+                            //     />
+                            // );
                         })
                         }
                     </div>

@@ -1,28 +1,32 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import _ from 'lodash';
-import { ProblemObject, StudentGrade, StudentGradeDict, StudentWorkbookInterface, UserObject } from '../CourseInterfaces';
+import { ProblemObject, ProblemState, StudentGrade, StudentGradeInstance, StudentWorkbookInterface, TopicObject, UserObject } from '../CourseInterfaces';
 import logger from '../../Utilities/Logger';
 import { Button, FormControl, Grid, InputLabel, makeStyles, Select } from '@material-ui/core';
 import { OverrideGradeModal } from '../CourseDetailsTabs/OverrideGradeModal';
-import { getGrades } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { getGrades, getQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { Spinner } from 'react-bootstrap';
+import { Color } from '@material-ui/lab';
 
 interface GradeInfoHeaderProps {
-    grade: StudentGradeDict;
-    topicId?: number;
-    workbookId?: number;
+    topic: TopicObject;
     selected: {
         problem?: ProblemObject,
         user?: UserObject,
-        workbook?: StudentWorkbookInterface,
+        problemState?: ProblemState,
+        grade?: StudentGrade,
+        gradeInstance?: StudentGradeInstance,
     };
     setSelected: React.Dispatch<React.SetStateAction<{
         problem?: ProblemObject,
         user?: UserObject,
-        workbook?: StudentWorkbookInterface,
+        problemState?: ProblemState,
+        grade?: StudentGrade,
+        gradeInstance?: StudentGradeInstance,
     }>>;
-    onSuccess: React.Dispatch<React.SetStateAction<{
-        id?: number, 
-        override?: Partial<StudentGrade>
+    setGradeAlert: React.Dispatch<React.SetStateAction<{
+        message: string;
+        severity: Color;
     }>>;
 }
 
@@ -42,152 +46,259 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
-    grade,
-    workbookId,
     selected,
     setSelected,
-    onSuccess,
-    topicId
+    topic,
+    setGradeAlert,
 }) => {
-    const displayCurrentScore = useRef<string | null>(null);
-    if (_.isNil(displayCurrentScore.current)) {
-        displayCurrentScore.current = (grade.effectiveScore * 100).toFixed(1);
-    }
     const classes = useStyles();
     const [showGradeModal, setShowGradeModal] = useState<boolean>(false);
     const [topicGrade, setTopicGrade] = useState<number | null>(null);
+    const [grade, setGrade] = useState<StudentGrade | null>(null);
     const [info, setInfo] = useState<{
-        legalScore: number;
-        overallBestScore: number;
-        partialCreditBestScore: number;
-        effectiveScore: number;
+        workbook?: StudentWorkbookInterface;
+        legalScore?: number;
+        overallBestScore?: number;
+        partialCreditBestScore?: number;
+        effectiveScore?: number;
         workbookId?: number;
+        studentGradeId?: number;
+        studentGradeInstanceId?: number;
         averageScore?: number;
         attemptsCount?: number;
         versionMap?: Record<number, Array<number>>;
-        workbookList?: WorkbookOption[];
-    }>({
-        legalScore: grade.legalScore,
-        overallBestScore: grade.overallBestScore,
-        partialCreditBestScore: grade.partialCreditBestScore,
-        effectiveScore: grade.effectiveScore,
-        workbookId,
-    });
+    }>({});
 
-    useEffect(() => {
-        logger.debug('GradeInfoHeader: selectedInfo has changed my grade.', grade);
-        const workbooks = grade.workbooks;
-        let currentAttemptsCount: number | undefined;
-        let currentAverageScore: number | undefined;
-        let currentVersionMap: Record<number, Array<number>> = {};
-        let versioned = false;
-        if (!_.isNil(workbooks) && !_.isEmpty(workbooks)) {
-            const workbookKeys = Object.keys(workbooks);
-            versioned = !_.isNil(Object.values(workbooks)[0].studentGradeInstanceId);
-            currentAttemptsCount = workbookKeys.length;
-            currentAverageScore = _.reduce(workbooks, (sum, wb) => {
-                return sum + wb.result;
-            }, 0) / currentAttemptsCount;
-            if (!_.isEmpty(workbookKeys)) {
-                currentVersionMap = _.reduce(workbooks, (map, wb, id) => {
-                    if (!_.isNil(wb.studentGradeInstanceId)) {
-                        (map[wb.studentGradeInstanceId] || (map[wb.studentGradeInstanceId] = [])).push(parseInt(id, 10));
-                    } else {
-                        // there should only be one studentGradeId in this case...
-                        (map[wb.studentGradeId] || (map[wb.studentGradeId] = [])).push(parseInt(id, 10));
-                        if (wb.studentGradeId !== grade.id) logger.error(`Workbooks for grade ${grade.id} are out of sync with the corresponding grade object.`);
-                    }
-                    return map;
-                }, {} as { [k: number]: number[] });
-            } else {
-                logger.error(`User ${grade.userId} has non-empty workbooks for grade ${grade.id} but none of them have ids.`);
+    const fetchGrade = async () => {
+        setGrade(null);
+        if (!_.isNil(selected.user) && !_.isNil(selected.problem)) {
+            logger.debug('GradeInfoHeader: Selected problem or user changed', selected.problem, selected.user);
+            try {
+                const res = await getQuestionGrade({
+                    userId: selected.user.id,
+                    questionId: selected.problem.id,
+                    includeWorkbooks: true,
+                });
+
+                if (_.isNil(res.data)) {
+                    logger.error(`Failed to retrieve grade for user #${selected.user.id} on problem #${selected.problem.id}`);
+                } else {
+                    setGrade(res.data.data);
+                }
+            } catch (e) {
+                setGradeAlert({
+                    severity: 'error',
+                    message: e.message,
+                });
             }
         } else {
-            currentAttemptsCount = 0;
-            currentAverageScore = 0;
+            setGrade(null);
         }
-        const currentWorkbookList = workbookList(currentVersionMap, versioned);
-        logger.debug('GradeInfoHeader: setting workbook list: ', currentWorkbookList);
-        setInfo({
-            legalScore: grade.legalScore,
-            overallBestScore: grade.overallBestScore,
-            partialCreditBestScore: grade.partialCreditBestScore,
-            effectiveScore: grade.effectiveScore,
-            workbookId,
-            attemptsCount: currentAttemptsCount,
-            averageScore: currentAverageScore,
-            versionMap: currentVersionMap,
-            workbookList: currentWorkbookList,
-        });
-    }, [grade]);
+    };
+    useEffect(() => {
+        logger.debug(`GradeInfoHeader: there has been a change in user (${selected.user?.id}) or problem (${selected.problem?.id}), fetching new problem grade info.`);
+        fetchGrade();
+    }, [selected.problem, selected.user]);
 
     useEffect(() => {
-        if (!_.isNil(grade.workbooks) && !_.isNil(info.workbookId) && !_.isNil(grade.workbooks[info.workbookId])) {
-            const newWorkbook = grade.workbooks[info.workbookId];
-            newWorkbook.workbookDescriptor = _.find(info.workbookList, ['value', info.workbookId])?.label;
-            logger.debug('GradeInfoHeader: local "info" attempting to set new workbook: ', newWorkbook);
-            setSelected(selected => ({ ...selected, workbook: newWorkbook }));
+        logger.debug('GradeInfoHeader: student grade object has been updated.', grade);
+        if (!_.isNil(grade)) {
+            const workbooks = _.keyBy(grade.workbooks, 'id');
+            let currentAttemptsCount: number | undefined;
+            let currentAverageScore: number | undefined;
+            let currentVersionMap: Record<number, Array<number>> = {};
+            if (!_.isNil(workbooks) && !_.isEmpty(workbooks)) {
+                const workbookKeys = Object.keys(workbooks);
+                currentAttemptsCount = workbookKeys.length;
+                currentAverageScore = _.reduce(workbooks, (sum, wb) => {
+                    return sum + wb.result;
+                }, 0) / currentAttemptsCount;
+                if (!_.isEmpty(workbookKeys)) {
+                    currentVersionMap = _.reduce(workbooks, (map, wb, id) => {
+                        if (!_.isNil(wb.studentGradeInstanceId)) {
+                            (map[wb.studentGradeInstanceId] || (map[wb.studentGradeInstanceId] = [])).push(parseInt(id, 10));
+                        } else {
+                            // there should only be one studentGradeId in this case...
+                            (map[wb.studentGradeId] || (map[wb.studentGradeId] = [])).push(parseInt(id, 10));
+                            if (wb.studentGradeId !== grade.id) logger.error(`Workbooks for grade ${grade.id} are out of sync with the corresponding grade object.`);
+                        }
+                        return map;
+                    }, {} as { [k: number]: number[] });
+                } else {
+                    logger.error(`User ${grade.userId} has non-empty workbooks for grade ${grade.id} but none of them have ids.`);
+                }
+            } else {
+                currentAttemptsCount = 0;
+                currentAverageScore = 0;
+            }
+
+            // set default selection to the last attempt that impacted the user's grade
+            // if they never did the problem for credit -- fall back to the last influencing
+            const workbookId = grade.lastInfluencingCreditedAttemptId ?? grade.lastInfluencingAttemptId;
+            const workbook = _.find(grade.workbooks, ['id', workbookId]);
+            const studentGradeInstanceId = workbook?.studentGradeInstanceId;
+
+            logger.debug('GradeInfoHeader: Setting local info from new grade object.', currentVersionMap);
+            setInfo({
+                legalScore: grade.legalScore,
+                overallBestScore: grade.overallBestScore,
+                partialCreditBestScore: grade.partialCreditBestScore,
+                effectiveScore: grade.effectiveScore,
+                workbook,
+                workbookId,
+                studentGradeId: grade.id,
+                studentGradeInstanceId,
+                attemptsCount: currentAttemptsCount,
+                averageScore: currentAverageScore,
+                versionMap: currentVersionMap,
+            });
         } else {
-            setSelected(selected => ({...selected, workbook: undefined})); // 
-            logger.debug(`GradeInfoHeader: No workbooks to select from or ${info.workbookId} cannot be found.`);
+            logger.debug(`GradeInfoHeader: Student grade has not been set for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
         }
-    }, [info.workbookId]);
+    }, [grade?.id]);
+
+    useEffect(() => {
+        logger.debug('GradeInfoHeader: setting new problem state from updated Workbook ID or Grade Instance ID', info);
+        const newProblemState: ProblemState = {};
+        const currentGrade = (grade) ? grade : undefined;
+
+        if (_.isNil(grade)) {
+            // no grade for this user/problem combo -> error was already caught
+            // this still happens on initial page load, so debug
+            logger.debug(`GradeInfoHeader: No grade for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
+        } else if ((_.isNil(grade.workbooks) || _.isEmpty(grade.workbooks)) && 
+            !_.isNil(topic.topicAssessmentInfo) && 
+            (_.isNil(grade.gradeInstances) || _.isEmpty(grade.gradeInstances))
+        ) {
+            // no workbooks on an exam, so get previewPath and previewSeed because there cannot be a current state
+            logger.debug('Unattempted problem on an exam');
+            newProblemState.previewPath = selected.problem?.webworkQuestionPath;
+            newProblemState.previewSeed = grade.randomSeed;
+        } else if (_.isNil(grade.workbooks) || _.isNil(info.workbookId) || info.workbookId === -1) {
+            // no workbooks, or none selected -> use currentProblemState (need version info if an exam... grade instance ID will not suffice)
+            if (!_.isNil(info.studentGradeInstanceId) && !_.isNil(grade.gradeInstances) && !_.isEmpty(grade.gradeInstances)) {
+                newProblemState.studentTopicAssessmentInfoId = _.find(grade.gradeInstances, ['id', info.studentGradeInstanceId])?.studentTopicAssessmentInfoId;
+                logger.debug(`GradeInfoHeader: setting Problem State - versionId: ${newProblemState.studentTopicAssessmentInfoId}`);
+            }
+        } else if (_.isNil(_.find(grade.workbooks, ['id', info.workbookId]))) {
+            // we have workbooks, and one is selected, but entry doesn't exist -> error
+            logger.error(`GradeInfoHeader: User #${selected.user?.id} tried to set workbook #${info.workbookId} for problem #${selected.problem?.id} but I cannot find that record.`);
+        } else { 
+            newProblemState.workbookId = info.workbookId;
+            logger.debug(`GradeInfoHeader: setting Problem State - workbookId: ${newProblemState.workbookId}`);
+        }
+
+        const newGradeInstance = (info.studentGradeInstanceId) ? _.find(grade?.gradeInstances, ['id', info.studentGradeInstanceId]) : undefined;
+        logger.debug('GradeInfoHeader: setting new selected grades', newProblemState, newGradeInstance);
+        setSelected(selected => ({ ...selected, problemState: newProblemState, grade: currentGrade, gradeInstance: newGradeInstance }));
+    }, [info.workbookId, info.studentGradeId, info.studentGradeInstanceId]);
 
     const fetchTopicGrade = async () => {
         setTopicGrade(null);
-        if (_.isNil(topicId)) {
-            logger.debug('GradeInfoHeader topicId id is nil, skipping grades call');
+        if (_.isNil(topic)) {
+            logger.debug('GradeInfoHeader: topic id is nil, skipping grades call');
+            return;
         }
 
         const params = {
-            topicId: topicId,
-            userId: grade.userId
+            topicId: topic.id,
+            userId: selected.user?.id // check selected.user not nil?
         };
-        const result = await getGrades(params);
-        setTopicGrade(result.data.data.first?.average ?? null);
+        try {
+            const result = await getGrades(params);
+            setTopicGrade(result.data.data.first?.average ?? null);
+        } catch (e) {
+            setGradeAlert({
+                severity: 'error',
+                message: e.message,
+            });
+        }
     };
     useEffect(() => {
+        logger.debug('GradeInfoHeader: there has been a change in user or topic, fetching new topic grade.');
         fetchTopicGrade();
-    }, [grade.userId, topicId]);
+    }, [selected.user, topic, info.effectiveScore]);
 
-    const workbookList = (vMap: Record<number, Array<number>>, versioned: boolean) => {
-        const options: WorkbookOption[] = [];
-        const versionKeys = _.keys(vMap).map((v) => { return parseInt(v, 10); }).sort();
-        versionKeys.forEach((key, i) => {
-            let prefix = '';
-            if (versioned) prefix = `Version #${(i + 1)} - `;
-            vMap[key].sort().forEach((v, i) => {
-                const value = v;
-                const label = prefix + `Attempt #${(i + 1)}`;
-                options.push({ label, value });
-            });
-        });
-        return options;
+    const onSuccess = (gradeOverride: Partial<StudentGrade>) => {
+        logger.debug('GradeInfoHeader: overriding grade', gradeOverride.effectiveScore);
+        const currentGrade = grade; 
+        if (!_.isNil(gradeOverride) &&
+            !_.isNil(gradeOverride.effectiveScore) &&
+            !_.isNil(currentGrade)
+        ) {
+            currentGrade.effectiveScore = gradeOverride.effectiveScore;
+            setGrade(currentGrade);
+        }
     };
 
-    type Props = {
-        options: WorkbookOption[];
-        value: number;
+    const versionList = (vMap: Record<number, Array<number>>) => {
+        const versions: WorkbookOption[] = [];
+        const versionKeys = _.keys(vMap).map((v) =>  { return parseInt(v, 10); }).sort();
+        versionKeys.forEach((key, i) => {
+            versions.push({ label: `Version #${i+1}`, value: key});
+        });
+        return versions;
+    };
+
+    const versionSubList = (vMap: Record<number, Array<number>>, versionKey: number) => {
+        const attempts: WorkbookOption[] = [{ label: 'current', value: -1 }];
+        vMap[versionKey].sort().forEach((id, index) => {
+            attempts.push({ label: `Attempt #${index+1}`, value: id});
+        });
+        return attempts;
+    };
+
+    type WorkbookSelectProps = {
+        versionMap: Record<number, Array<number>>;
+        versionKey?: number;
+        attemptKey: number;
         onChange: (s: typeof info) => void;
     };
 
-    function WorkbookSelect<T extends KeyType>(props: Props) {
+    function WorkbookSelect<T extends KeyType>(props: WorkbookSelectProps) {
         function handleOnChange(e: React.ChangeEvent<{ name?: string | undefined; value: unknown; }>) {
             const { value } = e.target;
-            props.onChange({ ...info, workbookId: value as number });
+            const workbook = _.find(grade?.workbooks, ['id', value]);
+            props.onChange({ ...info, workbookId: value as number, workbook });
+        }
+        function setAttemptsForThisVersion(e: React.ChangeEvent<{ name?: string; value: unknown; }>) {
+            const { value } = e.target;
+            props.onChange({...info, studentGradeInstanceId: value as number, workbookId: -1, workbook: undefined});
         }
         return (
-            <FormControl className={classes.formControl}>
-                <InputLabel id='student-attempts'>Currently Viewing:</InputLabel>
-                <Select labelId='student-attempts' value={props.value} onChange={handleOnChange}>
-                    {props.options.map(option => (
-                        <option key={option.value} value={option.value}>
-                            {option.label}
-                        </option>
-                    ))}
-                </Select>
-            </FormControl>
+            <Grid container md={12} spacing={2}>
+                {(_.keys(props.versionMap).length > 1) && // don't show unless multiple versions...
+                <Grid item md={4}>
+                    <FormControl className={classes.formControl} fullWidth={true}>
+                        <InputLabel id='student-versions'>Viewing Version:</InputLabel>
+                        <Select labelId='student-versions' value={props.versionKey} onChange={setAttemptsForThisVersion} fullWidth={true}>
+                            {versionList(props.versionMap).map(version => (
+                                <option key={version.value} value={version.value}>
+                                    {version.label}
+                                </option>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Grid>}
+                {props.versionKey &&
+                <Grid item md={4}>
+                    <FormControl className={classes.formControl} fullWidth={true}>
+                        <InputLabel id='student-attempts'>Viewing Attempt:</InputLabel>
+                        <Select labelId='student-attempts' value={props.attemptKey} onChange={handleOnChange} fullWidth={true}>
+                            {versionSubList(props.versionMap, props.versionKey).map(attempt => (
+                                <option key={attempt.value} value={attempt.value}>
+                                    {attempt.label}
+                                </option>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Grid>}
+            </Grid>
         );
+    }
+
+    if (_.isNil(grade)) {
+        return ( <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>) ;
     }
 
     return (
@@ -198,49 +309,52 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             <Grid item xs={6}>
                 <h4>Statistics</h4>
                 Number of attempts: <strong>{info.attemptsCount}</strong><br />
-                Best overall score: <strong>{(info.overallBestScore * 100).toFixed(1)}</strong><br />
-                Score from best exam submission: <strong>{(info.legalScore * 100).toFixed(1)}</strong><br />
-                Average score: <strong>{info.averageScore && (info.averageScore * 100).toFixed(1)}</strong>
+                Best overall score: <strong>{info.overallBestScore?.toPercentString()}</strong><br />
+                Score from best exam submission: <strong>{info.legalScore?.toPercentString()}</strong><br />
+                Average score: <strong>{info.averageScore?.toPercentString()}</strong>
             </Grid>
             <Grid item xs={6}>
                 <h4>Grades</h4>
-                Effective score for grades: <strong>{(info.effectiveScore * 100).toFixed(1)}</strong><br />
-                <Button
-                    variant='outlined'
-                    onClick={() => setShowGradeModal(true)}
-                // disabled={(parseFloat(newScorePercentInput) / 100) === info.effectiveScore}
-                >
+                Effective score for grades: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
+                {grade && 
+                <>
+                    <Button
+                        variant='outlined'
+                        onClick={() => setShowGradeModal(true)}
+                    >
                     Set new score for grades
-                </Button>
-                <OverrideGradeModal
-                    show={showGradeModal}
-                    onHide={() => setShowGradeModal(false)}
-                    grade={grade}
-                    onSuccess={(newGrade: Partial<StudentGrade>) => {
-                        if (!_.isNil(newGrade.effectiveScore)) {
-                            setInfo({ ...info, effectiveScore: newGrade.effectiveScore });
-                            onSuccess(newGrade);
-                            fetchTopicGrade();
-                        }
-                    }}
-                /><br />
-                {grade.workbooks && !_.isEmpty(grade.workbooks) && info.workbookId && !_.isNil(grade.workbooks[info.workbookId]) &&
+                    </Button>
+                    <OverrideGradeModal
+                        show={showGradeModal}
+                        onHide={() => setShowGradeModal(false)}
+                        grade={grade}
+                        onSuccess={(newGrade: Partial<StudentGrade>) => {
+                            if (!_.isNil(newGrade.effectiveScore)) {
+                                setInfo(info => ({ ...info, effectiveScore: newGrade.effectiveScore }));
+                                onSuccess(newGrade);
+                                fetchTopicGrade();
+                            }
+                        }}
+                    /><br />
+                </>}
+                {info.workbook &&
                     <p>
-                        Score on this attempt:
-                        <strong>{(grade.workbooks[info.workbookId].result * 100).toFixed(1)}</strong>
+                        Score on this attempt: <strong>{info.workbook.result.toPercentString()}</strong>
                     </p>
                 }
             </Grid>
+            {grade &&
             <Grid item xs={12}>
-                {(info.workbookList && !_.isEmpty(info.workbookList) && info.workbookId)?
+                {(info.versionMap && info.workbookId)?
                     <WorkbookSelect
-                        options={info.workbookList}
-                        value={info.workbookId}
+                        versionMap={info.versionMap}
+                        versionKey={info.studentGradeInstanceId ?? grade.id}
+                        attemptKey={info.workbookId}
                         onChange={setInfo}
                     /> : 
                     `${selected.user?.name} has not attempted this problem.`
                 }
-            </Grid>
+            </Grid>}
         </Grid>
     );
 };
