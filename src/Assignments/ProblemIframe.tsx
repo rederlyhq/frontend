@@ -99,7 +99,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         // The rendered html will never call load handler which will never stop loading
         setRenderedHTML('');
         // srcdoc='' triggers onLoad with setLoading(false) so setLoading(true) isn't effective until now
-        setLoading(true); 
+        setLoading(true);
 
         fetchHTML();
 
@@ -137,7 +137,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             setAlert({
                 variant: 'danger',
                 message: e.message
-            });            
+            });
             if (!BackendAPIError.isBackendAPIError(e) || (e.status !== 200 && e.status !== 400)) {
                 logger.error(`An error occurred with retrieving ${(previewPath || previewProblemSource) ? 'a preview' : 'a problem'}. ${e.message}`);
             }
@@ -183,7 +183,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                         // put it back and clear the stash - just in case
                         button.setAttribute('value', valueStashAttributeContents);
                         button.removeAttribute(valueStashAttributeName);
-                    } 
+                    }
                 }
             }
         });
@@ -214,7 +214,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         if (!_.isNil(clickedButton)) {
             // current state will never match submission unless we save it before including clickedButton
             // but we only want to save the current state if the button was 'submitAnswers'
-            const saveMeLater = formDataToObject(formData); 
+            const saveMeLater = formDataToObject(formData);
             formData.set(clickedButton.name, clickedButton.value);
             try {
                 let result: any;
@@ -244,7 +244,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 }
 
                 setRenderedHTML(result.data.data.rendererData.renderedHTML);
-                
+
                 if (clickedButton.name === 'submitAnswers'){
                     setProblemStudentGrade(result.data.data.studentGrade);
                     setLastSubmission(saveMeLater);
@@ -348,7 +348,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             // check that the submit url is accurate
             const submitUrl = problemForm.getAttribute('action');
             const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
-            if (checkId && parseInt(checkId[1],10) !== problem.id) {
+            if (!checkId || parseInt(checkId[1],10) !== problem.id) {
                 // if this still happens, we have bigger problems
                 logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
                 setAlert({
@@ -366,7 +366,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
         const ww_applet_list = iframeWindow?.ww_applet_list;
         if (!_.isNil(ww_applet_list)) {
-    
+
             const promises = Object.keys(ww_applet_list).map( async (key: string) => {
                 const initFunctionName = ww_applet_list[key].onInit;
                 // stash original ggbOnInit, then spy on it with a Promise
@@ -382,11 +382,17 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     ww_applet_list[key].submitAction();
                     problemForm.dispatchEvent(new Event('input'));
                 }, 100, {leading:true, trailing:true}));
-            }); 
-            await Promise.all(promises);       
+            });
+            await Promise.all(promises);
         }
 
-        setLoading(false);
+        setRenderedHTML((renderedHTML: string): string => {
+            if (renderedHTML !== '') {
+                iframeDoc?.dispatchEvent(new Event('Rederly Loaded'));
+                setLoading(false);
+            }
+            return renderedHTML;
+        });
     };
 
     return (
