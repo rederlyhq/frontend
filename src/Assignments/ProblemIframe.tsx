@@ -23,6 +23,7 @@ interface ProblemIframeProps {
     readonly?: boolean;
     userId?: number;
     studentTopicAssessmentInfoId?: number;
+    propagateLoading?: (loading: boolean)=>void;
 }
 
 interface PendingRequest {
@@ -50,6 +51,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     readonly = false,
     userId,
     studentTopicAssessmentInfoId,
+    propagateLoading,
 }) => {
     const iframeRef = useRef<IFrameComponent>(null);
     const pendingReq = useRef<PendingRequest | null>(null);
@@ -61,6 +63,11 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const currentMutationObserver = useRef<MutationObserver> (null);
 
     const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
+
+    // Propagates loading states to parent listeners.
+    useEffect(()=>{
+        propagateLoading?.(loading);
+    }, [loading]);
 
     useEffect(()=>{
         const fetchHTML = async () => {
