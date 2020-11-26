@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import _ from 'lodash';
-import * as pdfjs from 'pdfjs-dist';
-pdfjs.GlobalWorkerOptions.workerSrc = require('pdfjs-dist/build/pdf.worker.entry');
+import pdfjs from 'pdfjs-dist/webpack';
+import {PDFPageProxy} from 'pdfjs-dist/types/display/api';
+// pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 interface PDFOnePageProps {
     pagePromise: pdfjs.PDFPromise<pdfjs.PDFPageProxy>;
