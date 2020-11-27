@@ -53,7 +53,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
 
     useEffect(()=>{
         if (isDone && isDone.length > 1) {
-            Promise.allSettled(isDone).finally(() => window.print());
+            Promise.allSettled(isDone).finally(() => {console.log('Printing ready', isDone); window.print();});
         }
     }, [isDone]);
 
