@@ -3,7 +3,6 @@ import logger from '../Utilities/Logger';
 import _ from 'lodash';
 
 type PrintLoadingProps = {
-    isDone: Promise<unknown> | false,
     dispatch: React.Dispatch<PrintLoadingDispatch>
 };
 
@@ -81,7 +80,6 @@ export const PrintLoadingProvider: React.FC<Props>  = ({ children }) => {
 
     return (
         <PrintLoadingContext.Provider value={{
-            isDone: state.arr.length >= state.expected && Promise.allSettled(state.arr),
             dispatch
         }}>
             {children}
