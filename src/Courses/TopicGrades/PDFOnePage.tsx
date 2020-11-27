@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
 import pdfjs from 'pdfjs-dist/webpack';
 import {PDFPageProxy} from 'pdfjs-dist/types/display/api';
+import logger from '../../Utilities/Logger';
 // pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 interface PDFOnePageProps {
@@ -31,6 +32,7 @@ export const PDFOnePage: React.FC<PDFOnePageProps> = ({pagePromise}) => {
             });
         })();
 
+        logger.info('Adding a promise for one single Page.');
         dispatch?.({
             type: PrintLoadingActions.ADD_PROMISE,
             payload: loadPage,
