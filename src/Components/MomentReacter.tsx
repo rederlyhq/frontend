@@ -112,6 +112,15 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
         const newTimeoutHandle = setTimeout(() => setReactiveMoment(moment()), timeoutTime);
         currentTimeoutHandle.current = newTimeoutHandle;
     }, [reactiveMoment, TAG, absolute, intervalInMillis, logTag, offsetInMillis, significantMoments, stop, stopMoment]);
+
+    useEffect(() => {
+        return function cleanup() {
+            logger.debug(`${TAG} moment reacter cleaning up`);
+            if(!_.isNil(currentTimeoutHandle.current)) {
+                clearTimeout(currentTimeoutHandle.current);
+            }    
+        };
+    });
     
     // I don't use reactive moment here since there is no guarentee this was run immediately, it is more accurate to use a new moment
     const currentMoment = moment();
