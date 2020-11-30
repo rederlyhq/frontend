@@ -4,6 +4,7 @@ import _ from 'lodash';
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import ChipInput from 'material-ui-chip-input';
 import { ErrorMessage } from '@hookform/error-message';
+import { Constants } from '../../Utilities/Constants';
 
 /* PROBLEM SETTINGS */
 export const ProblemMaxAttempts: React.FC<{}> = () => {
@@ -157,7 +158,7 @@ export const MultipleProblemPaths: React.FC = () => {
                     helperText={errors?.[examProblemFieldNamePrefix]?.[fieldArrayName]?.[index] ? 'Invalid path.' : null}
                     error={!!(errors?.[examProblemFieldNamePrefix]?.[fieldArrayName]?.[index])}
                     inputRef={register({
-                        pattern: /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/,
+                        pattern: Constants.Renderer.VALID_PROBLEM_PATH_REGEX,
                         required: index === 0,
                     })}
                     onBlur={(e: any)=>{
