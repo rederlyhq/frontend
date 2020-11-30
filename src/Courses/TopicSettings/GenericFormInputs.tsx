@@ -35,10 +35,14 @@ export const ProblemPath: React.FC<{}> = () => {
             <TextField
                 fullWidth
                 name={name}
-                inputRef={register()}
+                helperText={errors[name] ? 'Invalid path.' : null}
+                inputRef={register({
+                    pattern: Constants.Renderer.VALID_PROBLEM_PATH_REGEX,
+                    required: true,
+                })}
+                error={Boolean(errors[name])}
                 label='Problem Path'
             />
-            <ErrorMessage name={name} errors={errors} />
         </>
     );
 };
