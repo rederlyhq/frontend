@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 import React, { useState } from 'react';
-import { Redirect } from 'react-router-dom';
+import { Redirect, useHistory } from 'react-router-dom';
 import { MomentReacter } from '../Components/MomentReacter';
 import { CookieEnum } from '../Enums/CookieEnum';
 import { unauthorizedRedirect } from '../Enums/UserRole';
@@ -9,6 +9,7 @@ import _ from 'lodash';
 import { Button, Modal } from 'react-bootstrap';
 import moment from 'moment';
 import { checkIn } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
+import { performLogout } from './NavWrapper';
 
 interface AuthorizationWrapperProps {
     children: React.ReactNode
@@ -40,6 +41,8 @@ const parseSessionCookie = (): ParsedSessionCookie => {
 export const AuthorizationWrapper: React.FC<AuthorizationWrapperProps> = ({
     children
 }) => {
+    const history = useHistory();
+
     // default to max date
     const [tokenExpiration, setTokenExpiration] = useState<Date>(new Date(8640000000000000));
     // The expiration date cannot be fetched from the cookie
@@ -62,9 +65,16 @@ export const AuthorizationWrapper: React.FC<AuthorizationWrapperProps> = ({
         }
     };
 
-    // Went with polling from now
+    const logoutClick = () => {
+        performLogout(history);
+    };
+
     const reactionTime = tokenExpiration.toMoment().add(1, 'second'); // Give the browser a buffer to clear the cookie
     const warningTime = tokenExpiration.toMoment().subtract(5, 'minute');
+    // TODO Add reactivity from cookeis, use cookie hook is only reactive from changes within the application (not the cookie expiring or the user deleting the cookie)
+    // There is an on change event that is not supported by safari: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/cookies/onChanged
+    // The benefit of total reactivity is that we could detect if the browser deletes the cookie
+    // The use cookie hook might be enough if we wrap all of our api calls and on unauthorized remove the cookie
     return <MomentReacter stopMoment={reactionTime} significantMoments={[warningTime, reactionTime]} logTag={'auth check'}>
         {() => {
             const parsedSessionCookie = parseSessionCookie();
@@ -102,7 +112,8 @@ export const AuthorizationWrapper: React.FC<AuthorizationWrapperProps> = ({
                         Your session will end due to inactivity <MomentReacter logTag="auth countdown" intervalInMillis={1000}>{() => <>{tokenExpiration.toMoment().formattedFromNow(false, 'm [minutes] [and] s [seconds]')}</>}</MomentReacter>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={renewSession}>Renew session</Button>
+                        <Button variant="secondary" onClick={logoutClick}>Log out</Button>
+                        <Button variant="primary" onClick={renewSession}>Continue</Button>
                     </Modal.Footer>
                 </Modal>
                 {children}
