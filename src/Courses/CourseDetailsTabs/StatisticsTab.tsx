@@ -317,14 +317,18 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 resetBreadCrumbs(StatisticsView.PROBLEMS, newBreadcrumb);
                 setView(StatisticsViewFilter.PROBLEMS_FILTERED);
             } else {
-                logger.info('showing a panel.');
-                logger.debug('Showing a panel.');
+                logger.info('Stats tab: no userId provided, showing a panel.');
+                logger.debug('Stats tab: no userId provided, showing a panel.');
                 togglePanel();
+                setLoading(false);
             }
             break;
         case StatisticsView.ATTEMPTS:
         case StatisticsViewFilter.PROBLEMS_FILTERED:
+            logger.info('Stats tab: toggle panel');
+            logger.debug('Stats tab: toggle panel');
             togglePanel();
+            setLoading(false);
             break;
         default:
             break;
