@@ -52,6 +52,7 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
     
     if(stop === true && !_.isNil(currentTimeoutHandle.current)) {
         clearTimeout(currentTimeoutHandle.current);
+        currentTimeoutHandle.current = null;
     }
     useEffect(() => {
         if(stop === true) {
@@ -118,6 +119,7 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
             logger.debug(`${TAG} moment reacter cleaning up`);
             if(!_.isNil(currentTimeoutHandle.current)) {
                 clearTimeout(currentTimeoutHandle.current);
+                currentTimeoutHandle.current = null;
             }    
         };
     }, []);
