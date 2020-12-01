@@ -4,6 +4,7 @@ import HomePage from './Home/HomePage';
 import VerificationLandingPage from './Login/VerificationLandingPage';
 import NavWrapper from './NavWrapper/NavWrapper';
 import ForgotPasswordLandingPage from './Login/ForgotPasswordLandingPage';
+import { AuthorizationWrapper } from './NavWrapper/AuthorizationWrapper';
 
 interface RouterProps {
 
@@ -17,9 +18,11 @@ export const Router: React.FC<RouterProps> = () => {
                     <HomePage/>
                 </Route>
                 <Route path="/common">
-                    <NavWrapper>
-                        {/* All authenticated routing happens in this component. */}
-                    </NavWrapper>
+                    <AuthorizationWrapper>
+                        <NavWrapper>
+                            {/* All authenticated routing happens in this component. */}
+                        </NavWrapper>
+                    </AuthorizationWrapper>
                 </Route>
                 <Route path="/verify/:uid">
                     <VerificationLandingPage />

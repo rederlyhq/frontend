@@ -1,9 +1,9 @@
 import React from 'react';
 import { Switch, Route, useRouteMatch, Redirect, useHistory, Link } from 'react-router-dom';
+import { History } from 'history';
 import CoursePage from '../Courses/CoursePage';
 import Cookies from 'js-cookie';
 import { Container, Navbar, NavbarBrand, Nav, NavDropdown, Row, Col } from 'react-bootstrap';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import CourseDetailsPage from '../Courses/CourseDetailsPage';
 import { AnimatePresence } from 'framer-motion';
 import './NavWrapper.css';
@@ -27,6 +27,7 @@ import TopicGradingPage from '../Courses/TopicGrades/GradingPage';
 import { ProblemEditor } from '../Assignments/ProblemEditor';
 import PrintEverything from '../Courses/TopicGrades/PrintEverything';
 import localPreferences from '../Utilities/LocalPreferences';
+import { logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 const { session } = localPreferences;
 
 interface NavWrapperProps {
@@ -34,6 +35,22 @@ interface NavWrapperProps {
 }
 
 export const userContext = React.createContext({ userType: 'Professor' });
+
+// TODO find a place to put this
+// Once cookies are reactive we won't need to use the history object anymore thus this method will have no react dependencies
+// Until then leaving here
+export const performLogout = async (history: History) => {
+    try {
+        await logout();
+    } catch (e) {
+        logger.error('Error logging out', e);
+    }
+
+    Cookies.remove(CookieEnum.SESSION);
+    session.nullifySession();
+
+    history.push('/');
+};
 
 /**
  * The NavWrapper is intended to allow for providing toolbars and menus for navigation.
@@ -43,7 +60,6 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     const { path } = useRouteMatch();
     const history = useHistory();
     const sessionCookie = Cookies.get(CookieEnum.SESSION);
-    // const userName = Cookies.get(CookieEnum.USERNAME);
     const userName = localPreferences.session.username;
     const { Provider } = userContext;
 
@@ -56,22 +72,8 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
         }} />;
     }
 
-    const logout = async () => {
-        try {
-            await AxiosRequest.post('/users/logout');
-        } catch (e) {
-            logger.error('Error logging out', e);
-        }
-
-        Cookies.remove(CookieEnum.SESSION);
-        session.nullifySession();
-    
-        // TODO delete these cookie removes, right now I want it to clean up browsers
-        Cookies.remove(CookieEnum.USERTYPE);
-        Cookies.remove(CookieEnum.USERID);
-        Cookies.remove(CookieEnum.USERNAME);
-    
-        history.push('/');
+    const logoutClicked = async () => {
+        performLogout(history);
     };
 
     return (
@@ -100,7 +102,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             {getUserRole() !== UserRole.STUDENT &&
                                 <NavDropdown.Item onClick={()=>{history.push(`${path}/editor`);}}>Problem Editor</NavDropdown.Item>
                             }
-                            <NavDropdown.Item onClick={logout}>Log out</NavDropdown.Item>
+                            <NavDropdown.Item onClick={logoutClicked}>Log out</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                 </NavbarCollapse>
