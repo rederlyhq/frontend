@@ -14,10 +14,34 @@ interface AuthorizationWrapperProps {
     children: React.ReactNode
 }
 
+interface ParsedSessionCookie {
+    uuid: string | undefined;
+    expirationEpochTime: number | undefined;
+}
+const parseSessionCookie = (): ParsedSessionCookie => {
+    const sessionCookie = Cookies.get(CookieEnum.SESSION);
+    const splitToken = sessionCookie?.split('_');
+    if ((splitToken?.length ?? 0) > 2) {
+        logger.warn('More than one `_` was found in session cookie, expected format UUID_EXPIRATION');
+    }
+    let expirationEpochTime = undefined;
+    if(!_.isNil(splitToken) && !_.isNil(splitToken[1])) {
+        expirationEpochTime = parseInt(splitToken[1], 10);
+        if (_.isNaN(expirationEpochTime)) {
+            expirationEpochTime = undefined;
+        }
+    }
+    return {
+        uuid: splitToken?.[0],
+        expirationEpochTime: expirationEpochTime
+    };
+};
+
 export const AuthorizationWrapper: React.FC<AuthorizationWrapperProps> = ({
     children
 }) => {
-    const [tokenExpiration, setTokenExpiration] = useState<Date>(new Date());
+    // default to max date
+    const [tokenExpiration, setTokenExpiration] = useState<Date>(new Date(8640000000000000));
     // The expiration date cannot be fetched from the cookie
     // Can't rely on it from login either because it updates
     // Could set a second cookie or embed it in the original cookie
@@ -29,50 +53,53 @@ export const AuthorizationWrapper: React.FC<AuthorizationWrapperProps> = ({
     const renewSession = async () => {
         try {
             await checkIn();
-            // This triggers a check immediately
-            // I thought I would need a delay but it seems to work fine
-            setTokenExpiration(new Date());
+            const parsedSessionCookie = parseSessionCookie();
+            if (!_.isNil(parsedSessionCookie.expirationEpochTime)) {
+                setTokenExpiration(new Date(parsedSessionCookie.expirationEpochTime));
+            }
         } catch(e) {
             logger.error('Could not check in', e);
         }
     };
 
     // Went with polling from now
-    // TODO optimize by embedding the expiration date into the cookie and having moment reacter
     const reactionTime = tokenExpiration.toMoment().add(1, 'second'); // Give the browser a buffer to clear the cookie
     const warningTime = tokenExpiration.toMoment().subtract(5, 'minute');
     return <MomentReacter stopMoment={reactionTime} significantMoments={[warningTime, reactionTime]} logTag={'auth check'}>
         {() => {
-            const sessionCookie = Cookies.get(CookieEnum.SESSION);
-            if(!sessionCookie) {
+            const parsedSessionCookie = parseSessionCookie();
+            if(!parsedSessionCookie.uuid) {
                 unauthorizedRedirect(false);
                 return <Redirect to={{
                     pathname: '/'
                 }} />;
             }
 
-            const splitToken = sessionCookie.split('_');
-            if (splitToken.length > 1) {
-                if (splitToken.length > 2) {
-                    logger.warn('More than one `_` was found in session cookie, expected format UUID_EXPIRATION');
-                }
-                const expirationEpochString = splitToken[1];
-                const expirationEpoch = parseInt(expirationEpochString, 10);
-                if (_.negate(_.isNaN)(expirationEpoch)) {
-                    if (expirationEpoch !== tokenExpiration.getTime()) {
-                        setTokenExpiration(new Date(expirationEpoch));
-                    }
+            const expirationEpochTime = parsedSessionCookie.expirationEpochTime;
+            if (!_.isNil(expirationEpochTime)) {
+                if (expirationEpochTime !== tokenExpiration.getTime()) {
+                    /* Using set timeout gets rid of the error:
+                    * Cannot update a component (`AuthorizationWrapper`) while rendering a different component (`MomentReacter`).
+                    * This error is due to `setTokenExpiration` (a dispatch from the parent) being called from the child (causing the parent to rerender)
+                    * By using setTimeout we defer the setState until the call stack has completed
+                    * I found several suggestions to use "useEffect" https://stackoverflow.com/a/63424831 however we cannot here since this is a component whose child is a function
+                    * I also feel like useEffect is solving the problem in the same way
+                    */
+                    setTimeout(() => {
+                        setTokenExpiration(tokenExpiration => tokenExpiration.getTime() === expirationEpochTime ? tokenExpiration : new Date(expirationEpochTime));
+                    });
                 }
             }
             return <>
                 <Modal
                     show={moment().isSameOrAfter(warningTime)}
+                    onHide={()=>{}}
                 >
                     <Modal.Header>
                         <h5>Inactivity warning</h5>
                     </Modal.Header>
                     <Modal.Body>
-                        Your session will end due to inactivity in <MomentReacter logTag="auth countdown" intervalInMillis={1000}>{() => <>{tokenExpiration.toMoment().formattedFromNow(false, 'm [minutes] [and] s [seconds]')}</>}</MomentReacter>
+                        Your session will end due to inactivity <MomentReacter logTag="auth countdown" intervalInMillis={1000}>{() => <>{tokenExpiration.toMoment().formattedFromNow(false, 'm [minutes] [and] s [seconds]')}</>}</MomentReacter>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button onClick={renewSession}>Renew session</Button>
