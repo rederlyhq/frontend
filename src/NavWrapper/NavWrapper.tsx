@@ -43,7 +43,6 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     const { path } = useRouteMatch();
     const history = useHistory();
     const sessionCookie = Cookies.get(CookieEnum.SESSION);
-    // const userName = Cookies.get(CookieEnum.USERNAME);
     const userName = localPreferences.session.username;
     const { Provider } = userContext;
 
@@ -65,12 +64,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
 
         Cookies.remove(CookieEnum.SESSION);
         session.nullifySession();
-    
-        // TODO delete these cookie removes, right now I want it to clean up browsers
-        Cookies.remove(CookieEnum.USERTYPE);
-        Cookies.remove(CookieEnum.USERID);
-        Cookies.remove(CookieEnum.USERNAME);
-    
+
         history.push('/');
     };
 

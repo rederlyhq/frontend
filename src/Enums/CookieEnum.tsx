@@ -3,8 +3,5 @@
  */
 
 export enum CookieEnum {
-    USERTYPE = 'userType',
-    USERNAME = 'userName',
     SESSION  = 'sessionToken',
-    USERID   = 'userId',
 }

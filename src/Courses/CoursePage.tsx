@@ -5,10 +5,8 @@ import { map } from 'lodash';
 import { CourseObject } from './CourseInterfaces';
 import { Container, Row, Button, Col } from 'react-bootstrap';
 import { BsPlusSquare } from 'react-icons/bs';
-import Cookies from 'js-cookie';
 import { UserRole, getUserRole } from '../Enums/UserRole';
 import { Link } from 'react-router-dom';
-import { CookieEnum } from '../Enums/CookieEnum';
 import _ from 'lodash';
 import logger from '../Utilities/Logger';
 import localPreferences from '../Utilities/LocalPreferences';
@@ -20,7 +18,6 @@ interface CoursePageProps {
 export const CoursePage: React.FC<CoursePageProps> = () => {
     const [courses, setCourses] = useState<Array<CourseObject>>([]);
     const userType: UserRole = getUserRole();
-    // const userId: string | undefined = Cookies.get(CookieEnum.USERID);
     const userId: string | null = localPreferences.session.userId;
 
     // Get the list of courses to render.
