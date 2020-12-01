@@ -6,11 +6,10 @@ import { ProblemObject } from '../CourseInterfaces';
 import url from 'url';
 import { getAllContentForVersion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
-import { useQuery } from '../../Hooks/UseQuery';
 import './PrintEverything.css';
 import { GetAllVersionAttachmentsResponse } from '../../APIInterfaces/BackendAPI/ResponseTypes/CourseResponseTypes';
 import PDFInlineRender from './PDFInlineRender';
-import { PrintLoadingProvider, usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
+import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
 import OnLoadDispatchWrapper from './onLoadDispatchWrapper';
 import OnLoadProblemIframeWrapper from './OnLoadProblemIframeWrapper';
 
@@ -20,7 +19,6 @@ interface PrintEverythingProps {
 export const PrintEverything: React.FC<PrintEverythingProps> = () => {
     const [gradeData, setGradeData] = useState<GetAllVersionAttachmentsResponse | null>(null);
     const {dispatch, isDone} = usePrintLoadingContext();
-    const qs = useQuery();
     const params = useParams<{userId?: string, topicId?: string}>();
 
     let userId: number = 0;
@@ -53,7 +51,9 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
 
     useEffect(()=>{
         if (isDone && isDone.length > 1) {
-            Promise.allSettled(isDone).finally(() => {console.log('Printing ready', isDone); window.print();});
+            Promise.allSettled(isDone).finally(() => {
+                window.print();
+            });
         }
     }, [isDone]);
 

@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 import PDFOnePage from './PDFOnePage';
 import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
-import pdfjs, { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/webpack';
-import {PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
-// GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+import pdfjs, { getDocument } from 'pdfjs-dist/webpack';
 
 interface PDFInlineRenderProps {
     url: string;

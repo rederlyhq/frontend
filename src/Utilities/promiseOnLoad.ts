@@ -1,4 +1,3 @@
-import React from 'react';
 import logger from './Logger';
 
 // Based on: https://medium.com/@samthor/js-callbacks-to-promises-541adc46c07c
@@ -17,11 +16,5 @@ export const promiseOnLoad = (elementRef: HTMLElement) => new Promise(
 ).catch(()=>{
     logger.warn('An element failed to load and rejected promiseOnLoad.');
 });
-
-export const promiseIframeOnLoad = (problemIframeRef: React.FC) => new Promise(
-    (resolve, reject) => {
-        console.log(problemIframeRef);
-    }
-);
 
 export default promiseOnLoad;
