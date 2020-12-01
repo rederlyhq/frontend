@@ -35,10 +35,16 @@ const USER_REGISTER_PATH = url.resolve(
     USER_PATH,
     'register'
 );
-const USER_CHECK_IN = url.resolve(
+const USER_CHECK_IN_PATH = url.resolve(
     USER_PATH,
     'check-in'
 );
+
+const USER_LOGOUT_PATH = url.resolve(
+    USER_PATH,
+    'logout'
+);
+
 export const postForgotPassword = async ({
     email
 }: PostForgotPasswordOptions): Promise<PostForgotPasswordResponse> => {
@@ -159,7 +165,15 @@ export const registerUser = async (data: RegisterUserOptions): Promise<RegisterU
 export const checkIn = async (): Promise<BackendAPIResponse> => {
     try {
         // Route can be called with any verb
-        return await AxiosRequest.get(USER_CHECK_IN);
+        return await AxiosRequest.get(USER_CHECK_IN_PATH);
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const logout = async (): Promise<BackendAPIResponse> => {
+    try {
+        return await AxiosRequest.post(USER_LOGOUT_PATH);
     } catch (e) {
         throw new BackendAPIError(e);
     }
