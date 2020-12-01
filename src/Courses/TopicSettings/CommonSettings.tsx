@@ -18,7 +18,7 @@ interface CommonSettingsProps {
  *
  */
 export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUpdateAlert}) => {
-    const { register, getValues, errors, control, setValue, watch, formState, reset } = formObject;
+    const { register, getValues, control, setValue, watch } = formObject;
     const { topicTypeId, partialExtend, startDate, endDate, deadDate } = watch();
 
     useEffect(()=>{

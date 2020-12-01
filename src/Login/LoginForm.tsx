@@ -4,7 +4,6 @@ import useAlertState from '../Hooks/useAlertState';
 import { useHistory } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import { getUserRoleFromServer } from '../Enums/UserRole';
-import { CookieEnum } from '../Enums/CookieEnum';
 import { ForgotPasswordButtonAndModal } from './ForgotPasswordButtonAndModal';
 import { postLogin } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import BackendAPIError, { isAxiosError } from '../APIInterfaces/BackendAPI/BackendAPIError';
@@ -59,11 +58,6 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                 session.userType = getUserRoleFromServer(resp.data.data.roleId);
                 session.userUUID = resp.data.data.uuid;
                 session.username = `${resp.data.data.firstName} ${resp.data.data.lastName}`;
-                // TODO delete this code, moving to local preferences but want to keep this for debugging
-                // // TODO: Create a User class to massage and error-handle these fields.
-                // Cookie.set(CookieEnum.USERTYPE, getUserRoleFromServer(resp.data.data.roleId));
-                // Cookie.set(CookieEnum.USERID, resp.data.data.userId);
-                // Cookie.set(CookieEnum.USERNAME, `${resp.data.data.firstName} ${resp.data.data.lastName}`);
 
                 history.replace('/common/courses');
             }

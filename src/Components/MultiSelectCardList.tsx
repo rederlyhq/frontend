@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Card, ButtonBase, CardContent, CardHeader, ListItem, ListSubheader } from '@material-ui/core';
+import { List, Card, ListItem, ListSubheader } from '@material-ui/core';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ProblemObject, SettingsComponentType } from '../Courses/CourseInterfaces';
 

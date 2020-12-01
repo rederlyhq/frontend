@@ -139,7 +139,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
 
     useEffect(() => {
-        logger.info(`Stats tab: [useEffect] course.id ${course.id}, globalView ${globalView}, idFilter ${idFilter}, userId ${userId}, userType ${userType}`);
+        logger.debug(`Stats tab: [useEffect] course.id ${course.id}, globalView ${globalView}, idFilter ${idFilter}, userId ${userId}, userType ${userType}`);
         if (course?.id === 0) return;
 
         let url = '/courses/statistics';
@@ -202,7 +202,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         const satisfiesIdFilter = idFilter ? grade.courseWWTopicQuestionId === idFilter : true;
                         return hasAttempts && satisfiesIdFilter;
                     });
-                    logger.info('Stats tab: [useEffect] setting grade.');
+                    logger.debug('Stats tab: [useEffect] setting grade.');
                     setGrade(grades[0]);
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
@@ -216,7 +216,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     data = _.flatten(data);
                     data = data.sort((a: any, b: any) => moment(b.time).diff(moment(a.time)));
                 } else {
-                    logger.info('Stats tab: [useEffect] setting gradesstate and grade');
+                    logger.debug('Stats tab: [useEffect] setting gradesstate and grade');
                     setGradesState(defaultGradesState);
                     setGrade(null);
                     data = data.map((d: any) => ({
@@ -226,7 +226,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         completionPercent: formatNumberString(d.completionPercent, true)
                     }));
                 }
-                logger.info('Stats tab: [useEffect] setting rowData');
+                logger.debug('Stats tab: [useEffect] setting rowData');
                 setRowData(data);
             } catch (e) {
                 logger.error('Failed to get statistics.', e);
@@ -237,7 +237,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     }, [course.id, globalView, idFilter, userId, userType]);
 
     const renderProblemPreview = (rowData: any) => {
-        logger.info('Stats tab: renderProblemPreview called'); 
+        logger.debug('Stats tab: renderProblemPreview called'); 
         switch (view) {
         case StatisticsViewFilter.TOPICS_FILTERED:
         case StatisticsView.PROBLEMS:
@@ -257,7 +257,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     };
 
     const resetBreadCrumbs = (selectedKey: string, newBreadcrumb?: BreadCrumbFilter) => {
-        logger.info('Stats tab: resetting breadcrumbs');
+        logger.debug('Stats tab: resetting breadcrumbs');
         let globalSelectedKey: StatisticsView = statisticsViewFromAllStatisticsViewFilter(selectedKey as StatisticsViewAll);
         let key: StatisticsView = StatisticsView.UNITS;
         let lastFilter: number | null = null;
@@ -279,7 +279,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 }
             }
         }
-        logger.info('Stats tab: setting Breadcrumb Filter');
+        logger.debug('Stats tab: setting Breadcrumb Filter');
         setBreadcrumbFilters(newBreadcrumbFilter);
         return {
             lastFilter,
@@ -288,7 +288,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     };
 
     const nextView = (event: any, rowData: any, togglePanel: any) => {
-        logger.info('Stats tab: [nextView] proceeding to next view.');
+        logger.debug('Stats tab: [nextView] proceeding to next view.');
         setLoading(true);
         const newBreadcrumb = {
             id: rowData.id,
@@ -296,14 +296,14 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         };
         switch (view) {
         case StatisticsView.UNITS:
-            logger.info('Stats tab: [nextView] setting IdFilter and View');
+            logger.debug('Stats tab: [nextView] setting IdFilter and View - switching to topics');
             setIdFilter(rowData.id);
             resetBreadCrumbs(StatisticsView.UNITS, newBreadcrumb);
             setView(StatisticsViewFilter.UNITS_FILTERED);
             break;
         case StatisticsViewFilter.UNITS_FILTERED:
         case StatisticsView.TOPICS:
-            logger.info('Stats tab: [nextView] setting IdFilter and View');
+            logger.debug('Stats tab: [nextView] setting IdFilter and View - switching to problems');
             setIdFilter(rowData.id);
             resetBreadCrumbs(StatisticsView.TOPICS, newBreadcrumb);
             setView(StatisticsViewFilter.TOPICS_FILTERED);
@@ -311,20 +311,21 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         case StatisticsViewFilter.TOPICS_FILTERED:
         case StatisticsView.PROBLEMS:
             if (userId !== undefined) {
-                logger.info('Stats tab: [nextView] setting IdFilter and View');
+                logger.debug('Stats tab: [nextView] setting IdFilter and View -- switching to attempts');
                 setIdFilter(rowData.id);
-                logger.debug('Switching to Attempts');
                 resetBreadCrumbs(StatisticsView.PROBLEMS, newBreadcrumb);
                 setView(StatisticsViewFilter.PROBLEMS_FILTERED);
             } else {
-                logger.info('showing a panel.');
-                logger.debug('Showing a panel.');
+                logger.debug('Stats tab: no userId provided, showing a panel.');
                 togglePanel();
+                setLoading(false);
             }
             break;
         case StatisticsView.ATTEMPTS:
         case StatisticsViewFilter.PROBLEMS_FILTERED:
+            logger.debug('Stats tab: toggle panel');
             togglePanel();
+            setLoading(false);
             break;
         default:
             break;
@@ -352,7 +353,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         });
     }
     if (!_.isNil(userId) && view === StatisticsViewFilter.TOPICS_FILTERED) {
-        logger.info('Stats tab: [root] preparing table actions');
+        logger.debug('Stats tab: [root] preparing table actions');
         if (userType === UserRole.PROFESSOR) {
             actions.push((rowData: any) => {
                 // Don't show until the override information is available
@@ -363,7 +364,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     icon: () => <BsPencilSquare />,
                     tooltip: 'Override grade',
                     onClick: (_event: any, rowData: any) => {
-                        logger.info('Stats tab: [root] setting grade and gradesstate');
+                        logger.debug('Stats tab: [root] setting grade and gradesstate');
                         setGrade(rowData.grades[0]);
                         setGradesState({
                             ...gradesState,
@@ -395,7 +396,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             // Don't include the onclick event for non professors
             const onClick = userType === UserRole.PROFESSOR ?
                 () => {
-                    logger.info('Stats tab: [rowData onClick] setting grade and gradesstate');
+                    logger.debug('Stats tab: [rowData onClick] setting grade and gradesstate');
                     setGrade(rowData.grades[0]);
                     setGradesState({
                         ...gradesState,
@@ -421,7 +422,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     return (
         <>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
-                logger.info('Stats tab: [nav1] setting IdFilter and view');
+                logger.debug('Stats tab: [nav1] setting IdFilter and view');
                 setView(selectedKey as StatisticsViewAll);
                 setBreadcrumbFilters({});
                 setIdFilter(null);

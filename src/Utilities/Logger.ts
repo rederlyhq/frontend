@@ -55,6 +55,7 @@ window.setLogLevel = (level: string) => {
         // Since you are changing the logger this log should not go through the logger
         // We do not want this sent to the server and furthermore we want to make sure it gets output to the console
         // This is a developer only feature and should be interfaced with through the console
+        // eslint-disable-next-line no-console
         console.error(`Client Logger: Unexpected logging level ${level}, valid values are [${availableLoggingLevels}]`);
         return;
     }

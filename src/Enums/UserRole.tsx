@@ -15,10 +15,6 @@ export const unauthorizedRedirect = (doRedirect: boolean = true) => {
     Cookies.remove(CookieEnum.SESSION);
     session.nullifySession();
 
-    // TODO delete these cookie removes, right now I want it to clean up browsers
-    Cookies.remove(CookieEnum.USERTYPE);
-    Cookies.remove(CookieEnum.USERID);
-    Cookies.remove(CookieEnum.USERNAME);
     if (doRedirect) {
         window.location.assign('/');        
     }
@@ -37,7 +33,6 @@ export const getUserRoleFromServer = (roleFromServer: number): UserRole => {
 };
 
 export const getUserRole = (): UserRole => {
-    // const roleFromCookie = Cookies.get(CookieEnum.USERTYPE);
     const roleFromCookie = session.userType;
     if (roleFromCookie === null) {
         unauthorizedRedirect();
@@ -60,7 +55,6 @@ export const getUserRole = (): UserRole => {
 };
 
 export const getUserId = () => {
-    // const userId = Cookies.get(CookieEnum.USERID);
     const userId = session.userId;
     let userIdValue = 0; 
 
@@ -78,11 +72,9 @@ export const getUserId = () => {
  * This should be included in the above however pushing this out on a deadline I don't want to mess with it
  */
 export const getUserIdNoRedirect = () => {
-    // return Cookies.get(CookieEnum.USERID);
     return session.userId;
 };
 
 export const getUserRoleNoRedirect = () => {
-    // return Cookies.get(CookieEnum.USERTYPE);
     return session.userType;
 };
