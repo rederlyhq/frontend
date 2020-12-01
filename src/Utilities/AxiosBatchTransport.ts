@@ -64,6 +64,7 @@ export default class AxiosBatchTransport extends Transport {
             // console.debug('AxiosBatchTransport: Successfully sent a batch of logs');
         } catch (e) {
             // Can't use the logger for this, infinite loop
+            // eslint-disable-next-line no-console
             console.error('AxiosBatchTransport: Failed to send logs', e);
         }
     }

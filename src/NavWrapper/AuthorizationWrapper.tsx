@@ -70,7 +70,7 @@ export const AuthorizationWrapper: React.FC<AuthorizationWrapperProps> = ({
     };
 
     const reactionTime = tokenExpiration.toMoment().add(1, 'second'); // Give the browser a buffer to clear the cookie
-    const warningTime = tokenExpiration.toMoment().subtract(5, 'minute');
+    const warningTime = tokenExpiration.toMoment().subtract(.25, 'minute');
     // TODO Add reactivity from cookies, use cookie hook is only reactive from changes within the application (not the cookie expiring or the user deleting the cookie)
     // There is an on change event that is not supported by safari: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/cookies/onChanged
     // The benefit of total reactivity is that we could detect if the browser deletes the cookie

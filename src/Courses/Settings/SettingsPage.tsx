@@ -4,7 +4,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 import MaterialTriSelect from '../../Components/MaterialTriSelect';
 import { useCourseContext } from '../CourseProvider';
 import { OverridesForm } from './OverridesForm';
-import { CourseObject, UnitObject, UserObject, TopicObject, ProblemObject, SettingsComponentType } from '../CourseInterfaces';
+import { UnitObject, UserObject, TopicObject, ProblemObject } from '../CourseInterfaces';
 
 import './SettingsPage.css';
 

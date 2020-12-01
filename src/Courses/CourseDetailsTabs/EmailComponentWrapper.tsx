@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { UserObject } from '../CourseInterfaces';
-import { useRouteMatch, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import EmailModal from './EmailModal';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { Email } from '@material-ui/icons';
@@ -12,7 +12,6 @@ import MaterialIcons from '../../Components/MaterialIcons';
 import { deleteEnrollment } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { courseContext } from '../CourseDetailsPage';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
-import { useHistory } from 'react-router-dom';
 import logger from '../../Utilities/Logger';
 
 interface EmailComponentWrapperProps {
@@ -27,10 +26,8 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
     const [selectedStudents, setSelectedStudents] = useState<UserObject[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [showConfirmDelete, setShowConfirmDelete] = useState<{state: boolean, user: UserObject | null}>({state: false, user: null});
-    const history = useHistory();
     const userType: UserRole = getUserRole();
     const course = useContext(courseContext);
-    const { path } = useRouteMatch();
 
     useEffect(()=>{
         setUsers(propUsers);
@@ -102,14 +99,14 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                             // eslint-disable-next-line react/display-name
                             icon: () => <TiUserDelete style={{color: 'red'}} />,
                             tooltip: 'Drop student from course',
-                            onClick: (event: any, user: any) => setShowConfirmDelete({state: true, user}),
+                            onClick: (_event: any, user: any) => setShowConfirmDelete({state: true, user}),
                             position: 'row'
                         },
                         {
                             // eslint-disable-next-line react/display-name
                             icon: () => <Link to={(loc: any) => ({...loc, pathname: `${loc.pathname}/settings`})}><MdLaunch style={{color: 'black'}} /></Link>,
                             tooltip: 'Go to Extensions',
-                            onClick: (event: any, user: any) => null,
+                            onClick: () => null,
                             position: 'row'
                         },
                         {

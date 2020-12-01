@@ -7,7 +7,6 @@ import { Alert } from 'react-bootstrap';
 import { FaDice, FaFile } from 'react-icons/fa';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import { ProblemObject } from '../CourseInterfaces';
-import { useHistory } from 'react-router-dom';
 import * as qs from 'querystring';
 import { Constants } from '../../Utilities/Constants';
 
