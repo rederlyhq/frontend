@@ -15,12 +15,15 @@ export const ProblemMaxAttempts: React.FC<{}> = () => {
         <>
             <TextField
                 name={name}
-                inputRef={register()}
+                inputRef={register({
+                    required: true
+                })}
+                error={Boolean(errors[name])}
+                helperText={errors[name] ? 'Required.' : null}
                 label='Max Graded Attempts'
                 type='number'
                 inputProps={{min: -1}}
             />
-            <ErrorMessage name={name} errors={errors} />
         </>
     );
 };
@@ -55,12 +58,15 @@ export const ProblemWeight: React.FC<{}> = () => {
         <>
             <TextField
                 name={name}
-                inputRef={register()}
+                inputRef={register({
+                    required: true
+                })}
+                error={Boolean(errors[name])}
+                helperText={errors[name] ? 'Required.' : null}
                 label='Weight'
                 type='number'
                 inputProps={{min: 0}}
             />
-            <ErrorMessage name={name} errors={errors} />
         </>
     );
 };
