@@ -120,7 +120,7 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
                 clearTimeout(currentTimeoutHandle.current);
             }    
         };
-    });
+    }, []);
     
     // I don't use reactive moment here since there is no guarentee this was run immediately, it is more accurate to use a new moment
     const currentMoment = moment();
