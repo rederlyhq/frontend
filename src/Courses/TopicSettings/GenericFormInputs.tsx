@@ -197,57 +197,67 @@ const examFieldNamePrefix = 'topicAssessmentInfo';
 
 export const DurationField: React.FC<{}> = () => {
     const { register, errors } = useFormContext();
-
+    const name = `${examFieldNamePrefix}.duration`;
+    
     return (
         <TextField
-            name={`${examFieldNamePrefix}.duration`}
+            name={name}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
             label={'Time Limit (minutes)'}
             type='number'
             inputProps={{min: 2}}
+            error={Boolean(errors[name])}
+            helperText={errors[name] ? 'Error.' : null}
         />
     );
 };
 
 export const MaxGradedAttemptsPerVersionField: React.FC<{}> = () => {
     const { register, errors } = useFormContext();
-
+    const name = `${examFieldNamePrefix}.maxGradedAttemptsPerVersion`;
     return (
         <TextField
-            name={`${examFieldNamePrefix}.maxGradedAttemptsPerVersion`}
+            name={name}
             inputRef={register()}
             label={'Submissions per Version'}
             type='number'
             InputLabelProps={{style: {width: 'max-content'}, shrink: true}}
+            error={Boolean(errors[name])}
+            helperText={errors[name] ? 'Error.' : null}
         />
     );
 };
 
 export const MaxVersionsField: React.FC<{}> = () => {
     const { register, errors } = useFormContext();
-
+    const name = `${examFieldNamePrefix}.maxVersions`;
     return (
         <TextField
-            name={`${examFieldNamePrefix}.maxVersions`}
+            name={name}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
             label={'Available Versions'}
             type='number'
+            error={Boolean(errors[name])}
+            helperText={errors[name] ? 'Error.' : null}
         />
     );
 };
 
 export const RandomizationDelayField: React.FC<{}> = () => {
     const { register, errors } = useFormContext();
+    const name = `${examFieldNamePrefix}.versionDelay`;
 
     return (
         <TextField
-            name={`${examFieldNamePrefix}.versionDelay`}
+            name={name}
             label={'Delay Between Versions (minutes)'}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
             type='number'
+            error={Boolean(errors[name])}
+            helperText={errors[name] ? 'Error.' : null}
         />
     );
 };
@@ -256,12 +266,15 @@ export const RandomizationDelayField: React.FC<{}> = () => {
 
 export const GenerateSwitchField: React.FC<{fieldName: string, label: string}> = ({fieldName, label}) => {
     const { control, errors } = useFormContext();
+    const name = `${examFieldNamePrefix}.${fieldName}`;
 
     return (
         <Controller
-            name={`${examFieldNamePrefix}.${fieldName}`}
+            name={name}
             control={control}
             defaultValue={false}
+            error={Boolean(errors[name])}
+            helperText={errors[name] ? 'Error.' : null}
             render={({ onChange, onBlur, value, name }) => (
                 <FormControlLabel
                     // label={_.startCase(fieldName)}

@@ -10,7 +10,6 @@ import ExamSettings from './ExamSettings';
 import { TopicSettingsInputs } from './TopicSettingsPage';
 import { putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
-import { Alert } from 'react-bootstrap';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
 import logger from '../../Utilities/Logger';
 
@@ -35,7 +34,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             }),
         }
     });
-    const { register, handleSubmit, control, watch, reset, errors } = topicForm;
+    const { register, handleSubmit, control, watch, reset } = topicForm;
     const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
     // This is a hack to allow us to update the selected TopicObject with DEF file information but not
     // lose all the user input that might be in the form.

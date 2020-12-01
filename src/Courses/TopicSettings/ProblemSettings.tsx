@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Grid, Snackbar } from '@material-ui/core';
 import { MultipleProblemPaths, OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
-import { Alert as MUIAlert, Color } from '@material-ui/lab';
+import { Alert as MUIAlert } from '@material-ui/lab';
 import { Link } from 'react-router-dom';
 import { ProblemObject, TopicObject, TopicTypeId } from '../CourseInterfaces';
 import { ProblemSettingsInputs } from './TopicSettingsPage';
@@ -9,7 +9,6 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { deleteQuestion, putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
-import { Alert } from 'react-bootstrap';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { DevTool } from '@hookform/devtools';
 

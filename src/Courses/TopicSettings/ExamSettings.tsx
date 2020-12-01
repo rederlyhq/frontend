@@ -3,13 +3,14 @@ import { Grid } from '@material-ui/core';
 import { MaxGradedAttemptsPerVersionField, MaxVersionsField, RandomizationDelayField, GenerateSwitchField, DurationField } from './GenericFormInputs';
 
 interface ExamSettingsProps {
+    // TODO none of these react hook forms props are actually used, should we delete them or implement them
     // This is the register function from react-hook-forms.
     register: any;
     control: any;
     watch: any;
 }
 
-export const ExamSettings: React.FC<ExamSettingsProps> = ({register, control}) => {
+export const ExamSettings: React.FC<ExamSettingsProps> = () => {
     return (
         <Grid container item md={12} spacing={3}>
             <Grid item container md={12}><h2>Exam Settings</h2></Grid>
