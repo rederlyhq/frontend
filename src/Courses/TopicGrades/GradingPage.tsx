@@ -32,7 +32,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     const [topic, setTopic] = useState<TopicObject | null>(null);
     const [problems, setProblems] = useState<ProblemObject[] | null>(null);
     const [selected, setSelected] = useState<{
-        problem?: ProblemObject, 
+        problem?: ProblemObject,
         user?: UserObject,
         problemState?: ProblemState,
         grade?: StudentGrade,
@@ -120,8 +120,8 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                     <h1>Grading {topic && topic.name}</h1>
                 </Grid>
                 <Grid item>
-                    {selected.problemState?.studentTopicAssessmentInfoId && 
-                        <Link 
+                    {selected.gradeInstance &&
+                        <Link
                             to={path => `${path.pathname}/print/${selected.user?.id}`}
                             target="_blank" rel='noopener noreferrer'
                         >
@@ -136,7 +136,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                     }
                 </Grid>
                 <Grid container item md={8} style={{paddingLeft: '1rem', height: 'min-content'}}>
-                    { selected.user && selected.problem && topic && 
+                    { selected.user && selected.problem && topic &&
                         < GradeInfoHeader
                             selected={selected}
                             setSelected={setSelected}
@@ -145,8 +145,8 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                         />
                     }
                     <Grid container alignItems='stretch'>
-                        {selected.problem && selected.user && selected.grade && 
-                        // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) && 
+                        {selected.problem && selected.user && selected.grade &&
+                        // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) &&
                             < ProblemIframe
                                 problem={selected.problem}
                                 userId={selected.user.id}
@@ -158,16 +158,16 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                             />
                         }
                     </Grid>
-                    {(selected.grade || selected.gradeInstance) && 
+                    {(selected.grade || selected.gradeInstance) &&
                         <Grid container item md={12}>
-                            <AttachmentsPreview 
+                            <AttachmentsPreview
                                 gradeId={selected?.grade?.id}
                                 gradeInstanceId={selected?.gradeInstance?.id}
                                 // Workbooks don't seem to be loading in the database right now,
                                 // but a professor shouldn't really care about this level. Attachments should show the same for
                                 // all attempts, maybe even all versions?
-                                // workbookId={selected.workbook?.id} 
-                            /> 
+                                // workbookId={selected.workbook?.id}
+                            />
                         </Grid>
                     }
                 </Grid>

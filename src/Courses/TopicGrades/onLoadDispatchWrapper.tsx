@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import _ from 'lodash';
 import promiseOnLoad from '../../Utilities/promiseOnLoad';
 import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
+import logger from '../../Utilities/Logger';
 
 interface OnLoadInterface {
     onLoad: Function
@@ -17,10 +18,11 @@ export const OnLoadDispatchWrapper: React.FC<OnLoadDispatchWrapperProps> = ({chi
 
     useEffect(()=>{
         if (_.isNil(ref) || _.isNil(ref.current)) {
-            console.log('No ref');
+            logger.debug('No ref');
             return;
         }
-        console.log('Dispatching a new promise.');
+
+        logger.info('Adding a promise for a single Image');
         dispatch?.({
             type: PrintLoadingActions.ADD_PROMISE,
             payload: promiseOnLoad(ref.current)

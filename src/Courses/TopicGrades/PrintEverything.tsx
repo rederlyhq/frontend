@@ -18,7 +18,7 @@ interface PrintEverythingProps {
 
 export const PrintEverything: React.FC<PrintEverythingProps> = () => {
     const [gradeData, setGradeData] = useState<GetAllVersionAttachmentsResponse | null>(null);
-    const {dispatch, isDone} = usePrintLoadingContext();
+    const {dispatch} = usePrintLoadingContext();
     const params = useParams<{userId?: string, topicId?: string}>();
 
     let userId: number = 0;
@@ -36,27 +36,33 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
         }
 
         if (_.isNil(dispatch)) {
-            logger.debug('Needs to rerender, dispatch has not been initialized.');
+            logger.warning('Needs to rerender, dispatch has not been initialized.');
             return;
         }
 
+        dispatch?.({type: PrintLoadingActions.RESET_EXPECTED_COUNT});
+
         const gettingData = (async () => {
             const res = await getAllContentForVersion({userId, topicId});
+
+            const expectedProblemIframes = res.data.data.topic.questions.length;
+            const expectedAttachments = _.reduce(res.data.data.topic.questions, (accum, problem) => {
+                return problem.grades.first?.problemAttachments ? accum + problem.grades.first?.problemAttachments.length : 0;
+            }, 0);
+
+            logger.info(
+                `Adding expectation for ${expectedProblemIframes} Problem iFrames and ${expectedAttachments} attachments (imgs + whole pdfs)`
+            );
+            dispatch?.({type: PrintLoadingActions.ADD_EXPECTED_PROMISE_COUNT, expected: expectedAttachments + expectedProblemIframes});
+
             setGradeData(res.data.data);
         })();
 
+        // This promise is already expected in the context. Should I add an explicit dispatch for it?
+        logger.info('Adding default promise for starting workflow.');
         dispatch?.({type: PrintLoadingActions.ADD_PROMISE, payload: gettingData});
 
-    }, [userId, topicId, dispatch]);
-
-    useEffect(()=>{
-        if (isDone && isDone.length > 1) {
-            Promise.allSettled(isDone).finally(() => {
-                window.print();
-            });
-        }
-    }, [isDone]);
-
+    }, [userId, topicId]);
 
     if (_.isNil(gradeData)) return null;
 
@@ -72,8 +78,8 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                 const bestAttemptWorkbook = problem.grades.first?.lastInfluencingCreditedAttemptId;
                 const problemPath = problem.grades.first?.webworkQuestionPath;
                 const attachments = problem.grades.first?.problemAttachments;
-
                 const baseUrl = gradeData.baseUrl;
+
                 return (
                     <div key={problem.id}>
                         <h4>Problem {problem.problemNumber}</h4>
@@ -88,9 +94,9 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                         {attachments?.map((attachment) => {
                             const { cloudFilename, userLocalFilename } = attachment;
                             if (!cloudFilename) {
+                                logger.error('No cloud filename was found for an attachment. TSNH.');
                                 return;
                             }
-
                             const cloudUrl = url.resolve(baseUrl.toString(), cloudFilename);
 
                             if (userLocalFilename.indexOf('.pdf') >= 0) {
