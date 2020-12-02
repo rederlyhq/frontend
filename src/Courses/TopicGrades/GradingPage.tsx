@@ -25,15 +25,10 @@ interface VersionInfo {
 }
 
 export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
-    enum Pin {
-        STUDENT,
-        PROBLEM
-    } 
     const params = useParams<TopicGradingPageProps>();
     const {users} = useCourseContext();
     const queryParams = useQuery();
     const [gradeAlert, setGradeAlert] = useMUIAlertState();
-    const [isPinned, setIsPinned] = useState<Pin | null>(null); // pin one or the other, not both
     const [topic, setTopic] = useState<TopicObject | null>(null);
     const [problems, setProblems] = useState<ProblemObject[] | null>(null);
     const [selected, setSelected] = useState<{

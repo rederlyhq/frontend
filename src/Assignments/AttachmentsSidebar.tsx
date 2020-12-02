@@ -1,7 +1,6 @@
 import { Card, CardContent, Drawer, Grid, IconButton, LinearProgress } from '@material-ui/core';
 import { Button } from 'react-bootstrap';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { DropEvent, FileRejection, useDropzone } from 'react-dropzone';
 import { ProblemAttachments, TopicObject } from '../Courses/CourseInterfaces';
 import { FaFileUpload } from 'react-icons/fa';

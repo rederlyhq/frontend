@@ -7,8 +7,8 @@ import { Alert } from 'react-bootstrap';
 import { FaDice, FaFile } from 'react-icons/fa';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import { ProblemObject } from '../CourseInterfaces';
-import { useHistory } from 'react-router-dom';
 import * as qs from 'querystring';
+import { Constants } from '../../Utilities/Constants';
 
 interface RendererPreviewProps {
     defaultPath?: string;
@@ -25,7 +25,6 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
     const [previewSettings, setPreviewSettings] = useState({path: '', seed: 1});
     const [forcedUpdate, setForcedUpdate] = React.useState(new ProblemObject());
     const forceUpdate = React.useCallback(() => setForcedUpdate(new ProblemObject()), []);
-    const pgRegex = /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/my|private\/templates|private\/rederly).*\.pg$/;
     const controls = useAnimation();
     const [flipped, cycleFlipped] = useCycle(-1, 1);
 
@@ -66,7 +65,7 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
                             }}
                             onBlur={()=>{
                                 // Validate first
-                                // const regex = /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/;
+                                // const regex = Constants.Renderer.VALID_PROBLEM_PATH_REGEX;
                                 // if (regex.test(previewSettings.path)) {
                                 forceUpdate();
                                 // }
@@ -75,7 +74,7 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
                             value={previewSettings.path}
                             inputProps={{
                                 form: 'null',
-                                pattern: /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/my|private\/templates|private\/rederly).*\.pg$/
+                                pattern: Constants.Renderer.VALID_PROBLEM_PATH_REGEX
                             }}
                             InputProps={{
                                 endAdornment: <InputAdornment position="end">
@@ -146,7 +145,7 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
                         />
                     </Grid>
                     <Grid xs={12} item>
-                        {pgRegex.test(previewSettings.path) ?
+                        {Constants.Renderer.VALID_PROBLEM_PATH_REGEX.test(previewSettings.path) ?
                             <ProblemIframe 
                                 problem={forcedUpdate} 
                                 previewPath={previewSettings.path}

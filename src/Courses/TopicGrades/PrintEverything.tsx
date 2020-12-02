@@ -6,12 +6,12 @@ import { ProblemObject } from '../CourseInterfaces';
 import url from 'url';
 import { getAllContentForVersion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
-import { useQuery } from '../../Hooks/UseQuery';
 import './PrintEverything.css';
 import { GetAllVersionAttachmentsResponse } from '../../APIInterfaces/BackendAPI/ResponseTypes/CourseResponseTypes';
 import PDFInlineRender from './PDFInlineRender';
-import { PrintLoadingProvider, usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
+import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
 import OnLoadDispatchWrapper from './onLoadDispatchWrapper';
+import OnLoadProblemIframeWrapper from './OnLoadProblemIframeWrapper';
 
 interface PrintEverythingProps {
 }
@@ -19,7 +19,6 @@ interface PrintEverythingProps {
 export const PrintEverything: React.FC<PrintEverythingProps> = () => {
     const [gradeData, setGradeData] = useState<GetAllVersionAttachmentsResponse | null>(null);
     const {dispatch, isDone} = usePrintLoadingContext();
-    const qs = useQuery();
     const params = useParams<{userId?: string, topicId?: string}>();
 
     let userId: number = 0;
@@ -51,9 +50,10 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
     }, [userId, topicId, dispatch]);
 
     useEffect(()=>{
-        console.log('isDone has been updated', isDone);
         if (isDone && isDone.length > 1) {
-            Promise.allSettled(isDone).finally(() => console.log('********************** isDone is DONE!', isDone));
+            Promise.allSettled(isDone).finally(() => {
+                window.print();
+            });
         }
     }, [isDone]);
 
@@ -77,11 +77,13 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                 return (
                     <div key={problem.id}>
                         <h4>Problem {problem.problemNumber}</h4>
-                        <ProblemIframe
-                            problem={new ProblemObject({id: problem.id, path: problemPath})}
-                            workbookId={bestAttemptWorkbook}
-                            readonly={true}
-                        />
+                        <OnLoadProblemIframeWrapper>
+                            <ProblemIframe
+                                problem={new ProblemObject({id: problem.id, path: problemPath})}
+                                workbookId={bestAttemptWorkbook}
+                                readonly={true}
+                            />
+                        </OnLoadProblemIframeWrapper>
                         <h5>Problem {problem.problemNumber} Attachments</h5>
                         {attachments?.map((attachment) => {
                             const { cloudFilename, userLocalFilename } = attachment;

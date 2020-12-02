@@ -1,17 +1,21 @@
 import React, { useEffect, useRef } from 'react';
 import _ from 'lodash';
-import * as pdfjs from 'pdfjs-dist';
-pdfjs.GlobalWorkerOptions.workerSrc = require('pdfjs-dist/build/pdf.worker.entry');
+import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
+import pdfjs from 'pdfjs-dist/webpack';
+import {PDFPageProxy} from 'pdfjs-dist/types/display/api';
+// pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 interface PDFOnePageProps {
     pagePromise: pdfjs.PDFPromise<pdfjs.PDFPageProxy>;
 }
 
 export const PDFOnePage: React.FC<PDFOnePageProps> = ({pagePromise}) => {
+    const {dispatch} = usePrintLoadingContext();
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
-        pagePromise.then(page => {
+        const loadPage = (async () => {
+            const page = await pagePromise;
             const canvas = canvasRef?.current?.getContext?.('2d');
             const viewport = page.getViewport({scale: 1});
 
@@ -25,6 +29,11 @@ export const PDFOnePage: React.FC<PDFOnePageProps> = ({pagePromise}) => {
                 canvasContext: canvas,
                 viewport: viewport,
             });
+        })();
+
+        dispatch?.({
+            type: PrintLoadingActions.ADD_PROMISE,
+            payload: loadPage,
         });
     }, [pagePromise, canvasRef]);
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 import PDFOnePage from './PDFOnePage';
-import * as pdfjs from 'pdfjs-dist';
-pdfjs.GlobalWorkerOptions.workerSrc = require('pdfjs-dist/build/pdf.worker.entry');
+import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
+import pdfjs, { getDocument } from 'pdfjs-dist/webpack';
 
 interface PDFInlineRenderProps {
     url: string;
@@ -10,10 +10,18 @@ interface PDFInlineRenderProps {
 
 export const PDFInlineRender: React.FC<PDFInlineRenderProps> = ({url}) => {
     const [pdf, setPdf] = useState<pdfjs.PDFDocumentProxy | null>(null);
+    const {dispatch} = usePrintLoadingContext();
 
     useEffect(() => {
-        pdfjs.getDocument({url}).promise.then(doc => {
+        const loadPDF = (async () => {
+            // TODO: We can hook into onProgress here.
+            const doc = await getDocument({url}).promise;
             setPdf(doc);
+        })();
+
+        dispatch?.({
+            type: PrintLoadingActions.ADD_PROMISE,
+            payload: loadPDF,
         });
     }, [url]);
 
