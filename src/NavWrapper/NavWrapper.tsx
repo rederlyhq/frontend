@@ -30,6 +30,7 @@ import localPreferences from '../Utilities/LocalPreferences';
 import { logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 const { session } = localPreferences;
 
+
 interface NavWrapperProps {
 
 }
@@ -82,7 +83,12 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
             <Navbar role='navigation' variant='dark' bg='dark' className="toolbar mr-auto">
                 <NavbarBrand as={Link} to="/common/courses">
                     <img
-                        src="/rederly-logo-offwhite.webp"
+                        src={
+                            // Fair warning, don't === this, it's not a real boolean.
+                            window.Modernizr.webp ?
+                                '/rederly-logo-offwhite.webp' :
+                                '/rederly-logo-offwhite.png'
+                        }
                         className='d-inline-block align-top'
                         alt='Rederly logo'
                         height={50}
