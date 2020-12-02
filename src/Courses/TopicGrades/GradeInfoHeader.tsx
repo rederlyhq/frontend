@@ -166,8 +166,8 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             // no grade for this user/problem combo -> error was already caught
             // this still happens on initial page load, so debug
             logger.debug(`GradeInfoHeader: No grade for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
-        } else if ((_.isNil(grade.workbooks) || _.isEmpty(grade.workbooks)) && 
-            !_.isNil(topic.topicAssessmentInfo) && 
+        } else if ((_.isNil(grade.workbooks) || _.isEmpty(grade.workbooks)) &&
+            !_.isNil(topic.topicAssessmentInfo) &&
             (_.isNil(grade.gradeInstances) || _.isEmpty(grade.gradeInstances))
         ) {
             // no workbooks on an exam, so get previewPath and previewSeed because there cannot be a current state
@@ -183,7 +183,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         } else if (_.isNil(_.find(grade.workbooks, ['id', info.workbookId]))) {
             // we have workbooks, and one is selected, but entry doesn't exist -> error
             logger.error(`GradeInfoHeader: User #${selected.user?.id} tried to set workbook #${info.workbookId} for problem #${selected.problem?.id} but I cannot find that record.`);
-        } else { 
+        } else {
             newProblemState.workbookId = info.workbookId;
             logger.debug(`GradeInfoHeader: setting Problem State - workbookId: ${newProblemState.workbookId}`);
         }
@@ -221,7 +221,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 
     const onSuccess = (gradeOverride: Partial<StudentGrade>) => {
         logger.debug('GradeInfoHeader: overriding grade', gradeOverride.effectiveScore);
-        const currentGrade = grade; 
+        const currentGrade = grade;
         if (!_.isNil(gradeOverride) &&
             !_.isNil(gradeOverride.effectiveScore) &&
             !_.isNil(currentGrade)
@@ -310,13 +310,15 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 <h4>Statistics</h4>
                 Number of attempts: <strong>{info.attemptsCount}</strong><br />
                 Best overall score: <strong>{info.overallBestScore?.toPercentString()}</strong><br />
+                {/* Should check !moment(topic.endDate).isSame(topic.deadDate) for topic and overrides before showing this? */}
+                Best score (including Partial Credit): <strong>{info.partialCreditBestScore?.toPercentString()}</strong><br />
                 Score from best exam submission: <strong>{info.legalScore?.toPercentString()}</strong><br />
                 Average score: <strong>{info.averageScore?.toPercentString()}</strong>
             </Grid>
             <Grid item xs={6}>
                 <h4>Grades</h4>
                 Effective score for grades: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
-                {grade && 
+                {grade &&
                 <>
                     <Button
                         variant='outlined'
@@ -351,7 +353,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                         versionKey={info.studentGradeInstanceId ?? grade.id}
                         attemptKey={info.workbookId}
                         onChange={setInfo}
-                    /> : 
+                    /> :
                     `${selected.user?.name} has not attempted this problem.`
                 }
             </Grid>}
