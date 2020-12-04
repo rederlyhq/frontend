@@ -311,7 +311,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 Number of attempts: <strong>{info.attemptsCount}</strong><br />
                 Best overall score: <strong>{info.overallBestScore?.toPercentString()}</strong><br />
                 {/* Should check !moment(topic.endDate).isSame(topic.deadDate) for topic and overrides before showing this? */}
-                Best score (including Partial Credit): <strong>{info.partialCreditBestScore?.toPercentString()}</strong><br />
+                System score: <strong>{info.partialCreditBestScore?.toPercentString()}</strong><br />
                 Score from best exam submission: <strong>{info.legalScore?.toPercentString()}</strong><br />
                 Average score: <strong>{info.averageScore?.toPercentString()}</strong>
             </Grid>
