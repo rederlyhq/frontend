@@ -331,62 +331,86 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         });
     }
 
-    const onLoadHandlers = async () => {
-        const iframeDoc = iframeRef.current?.contentDocument;
-        const iframeWindow = iframeRef?.current?.contentWindow as any | null | undefined;
-
-        if (!iframeDoc) return; // this will prevent empty renderedHTML
-
-        const body = iframeDoc?.body;
-        if (body === undefined) {
-            logger.error('Couldn\'t access body of iframe');
-            return;
-        }
-
-        let problemForm = iframeWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
-        if (!_.isNil(problemForm)) {
-            // check that the submit url is accurate
-            const submitUrl = problemForm.getAttribute('action');
-            const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
-            if (checkId && parseInt(checkId[1],10) !== problem.id) {
-                // if this still happens, we have bigger problems
-                logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
-                setAlert({
-                    variant: 'danger',
-                    message: `This problem ID (${problem.id}) is out of sync.`
-                });
+    const onLoadHandlers = () => {
+        logger.info('onLoadHandlers called');
+        setRenderedHTML((renderedHTML): string => {
+            const iframeHTML = iframeRef.current?.attributes?.getNamedItem('srcdoc')?.nodeValue;
+            if (renderedHTML === '' || renderedHTML !== iframeHTML) {
+                logger.info('onLoadHandlers bowing out since renderedHTML is empty string or does not match the current request');
+                return renderedHTML;
             }
-            insertListeners(problemForm);
-            updateSubmitActive();
-        } else {
-            if (renderedHTML !== '') {
-                logger.error(`This problem has no problemMainForm: ${renderedHTML}`); // should NEVER happen when renderedHTML is non-empty
-            }
-        }
 
-        const ww_applet_list = iframeWindow?.ww_applet_list;
-        if (!_.isNil(ww_applet_list)) {
+            if (!_.isNull(pendingReq.current)) {
+                logger.info('onLoadHandlers bowing out since another request is in progress');
+                return renderedHTML;
+            }
     
-            const promises = Object.keys(ww_applet_list).map( async (key: string) => {
-                const initFunctionName = ww_applet_list[key].onInit;
-                // stash original ggbOnInit, then spy on it with a Promise
-                const onInitOriginal = iframeWindow?.[initFunctionName];
-                const { dressedFunction: dressedInit, nakedPromise } = xRayVision(onInitOriginal);
-                iframeWindow[initFunctionName] = dressedInit;
-
-                // getApplet(key) will not resolve until after ggbOnInit runs
-                await nakedPromise.promise;
-
-                const {getApplet} = iframeWindow;
-                getApplet(key).registerUpdateListener?.(_.throttle(()=>{
-                    ww_applet_list[key].submitAction();
-                    problemForm.dispatchEvent(new Event('input'));
-                }, 100, {leading:true, trailing:true}));
-            }); 
-            await Promise.all(promises);       
-        }
-
-        setLoading(false);
+            logger.info('onLoadHandlers running');
+            const iframeDoc = iframeRef.current?.contentDocument;
+            const iframeWindow = iframeRef?.current?.contentWindow as any | null | undefined;
+    
+            if (!iframeDoc) return renderedHTML; // this will prevent empty renderedHTML
+    
+            const body = iframeDoc?.body;
+            if (body === undefined) {
+                logger.error('Couldn\'t access body of iframe');
+                return renderedHTML;
+            }
+    
+            let problemForm = iframeWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
+            if (!_.isNil(problemForm)) {
+                // check that the submit url is accurate
+                const submitUrl = problemForm.getAttribute('action');
+                const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
+                if (checkId && parseInt(checkId[1],10) !== problem.id) {
+                    // if this still happens, we have bigger problems
+                    logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
+                    setAlert({
+                        variant: 'danger',
+                        message: `This problem ID (${problem.id}) is out of sync.`
+                    });
+                }
+                insertListeners(problemForm);
+                updateSubmitActive();
+            } else {
+                if (renderedHTML !== '') {
+                    logger.error(`This problem has no problemMainForm: ${renderedHTML}`); // should NEVER happen when renderedHTML is non-empty
+                }
+            }
+    
+            const ww_applet_list = iframeWindow?.ww_applet_list;
+            let loadingPromise: Promise<unknown> = Promise.resolve();
+            if (!_.isNil(ww_applet_list)) {
+        
+                const promises = Object.keys(ww_applet_list).map( async (key: string) => {
+                    const initFunctionName = ww_applet_list[key].onInit;
+                    // stash original ggbOnInit, then spy on it with a Promise
+                    const onInitOriginal = iframeWindow?.[initFunctionName];
+                    const { dressedFunction: dressedInit, nakedPromise } = xRayVision(onInitOriginal);
+                    iframeWindow[initFunctionName] = dressedInit;
+    
+                    // getApplet(key) will not resolve until after ggbOnInit runs
+                    await nakedPromise.promise;
+    
+                    const {getApplet} = iframeWindow;
+                    getApplet(key).registerUpdateListener?.(_.throttle(()=>{
+                        ww_applet_list[key].submitAction();
+                        problemForm.dispatchEvent(new Event('input'));
+                    }, 100, {leading:true, trailing:true}));
+                }); 
+                loadingPromise = Promise.all(promises);       
+            }
+    
+            loadingPromise.then(() => {
+                setRenderedHTML(renderedHTML => {
+                    if (renderedHTML === iframeHTML) {
+                        setLoading(false);
+                    }
+                    return renderedHTML;
+                });    
+            });
+            return renderedHTML;
+        });
     };
 
     return (
