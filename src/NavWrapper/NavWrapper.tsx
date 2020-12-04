@@ -25,6 +25,7 @@ import logger from '../Utilities/Logger';
 import TopicGradingPage from '../Courses/TopicGrades/GradingPage';
 import { ProblemEditor } from '../Assignments/ProblemEditor';
 import PrintEverything from '../Courses/TopicGrades/PrintEverything';
+import { PrintLoadingProvider } from '../Contexts/PrintLoadingContext';
 import localPreferences from '../Utilities/LocalPreferences';
 import { logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 const { session } = localPreferences;
@@ -142,7 +143,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                         </Route>}
                                         {getUserRole() !== UserRole.STUDENT &&
                                         <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading/print/:userId`}>
-                                            <PrintEverything />
+                                            <PrintLoadingProvider>
+                                                <PrintEverything />
+                                            </PrintLoadingProvider>
                                         </Route>}
                                         {getUserRole() !== UserRole.STUDENT &&
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/grading`}>
