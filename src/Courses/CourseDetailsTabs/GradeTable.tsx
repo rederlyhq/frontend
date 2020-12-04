@@ -3,6 +3,7 @@ import React from 'react';
 import _ from 'lodash';
 import MaterialTable from 'material-table';
 import MaterialIcons from '../../Components/MaterialIcons';
+import { TablePagination } from '@material-ui/core';
 
 interface GradeTableProps {
     courseName: string;
@@ -37,6 +38,17 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
                 options={{
                     exportButton: true,
                     exportAllData: true,
+                    pageSize: safeGrades.length,
+                    // pageSizeOptions: [..._.range(0, safeGrades.length, 5), safeGrades.length],
+                    emptyRowsWhenPaging: false,
+                }}
+                components={{
+                    Pagination: props => (
+                        <TablePagination
+                            {...props}
+                            rowsPerPageOptions={[..._.range(0, safeGrades.length, 5), { label: 'All', value: safeGrades.length }]}
+                        />
+                    )
                 }}
             />
         </div>
