@@ -21,8 +21,8 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
     const {dispatch} = usePrintLoadingContext();
     const params = useParams<{userId?: string, topicId?: string}>();
 
-    let userId: number = 0;
-    let topicId: number = 0;
+    let userId: number | null = null;
+    let topicId: number | null = null;
     if (params.userId)
         userId = parseInt(params.userId, 10);
 
@@ -30,7 +30,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
         topicId = parseInt(params.topicId, 10);
 
     useEffect(()=>{
-        if (_.isNaN(userId) || _.isNaN(topicId)) {
+        if (_.isNil(userId) || _.isNil(topicId) || _.isNaN(userId) || _.isNaN(topicId)) {
             logger.error(`Attempting to print a page without User ${userId} or Topic ${topicId} in the URL.`);
             return;
         }

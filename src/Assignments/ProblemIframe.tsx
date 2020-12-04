@@ -355,7 +355,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             // check that the submit url is accurate
             const submitUrl = problemForm.getAttribute('action');
             const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
-            if (!checkId || parseInt(checkId[1],10) !== problem.id) {
+            if (checkId && parseInt(checkId[1],10) !== problem.id) {
                 // if this still happens, we have bigger problems
                 logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
                 setAlert({
