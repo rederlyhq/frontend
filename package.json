@@ -69,7 +69,7 @@
     "rebuild_renderer": "(cd ../renderer-docker && ./rebuild_docker.sh)",
     "lint": "eslint src/ --ext ts,tsx",
     "postbuild": "node postbuild.js",
-    "modernizr": "npx modernizr -c modernizr-config.json -d public/modernizr.min.js"
+    "modernizr": "modernizr -c modernizr-config.json -d public/modernizr.min.js"
   },
   "eslintConfig": {
     "extends": "react-app"
