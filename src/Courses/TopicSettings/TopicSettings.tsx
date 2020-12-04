@@ -39,6 +39,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
     // This is a hack to allow us to update the selected TopicObject with DEF file information but not
     // lose all the user input that might be in the form.
     const [oldSelectedState, setOldSelectedState] = useState<TopicObject>(selected);
+    const [saving, setSaving] = useState<boolean>(false);
 
     useEffect(()=>{
         const selectedWithoutQuestions = _.omit(selected, ['questions']);
@@ -79,6 +80,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
         }
 
         try {
+            setSaving(true);
             await putTopic({
                 id: selected.id,
                 data: obj
@@ -91,6 +93,8 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
         } catch (e) {
             logger.error('Error updating topic.', e);
             setUpdateAlert({message: e.message, severity: 'error'});
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -128,6 +132,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                                 color='primary'
                                 variant='contained'
                                 type='submit'
+                                disabled={saving}
                             >
                                 Save Topic Settings
                             </Button>
