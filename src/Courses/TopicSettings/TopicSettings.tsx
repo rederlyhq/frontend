@@ -10,7 +10,6 @@ import ExamSettings from './ExamSettings';
 import { TopicSettingsInputs } from './TopicSettingsPage';
 import { putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
-import { Alert } from 'react-bootstrap';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
 import logger from '../../Utilities/Logger';
 
@@ -35,11 +34,12 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             }),
         }
     });
-    const { register, handleSubmit, control, watch, reset, errors } = topicForm;
+    const { register, handleSubmit, control, watch, reset } = topicForm;
     const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
     // This is a hack to allow us to update the selected TopicObject with DEF file information but not
     // lose all the user input that might be in the form.
     const [oldSelectedState, setOldSelectedState] = useState<TopicObject>(selected);
+    const [saving, setSaving] = useState<boolean>(false);
 
     useEffect(()=>{
         const selectedWithoutQuestions = _.omit(selected, ['questions']);
@@ -80,6 +80,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
         }
 
         try {
+            setSaving(true);
             await putTopic({
                 id: selected.id,
                 data: obj
@@ -92,6 +93,8 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
         } catch (e) {
             logger.error('Error updating topic.', e);
             setUpdateAlert({message: e.message, severity: 'error'});
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -129,6 +132,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                                 color='primary'
                                 variant='contained'
                                 type='submit'
+                                disabled={saving}
                             >
                                 Save Topic Settings
                             </Button>

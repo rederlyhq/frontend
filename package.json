@@ -1,6 +1,6 @@
 {
   "name": "webwork-react-ts",
-  "version": "1.5.9",
+  "version": "1.6.0",
   "author": "Rederly",
   "license": "GPL-3.0-or-later",
   "private": true,
@@ -17,7 +17,9 @@
     "@types/jest": "^24.9.1",
     "@types/js-cookie": "^2.2.6",
     "@types/lodash": "^4.14.150",
+    "@types/modernizr": "^3.5.3",
     "@types/node": "^12.12.35",
+    "@types/pdfjs-dist": "^2.1.6",
     "@types/react": "^16.9.34",
     "@types/react-beautiful-dnd": "^13.0.0",
     "@types/react-dom": "^16.9.6",
@@ -27,6 +29,7 @@
     "bootstrap": "^4.4.1",
     "chart.js": "^2.9.3",
     "codemirror": "^5.58.2",
+    "es6-promise": "^4.2.8",
     "framer-motion": "^1.10.3",
     "iframe-resizer-react": "^1.0.4",
     "jquery": "^3.5.1",
@@ -35,7 +38,7 @@
     "material-table": "^1.61.0",
     "material-ui-chip-input": "^1.1.0",
     "moment": "^2.27.0",
-    "pdfjs-dist": "^2.5.207",
+    "pdfjs-dist": "^2.6.347",
     "popper.js": "^1.16.1",
     "react": "^16.13.1",
     "react-autocomplete": "^1.8.1",
@@ -62,10 +65,13 @@
     "renderer-docker": "(cd ../renderer-docker && ./start_docker.sh)",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "prestart": "npm run modernizr",
+    "prebuild": "npm run modernizr",
     "build": "react-scripts build",
     "rebuild_renderer": "(cd ../renderer-docker && ./rebuild_docker.sh)",
     "lint": "eslint src/ --ext ts,tsx",
-    "postbuild": "node postbuild.js"
+    "postbuild": "node postbuild.js",
+    "modernizr": "modernizr -c modernizr-config.json -d public/modernizr.min.js"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -84,7 +90,6 @@
   },
   "devDependencies": {
     "@hookform/devtools": "^2.2.1",
-    "@types/pdfjs-dist": "^2.1.6",
     "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^2.27.0",
     "@typescript-eslint/parser": "^2.27.0",
@@ -93,7 +98,9 @@
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.19.0",
     "http-proxy-middleware": "^1.0.5",
+    "modernizr": "^3.11.4",
     "react-axe": "^3.4.1",
-    "react-hook-form-devtools": "^1.2.0"
+    "react-hook-form-devtools": "^1.2.0",
+    "worker-loader": "^3.0.5"
   }
 }

@@ -18,7 +18,7 @@ interface CommonSettingsProps {
  *
  */
 export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUpdateAlert}) => {
-    const { register, getValues, errors, control, setValue, watch, formState, reset } = formObject;
+    const { register, getValues, control, setValue, watch } = formObject;
     const { topicTypeId, partialExtend, startDate, endDate, deadDate } = watch();
 
     useEffect(()=>{
@@ -105,8 +105,8 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         inputVariant='outlined'
                         fullWidth={false}
                         label={partialExtend ? 'End (full credit)' : 'End'}
-                        minDate={moment.max([startDate, moment()])}
-                        minDateMessage='End date should not be set in the past'
+                        minDate={startDate}
+                        minDateMessage='End date should not be set before the start date'
                         onAccept={() => {setUpdateAlert({message: '', severity: 'warning'});}}
                         rules={{
                             required: true,
@@ -134,7 +134,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         inputVariant='outlined'
                         fullWidth={false}
                         label='End (partial credit)'
-                        minDate={moment.max([endDate, moment()])}
+                        minDate={endDate}
                         onAccept={() => {setUpdateAlert({message: '', severity: 'warning'});}}
                         rules={{
                             required: true,

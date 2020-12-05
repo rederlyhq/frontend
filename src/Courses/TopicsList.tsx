@@ -26,7 +26,6 @@ interface TopicsListProps {
  * Lists topics. Clicking into one will go to the problem sets.
  */
 export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, showEditTopic, removeTopic, unitUnique}) => {
-    const [, setTopicFeedback] = useState({topicId: -1, feedback: '', variant: 'danger'});
     const [showSettingsModal, setShowSettingsModal] = useState<{state: boolean, topic: TopicObject | null}>({state: false, topic: null});
     const userType: UserRole = getUserRole();
     const userId: number = getUserId();

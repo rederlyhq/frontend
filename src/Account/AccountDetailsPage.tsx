@@ -9,7 +9,6 @@ interface AccountDetailsPageProps {
 }
 
 export const AccountDetailsPage: React.FC<AccountDetailsPageProps> = () => {
-    // const userName = Cookies.get(CookieEnum.USERNAME);
     const userName = session.username;
     return (
         <Grid container item spacing={3} xs={6} justify='center'>

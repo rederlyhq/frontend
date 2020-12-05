@@ -4,6 +4,7 @@ import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import url from 'url';
 import * as qs from 'querystring';
+import { BackendAPIResponse } from '../BackendAPIResponse';
 
 const USER_PATH = '/users/';
 const USER_FORGOT_PASSWORD_PATH = url.resolve(
@@ -33,6 +34,15 @@ const USER_VERIFICATION_PATH = url.resolve(
 const USER_REGISTER_PATH = url.resolve(
     USER_PATH,
     'register'
+);
+const USER_CHECK_IN_PATH = url.resolve(
+    USER_PATH,
+    'check-in'
+);
+
+const USER_LOGOUT_PATH = url.resolve(
+    USER_PATH,
+    'logout'
 );
 
 export const postForgotPassword = async ({
@@ -147,6 +157,23 @@ export const getUsersForCourse = async ({
 export const registerUser = async (data: RegisterUserOptions): Promise<RegisterUserResponse> => {
     try {
         return await AxiosRequest.post(USER_REGISTER_PATH, data);
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const checkIn = async (): Promise<BackendAPIResponse> => {
+    try {
+        // Route can be called with any verb
+        return await AxiosRequest.get(USER_CHECK_IN_PATH);
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const logout = async (): Promise<BackendAPIResponse> => {
+    try {
+        return await AxiosRequest.post(USER_LOGOUT_PATH);
     } catch (e) {
         throw new BackendAPIError(e);
     }

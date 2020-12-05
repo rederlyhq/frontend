@@ -4,6 +4,7 @@ import _ from 'lodash';
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import ChipInput from 'material-ui-chip-input';
 import { ErrorMessage } from '@hookform/error-message';
+import { Constants } from '../../Utilities/Constants';
 
 /* PROBLEM SETTINGS */
 export const ProblemMaxAttempts: React.FC<{}> = () => {
@@ -14,12 +15,15 @@ export const ProblemMaxAttempts: React.FC<{}> = () => {
         <>
             <TextField
                 name={name}
-                inputRef={register()}
+                inputRef={register({
+                    required: true
+                })}
+                error={Boolean(errors[name])}
+                helperText={errors[name] ? 'Required.' : null}
                 label='Max Graded Attempts'
                 type='number'
                 inputProps={{min: -1}}
             />
-            <ErrorMessage name={name} errors={errors} />
         </>
     );
 };
@@ -34,10 +38,14 @@ export const ProblemPath: React.FC<{}> = () => {
             <TextField
                 fullWidth
                 name={name}
-                inputRef={register()}
+                helperText={errors[name] ? 'Invalid path.' : null}
+                inputRef={register({
+                    pattern: Constants.Renderer.VALID_PROBLEM_PATH_REGEX,
+                    required: true,
+                })}
+                error={Boolean(errors[name])}
                 label='Problem Path'
             />
-            <ErrorMessage name={name} errors={errors} />
         </>
     );
 };
@@ -50,12 +58,15 @@ export const ProblemWeight: React.FC<{}> = () => {
         <>
             <TextField
                 name={name}
-                inputRef={register()}
+                inputRef={register({
+                    required: true
+                })}
+                error={Boolean(errors[name])}
+                helperText={errors[name] ? 'Required.' : null}
                 label='Weight'
                 type='number'
                 inputProps={{min: 0}}
             />
-            <ErrorMessage name={name} errors={errors} />
         </>
     );
 };
@@ -157,7 +168,7 @@ export const MultipleProblemPaths: React.FC = () => {
                     helperText={errors?.[examProblemFieldNamePrefix]?.[fieldArrayName]?.[index] ? 'Invalid path.' : null}
                     error={!!(errors?.[examProblemFieldNamePrefix]?.[fieldArrayName]?.[index])}
                     inputRef={register({
-                        pattern: /^(Library|Contrib|webwork-open-problem-library|private\/our|private\/templates|private\/rederly).*\.pg$/,
+                        pattern: Constants.Renderer.VALID_PROBLEM_PATH_REGEX,
                         required: index === 0,
                     })}
                     onBlur={(e: any)=>{
@@ -186,57 +197,67 @@ const examFieldNamePrefix = 'topicAssessmentInfo';
 
 export const DurationField: React.FC<{}> = () => {
     const { register, errors } = useFormContext();
-
+    const name = `${examFieldNamePrefix}.duration`;
+    
     return (
         <TextField
-            name={`${examFieldNamePrefix}.duration`}
+            name={name}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
             label={'Time Limit (minutes)'}
             type='number'
             inputProps={{min: 2}}
+            error={Boolean(errors[name])}
+            helperText={errors[name] ? 'Error.' : null}
         />
     );
 };
 
 export const MaxGradedAttemptsPerVersionField: React.FC<{}> = () => {
     const { register, errors } = useFormContext();
-
+    const name = `${examFieldNamePrefix}.maxGradedAttemptsPerVersion`;
     return (
         <TextField
-            name={`${examFieldNamePrefix}.maxGradedAttemptsPerVersion`}
+            name={name}
             inputRef={register()}
             label={'Submissions per Version'}
             type='number'
             InputLabelProps={{style: {width: 'max-content'}, shrink: true}}
+            error={Boolean(errors[name])}
+            helperText={errors[name] ? 'Error.' : null}
         />
     );
 };
 
 export const MaxVersionsField: React.FC<{}> = () => {
     const { register, errors } = useFormContext();
-
+    const name = `${examFieldNamePrefix}.maxVersions`;
     return (
         <TextField
-            name={`${examFieldNamePrefix}.maxVersions`}
+            name={name}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
             label={'Available Versions'}
             type='number'
+            error={Boolean(errors[name])}
+            helperText={errors[name] ? 'Error.' : null}
         />
     );
 };
 
 export const RandomizationDelayField: React.FC<{}> = () => {
     const { register, errors } = useFormContext();
+    const name = `${examFieldNamePrefix}.versionDelay`;
 
     return (
         <TextField
-            name={`${examFieldNamePrefix}.versionDelay`}
+            name={name}
             label={'Delay Between Versions (minutes)'}
             InputLabelProps={{ shrink: true }}
             inputRef={register()}
             type='number'
+            error={Boolean(errors[name])}
+            helperText={errors[name] ? 'Error.' : null}
         />
     );
 };
@@ -245,12 +266,15 @@ export const RandomizationDelayField: React.FC<{}> = () => {
 
 export const GenerateSwitchField: React.FC<{fieldName: string, label: string}> = ({fieldName, label}) => {
     const { control, errors } = useFormContext();
+    const name = `${examFieldNamePrefix}.${fieldName}`;
 
     return (
         <Controller
-            name={`${examFieldNamePrefix}.${fieldName}`}
+            name={name}
             control={control}
             defaultValue={false}
+            error={Boolean(errors[name])}
+            helperText={errors[name] ? 'Error.' : null}
             render={({ onChange, onBlur, value, name }) => (
                 <FormControlLabel
                     // label={_.startCase(fieldName)}

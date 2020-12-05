@@ -3,7 +3,7 @@ import logger from './Logger';
 export class NakedPromise<T> {
     public promise: Promise<T>;
     public reject!: (() => void);
-    public resolve!: (() => void);
+    public resolve!: ((value: T | PromiseLike<T>) => void);
 
     constructor() {
         this.promise = new Promise((resolve, reject) => {
@@ -24,8 +24,8 @@ export const xRayVision = (f: any) => {
             } catch (e) {
                 logger.error('error occurred in parameter function', e);
             }
-            nakedPromise.resolve();
-        }, 
+            nakedPromise.resolve(null);
+        },
         nakedPromise,
     };
 };

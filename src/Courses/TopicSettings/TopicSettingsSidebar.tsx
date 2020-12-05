@@ -1,10 +1,10 @@
-import { Button, Chip, Grid } from '@material-ui/core';
+import { Chip, Grid } from '@material-ui/core';
 import _ from 'lodash';
 import React from 'react';
 import { Draggable, DragDropContext, Droppable, DraggableProvided } from 'react-beautiful-dnd';
 import { Nav, NavLink } from 'react-bootstrap';
 import { FaFileUpload } from 'react-icons/fa';
-import { MdAdd, MdDragHandle } from 'react-icons/md';
+import { MdAdd } from 'react-icons/md';
 import { GrDrag } from 'react-icons/gr';
 import { TopicObject, CourseTopicAssessmentInfo, ProblemObject } from '../CourseInterfaces';
 import { DropzoneInputProps } from 'react-dropzone';

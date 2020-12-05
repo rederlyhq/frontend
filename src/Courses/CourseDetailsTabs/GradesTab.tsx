@@ -5,8 +5,6 @@ import GradeTable from './GradeTable';
 import _ from 'lodash';
 import SubObjectDropdown from '../../Components/SubObjectDropdown';
 import { UnitObject, TopicObject, ProblemObject, CourseObject } from '../CourseInterfaces';
-import { CookieEnum } from '../../Enums/CookieEnum';
-import Cookies from 'js-cookie';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import logger from '../../Utilities/Logger';
 import localPreferences from '../../Utilities/LocalPreferences';
@@ -39,7 +37,6 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
     const [view, setView] = useState<string>(GradesView.OVERVIEW);
     const [selectedObjects, setSelectedObjects] = useState<IDropdownCascade>({});
     const [viewData, setViewData] = useState<Array<any>>([]);
-    // const userId: string | undefined = Cookies.get(CookieEnum.USERID);
     const userId: string | null = localPreferences.session.userId;
     const userType: UserRole = getUserRole();
 
