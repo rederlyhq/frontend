@@ -1,9 +1,8 @@
 /* eslint-disable react/display-name */
-import React, { useState, forwardRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, Button, Col, Nav } from 'react-bootstrap';
 import MaterialTable, { Column } from 'material-table';
-// import { MdSearch, MdFirstPage, MdLastPage, MdClear, MdFilterList, MdChevronRight, MdChevronLeft, MdArrowDownward, MdFileDownload} from 'react-icons/md';
-import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from '@material-ui/icons';
+import { ChevronRight } from '@material-ui/icons';
 import { ProblemObject, CourseObject, StudentGrade } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import _ from 'lodash';
@@ -19,6 +18,7 @@ import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/Course
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
 import { CircularProgress } from '@material-ui/core';
+import MaterialIcons from '../../Components/MaterialIcons';
 
 const FILTERED_STRING = '_FILTERED';
 
@@ -67,27 +67,6 @@ const attemptCols: Array<Column<any>> = [
 ];
 
 
-const icons = {
-    // Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
-    // Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
-    // Delete: forwardRef((props, ref) => <DeleteOutline {...props} ref={ref} />),
-    // DetailPanel: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
-    // Edit: forwardRef((props, ref) => <Edit {...props} ref={ref} />),
-    Clear: forwardRef<any>((props, ref) => <Clear {...props} ref={ref} />),
-    Export: forwardRef<any>((props, ref) => <SaveAlt {...props} ref={ref} />),
-    Filter: forwardRef<any>((props, ref) => <FilterList {...props} ref={ref} />),
-    FirstPage: forwardRef<any>((props, ref) => <FirstPage {...props} ref={ref} />),
-    LastPage: forwardRef<any>((props, ref) => <LastPage {...props} ref={ref} />),
-    NextPage: forwardRef<any>((props, ref) => <ChevronRight {...props} ref={ref} />),
-    PreviousPage: forwardRef<any>((props, ref) => <ChevronLeft {...props} ref={ref} />),
-    ResetSearch: forwardRef<any>((props, ref) => <Clear {...props} ref={ref} />),
-    Search: forwardRef<any>((props, ref) => <Search {...props} ref={ref} />),
-    SortArrow: forwardRef<any>((props, ref) => <ArrowDownward {...props} ref={ref} />),
-    // ThirdStateCheck: forwardRef((props, ref) => <Remove {...props} ref={ref} />),
-    // ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
-};
-
-
 interface BreadCrumbFilter {
     id: number;
     displayName: string;
@@ -132,6 +111,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         { title: 'Name', field: 'name' },
         { title: _.capitalize(`${aggregateTitlePrefix}number of attempts`), field: 'averageAttemptedCount' },
         { title: _.capitalize(`${aggregateTitlePrefix}grade`), field: 'averageScore' },
+        { title: _.capitalize(`${aggregateTitlePrefix}system score`), field: 'systemScore' },
         { title: _.capitalize(`${aggregateTitlePrefix}mastered`), field: 'completionPercent' },
     ];
 
@@ -223,6 +203,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         ...d,
                         averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
                         averageScore: formatNumberString(d.averageScore, true),
+                        ...(d.systemScore && {systemScore: formatNumberString(d.systemScore, true)}),
                         completionPercent: formatNumberString(d.completionPercent, true)
                     }));
                 }
@@ -237,7 +218,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     }, [course.id, globalView, idFilter, userId, userType]);
 
     const renderProblemPreview = (rowData: any) => {
-        logger.debug('Stats tab: renderProblemPreview called'); 
+        logger.debug('Stats tab: renderProblemPreview called');
         switch (view) {
         case StatisticsViewFilter.TOPICS_FILTERED:
         case StatisticsView.PROBLEMS:
@@ -332,18 +313,10 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         }
     };
 
-    const getTitle = (): string => {
-        let result = course.name;
-        Object.keys(StatisticsView).forEach((key: string) => {
-            result = breadcrumbFilter[key as StatisticsView]?.displayName ?? result;
-        });
-        return result;
-    };
-
     const hasDetailPanel = userId !== undefined ?
         (view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED):
         (view === StatisticsView.PROBLEMS || view === StatisticsViewFilter.TOPICS_FILTERED);
-    
+
     let actions: Array<any> | undefined = [];
     if(!hasDetailPanel) {
         actions.push({
@@ -383,7 +356,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             }
 
             const { locked } = rowData.grades[0];
-            
+
             // Students only see if their grade is "locked"
             const unlockedIcon = userType === UserRole.PROFESSOR ? <BsUnlock/> : null;
             const icon = locked ? <BsLock/> : unlockedIcon;
@@ -417,7 +390,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
     if(_.isEmpty(actions)) {
         actions = undefined;
-    }    
+    }
 
     return (
         <>
@@ -459,7 +432,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 })}
             </Nav>
             <div style={{ maxWidth: '100%' }}>
-                {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) && 
+                {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) &&
                 <>
                     <OverrideGradeModal
                         show={gradesState.view === GradesStateView.OVERRIDE}
@@ -518,53 +491,20 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         </>)}
                     />
                 </>}
-                { loading ? 
+                { loading ?
                     <CircularProgress /> :
                     <MaterialTable
-                        icons={icons}
-                        title={(
-                            <div className="d-flex">
-                                <h6
-                                    style={{
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
-                                    }}
-                                    className="MuiTypography-root MuiTypography-h6"
-                                >
-                                    {getTitle()}
-                                </h6>
-                                {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) && (view === StatisticsViewFilter.PROBLEMS_FILTERED) && 
-                                <>
-                                    <Button
-                                        className="ml-3 mr-1"
-                                        onClick={() => setGradesState({
-                                            ...gradesState,
-                                            view: GradesStateView.OVERRIDE
-                                        })}
-                                    >
-                                        <>
-                                            <BsPencilSquare/> Override
-                                        </>
-                                    </Button>
-
-                                    <Button
-                                        variant={grade.locked ? 'warning' : 'danger'}
-                                        className="ml-1 mr-1"
-                                        onClick={() => {
-                                            logger.info('Stats tab: [table button] setting gradesstate');
-                                            setGradesState({
-                                                ...gradesState,
-                                                view: GradesStateView.LOCK
-                                            });
-                                        }}
-                                    >
-                                        {grade.locked ? <><BsLock/> Unlock</>: <><BsUnlock/> Lock</>}
-                                    </Button>
-                                </>
-                                }
-                            </div>
-                        )}
+                        icons={MaterialIcons}
+                        title={<TableTitleComponent
+                            userType={userType}
+                            view={view}
+                            userId={userId}
+                            grade={grade}
+                            course={course}
+                            breadcrumbFilter={breadcrumbFilter}
+                            setGradesState={setGradesState}
+                            gradesState={gradesState}
+                        />}
                         columns={(view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) ? attemptCols : gradeCols}
                         data={rowData}
                         actions={actions}
@@ -585,5 +525,68 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         </>
     );
 };
+
+const TableTitleComponent = (
+    {userType, view, userId, grade, course, breadcrumbFilter, setGradesState, gradesState}: {
+        userType: UserRole,
+        view: StatisticsViewAll,
+        userId?: number,
+        grade: StudentGrade | null,
+        course: CourseObject,
+        breadcrumbFilter: EnumDictionary<StatisticsView, BreadCrumbFilter>,
+        setGradesState: React.Dispatch<React.SetStateAction<GradesState>>,
+        gradesState: GradesState,
+    }
+) => (
+    <div className="d-flex">
+        <h6
+            style={{
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+            }}
+            className="MuiTypography-root MuiTypography-h6"
+        >
+            {
+                Object.keys(StatisticsView).reduce((result: string, key: string) => {
+                    return breadcrumbFilter[key as StatisticsView]?.displayName ?? result;
+                }, course.name)
+            }
+        </h6>
+        {
+            (userType === UserRole.PROFESSOR) &&
+            !_.isNil(userId) &&
+            !_.isNil(grade) &&
+            (view === StatisticsViewFilter.PROBLEMS_FILTERED) && (
+                <>
+                    <Button
+                        className="ml-3 mr-1"
+                        onClick={() => setGradesState({
+                            ...gradesState,
+                            view: GradesStateView.OVERRIDE
+                        })}
+                    >
+                        <>
+                            <BsPencilSquare/> Override
+                        </>
+                    </Button>
+
+                    <Button
+                        variant={grade.locked ? 'warning' : 'danger'}
+                        className="ml-1 mr-1"
+                        onClick={() => {
+                            logger.info('Stats tab: [table button] setting gradesstate');
+                            setGradesState({
+                                ...gradesState,
+                                view: GradesStateView.LOCK
+                            });
+                        }}
+                    >
+                        {grade.locked ? <><BsLock/> Unlock</>: <><BsUnlock/> Lock</>}
+                    </Button>
+                </>
+            )}
+    </div>
+);
 
 export default StatisticsTab;
