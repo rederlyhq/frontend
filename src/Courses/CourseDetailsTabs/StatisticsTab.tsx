@@ -203,7 +203,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         ...d,
                         averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
                         averageScore: formatNumberString(d.averageScore, true),
-                        ...(d.systemScore && {systemScore: formatNumberString(d.systemScore, true)}),
+                        ...(_.isNil(d.systemScore) ? undefined : {systemScore: formatNumberString(d.systemScore, true)}),
                         completionPercent: formatNumberString(d.completionPercent, true)
                     }));
                 }
@@ -512,7 +512,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         options={{
                             exportButton: true,
                             exportAllData: true,
-                            sorting: true
+                            sorting: true,
+                            emptyRowsWhenPaging: false,
                         }}
                         detailPanel={hasDetailPanel ? [{
                             icon: () => <ChevronRight />,
