@@ -17,15 +17,11 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
     // Material UI edits the object in-place, which causes problems.
     let safeGrades = grades.map(obj => ({
         ...obj,
+        ...(_.isNil(obj.average) ? undefined : {average: obj.average.toPercentString()}),
+        ...(_.isNil(obj.effectiveScore) ? undefined : {effectiveScore: obj.effectiveScore.toPercentString()}),
+        ...(_.isNil(obj.systemScore) ? undefined : {systemScore: obj.systemScore.toPercentString()}),
     }));
     const headers = _(safeGrades[0]).keys().filter(n => n !== 'id').value();
-    if(headers.indexOf('average') >= 0) {
-        // Would include this in above mapping, however using ternary operated resulted in an empty column in questions
-        safeGrades = safeGrades.map(obj => ({
-            ...obj,
-            average: _.isNil(obj.average) ? '--' : `${(obj.average * 100).toFixed(1)}%`
-        }));
-    }
 
     return (
         <div style={{maxWidth: '100%'}}>
