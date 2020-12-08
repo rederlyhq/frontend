@@ -15,7 +15,7 @@ export const PrintingPage: React.FC<PrintingPageProps> = ({debug = false, open =
         : { style: { opacity: 0 }, height: 0, width: 0, frameBorder: 0 };
     const iframeref = useRef<HTMLIFrameElement>(null);
     const iframeRootRef = useRef<HTMLElement>(null);
-    var [openPortal, closePortal, isOpen, Portal] = usePortal({
+    const [openPortal, closePortal, isOpen, Portal] = usePortal({
         bindTo: iframeref.current?.contentDocument?.body
     });
 

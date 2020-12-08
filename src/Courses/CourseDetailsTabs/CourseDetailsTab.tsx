@@ -30,7 +30,7 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
 
         // TODO, the form gives strings and we aren't validating type properly
         if(course[field].toString() !== value.toString()) {
-            let courseObjectWithUpdates = new CourseObject(course);
+            const courseObjectWithUpdates = new CourseObject(course);
             (courseObjectWithUpdates as any)[field] = value;
             if(field === nameof<CourseObject>('semesterCodeYear')) {
                 field = 'semesterCode';
@@ -70,7 +70,7 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
     if(!_.isNil(error)) {
         return <Alert variant="danger">{error}</Alert>;
     }
-    
+
     return (
         <>
             {userType !== UserRole.STUDENT && (
@@ -91,7 +91,7 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
             <h5>Open Topics</h5>
             <DragDropContext onDragEnd={()=>{}}>
                 <ActiveTopics course={course} />
-            </DragDropContext>            
+            </DragDropContext>
         </>
     );
 };

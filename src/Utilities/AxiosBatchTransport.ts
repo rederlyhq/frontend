@@ -16,7 +16,7 @@ interface LogMessage {
 }
 
 export default class AxiosBatchTransport extends Transport {
-    private throttledSend: (() => Promise<void>) & _.Cancelable;
+    private throttledSend: _.DebouncedFunc<() => Promise<void>>;
     private logsToSend: Array<LogMessage>  = [];
     private axios: AxiosInstance;
     private loggingEndpoint: string;
@@ -31,7 +31,7 @@ export default class AxiosBatchTransport extends Transport {
         //
         // Consume any custom options here. e.g.:
         // - Connection information for databases
-        // - Authentication information for APIs (e.g. loggly, papertrail, 
+        // - Authentication information for APIs (e.g. loggly, papertrail,
         //   logentries, etc.).
         //
 
@@ -89,7 +89,7 @@ export default class AxiosBatchTransport extends Transport {
         if(info[splatSymbol]) {
             log = [...log, ...info[splatSymbol]];
         }
-        
+
         const logMessage: LogMessage = {
             message: log.join(' '),
             time: new Date(),

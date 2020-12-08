@@ -55,8 +55,8 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
      * @param e      - The event object.
      * */
     const onFormChange = async (index: number, name: keyof ProblemObject, e: any) => {
-        let val = e.target.value;
-        let probs = [...problems];
+        const val = e.target.value;
+        const probs = [...problems];
 
         // TODO: Handle validation.
         switch (name) {
@@ -87,7 +87,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
         const key = name === 'path' ? 'webworkQuestionPath' : name;
         // const initialValue = problems[index][key];
         let val = e.target.value;
-        let probs = _.cloneDeep(problems);
+        const probs = _.cloneDeep(problems);
 
         // TODO: Handle validation.
         switch (name) {
@@ -130,7 +130,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                     [key]: val
                 }
             });
-    
+
             setProblems(probs);
         } catch (e) {
             setError(e);
@@ -144,7 +144,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             setError(null);
             await deleteQuestion({
                 id: problemId
-            });    
+            });
             let newProblems = [...problems];
             const deletedProblem = _.find(newProblems, ['id', problemId]);
             // Decrement everything after
@@ -308,7 +308,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             });
 
             setTopicMetadata({ ...topicMetadata, ...updates });
-    
+
             if(_.isNil(existingTopic)) {
                 logger.error('Cannot update topic because it is nil');
                 return;
@@ -317,8 +317,8 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                 ...existingTopic,
                 ...topicMetadata
             });
-    
-            logger.info(topicMetadata);    
+
+            logger.info(topicMetadata);
         } catch (e) {
             setError(e);
         }
@@ -384,11 +384,11 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
             if (!result.destination) {
                 return;
             }
-    
+
             if (result.destination.index === result.source.index) {
                 return;
             }
-    
+
             const newContentOrder = result.destination.index + 1;
             const problemIdRegex = /^problemRow(\d+)$/;
             const { draggableId: problemDraggableId } = result;
@@ -417,7 +417,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                 newTopic.questions = newProbs;
                 updateTopic?.(newTopic);
             }
-    
+
             setError(null);
             const response = await putQuestion({
                 id: parseInt(problemId, 10),
@@ -461,7 +461,7 @@ export const TopicCreationModal: React.FC<TopicCreationModalProps> = ({ unitInde
                 newProb
             ];
             setProblems(newProblems);
-            
+
             if(_.isNil(existingTopic)) {
                 logger.error('Cannot update topic because it is nil');
                 return;

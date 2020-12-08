@@ -8,7 +8,7 @@ import localPreferences from '../Utilities/LocalPreferences';
 
 const { loggingPreferences } = localPreferences;
 
-let level = loggingPreferences.loggingLevel;
+const level = loggingPreferences.loggingLevel;
 
 const transports = {
     console: new BrowserConsoleLoggerTransport(
@@ -37,7 +37,7 @@ const logger = winston.createLogger({
         }
     },
     transports: Object.values(transports),
-    
+
 });
 
 declare global {

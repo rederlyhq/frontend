@@ -197,7 +197,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 };
 
                 if (view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) {
-                    let grades = data.grades.filter((grade: any) => {
+                    const grades = data.grades.filter((grade: any) => {
                         const hasAttempts = grade.numAttempts > 0;
                         const satisfiesIdFilter = idFilter ? grade.courseWWTopicQuestionId === idFilter : true;
                         return hasAttempts && satisfiesIdFilter;
@@ -237,7 +237,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     }, [course.id, globalView, idFilter, userId, userType]);
 
     const renderProblemPreview = (rowData: any) => {
-        logger.debug('Stats tab: renderProblemPreview called'); 
+        logger.debug('Stats tab: renderProblemPreview called');
         switch (view) {
         case StatisticsViewFilter.TOPICS_FILTERED:
         case StatisticsView.PROBLEMS:
@@ -258,7 +258,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
     const resetBreadCrumbs = (selectedKey: string, newBreadcrumb?: BreadCrumbFilter) => {
         logger.debug('Stats tab: resetting breadcrumbs');
-        let globalSelectedKey: StatisticsView = statisticsViewFromAllStatisticsViewFilter(selectedKey as StatisticsViewAll);
+        const globalSelectedKey: StatisticsView = statisticsViewFromAllStatisticsViewFilter(selectedKey as StatisticsViewAll);
         let key: StatisticsView = StatisticsView.UNITS;
         let lastFilter: number | null = null;
         const newBreadcrumbFilter: EnumDictionary<StatisticsView, BreadCrumbFilter> = {};
@@ -343,7 +343,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const hasDetailPanel = userId !== undefined ?
         (view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED):
         (view === StatisticsView.PROBLEMS || view === StatisticsViewFilter.TOPICS_FILTERED);
-    
+
     let actions: Array<any> | undefined = [];
     if(!hasDetailPanel) {
         actions.push({
@@ -383,7 +383,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             }
 
             const { locked } = rowData.grades[0];
-            
+
             // Students only see if their grade is "locked"
             const unlockedIcon = userType === UserRole.PROFESSOR ? <BsUnlock/> : null;
             const icon = locked ? <BsLock/> : unlockedIcon;
@@ -417,12 +417,16 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
     if(_.isEmpty(actions)) {
         actions = undefined;
-    }    
+    }
 
     return (
         <>
-            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
+            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string | null) => {
                 logger.debug('Stats tab: [nav1] setting IdFilter and view');
+                if (_.isNil(selectedKey)) {
+                    logger.error('The selectedKey for the Statistics Tab is null. (TSNH)');
+                    return;
+                }
                 setView(selectedKey as StatisticsViewAll);
                 setBreadcrumbFilters({});
                 setIdFilter(null);
@@ -438,7 +442,11 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     </Col>
                 ))}
             </Nav>
-            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
+            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string | null) => {
+                if (_.isNil(selectedKey)) {
+                    logger.error('The selectedKey for the Statistics Tab is null. (TSNH)');
+                    return;
+                }
                 const { lastFilter } = resetBreadCrumbs(selectedKey);
                 logger.info('Stats tab: [nav2] setting IdFilter and view');
                 setView(selectedKey as StatisticsViewFilter);
@@ -459,7 +467,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 })}
             </Nav>
             <div style={{ maxWidth: '100%' }}>
-                {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) && 
+                {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) &&
                 <>
                     <OverrideGradeModal
                         show={gradesState.view === GradesStateView.OVERRIDE}
@@ -518,7 +526,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         </>)}
                     />
                 </>}
-                { loading ? 
+                { loading ?
                     <CircularProgress /> :
                     <MaterialTable
                         icons={icons}
@@ -534,7 +542,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                                 >
                                     {getTitle()}
                                 </h6>
-                                {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) && (view === StatisticsViewFilter.PROBLEMS_FILTERED) && 
+                                {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) && (view === StatisticsViewFilter.PROBLEMS_FILTERED) &&
                                 <>
                                     <Button
                                         className="ml-3 mr-1"

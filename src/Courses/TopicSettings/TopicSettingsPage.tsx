@@ -41,7 +41,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     const {course} = useCourseContext();
     const { topicId: topicIdStr } = useParams<{topicId?: string}>();
     const topicId = topicProp?.id || (topicIdStr ? parseInt(topicIdStr, 10) : null);
-    
+
     useEffect(()=>{
         if (!topicId) {
             logger.error('No topicId!', window.location);
@@ -72,7 +72,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                     courseTopicContentId: topicId
                 }
             });
-        
+
             const newProb = new ProblemObject(result.data.data);
             const newTopic = new TopicObject(topic);
             newTopic.questions.push(newProb);
@@ -93,11 +93,11 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             if (!result.destination) {
                 return;
             }
-    
+
             if (result.destination.index === result.source.index) {
                 return;
             }
-    
+
             const newContentOrder: number = result.destination.index + 1;
             const problemIdRegex = /^problemRow(\d+)$/;
             const { draggableId: problemDraggableId } = result;
@@ -110,7 +110,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             }
             const problemId = parseInt(problemIdStr, 10);
 
-            let newTopic = new TopicObject(topic);
+            const newTopic = new TopicObject(topic);
             const existingProblem = _.find(newTopic.questions, ['id', problemId]);
 
             if(_.isNil(existingProblem)) {
@@ -128,7 +128,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                     problemNumber: newContentOrder,
                 },
             });
-            
+
             response.data.data.updatesResult.forEach((returnedProblem: Partial<ProblemObject>) => {
                 const existingProblem = _.find(newTopic.questions, ['id', returnedProblem.id]);
                 Object.assign(existingProblem, returnedProblem);
@@ -178,14 +178,14 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     if (_.isNil(topic)) {
         return null;
     }
-    
+
     return (
         <MuiPickersUtilsProvider utils={MomentUtils}>
             <Grid container spacing={5} style={{maxWidth: '100%', marginLeft: '0px'}} {...getRootProps({refKey: 'innerRef'})}>
                 {/* Sidebar */}
-                <TopicSettingsSidebar 
-                    topic={topic || new TopicObject()} 
-                    selected={selected} 
+                <TopicSettingsSidebar
+                    topic={topic || new TopicObject()}
+                    selected={selected}
                     setSelected={setSelected}
                     addNewProblem={addNewProblem}
                     handleDrag={handleDrag}
@@ -194,7 +194,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                     open={open}
                 />
                 {/* Problem List */}
-                <SettingsForm 
+                <SettingsForm
                     selected={selected}
                     setSelected={setSelected}
                     setTopic={setTopic}

@@ -56,7 +56,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
     useEffect(()=>{
-        let defaultAdditionalProblemPaths = [
+        const defaultAdditionalProblemPaths = [
             {path: selected.webworkQuestionPath},
             ...additionalProblemPathsArray?.map((s: string) => ({path: s})) || [],
             {path: ''}

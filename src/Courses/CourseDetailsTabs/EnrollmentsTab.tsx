@@ -17,7 +17,7 @@ export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = () => {
     const enrollUrl = `${window.location.host}/common/courses/enroll/${encodeURIComponent(encodeURIComponent(courseCode))}`;
     const userType: UserRole = getUserRole();
 
-    const textAreaRef = useRef<FormControl<'input'> & HTMLInputElement>(null);
+    const textAreaRef = useRef<HTMLInputElement>(null);
 
     const copyToClipboard = (e: any) => {
         if (textAreaRef?.current === null) {
