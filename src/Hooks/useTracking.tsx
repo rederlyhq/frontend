@@ -18,7 +18,6 @@ export const useTracking = (
     const { listen } = useHistory();
 
     useEffect(() => {
-        console.log('Tracking ID: ', process.env.REACT_APP_GA_ID);
         const unlisten = listen((location) => {
             if (!window.gtag) {
                 logger.error('GA module not loaded.');
