@@ -17,10 +17,11 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
     // Material UI edits the object in-place, which causes problems.
     let safeGrades = grades.map(obj => ({
         ...obj,
-        ...(_.isNil(obj.average) ? undefined : {average: obj.average.toPercentString()}),
-        ...(_.isNil(obj.effectiveScore) ? undefined : {effectiveScore: obj.effectiveScore.toPercentString()}),
-        ...(_.isNil(obj.systemScore) ? undefined : {systemScore: obj.systemScore.toPercentString()}),
+        ...(_.isUndefined(obj.average) ? undefined : {average: _.isNull(obj.average) ? '--' : obj.average.toPercentString()}),
+        ...(_.isUndefined(obj.effectiveScore) ? undefined : {effectiveScore: _.isNull(obj.effectiveScore) ? '--' : obj.effectiveScore.toPercentString()}),
+        ...(_.isUndefined(obj.systemScore) ? undefined : {systemScore: _.isNull(obj.systemScore) ? '--' : obj.systemScore.toPercentString()}),
     }));
+
     const headers = _(safeGrades[0]).keys().filter(n => n !== 'id').value();
 
     return (
