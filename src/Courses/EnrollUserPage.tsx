@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import logger from '../Utilities/Logger';
 import { enrollByCode } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import localPreferences from '../Utilities/LocalPreferences';
+import { gaTrackEnroll } from '../Hooks/useTracking';
 
 interface EnrollUserPageProps {
 
@@ -17,7 +18,7 @@ export const EnrollUserPage: React.FC<EnrollUserPageProps> = () => {
     }>();
     const [{enrollData, enrollError}, setVerifyState] = useState({enrollData: {courseId: -1}, enrollError: ''});
     const userId: string | null = localPreferences.session.userId;
-    
+
     // Async functions return promises regardlessly, and this angers Typescript. IIFE is the workaround.
     useEffect(() => {
         if (!enrollCode) return;
@@ -33,7 +34,7 @@ export const EnrollUserPage: React.FC<EnrollUserPageProps> = () => {
                 if (res.status !== 200) {
                     logger.warn(`Enroll by code Succeeded with a non 200 status code: ${res.status}`);
                 }
-                
+                gaTrackEnroll(enrollCode);
                 setVerifyState({
                     enrollData: res.data.data,
                     enrollError: ''
@@ -42,19 +43,19 @@ export const EnrollUserPage: React.FC<EnrollUserPageProps> = () => {
                 // This is not an error, this can be triggered by giving an invalid code
                 logger.debug('Enrollment failed', e);
                 setVerifyState({
-                    enrollError: e.message, 
+                    enrollError: e.message,
                     enrollData: {courseId: -1}
                 });
             }
         })();
     }, [enrollCode, userId]);
-    
+
     // TODO: Redirect back to home after timeout?
     if (!enrollCode) return <div>This page is no longer valid.</div>;
 
     return (
         <Jumbotron>
-            {enrollError ? 
+            {enrollError ?
                 <h2>{enrollError}</h2> :
                 (enrollData.courseId > -1 ? <>
                     <h4>You have been enrolled in this class!</h4>
