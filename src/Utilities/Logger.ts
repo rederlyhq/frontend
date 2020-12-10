@@ -33,6 +33,7 @@ const logger = winston.createLogger({
             get userId() { return getUserIdNoRedirect() ?? undefined; },
             get userRole() { return getUserRoleNoRedirect() ?? undefined; },
             get location() { return window.location.href; },
+            userAgent: window.navigator.userAgent,
             version: version
         }
     },

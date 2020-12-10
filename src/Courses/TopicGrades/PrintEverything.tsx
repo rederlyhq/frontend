@@ -75,7 +75,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                     logger.warn('More grades were found for a problem at a specific version.');
                     return;
                 }
-                const bestAttemptWorkbook = problem.grades.first?.lastInfluencingCreditedAttemptId;
+                const bestAttemptWorkbook = problem.grades.first?.lastInfluencingCreditedAttemptId ?? problem.grades.first?.lastInfluencingAttemptId;
                 const problemPath = problem.grades.first?.webworkQuestionPath;
                 const attachments = problem.grades.first?.problemAttachments;
                 const baseUrl = gradeData.baseUrl;
