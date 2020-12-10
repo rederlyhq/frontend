@@ -41,7 +41,8 @@ const versionRefresh = async () => {
             if (shouldReload) {
                 // set the next time to the future
                 versionCheck.nextCheckDate = moment().utc().add(1, 'days').format();
-                window.location.reload();
+                // Using the reload flag is deprecated, however not using it did not seem to work, trying it out in case browsers support it
+                window.location.reload(true);
             }
         } else {
             logger.debug('Version Check: Version matched');
