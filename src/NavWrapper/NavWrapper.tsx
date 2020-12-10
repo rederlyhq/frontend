@@ -4,30 +4,34 @@ import { History } from 'history';
 import CoursePage from '../Courses/CoursePage';
 import Cookies from 'js-cookie';
 import { Container, Navbar, NavbarBrand, Nav, NavDropdown, Row, Col } from 'react-bootstrap';
-import CourseDetailsPage from '../Courses/CourseDetailsPage';
 import { AnimatePresence } from 'framer-motion';
 import './NavWrapper.css';
 import NavbarCollapse from 'react-bootstrap/NavbarCollapse';
+import { CookieEnum } from '../Enums/CookieEnum';
+import { version } from '../../package.json';
+import logger from '../Utilities/Logger';
+import { logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
+import localPreferences from '../Utilities/LocalPreferences';
 import { getUserRole, unauthorizedRedirect, UserRole } from '../Enums/UserRole';
+import { CircularProgress } from '@material-ui/core';
+
+// Imports for routing.
+import URLBreadcrumb from './URLBreadcrumb';
 import CourseCreationPage from '../Courses/CourseCreation/CourseCreationPage';
 import SimpleProblemPage from '../Assignments/SimpleProblemPage';
-import AdviserPage from '../Adviser/AdviserPage';
 import EnrollUserPage from '../Courses/EnrollUserPage';
 import { ProvideFeedback } from './ProvideFeedback';
 import AccountWrapper from '../Account/AccountWrapper';
-import { CookieEnum } from '../Enums/CookieEnum';
-import URLBreadcrumb from './URLBreadcrumb';
 import SettingsPage from '../Courses/Settings/SettingsPage';
-import { version } from '../../package.json';
 import CourseProvider from '../Courses/CourseProvider';
-import TopicSettingsPage from '../Courses/TopicSettings/TopicSettingsPage';
-import logger from '../Utilities/Logger';
-import TopicGradingPage from '../Courses/TopicGrades/GradingPage';
-import { ProblemEditor } from '../Assignments/ProblemEditor';
 import PrintEverything from '../Courses/TopicGrades/PrintEverything';
 import { PrintLoadingProvider } from '../Contexts/PrintLoadingContext';
-import localPreferences from '../Utilities/LocalPreferences';
-import { logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
+
+const TopicSettingsPage = lazy(() => import('../Courses/TopicSettings/TopicSettingsPage'));
+const TopicGradingPage = lazy(() => import('../Courses/TopicGrades/GradingPage'));
+const ProblemEditor = lazy(() => import('../Assignments/ProblemEditor'));
+const AdviserPage = lazy(() => import('../Adviser/AdviserPage'));
+const CourseDetailsPage = lazy(() => import('../Courses/CourseDetailsPage'));
 const { session } = localPreferences;
 
 
@@ -115,74 +119,77 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
             </Navbar>
             {/* Routing for the page content */}
             <Container fluid role='main'>
-                <Provider value={{userType: getUserRole()}}>
-                    <AnimatePresence initial={false}>
-                        <URLBreadcrumb key='URLBreadcrumb' />
-                        <Switch>
-                            <Route exact path={`${path}/account`}>
-                                <AccountWrapper />
-                            </Route>
-                            <Route exact path={`${path}/editor`}>
-                                <ProblemEditor />
-                            </Route>
-                            <Route exact path={`${path}/adviser`}>
-                                <AdviserPage />
-                            </Route>
-                            <Route exact path={`${path}/courses`}>
-                                <CoursePage />
-                            </Route>
-                            <Route exact path={`${path}/courses/new`}>
-                                <CourseCreationPage />
-                            </Route>
-                            <Route path={`${path}/courses/settings/:courseId`}>
-                                <SettingsPage />
-                            </Route>
-                            <Route path={`${path}/courses/enroll/:enrollCode`}>
-                                <EnrollUserPage />
-                            </Route>
-                            <Route path={`${path}/courses/:courseId`}>
-                                <CourseProvider>
-                                    <Switch>
-                                        {getUserRole() !== UserRole.STUDENT &&
+                {/* TODO: Make a better generic loading UI like in CourseProvider */}
+                <Suspense fallback={<CircularProgress />}>
+                    <Provider value={{userType: getUserRole()}}>
+                        <AnimatePresence initial={false}>
+                            <URLBreadcrumb key='URLBreadcrumb' />
+                            <Switch>
+                                <Route exact path={`${path}/account`}>
+                                    <AccountWrapper />
+                                </Route>
+                                <Route exact path={`${path}/editor`}>
+                                    <ProblemEditor />
+                                </Route>
+                                <Route exact path={`${path}/adviser`}>
+                                    <AdviserPage />
+                                </Route>
+                                <Route exact path={`${path}/courses`}>
+                                    <CoursePage />
+                                </Route>
+                                <Route exact path={`${path}/courses/new`}>
+                                    <CourseCreationPage />
+                                </Route>
+                                <Route path={`${path}/courses/settings/:courseId`}>
+                                    <SettingsPage />
+                                </Route>
+                                <Route path={`${path}/courses/enroll/:enrollCode`}>
+                                    <EnrollUserPage />
+                                </Route>
+                                <Route path={`${path}/courses/:courseId`}>
+                                    <CourseProvider>
+                                        <Switch>
+                                            {getUserRole() !== UserRole.STUDENT &&
                                         <Route path={`${path}/courses/:courseId/topic/:topicId/settings`}>
                                             <TopicSettingsPage />
                                         </Route>}
-                                        {getUserRole() !== UserRole.STUDENT &&
+                                            {getUserRole() !== UserRole.STUDENT &&
                                         <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading/print/:userId`}>
                                             <PrintLoadingProvider>
                                                 <PrintEverything />
                                             </PrintLoadingProvider>
                                         </Route>}
-                                        {getUserRole() !== UserRole.STUDENT &&
+                                            {getUserRole() !== UserRole.STUDENT &&
                                         <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading`}>
                                             <TopicGradingPage />
                                         </Route>}
-                                        <Route exact path={`${path}/courses/:courseId/topic/:topicId`}>
-                                            <SimpleProblemPage />
-                                        </Route>
-                                        <Route exact path={`${path}/courses/:courseId/settings`}>
-                                            <SettingsPage />
-                                        </Route>
-                                        <Route exact path={`${path}/courses/:courseId`}>
-                                            <CourseDetailsPage />
-                                        </Route>
-                                        <Route>
-                                            {/* <NoPage/> */}
-                                            <h1>Page not found.</h1>
-                                            <Redirect to={{
-                                                pathname: '/'
-                                            }} />
-                                        </Route>
-                                    </Switch>
-                                </CourseProvider>
-                            </Route>
-                            <Route path='/'>
-                                {/* <NoPage/> */}
-                                <h1>Page not found.</h1>
-                            </Route>
-                        </Switch>
-                    </AnimatePresence>
-                </Provider>
+                                            <Route exact path={`${path}/courses/:courseId/topic/:topicId`}>
+                                                <SimpleProblemPage />
+                                            </Route>
+                                            <Route exact path={`${path}/courses/:courseId/settings`}>
+                                                <SettingsPage />
+                                            </Route>
+                                            <Route exact path={`${path}/courses/:courseId`}>
+                                                <CourseDetailsPage />
+                                            </Route>
+                                            <Route>
+                                                {/* <NoPage/> */}
+                                                <h1>Page not found.</h1>
+                                                <Redirect to={{
+                                                    pathname: '/'
+                                                }} />
+                                            </Route>
+                                        </Switch>
+                                    </CourseProvider>
+                                </Route>
+                                <Route path='/'>
+                                    {/* <NoPage/> */}
+                                    <h1>Page not found.</h1>
+                                </Route>
+                            </Switch>
+                        </AnimatePresence>
+                    </Provider>
+                </Suspense>
                 <Navbar fixed="bottom" variant='dark' bg='dark' className='footer'>
                     <Row><Col>You&apos;re using v{version} of Rederly!</Col></Row>
                 </Navbar>

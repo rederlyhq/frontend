@@ -67,7 +67,7 @@ export const ProblemEditor: React.FC = () => {
 
     const loadPath = queryParams.get('loadPath')?.fromBase64() ?? defaultLoadPath;
     const problemEditorForm = useForm<ProblemEditorInputs>({
-        mode: 'onSubmit', 
+        mode: 'onSubmit',
         shouldFocusError: true,
         defaultValues: {
             loadPath: loadPath,
@@ -144,7 +144,7 @@ export const ProblemEditor: React.FC = () => {
             setAlertState({
                 message: 'Saved successfully',
                 variant: 'success'
-            });            
+            });
             render();
         } catch(e) {
             logger.error('problemEditor: save:', e.message);
@@ -183,7 +183,7 @@ export const ProblemEditor: React.FC = () => {
         (async () => {
             const loadPromise = load();
             const catalogPromise = getCatalog();
-            await Promise.all([loadPromise, catalogPromise]);    
+            await Promise.all([loadPromise, catalogPromise]);
         })();
     }, []);
 
@@ -203,7 +203,7 @@ export const ProblemEditor: React.FC = () => {
                     padding: '10px',
                     listStyleType: 'none'
                 }}>
-                    {myCatalog.map(catalogProblem => 
+                    {myCatalog.map(catalogProblem =>
                         <li key={catalogProblem}>
                             <Button variant='text' onClick={() => {
                                 problemEditorForm.setValue(nameof<ProblemEditorInputs>('loadPath'), catalogProblem);
@@ -229,9 +229,9 @@ export const ProblemEditor: React.FC = () => {
         <Grid container item md={12} spacing={2}>
             <Grid item md={10}>
                 <TextField
-                    name="loadPath" 
+                    name="loadPath"
                     inputRef={register({
-                        required: true, 
+                        required: true,
                     })}
                     label='Problem Path to Load'
                     type='text'
@@ -257,9 +257,9 @@ export const ProblemEditor: React.FC = () => {
         <Grid container item md={12} spacing={2}>
             <Grid item md={10}>
                 <TextField
-                    name="userPath" 
+                    name="userPath"
                     inputRef={register({
-                        required: true, 
+                        required: true,
                     })}
                     label='Problem Path to Save'
                     type='text'
@@ -307,16 +307,16 @@ export const ProblemEditor: React.FC = () => {
             <Grid item md={2} style={{position: 'relative'}} {...getRootProps()}>
                 {isDragActive && (
                     <div style={{
-                        position: 'absolute', 
-                        width: '100%', 
-                        height: '100%', 
-                        border: '5px dashed lightblue', 
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        border: '5px dashed lightblue',
                         borderRadius: '3px',
                         textAlign: 'center',
                         zIndex: 2,
                         backgroundColor: 'white',
                         opacity: 0.9
-                    }} 
+                    }}
                     >
                         <div style={{position: 'relative', margin: '0 auto', top: '15%', fontSize: '1em'}}>
                             Drop your pg file to load!
@@ -340,7 +340,7 @@ export const ProblemEditor: React.FC = () => {
             }}>
                 <TextField
                     inputRef={register({
-                        required: true, 
+                        required: true,
                     })}
                     name="seedValue"
                     aria-label="Problem Seed"
@@ -386,7 +386,7 @@ export const ProblemEditor: React.FC = () => {
             <Grid item md={6}>
                 <Controller
                     name="problemSource"
-                    control={control} 
+                    control={control}
                     defaultValue={false}
                     render={({ onChange, value }) => (
                         <CodeMirror
@@ -423,3 +423,5 @@ export const ProblemEditor: React.FC = () => {
         </Grid>
     </form>);
 };
+
+export default ProblemEditor;
