@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Switch, Route, useRouteMatch, Redirect, useHistory, Link } from 'react-router-dom';
 import { History } from 'history';
 import CoursePage from '../Courses/CoursePage';
@@ -154,22 +154,29 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                             </PrintLoadingProvider>
                                         </Route>}
                                         {getUserRole() !== UserRole.STUDENT &&
-                                        <Route path={`${path}/courses/:courseId/topic/:topicId/grading`}>
+                                        <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading`}>
                                             <TopicGradingPage />
                                         </Route>}
-                                        <Route path={`${path}/courses/:courseId/topic/:topicId`}>
+                                        <Route exact path={`${path}/courses/:courseId/topic/:topicId`}>
                                             <SimpleProblemPage />
                                         </Route>
-                                        <Route path={`${path}/courses/:courseId/settings`}>
+                                        <Route exact path={`${path}/courses/:courseId/settings`}>
                                             <SettingsPage />
                                         </Route>
-                                        <Route path={`${path}/`}>
+                                        <Route exact path={`${path}/courses/:courseId`}>
                                             <CourseDetailsPage />
+                                        </Route>
+                                        <Route>
+                                            {/* <NoPage/> */}
+                                            <h1>Page not found.</h1>
+                                            <Redirect to={{
+                                                pathname: '/'
+                                            }} />
                                         </Route>
                                     </Switch>
                                 </CourseProvider>
                             </Route>
-                            <Route path="/">
+                            <Route path='/'>
                                 {/* <NoPage/> */}
                                 <h1>Page not found.</h1>
                             </Route>
