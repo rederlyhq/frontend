@@ -30,10 +30,10 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
             <form style={{position: 'relative'}}>
                 {isDragActive && (
                     <div style={{
-                        position: 'absolute', 
-                        width: '100%', 
-                        height: '100%', 
-                        border: '5px dashed lightblue', 
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        border: '5px dashed lightblue',
                         borderRadius: '3px',
                         textAlign: 'center',
                         zIndex: 2,
@@ -46,7 +46,12 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                         </div>
                     </div>
                 )}
-                <Nav variant='pills' className='flex-column' defaultActiveKey={(selected instanceof TopicObject) ? 'topic' : `${selected.id}`}>
+                <Nav
+                    variant='pills'
+                    className='flex-column'
+                    defaultActiveKey={'topic'}
+                    activeKey={(selected instanceof TopicObject) ? 'topic' : `${selected.id}`}
+                >
                     {/* Settings for the entire topic */}
                     <NavLink
                         eventKey={'topic'}
@@ -76,9 +81,9 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                         <Draggable draggableId={`problemRow${prob.id}`} index={index} key={`problem-row-${prob.id}`}>
                                                             {(dragProvided: DraggableProvided) => (
                                                                 <div ref={dragProvided.innerRef} {...dragProvided.draggableProps} {...dragProvided.dragHandleProps}>
-                                                                    <NavLink 
-                                                                        eventKey={prob.id} 
-                                                                        key={`problemNavLink${prob.id}`} 
+                                                                    <NavLink
+                                                                        eventKey={prob.id}
+                                                                        key={`problemNavLink${prob.id}`}
                                                                         onSelect={() => {setSelected(prob);}}
                                                                         role='link'
                                                                         style={{
@@ -87,7 +92,7 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                                         }}
                                                                     >
                                                                         <span className='icon-container' style={{cursor: 'pointer'}}>
-                                                                            <GrDrag className='grDragHandle' style={{cursor: 'grab', marginRight: '0.7em'}} /> 
+                                                                            <GrDrag className='grDragHandle' style={{cursor: 'grab', marginRight: '0.7em'}} />
                                                                             {`Problem ${prob.problemNumber} (${prob.weight} Point${prob.weight === 1 ? '' : 's'})`}
                                                                         </span>
                                                                         <Chip style={{float: 'right', cursor: 'pointer'}} size='small' label={prob.id} />
