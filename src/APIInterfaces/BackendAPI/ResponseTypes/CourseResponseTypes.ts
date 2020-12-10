@@ -128,6 +128,7 @@ export interface GetAllVersionAttachmentsResponse {
             grades: {
                 id: number;
                 lastInfluencingCreditedAttemptId: number;
+                lastInfluencingAttemptId: number;
                 webworkQuestionPath: string;
                 problemAttachments?: {
                     id: number;
