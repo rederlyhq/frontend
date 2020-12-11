@@ -112,9 +112,10 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         { title: _.capitalize(`${aggregateTitlePrefix}number of attempts`), field: 'averageAttemptedCount' },
         { title: _.capitalize(`${aggregateTitlePrefix}grade`), field: 'averageScore' },
         { title: _.capitalize(`${aggregateTitlePrefix}system score`), field: 'systemScore' },
+        { title: _.capitalize(`${aggregateTitlePrefix}open score`), field: 'openAverage' },
+        { title: _.capitalize(`${aggregateTitlePrefix}closed score`), field: 'deadAverage' },
         { title: _.capitalize(`${aggregateTitlePrefix}mastered`), field: 'completionPercent' },
     ];
-
 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
 
@@ -199,11 +200,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     logger.debug('Stats tab: [useEffect] setting gradesstate and grade');
                     setGradesState(defaultGradesState);
                     setGrade(null);
-                    data = data.map((d: any) => ({
+                    data = data.data.map((d: any) => ({
                         ...d,
                         averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
                         averageScore: formatNumberString(d.averageScore, true),
                         ...(_.isNil(d.systemScore) ? undefined : {systemScore: formatNumberString(d.systemScore, true)}),
+                        ...(_.isNil(d.openAverage) ? undefined : {openAverage: formatNumberString(d.openAverage, true)}),
+                        ...(_.isNil(d.deadAverage) ? undefined : {deadAverage: formatNumberString(d.deadAverage, true)}),
                         completionPercent: formatNumberString(d.completionPercent, true)
                     }));
                 }
@@ -310,6 +313,37 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             break;
         default:
             break;
+        }
+    };
+
+    const onConfirm = async () => {
+        try {
+            if (_.isNil(grade) || _.isNil(grade.id)) {
+                throw new Error('Application Error: Grade null');
+            }
+            setGradesState(defaultGradesState);
+            const newLockedValue = !grade.locked;
+            const result = await putQuestionGrade({
+                id: grade.id,
+                data: {
+                    locked: newLockedValue
+                }
+            });
+
+            if(!_.isNil(gradesState.rowData?.grades[0])) {
+                gradesState.rowData.grades[0].locked = newLockedValue;
+            }
+
+            setGradesState(defaultGradesState);
+            setGrade(result.data.data.updatesResult.updatedRecords[0] as StudentGrade);
+        } catch (e) {
+            setGradesState({
+                ...gradesState,
+                lockAlert: {
+                    message: e.message,
+                    variant: 'danger'
+                }
+            });
         }
     };
 
@@ -451,44 +485,17 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     <ConfirmationModal
                         show={gradesState.view === GradesStateView.LOCK}
                         onHide={() => setGradesState(defaultGradesState)}
-                        onConfirm={async () => {
-                            try {
-                                if (_.isNil(grade) || _.isNil(grade.id)) {
-                                    throw new Error('Application Error: Grade null');
-                                }
-                                setGradesState(defaultGradesState);
-                                const newLockedValue = !grade.locked;
-                                const result = await putQuestionGrade({
-                                    id: grade.id,
-                                    data: {
-                                        locked: newLockedValue
-                                    }
-                                });
-
-                                if(!_.isNil(gradesState.rowData?.grades[0])) {
-                                    gradesState.rowData.grades[0].locked = newLockedValue;
-                                }
-
-                                setGradesState(defaultGradesState);
-                                setGrade(result.data.data.updatesResult.updatedRecords[0] as StudentGrade);
-                            } catch (e) {
-                                setGradesState({
-                                    ...gradesState,
-                                    lockAlert: {
-                                        message: e.message,
-                                        variant: 'danger'
-                                    }
-                                });
-                            }
-                        }}
-                        confirmText="Confirm"
+                        onConfirm={onConfirm}
+                        confirmText='Confirm'
                         headerContent={<h6>{grade.locked ? 'Unlock' : 'Lock'} Grade</h6>}
-                        bodyContent={(<>
-                            {gradesState.lockAlert && <Alert variant={gradesState.lockAlert.variant}>{gradesState.lockAlert.message}</Alert>}
-                            <p>Are you sure you want to {grade.locked ? 'unlock' : 'lock'} this grade?</p>
-                            {grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
-                            {!grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
-                        </>)}
+                        bodyContent={(
+                            <>
+                                {gradesState.lockAlert && <Alert variant={gradesState.lockAlert.variant}>{gradesState.lockAlert.message}</Alert>}
+                                <p>Are you sure you want to {grade.locked ? 'unlock' : 'lock'} this grade?</p>
+                                {grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
+                                {!grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
+                            </>
+                        )}
                     />
                 </>}
                 { loading ?
