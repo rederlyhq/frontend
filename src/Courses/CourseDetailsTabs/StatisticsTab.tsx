@@ -17,7 +17,7 @@ import { IAlertModalState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
-import { CircularProgress } from '@material-ui/core';
+import { CircularProgress, Chip } from '@material-ui/core';
 import MaterialIcons from '../../Components/MaterialIcons';
 
 const FILTERED_STRING = '_FILTERED';
@@ -104,6 +104,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [gradesState, setGradesState] = useState<GradesState>(defaultGradesState);
     const [grade, setGrade] = useState<StudentGrade | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [titleGrade, setTitleGrade] = useState<any>(null);
     const userType: UserRole = getUserRole();
 
     const aggregateTitlePrefix = _.isNil(userId) ? 'Average ' : '';
@@ -112,8 +113,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         { title: _.capitalize(`${aggregateTitlePrefix}number of attempts`), field: 'averageAttemptedCount' },
         { title: _.capitalize(`${aggregateTitlePrefix}grade`), field: 'averageScore' },
         { title: _.capitalize(`${aggregateTitlePrefix}system score`), field: 'systemScore' },
-        { title: _.capitalize(`${aggregateTitlePrefix}open score`), field: 'openAverage' },
-        { title: _.capitalize(`${aggregateTitlePrefix}closed score`), field: 'deadAverage' },
+        // { title: _.capitalize(`${aggregateTitlePrefix}open score`), field: 'openAverage' },
+        // { title: _.capitalize(`${aggregateTitlePrefix}dead score`), field: 'deadAverage' },
         { title: _.capitalize(`${aggregateTitlePrefix}mastered`), field: 'completionPercent' },
     ];
 
@@ -200,6 +201,15 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     logger.debug('Stats tab: [useEffect] setting gradesstate and grade');
                     setGradesState(defaultGradesState);
                     setGrade(null);
+                    console.log(data);
+                    setTitleGrade(
+                        {
+                            totalAverageScore: data.totalAverageScore,
+                            totalOpenAverage: data.totalOpenAverage,
+                            totalDeadAverage: data.totalDeadAverage,
+                        }
+                    );
+
                     data = data.data.map((d: any) => ({
                         ...d,
                         averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
@@ -511,6 +521,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                             breadcrumbFilter={breadcrumbFilter}
                             setGradesState={setGradesState}
                             gradesState={gradesState}
+                            titleGrade={titleGrade}
                         />}
                         columns={(view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) ? attemptCols : gradeCols}
                         data={rowData}
@@ -535,7 +546,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 };
 
 const TableTitleComponent = (
-    {userType, view, userId, grade, course, breadcrumbFilter, setGradesState, gradesState}: {
+    {userType, view, userId, grade, course, breadcrumbFilter, setGradesState, gradesState, titleGrade}: {
         userType: UserRole,
         view: StatisticsViewAll,
         userId?: number,
@@ -544,6 +555,7 @@ const TableTitleComponent = (
         breadcrumbFilter: EnumDictionary<StatisticsView, BreadCrumbFilter>,
         setGradesState: React.Dispatch<React.SetStateAction<GradesState>>,
         gradesState: GradesState,
+        titleGrade: any,
     }
 ) => (
     <div className="d-flex">
@@ -559,7 +571,14 @@ const TableTitleComponent = (
                 Object.keys(StatisticsView).reduce((result: string, key: string) => {
                     return breadcrumbFilter[key as StatisticsView]?.displayName ?? result;
                 }, course.name)
-            }
+            }&nbsp;&nbsp;
+            <Chip
+                size='small'
+                color={titleGrade?.totalOpenAverage > 0.8 ? 'primary' : 'secondary'}
+                label={
+                    titleGrade?.totalOpenAverage?.toPercentString()
+                }
+            />
         </h6>
         {
             (userType === UserRole.PROFESSOR) &&
