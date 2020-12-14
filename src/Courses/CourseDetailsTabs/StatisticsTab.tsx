@@ -106,10 +106,12 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [loading, setLoading] = useState<boolean>(false);
     const [titleGrade, setTitleGrade] = useState<any>(null);
     const userType: UserRole = getUserRole();
+    // Efficient numeric-safe sorting https://stackoverflow.com/a/38641281/4752397
+    const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
 
     const aggregateTitlePrefix = _.isNil(userId) ? 'Average ' : '';
-    const gradeCols = [
-        { title: 'Name', field: 'name' },
+    const gradeCols: Column<object>[] = [
+        { title: 'Name', field: 'name', customSort: (x: any, y: any)  => collator.compare(x.name, y.name)},
         { title: _.capitalize(`${aggregateTitlePrefix}number of attempts`), field: 'averageAttemptedCount' },
         { title: _.capitalize(`${aggregateTitlePrefix}grade`), field: 'averageScore' },
         { title: _.capitalize(`${aggregateTitlePrefix}system score`), field: 'systemScore' },
@@ -186,6 +188,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     });
                     logger.debug('Stats tab: [useEffect] setting grade.');
                     setGrade(grades[0]);
+                    setTitleGrade(null);
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
                             id: attempt.id,
@@ -576,13 +579,13 @@ const TableTitleComponent = (
             </h6>
         </Grid>
         <Grid item>
-            <Chip
+            {titleGrade && <Chip
                 size='small'
                 color={'primary'}
                 label={
                         titleGrade?.totalOpenAverage?.toPercentString()
                 }
-            />
+            />}
         </Grid>
         {
             (userType === UserRole.PROFESSOR) &&
