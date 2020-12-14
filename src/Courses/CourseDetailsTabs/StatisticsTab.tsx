@@ -51,14 +51,11 @@ const statisticsViewFromAllStatisticsViewFilter = (view: StatisticsViewAll): Sta
 };
 
 const attemptCols: Array<Column<any>> = [
-    { title: 'Result', field: 'result', defaultSort: 'asc' },
+    { title: 'Result', field: 'result' },
     {
         title: 'Attempt Time',
         field: 'time',
-        // These options don't seem to work.
-        // defaultSort: 'desc',
-        // defaultGroupSort: 'desc',
-        // defaultGroupOrder: 1,
+        defaultSort: 'asc',
         sorting: true,
         type: 'datetime',
         render: (datetime: any) => <span title={moment(datetime.time).toString()}>{moment(datetime.time).fromNow()}</span>,
@@ -92,6 +89,14 @@ const defaultGradesState: GradesState = {
     rowData: undefined
 };
 
+// TitleData can be either the averages for all returned data, or the effective grade for
+// a specific problem.
+type TitleData = {
+    totalAverage: number;
+    totalOpenAverage: number;
+    totalDeadAverage: number;
+} | { effectiveScore: number }
+
 /**
  * When a professor wishes to see a student's view, they pass in the student's userId.
  * When they wish to see overall course statistics, they do not pass any userId.
@@ -104,7 +109,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [gradesState, setGradesState] = useState<GradesState>(defaultGradesState);
     const [grade, setGrade] = useState<StudentGrade | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
-    const [titleGrade, setTitleGrade] = useState<any>(null);
+    const [titleGrade, setTitleGrade] = useState<TitleData | null>(null);
     const userType: UserRole = getUserRole();
     // Efficient numeric-safe sorting https://stackoverflow.com/a/38641281/4752397
     const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
@@ -152,7 +157,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         case StatisticsViewFilter.PROBLEMS_FILTERED:
         case StatisticsView.ATTEMPTS:
             url = `/users/${userId}?includeGrades=WITH_ATTEMPTS&`;
-            // TODO: This should be removed when a similar call as the others is supported.
+            // TODO: RED-345 This should be removed when a similar call as the others is supported.
             idFilterLocal = null;
             break;
         default:
@@ -188,7 +193,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     });
                     logger.debug('Stats tab: [useEffect] setting grade.');
                     setGrade(grades[0]);
-                    setTitleGrade(null);
+                    setTitleGrade({effectiveScore: grades[0].effectiveScore});
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
                             id: attempt.id,
@@ -204,12 +209,11 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     logger.debug('Stats tab: [useEffect] setting gradesstate and grade');
                     setGradesState(defaultGradesState);
                     setGrade(null);
-                    console.log(data);
                     setTitleGrade(
                         {
-                            totalAverageScore: data.totalAverageScore,
-                            totalOpenAverage: data.totalOpenAverage,
-                            totalDeadAverage: data.totalDeadAverage,
+                            totalAverage: data.totalAverageScore as number,
+                            totalOpenAverage: data.totalOpenAverage as number,
+                            totalDeadAverage: data.totalDeadAverage as number,
                         }
                     );
 
@@ -583,7 +587,7 @@ const TableTitleComponent = (
                 size='small'
                 color={'primary'}
                 label={
-                        titleGrade?.totalOpenAverage?.toPercentString()
+                    titleGrade.totalOpenAverage?.toPercentString() ?? titleGrade.effectiveScore?.toPercentString()
                 }
             />}
         </Grid>
