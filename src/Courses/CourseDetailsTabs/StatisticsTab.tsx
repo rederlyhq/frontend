@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import React, { useState, useEffect } from 'react';
-import { Alert, Button, Col, Nav } from 'react-bootstrap';
+import { Alert, Button as BSButton, Col, Nav } from 'react-bootstrap';
 import MaterialTable, { Column } from 'material-table';
 import { ChevronRight } from '@material-ui/icons';
 import { ProblemObject, CourseObject, StudentGrade } from '../CourseInterfaces';
@@ -17,7 +17,7 @@ import { IAlertModalState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
-import { CircularProgress, Chip } from '@material-ui/core';
+import { CircularProgress, Chip, Grid } from '@material-ui/core';
 import MaterialIcons from '../../Components/MaterialIcons';
 
 const FILTERED_STRING = '_FILTERED';
@@ -558,35 +558,39 @@ const TableTitleComponent = (
         titleGrade: any,
     }
 ) => (
-    <div className="d-flex">
-        <h6
-            style={{
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
-            }}
-            className="MuiTypography-root MuiTypography-h6"
-        >
-            {
-                Object.keys(StatisticsView).reduce((result: string, key: string) => {
-                    return breadcrumbFilter[key as StatisticsView]?.displayName ?? result;
-                }, course.name)
-            }&nbsp;&nbsp;
+    <Grid container spacing={1}>
+        <Grid item>
+            <h6
+                style={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                }}
+                className="MuiTypography-root MuiTypography-h6"
+            >
+                {
+                    Object.keys(StatisticsView).reduce((result: string, key: string) => {
+                        return breadcrumbFilter[key as StatisticsView]?.displayName ?? result;
+                    }, course.name)
+                }
+            </h6>
+        </Grid>
+        <Grid item>
             <Chip
                 size='small'
-                color={titleGrade?.totalOpenAverage > 0.8 ? 'primary' : 'secondary'}
+                color={'primary'}
                 label={
-                    titleGrade?.totalOpenAverage?.toPercentString()
+                        titleGrade?.totalOpenAverage?.toPercentString()
                 }
             />
-        </h6>
+        </Grid>
         {
             (userType === UserRole.PROFESSOR) &&
             !_.isNil(userId) &&
             !_.isNil(grade) &&
             (view === StatisticsViewFilter.PROBLEMS_FILTERED) && (
-                <>
-                    <Button
+                <Grid item>
+                    <BSButton
                         className="ml-3 mr-1"
                         onClick={() => setGradesState({
                             ...gradesState,
@@ -596,13 +600,13 @@ const TableTitleComponent = (
                         <>
                             <BsPencilSquare/> Override
                         </>
-                    </Button>
+                    </BSButton>
 
-                    <Button
+                    <BSButton
                         variant={grade.locked ? 'warning' : 'danger'}
                         className="ml-1 mr-1"
                         onClick={() => {
-                            logger.info('Stats tab: [table button] setting gradesstate');
+                            logger.info('Stats tab: [table BSButton] setting gradesstate');
                             setGradesState({
                                 ...gradesState,
                                 view: GradesStateView.LOCK
@@ -610,10 +614,10 @@ const TableTitleComponent = (
                         }}
                     >
                         {grade.locked ? <><BsLock/> Unlock</>: <><BsUnlock/> Lock</>}
-                    </Button>
-                </>
+                    </BSButton>
+                </Grid>
             )}
-    </div>
+    </Grid>
 );
 
 export default StatisticsTab;
