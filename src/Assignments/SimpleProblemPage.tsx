@@ -535,7 +535,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 setAttemptsRemaining={setAttemptsRemaining}
                                 setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
                             />
-                            {/* Temporarily disabled for release.  */}
+                            {/* Custom feature for CityTech (university #5). TODO: make this solution more robust */}
                             {selectedProblemId && _.find(users, ['id', getUserId()])?.universityId === 5 &&
                                 <Button 
                                     className='float-right'
