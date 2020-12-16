@@ -17,7 +17,7 @@ import { IAlertModalState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
-import { CircularProgress, Chip, Grid } from '@material-ui/core';
+import { CircularProgress, Chip, Grid, Tooltip } from '@material-ui/core';
 import MaterialIcons from '../../Components/MaterialIcons';
 
 const FILTERED_STRING = '_FILTERED';
@@ -95,7 +95,11 @@ type TitleData = {
     totalAverage: number;
     totalOpenAverage: number;
     totalDeadAverage: number;
-} | { effectiveScore: number }
+} | { 
+    effectiveScore: number;
+    systemScore: number;
+    bestScore: number;
+}
 
 /**
  * When a professor wishes to see a student's view, they pass in the student's userId.
@@ -180,7 +184,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
                 const formatNumberString = (val: string, percentage: boolean = false) => {
                     if (_.isNil(val)) return '--';
-                    if (percentage) return `${(parseFloat(val) * 100).toFixed(1)}%`;
+                    if (percentage) return parseFloat(val).toPercentString();
 
                     return parseFloat(val).toFixed(2);
                 };
@@ -192,13 +196,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         return hasAttempts && satisfiesIdFilter;
                     });
                     logger.debug('Stats tab: [useEffect] setting grade.');
-                    setGrade(grades[0]);
-                    setTitleGrade({effectiveScore: grades[0].effectiveScore});
+                    setGrade(grades.first);
+                    setTitleGrade(_.isNil(grades.first) ? null : {effectiveScore: grades.first?.effectiveScore, systemScore: grades.first?.partialCreditBestScore, bestScore: grades.first?.bestScore});
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
                             id: attempt.id,
                             submitted: attempt.submitted,
-                            result: `${(attempt.result * 100).toFixed(1)}%`,
+                            result: attempt.result.toPercentString(),
                             time: attempt.time,
                             problemId: grade.courseWWTopicQuestionId
                         }))
@@ -211,7 +215,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     setGrade(null);
                     setTitleGrade(
                         {
-                            totalAverage: data.totalAverageScore as number,
+                            totalAverage: data.totalAverage as number,
                             totalOpenAverage: data.totalOpenAverage as number,
                             totalDeadAverage: data.totalDeadAverage as number,
                         }
@@ -562,7 +566,7 @@ const TableTitleComponent = (
         breadcrumbFilter: EnumDictionary<StatisticsView, BreadCrumbFilter>,
         setGradesState: React.Dispatch<React.SetStateAction<GradesState>>,
         gradesState: GradesState,
-        titleGrade: any,
+        titleGrade: TitleData | null,
     }
 ) => (
     <Grid container spacing={1}>
@@ -583,13 +587,28 @@ const TableTitleComponent = (
             </h6>
         </Grid>
         <Grid item>
-            {titleGrade && <Chip
-                size='small'
-                color={'primary'}
-                label={
-                    titleGrade.totalOpenAverage?.toPercentString() ?? titleGrade.effectiveScore?.toPercentString()
-                }
-            />}
+            {/* Requiring userId here hides this on the Professor's Statistics page. This may be removed in the future. */}
+            {userId && titleGrade &&
+                <Tooltip title={('totalOpenAverage' in titleGrade) ?
+                    <>
+                        {titleGrade.totalAverage && <>{titleGrade.totalAverage.toPercentString()} Overall <br/></>}
+                        {titleGrade.totalDeadAverage && <>{titleGrade.totalDeadAverage.toPercentString()} on Closed Topics</>}
+                    </> :
+                    <>
+                        {titleGrade.bestScore.toPercentString()} on time <br/>
+                        {titleGrade.systemScore.toPercentString()} overall
+                    </>}
+                >
+                    <Chip
+                        size='small'
+                        color={'primary'}
+                        label={ ('totalOpenAverage' in titleGrade) ?
+                            titleGrade.totalOpenAverage?.toPercentString() :
+                            titleGrade.effectiveScore?.toPercentString()
+                        }
+                    />
+                </Tooltip>
+            }
         </Grid>
         {
             (userType === UserRole.PROFESSOR) &&
