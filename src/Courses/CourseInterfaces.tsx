@@ -55,6 +55,7 @@ export class UserObject {
     firstName?: string;
     lastName?: string;
     id: number = -1;
+    universityId?: number;
 
     get name(): string {
         return `${this.firstName} ${this.lastName}`;

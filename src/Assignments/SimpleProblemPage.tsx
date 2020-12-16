@@ -6,7 +6,7 @@ import ProblemIframe from './ProblemIframe';
 import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
 import { ProblemDoneState } from '../Enums/AssignmentEnums';
 import _ from 'lodash';
-import { endVersion, generateNewVersion, getQuestions, submitVersion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { askForHelp, endVersion, generateNewVersion, getQuestions, submitVersion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { ProblemDetails } from './ProblemDetails';
 import { ProblemStateProvider } from '../Contexts/CurrentProblemState';
 import { useCourseContext } from '../Courses/CourseProvider';
@@ -406,6 +406,12 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         }
     };
 
+    const clickedAskForHelp = async (questionId: number) => {
+        const res = await askForHelp({questionId});
+        const newTab = window.open(undefined, 'openlab');
+        newTab?.document.write(res.data.data);
+    };
+
     if (loading) {
         return <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>;
     }
@@ -530,9 +536,13 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
                             />
                             {/* Temporarily disabled for release.  */}
-                            {false && (<a href="https://openlab.citytech.cuny.edu/ol-webwork/" rel="noopener noreferrer" target="_blank" >
-                                <Button className='float-right'>Ask for help</Button>
-                            </a>)}
+                            {selectedProblemId && _.find(users, ['id', getUserId()])?.universityId === 5 &&
+                                <Button 
+                                    className='float-right'
+                                    onClick={()=>clickedAskForHelp(selectedProblemId)}>
+                                    Ask for help
+                                </Button>
+                            }
                             {<ProblemIframe
                                 problem={problems[selectedProblemId]}
                                 setProblemStudentGrade={setProblemStudentGrade}
