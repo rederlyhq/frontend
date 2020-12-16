@@ -31,7 +31,7 @@ export const CoursePage: React.FC<CoursePageProps> = () => {
             try {
                 const idParams = getCourseIdParamFromRole(userType, parseInt(userId, 10));
                 logger.debug(`Get course converted ${userId} to ${idParams}`);
-                let res = await AxiosRequest.get(`/courses?${idParams}`);
+                const res = await AxiosRequest.get(`/courses?${idParams}`);
                 const courses: Array<CourseObject> = map(res.data?.data, obj => new CourseObject(obj));
 
                 setCourses(courses);

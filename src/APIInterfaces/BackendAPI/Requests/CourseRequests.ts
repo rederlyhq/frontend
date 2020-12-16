@@ -139,7 +139,7 @@ export const getTopic = async ({
     try {
         return await AxiosRequest.get(
             url.resolve(COURSE_TOPIC_PATH, `${id}?${qs.stringify(_.omitBy({
-                userId, 
+                userId,
                 includeQuestions
             }, _.isUndefined))}`)
         );
@@ -431,13 +431,13 @@ export const getQuestions = async ({
 };
 
 export const extendQuestion = async ({
-    courseTopicQuestionId, 
+    courseTopicQuestionId,
     userId,
     extensions
 }: ExtendCourseTopicQuestionsForUser): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
         return await AxiosRequest.put(
-            url.resolve(COURSE_QUESTION_PATH, `extend?${qs.stringify({courseTopicQuestionId, userId})}`), 
+            url.resolve(COURSE_QUESTION_PATH, `extend?${qs.stringify({courseTopicQuestionId, userId})}`),
             extensions
         );
     } catch (e) {
@@ -489,7 +489,7 @@ export const generateNewVersion = async ({
                      * Forms send this field in the origin header, however that wasn't coming across with the axios request
                      * Adding `origin` myself was getting stripped
                      * Could not find solution online so used a custom header
-                     * Other headers don't work because they get modified by aws (between cloudfront and the load balancers) 
+                     * Other headers don't work because they get modified by aws (between cloudfront and the load balancers)
                      */
                     'rederly-origin': window.location.origin,
                 }
@@ -571,7 +571,7 @@ export const getAttachments = async ({
             ),
         };
         const params = studentWorkbookId ? { studentWorkbookId } : gradeParams;
-    
+
         return await AxiosRequest.get(COURSE_ATTACHMENTS_LIST_PATH, {
             params,
         });

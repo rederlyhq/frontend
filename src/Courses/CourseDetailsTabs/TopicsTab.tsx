@@ -33,7 +33,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const showEditTopic = (e: any, unitIdentifier: number, topicIdentifier: number) => {
         logger.info(`Editing topic ${topicIdentifier} in unit ${unitIdentifier}`);
-        let unit = _.find(course.units, ['id', unitIdentifier]);
+        const unit = _.find(course.units, ['id', unitIdentifier]);
         logger.info(unit);
         if (!unit) {
             logger.error(`Cannot find unit with identifier ${unitIdentifier}`);
@@ -55,8 +55,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 id: topicId
             });
 
-            let newCourse: CourseObject = { ...course };
-            let unit = _.find(newCourse.units, ['id', unitId]);
+            const newCourse: CourseObject = { ...course };
+            const unit = _.find(newCourse.units, ['id', unitId]);
 
             if (!unit) {
                 logger.error(`Could not find a unit with id ${unitId}`);
@@ -94,8 +94,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 }
             });
 
-            let newCourse: CourseObject = new CourseObject(course);
-            let unit = _.find(newCourse.units, ['id', courseUnitContentId]);
+            const newCourse: CourseObject = new CourseObject(course);
+            const unit = _.find(newCourse.units, ['id', courseUnitContentId]);
 
             if (!unit) {
                 logger.error(`Could not find a unit with id ${courseUnitContentId}`);
@@ -122,7 +122,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     courseId
                 }
             });
-            let newCourse: CourseObject = new CourseObject(course);
+            const newCourse: CourseObject = new CourseObject(course);
             newCourse.units.push(new UnitObject(result.data.data));
             setCourse?.(newCourse);
         } catch (e) {
@@ -140,7 +140,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             await deleteUnit({
                 id: unitId
             });
-            let newCourse: CourseObject = new CourseObject(course);
+            const newCourse: CourseObject = new CourseObject(course);
             const deletedUnit = _.find(newCourse.units, ['id', unitId]);
             // Decrement everything after
             if (!_.isNil(deletedUnit)) {
@@ -171,8 +171,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             return;
         }
 
-        let newCourse: CourseObject = new CourseObject(course);
-        let unit = _.find(newCourse.units, ['unique', unitIndex]);
+        const newCourse: CourseObject = new CourseObject(course);
+        const unit = _.find(newCourse.units, ['unique', unitIndex]);
 
         if (!unit) {
             logger.error(`Could not find a unit with id ${unitIndex}`);
@@ -182,7 +182,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
         // If a topic already exists, update and overwrite it in the course object.
         if (existingTopic) {
-            let oldTopic = _.find(unit.topics, ['unique', existingTopic.unique]);
+            const oldTopic = _.find(unit.topics, ['unique', existingTopic.unique]);
 
             if (!oldTopic) {
                 logger.error(`Could not update topic ${existingTopic.id} in unit ${unitIndex}`);
@@ -203,8 +203,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     const onUnitBlur = async (event: React.FocusEvent<HTMLHeadingElement>, unitId: number) => {
         try {
             setError(null);
-            let newCourse = _.cloneDeep(course);
-            let updatingUnit = _.find(newCourse.units, ['id', unitId]);
+            const newCourse = _.cloneDeep(course);
+            const updatingUnit = _.find(newCourse.units, ['id', unitId]);
             if (!updatingUnit) {
                 logger.error(`Could not find a unit with the unique identifier ${unitId}`);
                 return;

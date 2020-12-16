@@ -191,10 +191,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }, 100, {leading:true, trailing:true});
 
     const formDataToObject = (formData: FormData) => {
-        let object:any = {};
+        const object:any = {};
         // downstream iterator error
         // @ts-ignore
-        for(let pair of formData.entries()) {
+        for(const pair of formData.entries()) {
             if (_.isUndefined(object[pair[0]])) {
                 object[pair[0]] = pair[1];
             } else {
@@ -211,7 +211,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         const submitAction = (window as any).submitAction;
         if(typeof submitAction === 'function') submitAction(); // this is a global function from renderer - prepares form field for submit
 
-        let formData = new FormData(problemForm);
+        const formData = new FormData(problemForm);
         if (!_.isNil(clickedButton)) {
             // current state will never match submission unless we save it before including clickedButton
             // but we only want to save the current state if the button was 'submitAnswers'
@@ -359,7 +359,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 return renderedHTML;
             }
 
-            let problemForm = iframeWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
+            const problemForm = iframeWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
             if (!_.isNil(problemForm)) {
                 // check that the submit url is accurate
                 const submitUrl = problemForm.getAttribute('action');
