@@ -72,7 +72,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     const fetchGrade = async () => {
         setGrade(null);
         if (!_.isNil(selected.user) && !_.isNil(selected.problem)) {
-            logger.debug('GradeInfoHeader: Selected problem or user changed', selected.problem, selected.user);
+            logger.debug(`GradeInfoHeader: Fetching question grade for problem #${selected.problem?.id} and user #${selected.user?.id}`);
             try {
                 const res = await getQuestionGrade({
                     userId: selected.user.id,
@@ -101,7 +101,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     }, [selected.problem, selected.user]);
 
     useEffect(() => {
-        logger.debug('GradeInfoHeader: student grade object has been updated.', grade);
+        logger.debug('GradeInfoHeader: student grade object has changed.', grade);
         if (!_.isNil(grade)) {
             const workbooks = _.keyBy(grade.workbooks, 'id');
             let currentAttemptsCount: number | undefined;
@@ -154,11 +154,12 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             });
         } else {
             logger.debug(`GradeInfoHeader: Student grade has not been set for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
+            setInfo({});
         }
     }, [grade?.id]);
 
     useEffect(() => {
-        logger.debug('GradeInfoHeader: setting new problem state from updated Workbook ID or Grade Instance ID', info);
+        logger.debug('GradeInfoHeader: setting new problem state from updated Workbook ID or Grade (Instance) ID', info);
         const newProblemState: ProblemState = {};
         const currentGrade = (grade) ? grade : undefined;
 
@@ -215,7 +216,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         }
     };
     useEffect(() => {
-        logger.debug('GradeInfoHeader: there has been a change in user or topic, fetching new topic grade.');
+        logger.debug('GradeInfoHeader: there has been a change in user or topic, fetching new cumulative topic grade.');
         fetchTopicGrade();
     }, [selected.user, topic, info.effectiveScore]);
 
@@ -242,9 +243,13 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 
     const versionSubList = (vMap: Record<number, Array<number>>, versionKey: number) => {
         const attempts: WorkbookOption[] = [{ label: 'current', value: -1 }];
-        vMap[versionKey].sort().forEach((id, index) => {
-            attempts.push({ label: `Attempt #${index+1}`, value: id});
-        });
+        if (_.isNil(vMap[versionKey])) {
+            logger.warn(`Grade Info Header: Workbook dropdown data cannot find #${versionKey} in version map.`);
+        } else {
+            vMap[versionKey].sort().forEach((id, index) => {
+                attempts.push({ label: `Attempt #${index + 1}`, value: id });
+            });
+        }
         return attempts;
     };
 
@@ -266,7 +271,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             props.onChange({...info, studentGradeInstanceId: value as number, workbookId: -1, workbook: undefined});
         }
         return (
-            <Grid container md={12} spacing={2}>
+            <Grid container item md={12} spacing={2}>
                 {(_.keys(props.versionMap).length > 1) && // don't show unless multiple versions...
                 <Grid item md={4}>
                     <FormControl className={classes.formControl} fullWidth={true}>
@@ -297,7 +302,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         );
     }
 
-    if (_.isNil(grade)) {
+    if (_.isNil(grade) || _.isNil(info)) {
         return ( <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>) ;
     }
 

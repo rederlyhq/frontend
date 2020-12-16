@@ -151,7 +151,14 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             if (newProblems.length === 0) {
                 setSelected(newTopic);
             } else {
-                setSelected(problemNumber < newTopic.questions.length ? newTopic.questions[problemNumber - 1] : newTopic.questions[problemNumber - 2]);
+                setSelected(
+                    // If problemNumber === the original questions list length, this was the last problem
+                    // and should be set to the problem before it. (problemNumber-1, with an additional -1 for the index.)
+                    problemNumber === topic.questions.length ?
+                        newTopic.questions[problemNumber - 2] :
+                        // [problemNumber - 1] is the current problemNumber.
+                        newTopic.questions[problemNumber - 1]
+                );
             }
 
             setUpdateAlert({message: 'Successfully deleted question', severity: 'success'});

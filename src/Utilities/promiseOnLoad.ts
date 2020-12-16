@@ -6,15 +6,16 @@ export const promiseOnLoad = (elementRef: HTMLElement) => new Promise(
         elementRef.addEventListener('load', () => {
             resolve();
         });
-        elementRef.addEventListener('error', () => {
-            reject();
+        elementRef.addEventListener('error', (e) => {
+            reject(e);
         });
-        elementRef.addEventListener('abort', () => {
-            reject();
+        elementRef.addEventListener('abort', (e) => {
+            reject(e);
         });
     }
-).catch(()=>{
-    logger.warn('An element failed to load and rejected promiseOnLoad.');
+).catch((e)=>{
+    // Note: e.message does not exist for CORS issues, so it may not catch most network-level problems.
+    logger.warn(`Attachment ${(elementRef as HTMLImageElement).src} failed to load because ${e.message}`);
 });
 
 export default promiseOnLoad;

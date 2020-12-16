@@ -10,6 +10,7 @@ import BackendAPIError, { isAxiosError } from '../APIInterfaces/BackendAPI/Backe
 import ResendVerificationModal from './ResendVerificationModal';
 import logger from '../Utilities/Logger';
 import _ from 'lodash';
+import { gaTrackLogin } from '../Hooks/useTracking';
 import localPreferences from '../Utilities/LocalPreferences';
 const { general, session } = localPreferences;
 
@@ -24,7 +25,7 @@ type LoginFormData = {
 
 /**
  * This component renders the Login form, and should redirect the user if login succeeds.
- * 
+ *
  * Suggestion: Could useEffect to prevalidate institutional emails?
  */
 export const LoginForm: React.FC<LoginFormProps> = () => {
@@ -58,7 +59,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                 session.userType = getUserRoleFromServer(resp.data.data.roleId);
                 session.userUUID = resp.data.data.uuid;
                 session.username = `${resp.data.data.firstName} ${resp.data.data.lastName}`;
-
+                gaTrackLogin('EMAIL', session.userId);
                 history.replace('/common/courses');
             }
         } catch (err) {
