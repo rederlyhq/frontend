@@ -1,3 +1,4 @@
+import './wdyr'; // <--- Must be first import (when enabled)
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
