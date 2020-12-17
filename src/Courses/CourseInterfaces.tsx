@@ -23,6 +23,7 @@ export class CourseObject {
     code: string = '';
     curriculumId: number = 0;
     textbooks: string = '';
+    canAskForHelp: boolean = false;
 
     public constructor(init?:Partial<CourseObject>) {
         Object.assign(this, init);

@@ -47,7 +47,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [error, setError] = useState('');
     const [confirmationParameters, setConfirmationParameters] = useState<ConfirmationModalProps>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
-    const {users} = useCourseContext();
+    const {course, users} = useCourseContext();
 
     useEffect(() => {
         setLoading(true);
@@ -536,7 +536,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
                             />
                             {/* Custom feature for CityTech (university #5). TODO: make this solution more robust */}
-                            {selectedProblemId && _.find(users, ['id', getUserId()])?.universityId === 5 &&
+                            {selectedProblemId && course.canAskForHelp &&
                                 <Button 
                                     className='float-right'
                                     onClick={()=>clickedAskForHelp(selectedProblemId)}>
