@@ -3,10 +3,6 @@ import _ from 'lodash';
 import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
 import logger from '../../Utilities/Logger';
 
-interface OnLoadInterface {
-    onLoad: Function
-}
-
 interface OnLoadProblemIframeWrapperProps {
     children: React.ReactElement;
 }
@@ -17,7 +13,7 @@ export const OnLoadProblemIframeWrapper: React.FC<OnLoadProblemIframeWrapperProp
 
     const getLoadingState = (loading: any) => {
         if (loading) {
-            logger.info('Adding promise for one single iFrame');
+            logger.debug('OnLoadProblemIframeWrapper: Adding promise for one single iFrame.');
             dispatch?.({
                 type: PrintLoadingActions.ADD_PROMISE,
                 payload: new Promise((resolve) => {
@@ -25,6 +21,7 @@ export const OnLoadProblemIframeWrapper: React.FC<OnLoadProblemIframeWrapperProp
                 })
             });
         } else {
+            logger.debug('OnLoadProblemIframeWrapper: iFrame has finished loading.');
             resolveRef.current?.();
         }
     };

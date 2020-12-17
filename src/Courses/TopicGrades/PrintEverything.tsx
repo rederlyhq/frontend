@@ -12,6 +12,7 @@ import PDFInlineRender from './PDFInlineRender';
 import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
 import OnLoadDispatchWrapper from './onLoadDispatchWrapper';
 import OnLoadProblemIframeWrapper from './OnLoadProblemIframeWrapper';
+import { Alert } from '@material-ui/lab';
 
 interface PrintEverythingProps {
 }
@@ -69,7 +70,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
     return (
         <>
             <h1>{gradeData.topic.name} -- {gradeData.user.firstName} {gradeData.user.lastName}</h1>
-            <h3 className='dont-print'>Printing will begin in several seconds...</h3>
+            <Alert severity='info' className='dont-print'>Printing will begin after all problems and attachments have finished loading.</Alert>
             {gradeData.topic.questions.map((problem)=>{
                 if (problem.grades.length > 1) {
                     logger.warn('More grades were found for a problem at a specific version.');
@@ -90,7 +91,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                                 readonly={true}
                             />
                         </OnLoadProblemIframeWrapper>
-                        <h5>Problem {problem.problemNumber} Attachments</h5>
+                        {attachments && attachments.length > 0 ? <h5>Problem {problem.problemNumber} Attachments</h5> : <h5>Problem {problem.problemNumber} has no attachments</h5>}
                         {attachments?.map((attachment) => {
                             const { cloudFilename, userLocalFilename } = attachment;
                             if (!cloudFilename) {
