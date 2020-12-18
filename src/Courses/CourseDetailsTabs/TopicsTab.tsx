@@ -11,6 +11,7 @@ import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
 import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
+import { CourseTarballImportButton } from '../CourseCreation/CourseTarballImportButton';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -417,13 +418,46 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                             {/* <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} > */}
                             {
                                 inEditMode &&
-                                <Button variant='outline-success'
-                                    tabIndex={0}
-                                    onClick={_.partial(addUnitClick, _, course.id)}
-                                    onKeyPress={_.partial(addUnitClick, _, course.id)}
-                                >
-                                    <FaPlusCircle /> New Unit
-                                </Button>
+                                <>
+                                    <CourseTarballImportButton 
+                                        style={{
+                                            marginLeft: '1em'
+                                        }}
+                                        courseId={course.id}
+                                        /* Can't deconstruct here because the type changes based on the status object (even though it has the same props) */
+                                        emitEvent={(event) => {
+                                            // Grabbing this for error handling (see default below)
+                                            const { status } = event;
+                                            if (status !== 'error') {
+                                                setError(null);
+                                            }
+                                            switch (event.status) {
+                                            case 'error':
+                                                setError(event.data);
+                                                break;
+                                            case 'success':
+                                                logger.debug('success');
+                                                break;
+                                            case 'loading':
+                                                logger.debug('loading');
+                                                break;
+                                            default:
+                                                // Event is never in this case so can't use event.status
+                                                logger.error(`Unhandled case ${status} in tarball upload`);
+                                            }
+                                        }}
+                                    />
+                                    <Button variant='outline-success'
+                                        tabIndex={0}
+                                        onClick={_.partial(addUnitClick, _, course.id)}
+                                        onKeyPress={_.partial(addUnitClick, _, course.id)}
+                                        style={{
+                                            marginLeft: '1em'
+                                        }}
+                                    >
+                                        <FaPlusCircle /> New Unit
+                                    </Button>
+                                </>
                             }
                             <EditToggleButton
                                 selectedState={inEditMode}
