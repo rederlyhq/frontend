@@ -55,6 +55,7 @@
     "react-scripts": "4.0.1",
     "react-useportal": "^1.0.13",
     "typescript": "^3.9.7",
+    "url-join": "^4.0.1",
     "winston": "^3.3.3"
   },
   "scripts": {
@@ -90,6 +91,7 @@
   },
   "devDependencies": {
     "@hookform/devtools": "^2.2.1",
+    "@types/url-join": "^4.0.0",
     "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^4.9.1",
     "@typescript-eslint/parser": "^4.9.1",

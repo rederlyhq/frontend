@@ -9,6 +9,11 @@ export interface CreateCourseOptions {
     data: Partial<CourseObject>;
 }
 
+export interface PostImportCourseArchiveOptions {
+    archiveFile: File;
+    courseId: number;
+}
+
 export interface PutCourseOptions {
     id: number;
     data: Partial<CourseObject>;
