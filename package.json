@@ -73,7 +73,9 @@
     "rebuild_renderer": "(cd ../renderer-docker && ./rebuild_docker.sh)",
     "lint": "eslint src/ --ext ts,tsx",
     "postbuild": "node postbuild.js",
-    "modernizr": "modernizr -c modernizr-config.json -d public/modernizr.min.js"
+    "modernizr": "modernizr -c modernizr-config.json -d public/modernizr.min.js",
+    "package": "node ./package.js",
+    "build:package": "npm run build && npm run package"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -93,6 +95,8 @@
   "devDependencies": {
     "@hookform/devtools": "^2.2.1",
     "@types/winston": "^2.4.4",
+    "archiver": "^5.1.0",
+    "fs-extra": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^4.9.1",
     "@typescript-eslint/parser": "^4.9.1",
     "create-polyfill-service-url": "^2.2.4",
