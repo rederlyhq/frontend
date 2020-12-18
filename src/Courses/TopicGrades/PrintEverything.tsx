@@ -12,6 +12,7 @@ import PDFInlineRender from './PDFInlineRender';
 import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
 import OnLoadDispatchWrapper from './onLoadDispatchWrapper';
 import OnLoadProblemIframeWrapper from './OnLoadProblemIframeWrapper';
+import Heic from '../../Components/Heic';
 import { Alert } from '@material-ui/lab';
 
 interface PrintEverythingProps {
@@ -99,17 +100,34 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                                 return;
                             }
                             const cloudUrl = url.resolve(baseUrl.toString(), cloudFilename);
+                            const timestamp = `${userLocalFilename} was uploaded on ${updatedAt.toMoment().formattedMonthDateTime()}`;
 
-                            if (userLocalFilename.indexOf('.pdf') >= 0) {
+                            if (_.endsWith(userLocalFilename, '.heic') || _.endsWith(userLocalFilename, '.heif')) {
+                                return (
+                                    <>
+                                        {timestamp}
+                                        <OnLoadDispatchWrapper
+                                            key={cloudFilename}
+                                        >
+                                            <Heic                                            
+                                                title={cloudFilename ?? 'No Filename'}
+                                                url={cloudUrl} 
+                                            />
+                                        </OnLoadDispatchWrapper>
+                                    </>
+                                );
+                            }
+
+                            if (_.endsWith(userLocalFilename, '.pdf')) {
                                 return <>
-                                    {userLocalFilename} was uploaded on {updatedAt.toMoment().formattedMonthDateTime()}
+                                    {timestamp}
                                     <PDFInlineRender key={cloudFilename} url={cloudUrl} />
                                 </>;
                             }
 
                             return (
                                 <>
-                                    {userLocalFilename} was uploaded on {updatedAt.toMoment().formattedMonthDateTime()}
+                                    {timestamp}
                                     <OnLoadDispatchWrapper
                                         key={cloudFilename}
                                     >

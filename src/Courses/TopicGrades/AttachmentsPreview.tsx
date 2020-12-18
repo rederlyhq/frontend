@@ -5,6 +5,8 @@ import { ProblemAttachments } from '../CourseInterfaces';
 import url from 'url';
 import { Grid, CardActionArea, CardMedia, CardContent, CardActions, Button, Card } from '@material-ui/core';
 import PrintingPage from './PrintingPage';
+import Heic from '../../Components/Heic';
+import _ from 'lodash';
 
 
 interface AttachmentsPreviewProps {
@@ -55,20 +57,29 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
             </Grid>
             {
                 attachedFiles.map(attachment => (
-                    <Grid item md={4} key={attachment.userLocalFilename}>
+                    <Grid item md={4} key={attachment.userLocalFilename} spacing={1}>
                         <Card style={{width: '300px'}}>
                             <CardActionArea>
                                 <CardMedia style={{height: '140px'}}>
-                                    <embed
-                                        title={attachment.cloudFilename}
-                                        src={(baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404'}
-                                        height={140}
-                                        style={{objectFit: 'cover', width: '100%'}}
-                                    />
+                                    {
+                                        (_.endsWith(attachment.userLocalFilename, '.heic') || _.endsWith(attachment.userLocalFilename, '.heif')) ? 
+                                            <Heic
+                                                title={attachment.cloudFilename ?? 'No Filename'}
+                                                url={(baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404'}
+                                                height={140}
+                                                style={{objectFit: 'cover', width: '100%'}}
+                                            /> :
+                                            <embed
+                                                title={attachment.cloudFilename}
+                                                src={(baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404'}
+                                                height={140}
+                                                style={{objectFit: 'cover', width: '100%'}}
+                                            />
+                                    }
                                 </CardMedia>
                                 <CardContent>
                                     <h5>{attachment.userLocalFilename}</h5>
-                                    <p>Uploaded on {attachment.updatedAt?.toMoment().formattedMonthDateTime()}</p>
+                                    Uploaded on {attachment.updatedAt?.toMoment().formattedMonthDateTime()}
                                 </CardContent>
                             </CardActionArea>
                             <CardActions>
