@@ -2,7 +2,7 @@ import { Grid, Button, Snackbar } from '@material-ui/core';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useHistory, useParams, useRouteMatch } from 'react-router-dom';
 import logger from '../../Utilities/Logger';
 import MaterialBiSelect from '../../Components/MaterialBiSelect';
 import { useCourseContext } from '../CourseProvider';
@@ -13,6 +13,7 @@ import { GradeInfoHeader } from './GradeInfoHeader';
 import { useQuery } from '../../Hooks/UseQuery';
 import AttachmentsPreview from './AttachmentsPreview';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
+import * as qs from 'querystring';
 
 interface TopicGradingPageProps {
     topicId?: string;
@@ -38,6 +39,17 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
         grade?: StudentGrade,
         gradeInstance?: StudentGradeInstance,
     }>({});
+    const { url } = useRouteMatch();
+    const history = useHistory();
+
+    useEffect(() => {
+        const queryString = qs.stringify(_({
+            problemId: selected?.problem?.id,
+            userId: selected?.user?.id,
+        }).omitBy(_.isNil).value() as any).toString();
+
+        history.push(`${url}?${queryString}`);
+    }, [selected]);
 
     useEffect(() => {
         logger.debug('GradingPage: topicId changed');

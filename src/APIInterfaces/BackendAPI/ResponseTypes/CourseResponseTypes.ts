@@ -136,6 +136,7 @@ export interface GetAllVersionAttachmentsResponse {
                     id: number;
                     cloudFilename: string;
                     userLocalFilename: string;
+                    updatedAt: Date;
                 }[];
             }[];
         }[];

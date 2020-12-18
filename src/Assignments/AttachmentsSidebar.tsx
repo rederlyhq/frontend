@@ -32,8 +32,8 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
     useEffect(()=>{
         (async () => {
             try {
-                const res = await getAttachments({ 
-                    studentGradeId: gradeId, 
+                const res = await getAttachments({
+                    studentGradeId: gradeId,
                     studentGradeInstanceId: gradeInstanceId,
                 });
 
@@ -57,6 +57,7 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
     const updateIndexProgressWithPartial = (index: number, partial: Partial<ProblemAttachments>) => {
         setAttachedFiles(attachedFiles => {
             if (index >= attachedFiles.length) {
+                logger.error('Attempted to update (with partial) progress beyond array bounds. (TSNH)', index);
                 return attachedFiles;
             }
 
@@ -89,10 +90,10 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                 const res = await getUploadURL();
 
                 updateIndexProgressWithPartial(index, {progress: 10});
-                    
+
                 await putUploadWork({
                     presignedUrl: res.data.data.uploadURL,
-                    file: file.file, 
+                    file: file.file,
                     onUploadProgress: onUploadProgress
                 });
 
@@ -123,7 +124,7 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
             const fullAttachedState = [...attachedFiles, ...processingFiles];
             setAttachedFiles(fullAttachedState);
         }, [attachedFiles]);
-    
+
     const { getRootProps, getInputProps, isDragActive, open } = useDropzone({ onDrop,
         accept: [
             'image/*',
@@ -151,25 +152,25 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
     };
 
     return (
-        <Drawer 
+        <Drawer
             {...getRootProps()}
-            anchor={'right'} 
-            open={openDrawer} 
+            anchor={'right'}
+            open={openDrawer}
             onClose={()=>setOpenDrawer(false)}
             SlideProps={{style: {width: '30rem'}}}
         >
             {isDragActive && (
                 <div style={{
-                    position: 'absolute', 
-                    width: '100%', 
-                    height: '100%', 
-                    border: '5px dashed lightblue', 
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    border: '5px dashed lightblue',
                     borderRadius: '3px',
                     textAlign: 'center',
                     zIndex: 2,
                     backgroundColor: 'white',
                     opacity: 0.9
-                }} 
+                }}
                 >
                     <div style={{position: 'relative', margin: '0 auto', top: '30%', fontSize: '1.3em'}}>
                         Drop your attachments here to upload your work!
@@ -218,7 +219,7 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                                 <Card key={attachment.file?.name ?? attachment.id} style={cardStyle}>
                                     <CardContent>
                                         {isInError && <MdError />} {attachment.file?.name ?? attachment.userLocalFilename}
-                                        <IconButton color="secondary" aria-label="delete" onClick={()=>deleteAttachment(attachment)} style={{float: 'right'}}>
+                                        <IconButton color="secondary" aria-label="delete" onClick={()=>deleteAttachment(attachment)} style={{float: 'right'}} disabled={attachment.progress < 100}>
                                             <DeleteOutlined />
                                         </IconButton>
 
@@ -237,9 +238,9 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                     <div
                         style={{position: 'absolute', width: '100%', margin: '0 auto', bottom: '0px', fontSize: '2em'}}
                     >
-                        <Button 
+                        <Button
                             block
-                            className='text-center' 
+                            className='text-center'
                             onClick={open}
                         >
                             <FaFileUpload
