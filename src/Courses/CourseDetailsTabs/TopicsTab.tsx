@@ -12,6 +12,7 @@ import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
 import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
 import { CourseTarballImportButton } from '../CourseCreation/CourseTarballImportButton';
+import { Backdrop, CircularProgress } from '@material-ui/core';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -31,6 +32,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const [showTopicCreation, setShowTopicCreation] = useState<{ show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined }>({ show: false, unitIndex: -1 });
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const showEditTopic = (e: any, unitIdentifier: number, topicIdentifier: number) => {
         logger.info(`Editing topic ${topicIdentifier} in unit ${unitIdentifier}`);
@@ -371,6 +373,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     return (
         <>
+            <Backdrop open={loading} style={{zIndex: 99999}}><CircularProgress/></Backdrop>
             <Modal
                 show={showTopicCreation.show}
                 onHide={() => setShowTopicCreation({ show: false, unitIndex: -1 })}
@@ -431,6 +434,9 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                             if (status !== 'error') {
                                                 setError(null);
                                             }
+                                            if (status !== 'loading') {
+                                                setLoading(false);
+                                            }
                                             switch (event.status) {
                                             case 'error':
                                                 setError(event.data);
@@ -439,7 +445,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                 logger.debug('success');
                                                 break;
                                             case 'loading':
-                                                logger.debug('loading');
+                                                setLoading(true);
                                                 break;
                                             default:
                                                 // Event is never in this case so can't use event.status
