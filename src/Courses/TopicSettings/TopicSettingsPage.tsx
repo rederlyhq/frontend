@@ -13,6 +13,7 @@ import { Moment } from 'moment';
 import { TopicTypeId } from '../../Enums/TopicType';
 import { useDropzone } from 'react-dropzone';
 import logger from '../../Utilities/Logger';
+import { useQuery } from '../../Hooks/UseQuery';
 
 interface TopicSettingsPageProps {
     topic?: TopicObject;
@@ -41,6 +42,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     const {course} = useCourseContext();
     const { topicId: topicIdStr } = useParams<{topicId?: string}>();
     const topicId = topicProp?.id || (topicIdStr ? parseInt(topicIdStr, 10) : null);
+    const queryParams = useQuery();
 
     useEffect(()=>{
         if (!topicId) {
@@ -59,6 +61,20 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             }
         })();
     }, [course]);
+
+    // Sets the selected state when the topic is loaded to the problemId in the URL.
+    useEffect(()=>{
+        const problemIdStr = queryParams.get('problemId');
+        if (!_.isNil(problemIdStr)) {
+            const problemId = parseInt(problemIdStr, 10);
+            setSelected(selected => {
+                if (selected instanceof ProblemObject) {
+                    return selected;
+                }
+                return _.find(topic?.questions, ['id', problemId]) ?? selected;
+            });
+        }
+    }, [topic]);
 
     const addNewProblem = async () => {
         if (_.isNil(topicId) || _.isNil(topic)) {
