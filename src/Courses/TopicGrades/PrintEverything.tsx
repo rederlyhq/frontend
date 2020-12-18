@@ -12,6 +12,7 @@ import PDFInlineRender from './PDFInlineRender';
 import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
 import OnLoadDispatchWrapper from './onLoadDispatchWrapper';
 import OnLoadProblemIframeWrapper from './OnLoadProblemIframeWrapper';
+import Heic from '../../Components/Heic';
 
 interface PrintEverythingProps {
 }
@@ -99,7 +100,20 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                             }
                             const cloudUrl = url.resolve(baseUrl.toString(), cloudFilename);
 
-                            if (userLocalFilename.indexOf('.pdf') >= 0) {
+                            if (_.endsWith(userLocalFilename, '.heic') || _.endsWith(userLocalFilename, '.heif')) {
+                                return (
+                                    <OnLoadDispatchWrapper
+                                        key={cloudFilename}
+                                    >
+                                        <Heic                                            
+                                            title={cloudFilename ?? 'No Filename'}
+                                            url={cloudUrl} 
+                                        />
+                                    </OnLoadDispatchWrapper>
+                                );
+                            }
+
+                            if (_.endsWith(userLocalFilename, '.pdf')) {
                                 return <PDFInlineRender key={cloudFilename} url={cloudUrl} />;
                             }
 
