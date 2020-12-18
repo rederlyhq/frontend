@@ -219,7 +219,7 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                                 <Card key={attachment.file?.name ?? attachment.id} style={cardStyle}>
                                     <CardContent>
                                         {isInError && <MdError />} {attachment.file?.name ?? attachment.userLocalFilename}
-                                        <IconButton color="secondary" aria-label="delete" onClick={()=>deleteAttachment(attachment)} style={{float: 'right'}}>
+                                        <IconButton color="secondary" aria-label="delete" onClick={()=>deleteAttachment(attachment)} style={{float: 'right'}} disabled={attachment.progress < 100}>
                                             <DeleteOutlined />
                                         </IconButton>
 
