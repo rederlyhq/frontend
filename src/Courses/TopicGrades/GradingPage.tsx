@@ -44,8 +44,8 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
 
     useEffect(() => {
         const queryString = qs.stringify(_({
-            problemId: selected?.problem?.id,
-            userId: selected?.user?.id,
+            problemId: selected?.problem?.id ?? queryParams.get('problemId'),
+            userId: selected?.user?.id ?? queryParams.get('userId'),
         }).omitBy(_.isNil).value() as any).toString();
 
         history.push(`${url}?${queryString}`);
