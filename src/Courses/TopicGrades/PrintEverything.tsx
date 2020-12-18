@@ -12,6 +12,8 @@ import PDFInlineRender from './PDFInlineRender';
 import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
 import OnLoadDispatchWrapper from './onLoadDispatchWrapper';
 import OnLoadProblemIframeWrapper from './OnLoadProblemIframeWrapper';
+import Heic from '../../Components/Heic';
+import { Alert } from '@material-ui/lab';
 
 interface PrintEverythingProps {
 }
@@ -69,7 +71,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
     return (
         <>
             <h1>{gradeData.topic.name} -- {gradeData.user.firstName} {gradeData.user.lastName}</h1>
-            <h3 className='dont-print'>Printing will begin in several seconds...</h3>
+            <Alert severity='info' className='dont-print'>Printing will begin after all problems and attachments have finished loading. If the print dialog does not appear after the page has finished loading, you can <button onClick={()=>window.print()} className='link-button'>click here</button>.</Alert>
             {gradeData.topic.questions.map((problem)=>{
                 if (problem.grades.length > 1) {
                     logger.warn('More grades were found for a problem at a specific version.');
@@ -90,29 +92,52 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                                 readonly={true}
                             />
                         </OnLoadProblemIframeWrapper>
-                        <h5>Problem {problem.problemNumber} Attachments</h5>
+                        {attachments && attachments.length > 0 ? <h5>Problem {problem.problemNumber} Attachments</h5> : <h5>Problem {problem.problemNumber} has no attachments</h5>}
                         {attachments?.map((attachment) => {
-                            const { cloudFilename, userLocalFilename } = attachment;
+                            const { cloudFilename, userLocalFilename, updatedAt } = attachment;
                             if (!cloudFilename) {
                                 logger.error('No cloud filename was found for an attachment. TSNH.');
                                 return;
                             }
                             const cloudUrl = url.resolve(baseUrl.toString(), cloudFilename);
+                            const timestamp = `${userLocalFilename} was uploaded on ${updatedAt.toMoment().formattedMonthDateTime()}`;
 
-                            if (userLocalFilename.indexOf('.pdf') >= 0) {
-                                return <PDFInlineRender key={cloudFilename} url={cloudUrl} />;
+                            if (_.endsWith(userLocalFilename, '.heic') || _.endsWith(userLocalFilename, '.heif')) {
+                                return (
+                                    <>
+                                        {timestamp}
+                                        <OnLoadDispatchWrapper
+                                            key={cloudFilename}
+                                        >
+                                            <Heic                                            
+                                                title={cloudFilename ?? 'No Filename'}
+                                                url={cloudUrl} 
+                                            />
+                                        </OnLoadDispatchWrapper>
+                                    </>
+                                );
+                            }
+
+                            if (_.endsWith(userLocalFilename, '.pdf')) {
+                                return <>
+                                    {timestamp}
+                                    <PDFInlineRender key={cloudFilename} url={cloudUrl} />
+                                </>;
                             }
 
                             return (
-                                <OnLoadDispatchWrapper
-                                    key={cloudFilename}
-                                >
-                                    <img
-                                        alt={cloudFilename}
-                                        src={cloudUrl}
-                                        style={{maxWidth: '100%'}}
-                                    />
-                                </OnLoadDispatchWrapper>
+                                <>
+                                    {timestamp}
+                                    <OnLoadDispatchWrapper
+                                        key={cloudFilename}
+                                    >
+                                        <img
+                                            alt={userLocalFilename}
+                                            src={cloudUrl}
+                                            style={{maxWidth: '100%'}}
+                                        />
+                                    </OnLoadDispatchWrapper>
+                                </>
                             );
 
                             /* We currently only support images and PDFs. */

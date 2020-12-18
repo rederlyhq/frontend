@@ -16,11 +16,11 @@ export class NakedPromise<T> {
 export const xRayVision = (f: any) => {
     const nakedPromise = new NakedPromise();
     return {
-        dressedFunction: function () {
+        dressedFunction: function (...args: any[]) {
             try {
                 // down level iteration
                 //@ts-ignore
-                f(...arguments);
+                f(...args);
             } catch (e) {
                 logger.error('error occurred in parameter function', e);
             }

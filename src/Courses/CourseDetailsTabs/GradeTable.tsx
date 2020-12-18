@@ -18,6 +18,8 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
     let safeGrades = grades.map(obj => ({
         ...obj,
         ...(_.isUndefined(obj.average) ? undefined : {average: _.isNull(obj.average) ? '--' : obj.average.toPercentString()}),
+        ...(_.isUndefined(obj.openAverage) ? undefined : {openAverage: _.isNull(obj.openAverage) ? '--' : obj.openAverage.toPercentString()}),
+        ...(_.isUndefined(obj.deadAverage) ? undefined : {deadAverage: _.isNull(obj.deadAverage) ? '--' : obj.deadAverage.toPercentString()}),
         ...(_.isUndefined(obj.effectiveScore) ? undefined : {effectiveScore: _.isNull(obj.effectiveScore) ? '--' : obj.effectiveScore.toPercentString()}),
         ...(_.isUndefined(obj.systemScore) ? undefined : {systemScore: _.isNull(obj.systemScore) ? '--' : obj.systemScore.toPercentString()}),
     }));

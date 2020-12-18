@@ -174,6 +174,10 @@ export interface getAssessmentProblemsWithWorkbooksOptions {
     topicId: number;
 }
 
+export interface AskForHelpOptions {
+    questionId: number;
+}
+
 /* *************** *************** */
 /* ********* Attachments ********* */
 /* *************** *************** */

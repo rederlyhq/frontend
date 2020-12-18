@@ -8,13 +8,13 @@ import AxiosRequest from '../../Hooks/AxiosRequest';
 import './Course.css';
 
 interface CourseCreationPageProps {
-    
+
 }
 
 /**
  * This page prompts a user to create a new course from an existing template.
  * It renders a list of possible templates and a create button.
- * 
+ *
  */
 export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
     const [courseTemplates, setCourseTemplates] = useState<Array<ICourseTemplate>>([]);
@@ -23,8 +23,8 @@ export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
     useEffect(() => {
         (async () => {
             // TODO: Get courses as well.
-            let templatesResponse = await AxiosRequest.get('/curriculum');
-            let templates = templatesResponse.data.data;
+            const templatesResponse = await AxiosRequest.get('/curriculum');
+            const templates = templatesResponse.data.data;
             setCourseTemplates(templates);
             setFilteredCourseTemplates(templates);
         })();
@@ -35,7 +35,7 @@ export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
             template.name.toLowerCase().indexOf(e.target.value.toLowerCase()) > -1
         )));
     };
-    
+
     return (
         <EnterRightAnimWrapper>
             <Container>

@@ -10,13 +10,13 @@ interface CourseProviderProps {
 }
 
 const CourseContext = React.createContext<{
-        course: CourseObject, 
+        course: CourseObject,
         setCourse?: React.Dispatch<React.SetStateAction<CourseObject>>,
         error: string | null,
         users: UserObject[],
         setUsers?: React.Dispatch<React.SetStateAction<UserObject[]>>,
     }>({
-        course: new CourseObject(), 
+        course: new CourseObject(),
         setCourse: undefined,
         error: null,
         users: [],
@@ -45,7 +45,7 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
                 setCourse(new CourseObject(courseResp.data.data));
 
                 const usersArr = [];
-                for (let user of userResp.data.data) {
+                for (const user of userResp.data.data) {
                     usersArr.push(new UserObject(user));
                 }
 

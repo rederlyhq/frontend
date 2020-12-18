@@ -5,6 +5,7 @@ import { getUserIdNoRedirect } from '../Enums/UserRole';
 
 declare global {
     interface Window {
+        GA_TRACKING_ID: string;
         gtag?: (
             key: string,
             trackingId: string,
@@ -31,7 +32,7 @@ export const gaTrackEnroll = (class_code: string) => window.gtag?.(
 );
 
 export const useTracking = (
-    trackingId: string | undefined = process.env.REACT_APP_GA_ID
+    trackingId: string | undefined = window.GA_TRACKING_ID
 ) => {
     const { listen } = useHistory();
 
@@ -43,7 +44,7 @@ export const useTracking = (
             }
             if (!trackingId) {
                 logger.error(
-                    'Tracking not enabled, as `trackingId` was not given and there is no `REACT_APP_GA_ID`.'
+                    'Tracking not enabled, as `trackingId` was not given and there is no `window.GA_TRACKING_ID`.'
                 );
                 return;
             }

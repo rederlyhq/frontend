@@ -23,7 +23,8 @@ export class CourseObject {
     code: string = '';
     curriculumId: number = 0;
     textbooks: string = '';
-    
+    canAskForHelp: boolean = false;
+
     public constructor(init?:Partial<CourseObject>) {
         Object.assign(this, init);
 
@@ -43,7 +44,7 @@ export class CourseObject {
     static toAPIObject(course: CourseObject) {
         // Not every field belongs in the request.
         const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode', 'textbooks', 'curriculumId'];
-        let postObject = _.pick(course, newCourseFields);
+        const postObject = _.pick(course, newCourseFields);
         postObject.semesterCode = `${course.semesterCode}${course.semesterCodeYear}`;
         postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
         // TODO: Fix naming for route, should be 'templateId'.
@@ -55,6 +56,7 @@ export class UserObject {
     firstName?: string;
     lastName?: string;
     id: number = -1;
+    universityId?: number;
 
     get name(): string {
         return `${this.firstName} ${this.lastName}`;
@@ -98,11 +100,11 @@ export class TopicAssessmentFields {
     randomizeOrder?: boolean;
     studentTopicAssessmentInfo?: Array<StudentTopicAssessmentFields>;
     studentTopicAssessmentOverride?: StudentTopicAssessmentOverrideFields[];
-    
+
     public constructor(init?:Partial<TopicAssessmentFields>) {
         Object.assign(this, init);
     }
-    
+
     static getDefaultFields = (): Partial<TopicAssessmentFields> => {
         return {
             duration: 60,
@@ -179,10 +181,10 @@ export class TopicObject {
     partialExtend: boolean = false;
     studentTopicOverride: TopicOverride[] = [];
     topicAssessmentInfo?: TopicAssessmentFields = new TopicAssessmentFields();
-    
+
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
-      
+
         if (!_.isNull(init?.questions)) {
             this.questions = init?.questions?.map(question => new ProblemObject(question)) || [];
         }
@@ -198,10 +200,10 @@ export class UnitObject {
     unique: number = newUnitUniqueGen.next().value || 0;
     contentOrder: number = 0;
     courseId: number = 0;
-    
+
     public constructor(init?:Partial<UnitObject>) {
         Object.assign(this, init);
-                        
+
         if (!_.isNull(init?.topics)) {
             this.topics = init?.topics?.map(topic => new TopicObject(topic)) || [];
         }
@@ -341,7 +343,7 @@ export class CourseTopicAssessmentInfo extends TopicObject {
     showTotalGradeImmediately?: boolean;
     hideProblemsAfterFinish?: boolean;
     randomizeOrder?: boolean;
-    
+
     public constructor(init?:Partial<ProblemObject>) {
         super(init);
         Object.assign(this, init);
