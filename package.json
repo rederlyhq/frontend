@@ -31,6 +31,7 @@
     "codemirror": "^5.58.3",
     "es6-promise": "^4.2.8",
     "framer-motion": "^1.11.1",
+    "heic2any": "0.0.3",
     "iframe-resizer-react": "^1.0.4",
     "jquery": "^3.5.1",
     "js-cookie": "^2.2.1",
