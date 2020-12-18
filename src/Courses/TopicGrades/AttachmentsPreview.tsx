@@ -45,7 +45,8 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
 
     return (
         <Grid container style={{paddingLeft: '1rem'}}>
-            <Grid item md={12}><h1>Attachments</h1>
+            <Grid item md={12}>
+                {attachedFiles.length > 0 ? <h1>Attachments</h1> : <h3>The selected student has not uploaded any files for this problem.</h3>}
                 {/* This is hidden because printing attachments for a specific version is not currently supported. */}
                 {false && <><PrintingPage
                     debug={false}
@@ -75,7 +76,8 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
                                     }
                                 </CardMedia>
                                 <CardContent>
-                                    {attachment.userLocalFilename}
+                                    <h5>{attachment.userLocalFilename}</h5>
+                                    <p>Uploaded on {attachment.updatedAt?.toMoment().formattedMonthDateTime()}</p>
                                 </CardContent>
                             </CardActionArea>
                             <CardActions>

@@ -23,6 +23,7 @@ export class CourseObject {
     code: string = '';
     curriculumId: number = 0;
     textbooks: string = '';
+    canAskForHelp: boolean = false;
 
     public constructor(init?:Partial<CourseObject>) {
         Object.assign(this, init);
@@ -55,6 +56,7 @@ export class UserObject {
     firstName?: string;
     lastName?: string;
     id: number = -1;
+    universityId?: number;
 
     get name(): string {
         return `${this.firstName} ${this.lastName}`;

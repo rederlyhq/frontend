@@ -21,8 +21,13 @@ String.prototype.toMoment = Date.prototype.toMoment;
 declare module 'moment' {
     interface Moment {
         formattedFromNow(omitSuffix?: boolean, format?: string): string;
+        formattedMonthDateTime(): string;
     }
 }
+
+(moment.fn as any).formattedMonthDateTime = function (): string {
+    return this.format('MMM Do [at] h:mm:ss a');
+};
 
 (moment.fn as any).formattedFromNow = function (omitSuffix: boolean = false, format: string = 'H:mm:ss'): string {
     // This is the command I used to test in the console
