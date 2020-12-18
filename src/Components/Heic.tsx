@@ -5,10 +5,11 @@ import logger from '../Utilities/Logger';
 interface HeicProps {
     url: string;
     title: string;
+    [props: string]: any;
 }
 
 export const Heic = forwardRef<HTMLImageElement, HeicProps>(
-    function Heic({url, title}, ref) {
+    function Heic({url, title, ...props}, ref) {
         const [dataUrl, setDataUrl] = useState<string>();
 
         useEffect(()=>{
@@ -32,6 +33,7 @@ export const Heic = forwardRef<HTMLImageElement, HeicProps>(
                 title={title}
                 style={{maxWidth: '100%'}}
                 ref={ref}
+                {...props}
             />
         );
     });

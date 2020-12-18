@@ -57,7 +57,7 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
             </Grid>
             {
                 attachedFiles.map(attachment => (
-                    <Grid item md={4} key={attachment.userLocalFilename}>
+                    <Grid item md={4} key={attachment.userLocalFilename} spacing={1}>
                         <Card style={{width: '300px'}}>
                             <CardActionArea>
                                 <CardMedia style={{height: '140px'}}>
@@ -66,6 +66,8 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
                                             <Heic
                                                 title={attachment.cloudFilename ?? 'No Filename'}
                                                 url={(baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404'}
+                                                height={140}
+                                                style={{objectFit: 'cover', width: '100%'}}
                                             /> :
                                             <embed
                                                 title={attachment.cloudFilename}
@@ -77,7 +79,7 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
                                 </CardMedia>
                                 <CardContent>
                                     <h5>{attachment.userLocalFilename}</h5>
-                                    <p>Uploaded on {attachment.updatedAt?.toMoment().formattedMonthDateTime()}</p>
+                                    Uploaded on {attachment.updatedAt?.toMoment().formattedMonthDateTime()}
                                 </CardContent>
                             </CardActionArea>
                             <CardActions>
