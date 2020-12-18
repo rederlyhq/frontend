@@ -14,7 +14,8 @@
     }
 
     .dont-print {
-        display: none;
+        /* Using !important to override Material styles. */
+        display: none !important;
     }
 }
 
