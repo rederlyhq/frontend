@@ -55,7 +55,7 @@ export const postCourse = async ({
 export const postImportCourseArchive = async ({
     archiveFile,
     courseId
-}: PostImportCourseArchiveOptions): Promise<PostImportCourseArchiveResponse> => {
+}: PostImportCourseArchiveOptions): Promise<AxiosResponse<PostImportCourseArchiveResponse>> => {
     const data = new FormData();
     data.append('file', archiveFile);
 

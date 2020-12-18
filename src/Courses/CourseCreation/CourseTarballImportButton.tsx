@@ -22,13 +22,13 @@ type CourseTarballImportButtonState = {
 interface CourseTarballImportButtonProps {
     style?: React.CSSProperties;
     courseId: number;
-    emitEvent?: (event: CourseTarballImportButtonState) => void;
+    onEvent?: (event: CourseTarballImportButtonState) => void;
 }
 
 export const CourseTarballImportButton: React.FC<CourseTarballImportButtonProps> = ({
     style,
     courseId,
-    emitEvent
+    onEvent
 }) => {
 
     const onDrop = useCallback((acceptedFiles, fileRejections) => {
@@ -40,26 +40,26 @@ export const CourseTarballImportButton: React.FC<CourseTarballImportButtonProps>
                 // TODO error handling
                 // this happens when dropping multiple files or dropping files of the wrong type
                 logger.error('An error with drop occurred');
-                emitEvent?.({
+                onEvent?.({
                     status: 'error',
                     data: new Error('Did not receive any valid files to upload'),
                 });
             } else {
-                emitEvent?.({
+                onEvent?.({
                     status: 'loading',
                     data: null,
                 });
                 try {
-                    await postImportCourseArchive({
+                    const resp = await postImportCourseArchive({
                         courseId: courseId,
                         archiveFile: acceptedFiles.first
                     });
-                    emitEvent?.({
+                    onEvent?.({
                         status: 'success',
-                        data: new UnitObject()
+                        data: new UnitObject(resp.data.data)
                     });    
                 } catch(e) {
-                    emitEvent?.({
+                    onEvent?.({
                         status: 'error',
                         data: e,
                     });
@@ -68,7 +68,7 @@ export const CourseTarballImportButton: React.FC<CourseTarballImportButtonProps>
             logger.info(`acceptedFiles ${acceptedFiles}`);
             logger.info(`fileRejections ${fileRejections}`);
         })();
-    }, []);
+    }, [onEvent]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop: onDrop,

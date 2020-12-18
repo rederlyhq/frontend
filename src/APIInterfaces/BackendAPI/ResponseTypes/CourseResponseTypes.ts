@@ -6,7 +6,7 @@ import { BackendAPIResponse } from '../BackendAPIResponse';
 /* *************** *************** */
 export type CreateCourseResponse = BackendAPIResponse<Partial<CourseObject>>;
 
-export type PostImportCourseArchiveResponse = BackendAPIResponse<unknown>;
+export type PostImportCourseArchiveResponse = BackendAPIResponse<UnitObject>;
 
 interface PutCourseUpdates {
     updatesResult: Partial<CourseObject>[]

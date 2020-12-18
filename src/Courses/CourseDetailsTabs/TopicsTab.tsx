@@ -117,6 +117,12 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         createTopic(courseUnitContentId);
     };
 
+    const setUnitInCourse = (unit: UnitObject) => {
+        const newCourse: CourseObject = new CourseObject(course);
+        newCourse.units.push(unit);
+        setCourse?.(newCourse);
+    };
+
     const addUnit = async (courseId: number) => {
         try {
             setError(null);
@@ -125,9 +131,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     courseId
                 }
             });
-            const newCourse: CourseObject = new CourseObject(course);
-            newCourse.units.push(new UnitObject(result.data.data));
-            setCourse?.(newCourse);
+            const unit = new UnitObject(result.data.data);
+            setUnitInCourse(unit);    
         } catch (e) {
             setError(e);
         }
@@ -428,7 +433,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                         }}
                                         courseId={course.id}
                                         /* Can't deconstruct here because the type changes based on the status object (even though it has the same props) */
-                                        emitEvent={(event) => {
+                                        onEvent={(event) => {
                                             // Grabbing this for error handling (see default below)
                                             const { status } = event;
                                             if (status !== 'error') {
@@ -442,7 +447,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                 setError(event.data);
                                                 break;
                                             case 'success':
-                                                logger.debug('success');
+                                                setUnitInCourse(event.data);
                                                 break;
                                             case 'loading':
                                                 setLoading(true);
