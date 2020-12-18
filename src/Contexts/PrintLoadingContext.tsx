@@ -63,6 +63,7 @@ export const PrintLoadingProvider: React.FC<Props>  = ({ children }) => {
             // If a promise was added and there's already a timeout waiting to be evaluated, remove it.
             if (!_.isNull(timeout.current)) {
                 clearTimeout(timeout.current);
+                timeout.current = null;
             }
             
             // If a promise is added and we meet expectations, set a timeout to wait for the promises to finish.
