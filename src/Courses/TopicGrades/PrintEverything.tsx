@@ -31,6 +31,18 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
     if (params.topicId)
         topicId = parseInt(params.topicId, 10);
 
+    // Rename the title to provide a default filename in some OSes.
+    useEffect(()=>{
+        if (_.isNil(gradeData)) return;
+
+        document.title = `Rederly ${gradeData.topic.name} ${gradeData.user.lastName} ${gradeData.user.firstName}`;
+        
+        // Reset title if leaving the page.
+        return () => {
+            document.title = 'Rederly';
+        };
+    }, [gradeData]);
+
     useEffect(()=>{
         if (_.isNil(userId) || _.isNil(topicId) || _.isNaN(userId) || _.isNaN(topicId)) {
             logger.error(`Attempting to print a page without User ${userId} or Topic ${topicId} in the URL.`);
