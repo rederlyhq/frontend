@@ -23,14 +23,14 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
     const genStatefulCrumbs = () => {
         const arr: JSX.Element[] = [];
         for (let i = 0; i < pathnames.length; ++i) {
-            let p: string = pathnames[i];
-            let m: string = mappings[p];
+            const p: string = pathnames[i];
+            const m: string = mappings[p];
 
             // The home page and any other unaccounted for pages should just be ignored for now.
             if (p === 'common' || _.isEmpty(m)) {
                 continue;
             }
-            
+
             // If the next part of the path isn't a number, ignore this path portion
             // and use the next one for the crumb.
             if (p === 'courses' && ((i === pathnames.length - 1) || isNaN(parseInt(pathnames[i+1], 10)))) {

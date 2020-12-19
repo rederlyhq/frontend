@@ -58,11 +58,11 @@ export const ProvideFeedback: React.FC<any> = () => {
         } else {
             submitFeedback();
         }
-  
+
         setValidated(true);
     };
     const cancel = reset;
-    
+
     return (
         <>
             <Button variant="outline-light" onClick={() => setShowFeedbackModal(true)}>
@@ -89,7 +89,7 @@ export const ProvideFeedback: React.FC<any> = () => {
                             </FormLabel>
                             <FormControl
                                 required
-                                defaultValue='' 
+                                defaultValue=''
                                 size='lg'
                                 readOnly={!enabled}
                                 onChange={(
@@ -104,9 +104,10 @@ export const ProvideFeedback: React.FC<any> = () => {
                             </FormLabel>
                             <FormControl
                                 required
-                                defaultValue='' 
+                                defaultValue=''
                                 size='lg'
-                                as="textarea" rows="3"
+                                as="textarea"
+                                rows={3}
                                 readOnly={!enabled}
                                 onChange={(
                                     ev: React.ChangeEvent<HTMLInputElement>,

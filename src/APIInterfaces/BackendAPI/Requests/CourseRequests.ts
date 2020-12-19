@@ -1,15 +1,18 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, getAssessmentProblemsWithWorkbooksOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions, ListAttachmentOptions, ReadQuestionOptions, SaveQuestionOptions, GetGradesOptions, EnrollByCodeOptions, GetRawQuestionOptions, QuestionGradeResponse, GetQuestionGradeOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, getAssessmentProblemsWithWorkbooksOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions, ListAttachmentOptions, ReadQuestionOptions, SaveQuestionOptions, GetGradesOptions, EnrollByCodeOptions, GetRawQuestionOptions, QuestionGradeResponse, GetQuestionGradeOptions, AskForHelpOptions, PostImportCourseArchiveOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse, ListAttachmentsResponse, ReadQuestionResponse, SaveQuestionResponse, CatalogResponse, GradesResponse, EnrollByCodeResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse, ListAttachmentsResponse, ReadQuestionResponse, SaveQuestionResponse, CatalogResponse, GradesResponse, EnrollByCodeResponse, PostImportCourseArchiveResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 import _ from 'lodash';
 import { StudentTopicAssessmentFields } from '../../../Courses/CourseInterfaces';
+// This module can only be referenced with ECMAScript imports/exports by turning on the 'allowSyntheticDefaultImports' flag and referencing its default export.
+const urlJoin: (...args: string[]) => string = require('url-join');
 
 const COURSE_PATH = '/courses/';
+const COURSE_IMPORT_ARCHIVE = (courseId: number): string => urlJoin(COURSE_PATH, courseId.toString(), '/import-archive/');
 const COURSE_UNIT_PATH = url.resolve(COURSE_PATH, 'unit/');
 const COURSE_TOPIC_PATH = url.resolve(COURSE_PATH, 'topic/');
 const COURSE_QUESTION_PATH = url.resolve(COURSE_PATH, 'question/');
@@ -43,6 +46,28 @@ export const postCourse = async ({
                     useCurriculum
                 })}`
             ), data
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const postImportCourseArchive = async ({
+    archiveFile,
+    courseId
+}: PostImportCourseArchiveOptions): Promise<AxiosResponse<PostImportCourseArchiveResponse>> => {
+    const data = new FormData();
+    data.append('file', archiveFile);
+
+    try {
+        return await AxiosRequest.post(
+            COURSE_IMPORT_ARCHIVE(courseId),
+            data,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
         );
     } catch (e) {
         throw new BackendAPIError(e);
@@ -139,7 +164,7 @@ export const getTopic = async ({
     try {
         return await AxiosRequest.get(
             url.resolve(COURSE_TOPIC_PATH, `${id}?${qs.stringify(_.omitBy({
-                userId, 
+                userId,
                 includeQuestions
             }, _.isUndefined))}`)
         );
@@ -431,13 +456,13 @@ export const getQuestions = async ({
 };
 
 export const extendQuestion = async ({
-    courseTopicQuestionId, 
+    courseTopicQuestionId,
     userId,
     extensions
 }: ExtendCourseTopicQuestionsForUser): Promise<AxiosResponse<BackendAPIResponse>> => {
     try {
         return await AxiosRequest.put(
-            url.resolve(COURSE_QUESTION_PATH, `extend?${qs.stringify({courseTopicQuestionId, userId})}`), 
+            url.resolve(COURSE_QUESTION_PATH, `extend?${qs.stringify({courseTopicQuestionId, userId})}`),
             extensions
         );
     } catch (e) {
@@ -489,7 +514,7 @@ export const generateNewVersion = async ({
                      * Forms send this field in the origin header, however that wasn't coming across with the axios request
                      * Adding `origin` myself was getting stripped
                      * Could not find solution online so used a custom header
-                     * Other headers don't work because they get modified by aws (between cloudfront and the load balancers) 
+                     * Other headers don't work because they get modified by aws (between cloudfront and the load balancers)
                      */
                     'rederly-origin': window.location.origin,
                 }
@@ -537,6 +562,29 @@ export const getAssessmentProblemsWithWorkbooks = async ({
     }
 };
 
+export const askForHelp = async ({
+    questionId
+}: AskForHelpOptions): Promise<AxiosResponse<BackendAPIResponse>> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(COURSE_QUESTION_PATH, `${questionId}/openlab`),
+            {
+                headers: {
+                    /**
+                     * Forms send this field in the origin header, however that wasn't coming across with the axios request
+                     * Adding `origin` myself was getting stripped
+                     * Could not find solution online so used a custom header
+                     * Other headers don't work because they get modified by aws (between cloudfront and the load balancers)
+                     */
+                    'rederly-origin': window.location.origin,
+                }
+            }
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
 /* *************** *************** */
 /* ********** Attachments ********** */
 /* *************** *************** */
@@ -571,7 +619,7 @@ export const getAttachments = async ({
             ),
         };
         const params = studentWorkbookId ? { studentWorkbookId } : gradeParams;
-    
+
         return await AxiosRequest.get(COURSE_ATTACHMENTS_LIST_PATH, {
             params,
         });

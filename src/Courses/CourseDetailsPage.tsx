@@ -1,13 +1,22 @@
 import React, { useState } from 'react';
 import { Container, Tabs, Tab } from 'react-bootstrap';
-import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
-import TopicsTab from './CourseDetailsTabs/TopicsTab';
-import GradesTab from './CourseDetailsTabs/GradesTab';
-import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
+import { useRouteMatch, useHistory } from 'react-router-dom';
 import { CourseObject } from './CourseInterfaces';
 import { UserRole, getUserRole, getUserId } from '../Enums/UserRole';
 import { CourseDetailsTab } from './CourseDetailsTabs/CourseDetailsTab';
 import { useCourseContext } from './CourseProvider';
+import { useQuery } from '../Hooks/UseQuery';
+import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
+import TopicsTab from './CourseDetailsTabs/TopicsTab';
+import GradesTab from './CourseDetailsTabs/GradesTab';
+import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
+
+// Lazy loading these components does not work well with React Bootstrap, potentially
+// because is uses a deprecated method of traversing the DOM. This might work better with MUI Tabs.
+// const EnrollmentsTab = lazy(() => import('./CourseDetailsTabs/EnrollmentsTab'));
+// const TopicsTab = lazy(() => import('./CourseDetailsTabs/TopicsTab'));
+// const GradesTab = lazy(() => import('./CourseDetailsTabs/GradesTab'));
+// const StatisticsTab = lazy(() => import('./CourseDetailsTabs/StatisticsTab'));
 
 interface CourseDetailsPageProps {
 
@@ -31,10 +40,14 @@ export const courseContext = React.createContext(new CourseObject());
  */
 export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     const {course, setCourse, error} = useCourseContext();
-    const [activeTab, setActiveTab] = useState<CourseDetailsTabs>(CourseDetailsTabs.DETAILS);
+    const queryParams = useQuery();
+    const tab = queryParams.get('tab') as CourseDetailsTabs | null;
+    const [activeTab, setActiveTab] = useState<CourseDetailsTabs>(tab ?? CourseDetailsTabs.DETAILS);
     const userType: UserRole = getUserRole();
     const userId: number = getUserId();
     const [studentNameAndId, setStudentNameAndId] = useState<{name: string, userId: number} | null>(null);
+    const { url } = useRouteMatch();
+    const history = useHistory();
     const { Provider } = courseContext;
 
     const setStudentGradesTab = (studentName: string, studentId: number) => {
@@ -46,37 +59,62 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
 
     return (
         <Container>
-            <Provider value={course}>    
-                <Tabs 
-                    activeKey={activeTab} 
-                    defaultActiveKey={CourseDetailsTabs.DETAILS} 
-                    id="course-details-tabs" 
+            <Provider value={course}>
+                <Tabs
+                    activeKey={activeTab}
+                    defaultActiveKey={tab ?? CourseDetailsTabs.DETAILS}
+                    id='course-details-tabs'
                     onSelect={(activeTab: any) => {
                         setActiveTab(activeTab);
                         setStudentNameAndId(null);
+                        history.push(`${url}?tab=${activeTab}`);
                     }}>
-                    <Tab eventKey={CourseDetailsTabs.DETAILS} title={CourseDetailsTabs.DETAILS}  style={{marginBottom:'10px'}}>
+                    <Tab
+                        mountOnEnter
+                        eventKey={CourseDetailsTabs.DETAILS} title={CourseDetailsTabs.DETAILS}
+                        style={{marginBottom:'10px'}}
+                    >
                         {/* TODO: pass loading state between CourseProvider */}
                         <CourseDetailsTab course={course} error={error} loading={false} setCourse={setCourse} />
                     </Tab>
-                    <Tab eventKey={CourseDetailsTabs.TOPICS} title={CourseDetailsTabs.TOPICS}>
+                    <Tab
+                        mountOnEnter
+                        eventKey={CourseDetailsTabs.TOPICS}
+                        title={CourseDetailsTabs.TOPICS}
+                    >
                         <TopicsTab course={course} setCourse={setCourse} />
                     </Tab>
-                    <Tab eventKey={CourseDetailsTabs.ENROLLMENTS} title="Enrollments">
+                    <Tab
+                        mountOnEnter
+                        eventKey={CourseDetailsTabs.ENROLLMENTS}
+                        title={CourseDetailsTabs.ENROLLMENTS}
+                    >
                         <EnrollmentsTab />
                     </Tab>
-                    <Tab eventKey={CourseDetailsTabs.GRADES} title={CourseDetailsTabs.GRADES}>
+                    <Tab
+                        mountOnEnter
+                        eventKey={CourseDetailsTabs.GRADES}
+                        title={CourseDetailsTabs.GRADES}
+                    >
                         {/* Students' Grades view is really the statisics view. */}
-                        {userType === UserRole.STUDENT ? 
-                            <StatisticsTab course={course} userId={userId} /> : 
+                        {userType === UserRole.STUDENT ?
+                            <StatisticsTab course={course} userId={userId} /> :
                             <GradesTab course={course} setStudentGradesTab={setStudentGradesTab} />}
                     </Tab>
                     {userType !== UserRole.STUDENT && (
-                        <Tab eventKey={CourseDetailsTabs.STATISTICS} title={CourseDetailsTabs.STATISTICS}>
+                        <Tab
+                            mountOnEnter
+                            eventKey={CourseDetailsTabs.STATISTICS}
+                            title={CourseDetailsTabs.STATISTICS}
+                        >
                             <StatisticsTab course={course} />
                         </Tab>)}
                     {studentNameAndId !== null && (
-                        <Tab eventKey={CourseDetailsTabs.STUDENT_GRADES} title={`${studentNameAndId.name}'s Grades`}>
+                        <Tab
+                            mountOnEnter
+                            eventKey={CourseDetailsTabs.STUDENT_GRADES}
+                            title={`${studentNameAndId.name}'s Grades`}
+                        >
                             <StatisticsTab course={course} userId={studentNameAndId.userId} />
                         </Tab>)}
                 </Tabs>

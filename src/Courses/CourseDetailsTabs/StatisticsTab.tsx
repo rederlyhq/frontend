@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import React, { useState, useEffect } from 'react';
-import { Alert, Button, Col, Nav } from 'react-bootstrap';
+import { Alert, Button as BSButton, Col, Nav } from 'react-bootstrap';
 import MaterialTable, { Column } from 'material-table';
 import { ChevronRight } from '@material-ui/icons';
 import { ProblemObject, CourseObject, StudentGrade } from '../CourseInterfaces';
@@ -17,7 +17,7 @@ import { IAlertModalState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
-import { CircularProgress } from '@material-ui/core';
+import { CircularProgress, Chip, Grid, Tooltip } from '@material-ui/core';
 import MaterialIcons from '../../Components/MaterialIcons';
 
 const FILTERED_STRING = '_FILTERED';
@@ -51,14 +51,11 @@ const statisticsViewFromAllStatisticsViewFilter = (view: StatisticsViewAll): Sta
 };
 
 const attemptCols: Array<Column<any>> = [
-    { title: 'Result', field: 'result', defaultSort: 'asc' },
+    { title: 'Result', field: 'result' },
     {
         title: 'Attempt Time',
         field: 'time',
-        // These options don't seem to work.
-        // defaultSort: 'desc',
-        // defaultGroupSort: 'desc',
-        // defaultGroupOrder: 1,
+        defaultSort: 'asc',
         sorting: true,
         type: 'datetime',
         render: (datetime: any) => <span title={moment(datetime.time).toString()}>{moment(datetime.time).fromNow()}</span>,
@@ -92,6 +89,18 @@ const defaultGradesState: GradesState = {
     rowData: undefined
 };
 
+// TitleData can be either the averages for all returned data, or the effective grade for
+// a specific problem.
+type TitleData = {
+    totalAverage: number;
+    totalOpenAverage: number;
+    totalDeadAverage: number;
+} | { 
+    effectiveScore: number;
+    systemScore: number;
+    bestScore: number;
+}
+
 /**
  * When a professor wishes to see a student's view, they pass in the student's userId.
  * When they wish to see overall course statistics, they do not pass any userId.
@@ -104,17 +113,21 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [gradesState, setGradesState] = useState<GradesState>(defaultGradesState);
     const [grade, setGrade] = useState<StudentGrade | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [titleGrade, setTitleGrade] = useState<TitleData | null>(null);
     const userType: UserRole = getUserRole();
+    // Efficient numeric-safe sorting https://stackoverflow.com/a/38641281/4752397
+    const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
 
     const aggregateTitlePrefix = _.isNil(userId) ? 'Average ' : '';
-    const gradeCols = [
-        { title: 'Name', field: 'name' },
+    const gradeCols: Column<object>[] = [
+        { title: 'Name', field: 'name', customSort: (x: any, y: any)  => collator.compare(x.name, y.name)},
         { title: _.capitalize(`${aggregateTitlePrefix}number of attempts`), field: 'averageAttemptedCount' },
         { title: _.capitalize(`${aggregateTitlePrefix}grade`), field: 'averageScore' },
         { title: _.capitalize(`${aggregateTitlePrefix}system score`), field: 'systemScore' },
+        // { title: _.capitalize(`${aggregateTitlePrefix}open score`), field: 'openAverage' },
+        // { title: _.capitalize(`${aggregateTitlePrefix}dead score`), field: 'deadAverage' },
         { title: _.capitalize(`${aggregateTitlePrefix}mastered`), field: 'completionPercent' },
     ];
-
 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
 
@@ -148,7 +161,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         case StatisticsViewFilter.PROBLEMS_FILTERED:
         case StatisticsView.ATTEMPTS:
             url = `/users/${userId}?includeGrades=WITH_ATTEMPTS&`;
-            // TODO: This should be removed when a similar call as the others is supported.
+            // TODO: RED-345 This should be removed when a similar call as the others is supported.
             idFilterLocal = null;
             break;
         default:
@@ -171,24 +184,25 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
                 const formatNumberString = (val: string, percentage: boolean = false) => {
                     if (_.isNil(val)) return '--';
-                    if (percentage) return `${(parseFloat(val) * 100).toFixed(1)}%`;
+                    if (percentage) return parseFloat(val).toPercentString();
 
                     return parseFloat(val).toFixed(2);
                 };
 
                 if (view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) {
-                    let grades = data.grades.filter((grade: any) => {
+                    const grades = data.grades.filter((grade: any) => {
                         const hasAttempts = grade.numAttempts > 0;
                         const satisfiesIdFilter = idFilter ? grade.courseWWTopicQuestionId === idFilter : true;
                         return hasAttempts && satisfiesIdFilter;
                     });
                     logger.debug('Stats tab: [useEffect] setting grade.');
-                    setGrade(grades[0]);
+                    setGrade(grades.first);
+                    setTitleGrade(_.isNil(grades.first) ? null : {effectiveScore: grades.first?.effectiveScore, systemScore: grades.first?.partialCreditBestScore, bestScore: grades.first?.bestScore});
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
                             id: attempt.id,
                             submitted: attempt.submitted,
-                            result: `${(attempt.result * 100).toFixed(1)}%`,
+                            result: attempt.result.toPercentString(),
                             time: attempt.time,
                             problemId: grade.courseWWTopicQuestionId
                         }))
@@ -199,11 +213,21 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     logger.debug('Stats tab: [useEffect] setting gradesstate and grade');
                     setGradesState(defaultGradesState);
                     setGrade(null);
-                    data = data.map((d: any) => ({
+                    setTitleGrade(
+                        {
+                            totalAverage: data.totalAverage as number,
+                            totalOpenAverage: data.totalOpenAverage as number,
+                            totalDeadAverage: data.totalDeadAverage as number,
+                        }
+                    );
+
+                    data = data.data.map((d: any) => ({
                         ...d,
                         averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
                         averageScore: formatNumberString(d.averageScore, true),
                         ...(_.isNil(d.systemScore) ? undefined : {systemScore: formatNumberString(d.systemScore, true)}),
+                        ...(_.isNil(d.openAverage) ? undefined : {openAverage: formatNumberString(d.openAverage, true)}),
+                        ...(_.isNil(d.deadAverage) ? undefined : {deadAverage: formatNumberString(d.deadAverage, true)}),
                         completionPercent: formatNumberString(d.completionPercent, true)
                     }));
                 }
@@ -239,7 +263,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
     const resetBreadCrumbs = (selectedKey: string, newBreadcrumb?: BreadCrumbFilter) => {
         logger.debug('Stats tab: resetting breadcrumbs');
-        let globalSelectedKey: StatisticsView = statisticsViewFromAllStatisticsViewFilter(selectedKey as StatisticsViewAll);
+        const globalSelectedKey: StatisticsView = statisticsViewFromAllStatisticsViewFilter(selectedKey as StatisticsViewAll);
         let key: StatisticsView = StatisticsView.UNITS;
         let lastFilter: number | null = null;
         const newBreadcrumbFilter: EnumDictionary<StatisticsView, BreadCrumbFilter> = {};
@@ -310,6 +334,37 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             break;
         default:
             break;
+        }
+    };
+
+    const onConfirm = async () => {
+        try {
+            if (_.isNil(grade) || _.isNil(grade.id)) {
+                throw new Error('Application Error: Grade null');
+            }
+            setGradesState(defaultGradesState);
+            const newLockedValue = !grade.locked;
+            const result = await putQuestionGrade({
+                id: grade.id,
+                data: {
+                    locked: newLockedValue
+                }
+            });
+
+            if(!_.isNil(gradesState.rowData?.grades[0])) {
+                gradesState.rowData.grades[0].locked = newLockedValue;
+            }
+
+            setGradesState(defaultGradesState);
+            setGrade(result.data.data.updatesResult.updatedRecords[0] as StudentGrade);
+        } catch (e) {
+            setGradesState({
+                ...gradesState,
+                lockAlert: {
+                    message: e.message,
+                    variant: 'danger'
+                }
+            });
         }
     };
 
@@ -394,8 +449,12 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
     return (
         <>
-            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
+            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string | null) => {
                 logger.debug('Stats tab: [nav1] setting IdFilter and view');
+                if (_.isNil(selectedKey)) {
+                    logger.error('The selectedKey for the Statistics Tab is null. (TSNH)');
+                    return;
+                }
                 setView(selectedKey as StatisticsViewAll);
                 setBreadcrumbFilters({});
                 setIdFilter(null);
@@ -411,7 +470,11 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     </Col>
                 ))}
             </Nav>
-            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
+            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string | null) => {
+                if (_.isNil(selectedKey)) {
+                    logger.error('The selectedKey for the Statistics Tab is null. (TSNH)');
+                    return;
+                }
                 const { lastFilter } = resetBreadCrumbs(selectedKey);
                 logger.info('Stats tab: [nav2] setting IdFilter and view');
                 setView(selectedKey as StatisticsViewFilter);
@@ -451,44 +514,17 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     <ConfirmationModal
                         show={gradesState.view === GradesStateView.LOCK}
                         onHide={() => setGradesState(defaultGradesState)}
-                        onConfirm={async () => {
-                            try {
-                                if (_.isNil(grade) || _.isNil(grade.id)) {
-                                    throw new Error('Application Error: Grade null');
-                                }
-                                setGradesState(defaultGradesState);
-                                const newLockedValue = !grade.locked;
-                                const result = await putQuestionGrade({
-                                    id: grade.id,
-                                    data: {
-                                        locked: newLockedValue
-                                    }
-                                });
-
-                                if(!_.isNil(gradesState.rowData?.grades[0])) {
-                                    gradesState.rowData.grades[0].locked = newLockedValue;
-                                }
-
-                                setGradesState(defaultGradesState);
-                                setGrade(result.data.data.updatesResult.updatedRecords[0] as StudentGrade);
-                            } catch (e) {
-                                setGradesState({
-                                    ...gradesState,
-                                    lockAlert: {
-                                        message: e.message,
-                                        variant: 'danger'
-                                    }
-                                });
-                            }
-                        }}
-                        confirmText="Confirm"
+                        onConfirm={onConfirm}
+                        confirmText='Confirm'
                         headerContent={<h6>{grade.locked ? 'Unlock' : 'Lock'} Grade</h6>}
-                        bodyContent={(<>
-                            {gradesState.lockAlert && <Alert variant={gradesState.lockAlert.variant}>{gradesState.lockAlert.message}</Alert>}
-                            <p>Are you sure you want to {grade.locked ? 'unlock' : 'lock'} this grade?</p>
-                            {grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
-                            {!grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
-                        </>)}
+                        bodyContent={(
+                            <>
+                                {gradesState.lockAlert && <Alert variant={gradesState.lockAlert.variant}>{gradesState.lockAlert.message}</Alert>}
+                                <p>Are you sure you want to {grade.locked ? 'unlock' : 'lock'} this grade?</p>
+                                {grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
+                                {!grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
+                            </>
+                        )}
                     />
                 </>}
                 { loading ?
@@ -504,6 +540,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                             breadcrumbFilter={breadcrumbFilter}
                             setGradesState={setGradesState}
                             gradesState={gradesState}
+                            titleGrade={titleGrade}
                         />}
                         columns={(view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) ? attemptCols : gradeCols}
                         data={rowData}
@@ -528,7 +565,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 };
 
 const TableTitleComponent = (
-    {userType, view, userId, grade, course, breadcrumbFilter, setGradesState, gradesState}: {
+    {userType, view, userId, grade, course, breadcrumbFilter, setGradesState, gradesState, titleGrade}: {
         userType: UserRole,
         view: StatisticsViewAll,
         userId?: number,
@@ -537,30 +574,57 @@ const TableTitleComponent = (
         breadcrumbFilter: EnumDictionary<StatisticsView, BreadCrumbFilter>,
         setGradesState: React.Dispatch<React.SetStateAction<GradesState>>,
         gradesState: GradesState,
+        titleGrade: TitleData | null,
     }
 ) => (
-    <div className="d-flex">
-        <h6
-            style={{
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
-            }}
-            className="MuiTypography-root MuiTypography-h6"
-        >
-            {
-                Object.keys(StatisticsView).reduce((result: string, key: string) => {
-                    return breadcrumbFilter[key as StatisticsView]?.displayName ?? result;
-                }, course.name)
+    <Grid container spacing={1}>
+        <Grid item>
+            <h6
+                style={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                }}
+                className="MuiTypography-root MuiTypography-h6"
+            >
+                {
+                    Object.keys(StatisticsView).reduce((result: string, key: string) => {
+                        return breadcrumbFilter[key as StatisticsView]?.displayName ?? result;
+                    }, course.name)
+                }
+            </h6>
+        </Grid>
+        <Grid item>
+            {/* Requiring userId here hides this on the Professor's Statistics page. This may be removed in the future. */}
+            {userId && titleGrade &&
+                <Tooltip title={('totalOpenAverage' in titleGrade) ?
+                    <>
+                        {titleGrade.totalAverage && <>{titleGrade.totalAverage.toPercentString()} Overall <br/></>}
+                        {titleGrade.totalDeadAverage && <>{titleGrade.totalDeadAverage.toPercentString()} on Closed Topics</>}
+                    </> :
+                    <>
+                        {titleGrade.bestScore.toPercentString()} on time <br/>
+                        {titleGrade.systemScore.toPercentString()} overall
+                    </>}
+                >
+                    <Chip
+                        size='small'
+                        color={'primary'}
+                        label={ ('totalOpenAverage' in titleGrade) ?
+                            titleGrade.totalOpenAverage?.toPercentString() :
+                            titleGrade.effectiveScore?.toPercentString()
+                        }
+                    />
+                </Tooltip>
             }
-        </h6>
+        </Grid>
         {
             (userType === UserRole.PROFESSOR) &&
             !_.isNil(userId) &&
             !_.isNil(grade) &&
             (view === StatisticsViewFilter.PROBLEMS_FILTERED) && (
-                <>
-                    <Button
+                <Grid item>
+                    <BSButton
                         className="ml-3 mr-1"
                         onClick={() => setGradesState({
                             ...gradesState,
@@ -570,13 +634,13 @@ const TableTitleComponent = (
                         <>
                             <BsPencilSquare/> Override
                         </>
-                    </Button>
+                    </BSButton>
 
-                    <Button
+                    <BSButton
                         variant={grade.locked ? 'warning' : 'danger'}
                         className="ml-1 mr-1"
                         onClick={() => {
-                            logger.info('Stats tab: [table button] setting gradesstate');
+                            logger.info('Stats tab: [table BSButton] setting gradesstate');
                             setGradesState({
                                 ...gradesState,
                                 view: GradesStateView.LOCK
@@ -584,10 +648,10 @@ const TableTitleComponent = (
                         }}
                     >
                         {grade.locked ? <><BsLock/> Unlock</>: <><BsUnlock/> Lock</>}
-                    </Button>
-                </>
+                    </BSButton>
+                </Grid>
             )}
-    </div>
+    </Grid>
 );
 
 export default StatisticsTab;

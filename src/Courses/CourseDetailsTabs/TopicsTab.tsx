@@ -11,6 +11,8 @@ import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
 import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
+import { CourseTarballImportButton } from '../CourseCreation/CourseTarballImportButton';
+import { Backdrop, CircularProgress } from '@material-ui/core';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -30,10 +32,11 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const [showTopicCreation, setShowTopicCreation] = useState<{ show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined }>({ show: false, unitIndex: -1 });
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const showEditTopic = (e: any, unitIdentifier: number, topicIdentifier: number) => {
         logger.info(`Editing topic ${topicIdentifier} in unit ${unitIdentifier}`);
-        let unit = _.find(course.units, ['id', unitIdentifier]);
+        const unit = _.find(course.units, ['id', unitIdentifier]);
         logger.info(unit);
         if (!unit) {
             logger.error(`Cannot find unit with identifier ${unitIdentifier}`);
@@ -55,8 +58,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 id: topicId
             });
 
-            let newCourse: CourseObject = { ...course };
-            let unit = _.find(newCourse.units, ['id', unitId]);
+            const newCourse: CourseObject = { ...course };
+            const unit = _.find(newCourse.units, ['id', unitId]);
 
             if (!unit) {
                 logger.error(`Could not find a unit with id ${unitId}`);
@@ -94,8 +97,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 }
             });
 
-            let newCourse: CourseObject = new CourseObject(course);
-            let unit = _.find(newCourse.units, ['id', courseUnitContentId]);
+            const newCourse: CourseObject = new CourseObject(course);
+            const unit = _.find(newCourse.units, ['id', courseUnitContentId]);
 
             if (!unit) {
                 logger.error(`Could not find a unit with id ${courseUnitContentId}`);
@@ -114,6 +117,12 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         createTopic(courseUnitContentId);
     };
 
+    const setUnitInCourse = (unit: UnitObject) => {
+        const newCourse: CourseObject = new CourseObject(course);
+        newCourse.units.push(unit);
+        setCourse?.(newCourse);
+    };
+
     const addUnit = async (courseId: number) => {
         try {
             setError(null);
@@ -122,9 +131,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     courseId
                 }
             });
-            let newCourse: CourseObject = new CourseObject(course);
-            newCourse.units.push(new UnitObject(result.data.data));
-            setCourse?.(newCourse);
+            const unit = new UnitObject(result.data.data);
+            setUnitInCourse(unit);    
         } catch (e) {
             setError(e);
         }
@@ -140,7 +148,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             await deleteUnit({
                 id: unitId
             });
-            let newCourse: CourseObject = new CourseObject(course);
+            const newCourse: CourseObject = new CourseObject(course);
             const deletedUnit = _.find(newCourse.units, ['id', unitId]);
             // Decrement everything after
             if (!_.isNil(deletedUnit)) {
@@ -171,8 +179,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             return;
         }
 
-        let newCourse: CourseObject = new CourseObject(course);
-        let unit = _.find(newCourse.units, ['unique', unitIndex]);
+        const newCourse: CourseObject = new CourseObject(course);
+        const unit = _.find(newCourse.units, ['unique', unitIndex]);
 
         if (!unit) {
             logger.error(`Could not find a unit with id ${unitIndex}`);
@@ -182,7 +190,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
         // If a topic already exists, update and overwrite it in the course object.
         if (existingTopic) {
-            let oldTopic = _.find(unit.topics, ['unique', existingTopic.unique]);
+            const oldTopic = _.find(unit.topics, ['unique', existingTopic.unique]);
 
             if (!oldTopic) {
                 logger.error(`Could not update topic ${existingTopic.id} in unit ${unitIndex}`);
@@ -203,8 +211,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     const onUnitBlur = async (event: React.FocusEvent<HTMLHeadingElement>, unitId: number) => {
         try {
             setError(null);
-            let newCourse = _.cloneDeep(course);
-            let updatingUnit = _.find(newCourse.units, ['id', unitId]);
+            const newCourse = _.cloneDeep(course);
+            const updatingUnit = _.find(newCourse.units, ['id', unitId]);
             if (!updatingUnit) {
                 logger.error(`Could not find a unit with the unique identifier ${unitId}`);
                 return;
@@ -370,6 +378,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     return (
         <>
+            <Backdrop open={loading} style={{zIndex: 99999}}><CircularProgress/></Backdrop>
             <Modal
                 show={showTopicCreation.show}
                 onHide={() => setShowTopicCreation({ show: false, unitIndex: -1 })}
@@ -417,13 +426,49 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                             {/* <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} > */}
                             {
                                 inEditMode &&
-                                <Button variant='outline-success'
-                                    tabIndex={0}
-                                    onClick={_.partial(addUnitClick, _, course.id)}
-                                    onKeyPress={_.partial(addUnitClick, _, course.id)}
-                                >
-                                    <FaPlusCircle /> New Unit
-                                </Button>
+                                <>
+                                    <CourseTarballImportButton 
+                                        style={{
+                                            marginLeft: '1em'
+                                        }}
+                                        courseId={course.id}
+                                        /* Can't deconstruct here because the type changes based on the status object (even though it has the same props) */
+                                        onEvent={(event) => {
+                                            // Grabbing this for error handling (see default below)
+                                            const { status } = event;
+                                            if (status !== 'error') {
+                                                setError(null);
+                                            }
+                                            if (status !== 'loading') {
+                                                setLoading(false);
+                                            }
+                                            switch (event.status) {
+                                            case 'error':
+                                                setError(event.data);
+                                                break;
+                                            case 'success':
+                                                setUnitInCourse(event.data);
+                                                break;
+                                            case 'loading':
+                                                setLoading(true);
+                                                break;
+                                            default:
+                                                // Event is never in this case so can't use event.status
+                                                logger.error(`Unhandled case ${status} in tarball upload`);
+                                            }
+                                        }}
+                                    />
+                                    <Button variant='outline-success'
+                                        tabIndex={0}
+                                        onClick={_.partial(addUnitClick, _, course.id)}
+                                        onKeyPress={_.partial(addUnitClick, _, course.id)}
+                                        style={{
+                                            marginLeft: '1em'
+                                        }}
+                                    >
+                                        <FaPlusCircle /> New Unit
+                                    </Button>
+                                </>
                             }
                             <EditToggleButton
                                 selectedState={inEditMode}

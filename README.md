@@ -4,6 +4,7 @@
 ![Commit Activity](https://img.shields.io/github/commit-activity/m/rederly/frontend?style=plastic)
 ![License](https://img.shields.io/github/license/rederly/frontend?style=plastic)
 ![Build Status](https://img.shields.io/github/workflow/status/rederly/frontend/Node.js%20CI?style=plastic)
+![Lines of code](https://img.shields.io/tokei/lines/github/rederly/frontend?style=plastic)
 
 The website component of the Rederly application is written in React and Typescript.
 
