@@ -1,4 +1,4 @@
-import { useRouteMatch, useHistory } from 'react-router-dom';
+import { useRouteMatch } from 'react-router-dom';
 import * as qs from 'querystring';
 import _ from 'lodash';
 import { useQuery } from './UseQuery';
@@ -13,7 +13,6 @@ type QuerystringObject = {[key: string]: {
  */
 export const useQuerystringHelper = () => {
     const { url } = useRouteMatch();
-    const history = useHistory();
     const queryParams = useQuery();
 
     const updateRoute = (tabs: QuerystringObject): void => {
@@ -46,8 +45,10 @@ export const useQuerystringHelper = () => {
 
         // Updating the state on the page should be a replace. It prevents us
         // from having to hit the back button multiple times.
-        console.log(tabs, newQueryObject, queryString);
         window.history.replaceState(null, 'React', `${url}?${queryString}`);
+
+        // TODO: Conditionally allow re-rendering using the following alternative to replaceState.
+        // history.replace(`${url}?${queryString}`);
     };
 
     const getQuerystring = queryParams;
