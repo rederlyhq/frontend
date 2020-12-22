@@ -85,6 +85,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                     </Tab>
                     <Tab
                         mountOnEnter
+                        unmountOnExit
                         eventKey={CourseDetailsTabs.TOPICS}
                         title={CourseDetailsTabs.TOPICS}
                     >

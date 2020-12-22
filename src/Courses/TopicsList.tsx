@@ -9,7 +9,6 @@ import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { UserRole, getUserRole, getUserId } from '../Enums/UserRole';
 import moment from 'moment';
-import TopicSettingsPage from './TopicSettings/TopicSettingsPage';
 
 import './TopicList.css';
 import logger from '../Utilities/Logger';
@@ -17,7 +16,6 @@ import logger from '../Utilities/Logger';
 interface TopicsListProps {
     listOfTopics: Array<TopicObject>;
     flush?: boolean;
-    showEditTopic?: _.CurriedFunction2<any, number, void>;
     removeTopic?: _.CurriedFunction2<any, number, void>;
     unitUnique?: number;
 }
@@ -25,8 +23,7 @@ interface TopicsListProps {
 /**
  * Lists topics. Clicking into one will go to the problem sets.
  */
-export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, showEditTopic, removeTopic, unitUnique}) => {
-    const [showSettingsModal, setShowSettingsModal] = useState<{state: boolean, topic: TopicObject | null}>({state: false, topic: null});
+export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, removeTopic, unitUnique}) => {
     const userType: UserRole = getUserRole();
     const userId: number = getUserId();
 
@@ -49,7 +46,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
         return (
             <div className='d-flex'>
                 {/* If we're in edit mode, show the edit topic buttons. */}
-                {(showEditTopic && removeTopic) ? (
+                {(removeTopic) ? (
                     <>
                         <Col md={8}>
                             <Row>
@@ -65,11 +62,14 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                         </Col>
                         <Col>
                             <Row style={{justifyContent: 'flex-end'}}>
-                                <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} 
-                                    onClick={()=>setShowSettingsModal({state: true, topic: topic})}
-                                >
-                                    <BsPencilSquare/> Edit
-                                </Button>
+                                <Link to={loc =>(userType !== UserRole.STUDENT ?
+                                    {pathname: `${loc.pathname}/topic/${topic.id}/settings`} :
+                                    {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
+                                )}>
+                                    <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}}>
+                                        <BsPencilSquare/> Edit
+                                    </Button>
+                                </Link>
                                 <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} variant='danger' onClick={(e: any) => removeTopic(e, topic.id)}>
                                     <BsTrash /> Delete
                                 </Button>
@@ -199,7 +199,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                         {
                             listOfTopics.length > 0 ? listOfTopics.map((topic, index) => {
                                 return (
-                                    <Draggable draggableId={`topic-${topic.id}`} index={index} key={`topic${topic.id}`} isDragDisabled={!showEditTopic}>
+                                    <Draggable draggableId={`topic-${topic.id}`} index={index} key={`topic${topic.id}`} isDragDisabled={_.isNil(removeTopic)}>
                                         {getDraggableTopic}
                                     </Draggable>
                                 );
@@ -210,18 +210,6 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, show
                     </ListGroup>
                 )}
             </Droppable>
-            <Modal
-                show={showSettingsModal.state}
-                onHide={()=>setShowSettingsModal({state: false, topic: null})}
-                className='fullscreen-modal'
-            >
-                <Modal.Header closeButton>
-                    Edit Topic
-                </Modal.Header>
-                <Modal.Body>
-                    <TopicSettingsPage topic={showSettingsModal.topic || undefined} />
-                </Modal.Body>
-            </Modal>
         </>
     );
 };
