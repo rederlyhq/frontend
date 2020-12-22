@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ListGroup, ListGroupItem, Row, Col, Button, Modal } from 'react-bootstrap';
+import React from 'react';
+import { ListGroup, ListGroupItem, Row, Col, Button } from 'react-bootstrap';
 import { TopicObject, TopicOverride } from './CourseInterfaces';
 import { BsPencilSquare, BsTrash } from 'react-icons/bs';
 import _ from 'lodash';
