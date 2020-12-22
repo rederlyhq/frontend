@@ -16,7 +16,7 @@ export const useQuerystringHelper = () => {
     const updateRoute = (tabs: QuerystringObject): void => {
         const queryString = qs.stringify(_(
             tabs
-        ).omitBy(_.isNil).value() as any).toString();
+        ).omitBy(_.isNil).omitBy(_.isEmpty).value() as any).toString();
 
         // Updating the state on the page should be a replace. It prevents us
         // from having to hit the back button multiple times.
