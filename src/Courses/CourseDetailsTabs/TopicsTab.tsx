@@ -11,6 +11,7 @@ import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
 import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
+import useQuerystringHelper from '../../Hooks/useQuerystringHelper';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -30,6 +31,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const [showTopicCreation, setShowTopicCreation] = useState<{ show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined }>({ show: false, unitIndex: -1 });
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
+
+    const {getQuerystring, updateRoute} = useQuerystringHelper();
 
     const showEditTopic = (e: any, unitIdentifier: number, topicIdentifier: number) => {
         logger.info(`Editing topic ${topicIdentifier} in unit ${unitIdentifier}`);
@@ -450,7 +453,20 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                             <Draggable draggableId={`unitRow${unit.id}`} index={index} key={`problem-row-${unit.id}`} isDragDisabled={!inEditMode}>
                                                 {(provided) => (
                                                     <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} key={unit.id}>
-                                                        <Accordion defaultActiveKey="1">
+                                                        {/* 0 is an actual reference, which opens this accordion. 1 or any other value keeps it closed. */}
+                                                        <Accordion 
+                                                            defaultActiveKey={_.includes(getQuerystring.getAll('unitId'), unit.id.toString()) ? '0' : ''} 
+                                                            onSelect={
+                                                                ()=>{
+                                                                    const expandedUnits = getQuerystring.getAll('unitId');
+                                                                    const unitId = unit.id.toString();
+                                                                    updateRoute({
+                                                                        tab: 'Topics',
+                                                                        unitId: _.includes(expandedUnits, unitId) ? _.without(expandedUnits, unitId) : [...expandedUnits, unitId]
+                                                                    });
+                                                                }
+                                                            }
+                                                        >
                                                             <Card>
                                                                 <Accordion.Toggle as={Card.Header} eventKey="0">
                                                                     <Row>
