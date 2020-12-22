@@ -448,6 +448,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                     {course?.units?.map((unit: any, index) => {
                                         const showEditWithUnitId = _.curry(showEditTopic)(_, unit.id);
                                         const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
+                                        const expandedUnits = getQuerystring.getAll('unitId');
+                                        const unitId = unit.id.toString();
 
                                         return (
                                             <Draggable draggableId={`unitRow${unit.id}`} index={index} key={`problem-row-${unit.id}`} isDragDisabled={!inEditMode}>
@@ -455,11 +457,9 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                     <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} key={unit.id}>
                                                         {/* 0 is an actual reference, which opens this accordion. 1 or any other value keeps it closed. */}
                                                         <Accordion 
-                                                            defaultActiveKey={_.includes(getQuerystring.getAll('unitId'), unit.id.toString()) ? '0' : ''} 
+                                                            defaultActiveKey={_.includes(expandedUnits, unitId) ? '0' : ''} 
                                                             onSelect={
                                                                 ()=>{
-                                                                    const expandedUnits = getQuerystring.getAll('unitId');
-                                                                    const unitId = unit.id.toString();
                                                                     updateRoute({
                                                                         tab: 'Topics',
                                                                         unitId: _.includes(expandedUnits, unitId) ? _.without(expandedUnits, unitId) : [...expandedUnits, unitId]
