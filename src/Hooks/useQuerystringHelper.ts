@@ -18,9 +18,11 @@ export const useQuerystringHelper = () => {
             tabs
         ).omitBy(_.isNil).value() as any).toString();
 
-        history.push(`${url}?${queryString}`);
+        // Updating the state on the page should be a replace. It prevents us
+        // from having to hit the back button multiple times.
+        history.replace(`${url}?${queryString}`);
     };
-    console.log(queryParams);
+
     const getQuerystring = queryParams;
 
     return {getQuerystring, updateRoute};
