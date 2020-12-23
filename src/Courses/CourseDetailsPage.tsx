@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Tabs, Tab } from 'react-bootstrap';
 import { useRouteMatch, useHistory } from 'react-router-dom';
 import { CourseObject } from './CourseInterfaces';
@@ -50,10 +50,16 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     const history = useHistory();
     const { Provider } = courseContext;
 
+    // TODO: Back navigation with this approach seems slow. Is there a faster way to detect the url change?
+    useEffect(()=>{
+        setActiveTab(tab ?? CourseDetailsTabs.DETAILS);
+    }, [tab]);
+
     const setStudentGradesTab = (studentName: string, studentId: number) => {
         setStudentNameAndId({name: studentName, userId: studentId});
         setActiveTab(CourseDetailsTabs.STUDENT_GRADES);
     };
+
 
     if (course.id <= 0) return <Container>Loading your course...</Container>;
 
@@ -79,6 +85,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
                     </Tab>
                     <Tab
                         mountOnEnter
+                        unmountOnExit
                         eventKey={CourseDetailsTabs.TOPICS}
                         title={CourseDetailsTabs.TOPICS}
                     >
