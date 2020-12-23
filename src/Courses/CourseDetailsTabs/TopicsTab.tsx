@@ -11,6 +11,8 @@ import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
 import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
 import useQuerystringHelper from '../../Hooks/useQuerystringHelper';
+import { CourseTarballImportButton } from '../CourseCreation/CourseTarballImportButton';
+import { Backdrop, CircularProgress } from '@material-ui/core';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -29,6 +31,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     const userType: UserRole = getUserRole();
 
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const {getQuerystring, updateRoute} = useQuerystringHelper();
 
@@ -98,6 +101,12 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         createTopic(courseUnitContentId);
     };
 
+    const setUnitInCourse = (unit: UnitObject) => {
+        const newCourse: CourseObject = new CourseObject(course);
+        newCourse.units.push(unit);
+        setCourse?.(newCourse);
+    };
+
     const addUnit = async (courseId: number) => {
         try {
             setError(null);
@@ -106,9 +115,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                     courseId
                 }
             });
-            const newCourse: CourseObject = new CourseObject(course);
-            newCourse.units.push(new UnitObject(result.data.data));
-            setCourse?.(newCourse);
+            const unit = new UnitObject(result.data.data);
+            setUnitInCourse(unit);    
         } catch (e) {
             setError(e);
         }
@@ -317,6 +325,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     return (
         <>
+            <Backdrop open={loading} style={{zIndex: 99999}}><CircularProgress/></Backdrop>
             <ConfirmationModal
                 onConfirm={() => {
                     confirmationParamters.onConfirm?.();
@@ -338,13 +347,49 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                             {/* <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} > */}
                             {
                                 inEditMode &&
-                                <Button variant='outline-success'
-                                    tabIndex={0}
-                                    onClick={_.partial(addUnitClick, _, course.id)}
-                                    onKeyPress={_.partial(addUnitClick, _, course.id)}
-                                >
-                                    <FaPlusCircle /> New Unit
-                                </Button>
+                                <>
+                                    <CourseTarballImportButton 
+                                        style={{
+                                            marginLeft: '1em'
+                                        }}
+                                        courseId={course.id}
+                                        /* Can't deconstruct here because the type changes based on the status object (even though it has the same props) */
+                                        onEvent={(event) => {
+                                            // Grabbing this for error handling (see default below)
+                                            const { status } = event;
+                                            if (status !== 'error') {
+                                                setError(null);
+                                            }
+                                            if (status !== 'loading') {
+                                                setLoading(false);
+                                            }
+                                            switch (event.status) {
+                                            case 'error':
+                                                setError(event.data);
+                                                break;
+                                            case 'success':
+                                                setUnitInCourse(event.data);
+                                                break;
+                                            case 'loading':
+                                                setLoading(true);
+                                                break;
+                                            default:
+                                                // Event is never in this case so can't use event.status
+                                                logger.error(`Unhandled case ${status} in tarball upload`);
+                                            }
+                                        }}
+                                    />
+                                    <Button variant='outline-success'
+                                        tabIndex={0}
+                                        onClick={_.partial(addUnitClick, _, course.id)}
+                                        onKeyPress={_.partial(addUnitClick, _, course.id)}
+                                        style={{
+                                            marginLeft: '1em'
+                                        }}
+                                    >
+                                        <FaPlusCircle /> New Unit
+                                    </Button>
+                                </>
                             }
                             <EditToggleButton
                                 selectedState={inEditMode}
