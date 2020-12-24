@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import TopicsList from '../TopicsList';
-import { Accordion, Card, Row, Col, Modal, Alert, Button } from 'react-bootstrap';
+import { Accordion, Card, Row, Col, Alert, Button } from 'react-bootstrap';
 import { CourseObject, TopicObject, UnitObject } from '../CourseInterfaces';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { FaPlusCircle, FaTrash } from 'react-icons/fa';
 import _ from 'lodash';
-import TopicCreationModal from '../CourseCreation/TopicCreationModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
 import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
+import useQuerystringHelper from '../../Hooks/useQuerystringHelper';
 import { CourseTarballImportButton } from '../CourseCreation/CourseTarballImportButton';
 import { Backdrop, CircularProgress } from '@material-ui/core';
 
@@ -30,26 +30,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     const [error, setError] = useState<Error | null | undefined>(null);
     const userType: UserRole = getUserRole();
 
-    const [showTopicCreation, setShowTopicCreation] = useState<{ show: boolean, unitIndex: number, existingTopic?: TopicObject | undefined }>({ show: false, unitIndex: -1 });
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [loading, setLoading] = useState<boolean>(false);
 
-    const showEditTopic = (e: any, unitIdentifier: number, topicIdentifier: number) => {
-        logger.info(`Editing topic ${topicIdentifier} in unit ${unitIdentifier}`);
-        const unit = _.find(course.units, ['id', unitIdentifier]);
-        logger.info(unit);
-        if (!unit) {
-            logger.error(`Cannot find unit with identifier ${unitIdentifier}`);
-            return;
-        }
-
-        const topic = _.find(unit.topics, ['id', topicIdentifier]);
-        if (!topic) {
-            logger.error(`Cannot find topic with id ${topicIdentifier} in unit with id ${unitIdentifier}`);
-            return;
-        }
-        setShowTopicCreation({ show: true, unitIndex: unitIdentifier, existingTopic: topic });
-    };
+    const {getQuerystring, updateRoute} = useQuerystringHelper();
 
     const removeTopic = async (unitId: number, topicId: number) => {
         try {
@@ -169,43 +153,6 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             identifierText: 'this unit',
             onConfirm: _.partial(removeUnit, unitId)
         });
-    };
-
-    const addTopic = (unitIndex: number, existingTopic: TopicObject | null | undefined, topic: TopicObject) => {
-        logger.info('Adding Topic', unitIndex, existingTopic, topic);
-        if (topic.questions.length <= 0) {
-            // TODO: Render validation!
-            logger.error('Attempted to add a topic without questions!');
-            return;
-        }
-
-        const newCourse: CourseObject = new CourseObject(course);
-        const unit = _.find(newCourse.units, ['unique', unitIndex]);
-
-        if (!unit) {
-            logger.error(`Could not find a unit with id ${unitIndex}`);
-            logger.info(`Could not find a unit with id ${unitIndex}`);
-            return;
-        }
-
-        // If a topic already exists, update and overwrite it in the course object.
-        if (existingTopic) {
-            const oldTopic = _.find(unit.topics, ['unique', existingTopic.unique]);
-
-            if (!oldTopic) {
-                logger.error(`Could not update topic ${existingTopic.id} in unit ${unitIndex}`);
-            }
-
-            _.assign(oldTopic, topic);
-        } else {
-            // Otherwise, concatenate this object onto the existing array.
-            // topic.contentOrder = unit.topics.length;
-            topic.contentOrder = Math.max(...unit.topics.map(topic => topic.contentOrder), 0) + 1;
-            unit.topics = _.concat(unit.topics, new TopicObject(topic));
-        }
-
-        setCourse?.(newCourse);
-        setShowTopicCreation({ show: false, unitIndex: -1 });
     };
 
     const onUnitBlur = async (event: React.FocusEvent<HTMLHeadingElement>, unitId: number) => {
@@ -379,32 +326,6 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     return (
         <>
             <Backdrop open={loading} style={{zIndex: 99999}}><CircularProgress/></Backdrop>
-            <Modal
-                show={showTopicCreation.show}
-                onHide={() => setShowTopicCreation({ show: false, unitIndex: -1 })}
-                dialogClassName="topicCreationModal"
-            >
-                <TopicCreationModal
-                    unitIndex={showTopicCreation.unitIndex}
-                    addTopic={addTopic}
-                    existingTopic={showTopicCreation.existingTopic}
-                    closeModal={_.partial(setShowTopicCreation, { show: false, unitIndex: -1 })}
-                    updateTopic={(topic: TopicObject) => {
-                        const existingUnit = _.find(course.units, ['id', topic.courseUnitContentId]);
-                        if (_.isNil(existingUnit)) {
-                            logger.error('Could not find unit');
-                            return;
-                        }
-                        const topicIndex = _.findIndex(existingUnit.topics, ['id', topic.id]);
-                        if (_.isNil(topicIndex)) {
-                            logger.error('Could not find topic');
-                            return;
-                        }
-                        existingUnit.topics[topicIndex] = topic;
-                        setCourse?.(new CourseObject(course));
-                    }}
-                />
-            </Modal>
             <ConfirmationModal
                 onConfirm={() => {
                     confirmationParamters.onConfirm?.();
@@ -488,14 +409,25 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                             <>
                                 <div ref={provided.innerRef} style={{ backgroundColor: 'white' }} {...provided.droppableProps}>
                                     {course?.units?.map((unit: any, index) => {
-                                        const showEditWithUnitId = _.curry(showEditTopic)(_, unit.id);
                                         const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
-
+                                        const expandedUnits = getQuerystring.getAll('unitId');
+                                        const unitId: string = unit.id.toString();
                                         return (
                                             <Draggable draggableId={`unitRow${unit.id}`} index={index} key={`problem-row-${unit.id}`} isDragDisabled={!inEditMode}>
                                                 {(provided) => (
                                                     <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} key={unit.id}>
-                                                        <Accordion defaultActiveKey="1">
+                                                        {/* 0 is an actual reference, which opens this accordion. 1 or any other value keeps it closed. */}
+                                                        <Accordion 
+                                                            defaultActiveKey={_.includes(expandedUnits, unitId) ? '0' : ''} 
+                                                            onSelect={
+                                                                ()=>{
+                                                                    updateRoute({
+                                                                        tab: {val: 'Topics'},
+                                                                        unitId: {val: unitId, toggle: true},
+                                                                    });
+                                                                }
+                                                            }
+                                                        >
                                                             <Card>
                                                                 <Accordion.Toggle as={Card.Header} eventKey="0">
                                                                     <Row>
@@ -554,8 +486,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                         <TopicsList
                                                                             flush
                                                                             listOfTopics={unit.topics}
-                                                                            showEditTopic={inEditMode ? showEditWithUnitId : undefined}
-                                                                            removeTopic={onTopicDeleteClickedWithUnitId}
+                                                                            removeTopic={inEditMode ? onTopicDeleteClickedWithUnitId : undefined}
                                                                             unitUnique={unit.id}
                                                                         />
                                                                     </Card.Body>

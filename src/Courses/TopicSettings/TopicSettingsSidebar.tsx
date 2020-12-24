@@ -8,6 +8,7 @@ import { MdAdd } from 'react-icons/md';
 import { GrDrag } from 'react-icons/gr';
 import { TopicObject, CourseTopicAssessmentInfo, ProblemObject } from '../CourseInterfaces';
 import { DropzoneInputProps } from 'react-dropzone';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 
 import './TopicSettings.css';
 
@@ -24,6 +25,8 @@ interface TopicSettingsSidebarProps {
 
 // This is a sidebar that shows the settings for a topic as a single list.
 export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic, selected, setSelected, addNewProblem, handleDrag, isDragActive, getInputProps, open}) => {
+    const { url } = useRouteMatch();
+    const history = useHistory();
 
     return (
         <Grid item md={3}>
@@ -55,7 +58,10 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                     {/* Settings for the entire topic */}
                     <NavLink
                         eventKey={'topic'}
-                        onSelect={() => {setSelected(topic);}}
+                        onSelect={() => {
+                            setSelected(topic);
+                            history.push(`${url}`);
+                        }}
                         role='link'
                         style={{}}
                     >
@@ -84,7 +90,10 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                                     <NavLink
                                                                         eventKey={prob.id}
                                                                         key={`problemNavLink${prob.id}`}
-                                                                        onSelect={() => {setSelected(prob);}}
+                                                                        onSelect={() => {
+                                                                            setSelected(prob);
+                                                                            history.push(`${url}?problemId=${prob.id}`);
+                                                                        }}
                                                                         role='link'
                                                                         style={{
                                                                             fontStyle: prob.optional ? 'italic' : undefined,
