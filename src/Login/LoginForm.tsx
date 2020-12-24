@@ -12,7 +12,8 @@ import logger from '../Utilities/Logger';
 import _ from 'lodash';
 import { gaTrackLogin } from '../Hooks/useTracking';
 import localPreferences from '../Utilities/LocalPreferences';
-const { general, session } = localPreferences;
+import AxiosRequest from '../Hooks/AxiosRequest';
+const { general, session, account } = localPreferences;
 
 interface LoginFormProps {
 
@@ -77,6 +78,29 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                 setLoginAlertMsg({ message: err.message, variant: 'danger' });
             }
         }
+
+        try {
+            const res = await AxiosRequest.get('/users/status');
+            const data = res.data.data as { userPaidUntil: Date, universityPaidUntil: Date };
+            const userPaidMoment = data.userPaidUntil.toMoment();
+            const universityPaidMoment = data.universityPaidUntil.toMoment();
+
+            let paidUntil: moment.Moment | undefined;
+            let accountType: string | undefined;
+            if (userPaidMoment.isAfter(universityPaidMoment)) {
+                paidUntil = userPaidMoment;
+                accountType = 'INDIVIDUAL';
+            } else {
+                paidUntil = universityPaidMoment;
+                accountType = 'INSTITUTIONAL';
+            }
+
+            account.paidUntil = paidUntil.toDate();
+            account.accountOwner = accountType;
+        } catch (e) {
+            logger.error('Could not get user status', e);
+        }
+
     };
 
     const handleSubmit = (event: any) => {

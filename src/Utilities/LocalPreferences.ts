@@ -8,6 +8,13 @@ const SESSION_USER_TYPE = 'SESSION_USER_TYPE';
 const SESSION_USER_ID = 'SESSION_USER_ID'; 
 const SESSION_USER_UUID = 'SESSION_USER_UUID'; 
 const SESSION_USER_USERNAME = 'SESSION_USER_USERNAME'; 
+const ACCOUNT_PAID_UNTIL = 'ACCOUNT_PAID_UNTIL';
+const ACCOUNT_OWNER = 'ACCOUNT_OWNER';
+
+export enum AccountType {
+    INDIVIDUAL,
+    INSTITUTIONAL,
+}
 
 const getItemWithDefaultValue = (key: string, defaultValue?: string) => {
     const value = localStorage.getItem(key);
@@ -34,17 +41,39 @@ const setBooleanValue = (key: string, value: boolean) => {
     localStorage.setItem(key, value.toString());
 };
 
+const setDateValue = (key: string, value: Date | null) => {
+    if (_.isNull(value)) {
+        localStorage.removeItem(key);
+    } else {
+        localStorage.setItem(key, value.toString());
+    }
+};
+
 // TODO switch to overload so that the return type is different
 const getBooleanValue = (key: string, defaultValue?: boolean): boolean | null => {
     const value = localStorage.getItem(key);
     if (_.isNil(value)) {
-        if(_.isUndefined(defaultValue)) {
+        if (_.isUndefined(defaultValue)) {
             return value;
         } else {
             return defaultValue;
         }
     } else {
         return value === true.toString();
+    }
+};
+
+// TODO switch to overload so that the return type is different
+const getDateValue = (key: string, defaultValue?: Date): Date | null => {
+    const value = localStorage.getItem(key);
+    if (_.isNil(value)) {
+        if (_.isUndefined(defaultValue)) {
+            return value;
+        } else {
+            return defaultValue;
+        }
+    } else {
+        return new Date(value);
     }
 };
 
@@ -87,6 +116,20 @@ const localPreferences = {
             setItem(VERSION_CHECK_DATE, value);
         }
     },
+    account: {
+        get paidUntil(): Date | null {
+            return getDateValue(ACCOUNT_PAID_UNTIL);
+        },
+        set paidUntil(value: Date | null) {
+            setDateValue(ACCOUNT_PAID_UNTIL, value);
+        },
+        get accountOwner(): string | null {
+            return localStorage.getItem(ACCOUNT_OWNER);
+        },
+        set accountOwner(value: string | null) {
+            setItem(ACCOUNT_OWNER, value);
+        },
+    } ,
     session: {
         get userType(): string | null {
             return localStorage.getItem(SESSION_USER_TYPE);
