@@ -33,12 +33,10 @@ export const STATISTICS_SIMPLIFIED_HEADERS : Column<object>[]  = [
     { title: 'Average Total', field: 'averageScore' },
 ];
 
-export const STUDENTS_STATISTICS_SIMPLIFIED_HEADERS : Column<object>[] = [
+export const STUDENT_STATISTICS_SIMPLIFIED_HEADERS : Column<object>[]  = [
     { title: 'Name', field: 'name', customSort: (x: any, y: any)  => collator.compare(x.name, y.name)},
-    { title: 'Number of Attempts', field: 'averageAttemptedCount' },
-    { title: 'Grade', field: 'averageScore' },
-    { title: 'Mastered', field: 'completionPercent' },
-    { title: 'System Score', field: 'systemScore' },
-    // { title: 'Open Score'), field: 'openAverage' },
-    // { title: 'Dead Score'), field: 'deadAverage' },
+    { title: 'Attempts', field: 'averageAttemptedCount' },
+    { title: 'Opened', field: 'averageScoreOpen', render: (data: any) => data.averageScoreOpen?.toPercentString() ?? '--'},
+    { title: 'Closed', field: 'averageScoreDead', render: (data: any) => data.averageScoreDead?.toPercentString() ?? '--'},
+    { title: 'Total', field: 'averageScore' },
 ];
