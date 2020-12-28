@@ -12,8 +12,8 @@ const ACCOUNT_PAID_UNTIL = 'ACCOUNT_PAID_UNTIL';
 const ACCOUNT_OWNER = 'ACCOUNT_OWNER';
 
 export enum AccountType {
-    INDIVIDUAL,
-    INSTITUTIONAL,
+    INDIVIDUAL = 'INDIVIDUAL',
+    INSTITUTIONAL = 'INSTITUTIONAL',
 }
 
 const getItemWithDefaultValue = (key: string, defaultValue?: string) => {
@@ -123,11 +123,19 @@ const localPreferences = {
         set paidUntil(value: Date | null) {
             setDateValue(ACCOUNT_PAID_UNTIL, value);
         },
-        get accountOwner(): string | null {
-            return localStorage.getItem(ACCOUNT_OWNER);
+        get accountOwner(): AccountType | null {
+            const getValue = localStorage.getItem(ACCOUNT_OWNER);
+            if (_.isNull(getValue)) {
+                return null;
+            } else if (Object.values(AccountType).includes(getValue as AccountType)) {
+                return getValue as AccountType;
+            } else {
+                return null;
+            }
         },
-        set accountOwner(value: string | null) {
-            setItem(ACCOUNT_OWNER, value);
+        set accountOwner(value: AccountType | null) {
+            const owner = _.isNull(value) ? null : AccountType[value];
+            setItem(ACCOUNT_OWNER, owner);
         },
     } ,
     session: {

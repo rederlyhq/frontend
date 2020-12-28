@@ -11,7 +11,7 @@ import ResendVerificationModal from './ResendVerificationModal';
 import logger from '../Utilities/Logger';
 import _ from 'lodash';
 import { gaTrackLogin } from '../Hooks/useTracking';
-import localPreferences from '../Utilities/LocalPreferences';
+import localPreferences, { AccountType } from '../Utilities/LocalPreferences';
 import AxiosRequest from '../Hooks/AxiosRequest';
 const { general, session, account } = localPreferences;
 
@@ -86,13 +86,13 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
             const universityPaidMoment = data.universityPaidUntil.toMoment();
 
             let paidUntil: moment.Moment | undefined;
-            let accountType: string | undefined;
+            let accountType: AccountType | undefined;
             if (userPaidMoment.isAfter(universityPaidMoment)) {
                 paidUntil = userPaidMoment;
-                accountType = 'INDIVIDUAL';
+                accountType = AccountType.INDIVIDUAL;
             } else {
                 paidUntil = universityPaidMoment;
-                accountType = 'INSTITUTIONAL';
+                accountType = AccountType.INSTITUTIONAL;
             }
 
             account.paidUntil = paidUntil.toDate();
