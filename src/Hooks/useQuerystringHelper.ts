@@ -21,7 +21,7 @@ export const useQuerystringHelper = () => {
     const updateRoute = (tabs: QuerystringObject, append: boolean = false): void => {
         const currentQuerystrings = new URLSearchParams(window.location.search);
 
-        const newQueryObject: {[x: string]: string | string[]} = append ? paramsToObject(currentQuerystrings) : {};
+        const newQueryObject: {[x: string]: string | string[]} = append ? qs.parse(currentQuerystrings.toString()) : {};
 
         _.forOwn(tabs, (val: {val: string | null, toggle?: Boolean}, key: string) => {
             // A nil value is omitted from the URL.
@@ -66,27 +66,6 @@ export const useQuerystringHelper = () => {
     const getQuerystring = queryParams;
 
     return {getQuerystring, updateRoute};
-};
-
-// https://stackoverflow.com/questions/8648892/how-to-convert-url-parameters-to-a-javascript-object
-// Functions like _.fromPairs and Object.fromEntries do not handle array cases, and instead overwrite repeated keys.
-// for..of won't work with Iterators unless we use --downleveliteration or target >es5
-const paramsToObject = (params: URLSearchParams) => {
-    const result: {[x: string]: string[]} = {};
-    const entries = params.entries();
-    let next = entries.next();
-
-    while (!next.done) {
-        const [key, value] = next.value;
-        if (_.has(result, key)) {
-            result[key].push(value);
-        } else {
-            result[key] = [value];
-        }
-        next = entries.next();
-    }
-
-    return result;
 };
 
 export default useQuerystringHelper;
