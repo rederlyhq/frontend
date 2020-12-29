@@ -10,10 +10,17 @@ const SESSION_USER_UUID = 'SESSION_USER_UUID';
 const SESSION_USER_USERNAME = 'SESSION_USER_USERNAME'; 
 const ACCOUNT_PAID_UNTIL = 'ACCOUNT_PAID_UNTIL';
 const ACCOUNT_OWNER = 'ACCOUNT_OWNER';
+const ACCOUNT_STATUS = 'ACCOUNT_STATUS';
 
 export enum AccountType {
     INDIVIDUAL = 'INDIVIDUAL',
     INSTITUTIONAL = 'INSTITUTIONAL',
+    DISABLED = 'DISABLED',
+}
+
+export enum AccountStatus {
+    VALID = 'VALID',
+    EXPIRED = 'EXPIRED',
 }
 
 const getItemWithDefaultValue = (key: string, defaultValue?: string) => {
@@ -137,6 +144,20 @@ const localPreferences = {
             const owner = _.isNull(value) ? null : AccountType[value];
             setItem(ACCOUNT_OWNER, owner);
         },
+        get accountStatus(): AccountType | null {
+            const getValue = localStorage.getItem(ACCOUNT_OWNER);
+            if (_.isNull(getValue)) {
+                return null;
+            } else if (Object.values(AccountType).includes(getValue as AccountType)) {
+                return getValue as AccountType;
+            } else {
+                return null;
+            }
+        },
+        set accountStatus(value: AccountType | null) {
+            const status = _.isNull(value) ? null : AccountType[value];
+            setItem(ACCOUNT_STATUS, status);
+        }
     } ,
     session: {
         get userType(): string | null {

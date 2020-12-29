@@ -8,6 +8,7 @@ import './Extensions';
 import GlobalErrorBoundaryState from './Utilities/ErrorBoundaries/GlobalErrorBoundary';
 import { VersionCheck } from './Utilities/VersionCheck';
 import axios from 'axios';
+import logger from './Utilities/Logger';
 
 interface RederlyConfig {
     paymentURL: string;
@@ -15,16 +16,19 @@ interface RederlyConfig {
 
 declare global {
     interface Window {
-        rederlyConfig?: Promise<RederlyConfig>;
+        rederlyConfig?: Promise<RederlyConfig | null>;
     }
 }
 
-const getConfig = async () => {
-    window.rederlyConfig = axios.get<RederlyConfig>(`/config.json?cache_bust=${new Date().getTime()}`).
-        then(resp => resp.data);
-};
+const getConfig = () => axios.get<RederlyConfig>(`/config.json?cache_bust=${new Date().getTime()}`).
+    then(resp => resp.data).
+    catch(err => {
+        logger.error('Failed to load frontend config file.', err);
+        return null;
+    });
 
-getConfig();
+
+window.rederlyConfig = getConfig();
 
 if (process.env.NODE_ENV !== 'production' && process.env.REACT_APP_ENABLE_AXE === 'true') {
     const axe = require('react-axe');

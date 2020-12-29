@@ -85,14 +85,14 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
             const userPaidMoment = data.userPaidUntil.toMoment();
             const universityPaidMoment = data.universityPaidUntil.toMoment();
 
-            let paidUntil: moment.Moment | undefined;
+            const paidUntil = userPaidMoment;
             let accountType: AccountType | undefined;
             if (userPaidMoment.isAfter(universityPaidMoment)) {
-                paidUntil = userPaidMoment;
                 accountType = AccountType.INDIVIDUAL;
-            } else {
-                paidUntil = universityPaidMoment;
+            } else if (userPaidMoment.isSame(universityPaidMoment)) {
                 accountType = AccountType.INSTITUTIONAL;
+            } else {
+                accountType = AccountType.DISABLED;
             }
 
             account.paidUntil = paidUntil.toDate();
