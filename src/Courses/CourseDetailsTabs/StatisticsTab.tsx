@@ -19,6 +19,7 @@ import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
 import { CircularProgress, Chip, Grid, Tooltip } from '@material-ui/core';
 import MaterialIcons from '../../Components/MaterialIcons';
+import { STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_HEADERS } from './TableColumnHeaders';
 
 const FILTERED_STRING = '_FILTERED';
 
@@ -542,7 +543,9 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                             gradesState={gradesState}
                             titleGrade={titleGrade}
                         />}
-                        columns={(view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) ? attemptCols : gradeCols}
+                        columns={(view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) ? 
+                            attemptCols : 
+                            (_.isNil(userId) ? STATISTICS_SIMPLIFIED_HEADERS : STUDENT_STATISTICS_SIMPLIFIED_HEADERS)}
                         data={rowData}
                         actions={actions}
                         onRowClick={nextView}

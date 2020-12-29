@@ -7,6 +7,28 @@ import { Router } from './Router';
 import './Extensions';
 import GlobalErrorBoundaryState from './Utilities/ErrorBoundaries/GlobalErrorBoundary';
 import { VersionCheck } from './Utilities/VersionCheck';
+import axios from 'axios';
+import logger from './Utilities/Logger';
+
+interface RederlyConfig {
+    paymentURL: string;
+}
+
+declare global {
+    interface Window {
+        rederlyConfig?: Promise<RederlyConfig | null>;
+    }
+}
+
+const getConfig = () => axios.get<RederlyConfig>(`/config.json?cache_bust=${new Date().getTime()}`)
+    .then(resp => resp.data)
+    .catch(err => {
+        logger.error('Failed to load frontend config file.', err);
+        return null;
+    });
+
+
+window.rederlyConfig = getConfig();
 
 if (process.env.NODE_ENV !== 'production' && process.env.REACT_APP_ENABLE_AXE === 'true') {
     const axe = require('react-axe');

@@ -160,7 +160,7 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                             </FormLabel>
                             <FormControl
                                 type='number'
-                                placeholder='2020'
+                                placeholder='2021'
                                 defaultValue={course.semesterCodeYear}
                                 value={course.semesterCodeYear}
                                 required
