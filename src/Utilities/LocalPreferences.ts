@@ -8,6 +8,20 @@ const SESSION_USER_TYPE = 'SESSION_USER_TYPE';
 const SESSION_USER_ID = 'SESSION_USER_ID'; 
 const SESSION_USER_UUID = 'SESSION_USER_UUID'; 
 const SESSION_USER_USERNAME = 'SESSION_USER_USERNAME'; 
+const ACCOUNT_PAID_UNTIL = 'ACCOUNT_PAID_UNTIL';
+const ACCOUNT_OWNER = 'ACCOUNT_OWNER';
+const ACCOUNT_STATUS = 'ACCOUNT_STATUS';
+
+export enum AccountType {
+    INDIVIDUAL = 'INDIVIDUAL',
+    INSTITUTIONAL = 'INSTITUTIONAL',
+    DISABLED = 'DISABLED',
+}
+
+export enum AccountStatus {
+    VALID = 'VALID',
+    EXPIRED = 'EXPIRED',
+}
 
 const getItemWithDefaultValue = (key: string, defaultValue?: string) => {
     const value = localStorage.getItem(key);
@@ -34,17 +48,39 @@ const setBooleanValue = (key: string, value: boolean) => {
     localStorage.setItem(key, value.toString());
 };
 
+const setDateValue = (key: string, value: Date | null) => {
+    if (_.isNull(value)) {
+        localStorage.removeItem(key);
+    } else {
+        localStorage.setItem(key, value.toString());
+    }
+};
+
 // TODO switch to overload so that the return type is different
 const getBooleanValue = (key: string, defaultValue?: boolean): boolean | null => {
     const value = localStorage.getItem(key);
     if (_.isNil(value)) {
-        if(_.isUndefined(defaultValue)) {
+        if (_.isUndefined(defaultValue)) {
             return value;
         } else {
             return defaultValue;
         }
     } else {
         return value === true.toString();
+    }
+};
+
+// TODO switch to overload so that the return type is different
+const getDateValue = (key: string, defaultValue?: Date): Date | null => {
+    const value = localStorage.getItem(key);
+    if (_.isNil(value)) {
+        if (_.isUndefined(defaultValue)) {
+            return value;
+        } else {
+            return defaultValue;
+        }
+    } else {
+        return new Date(value);
     }
 };
 
@@ -87,6 +123,42 @@ const localPreferences = {
             setItem(VERSION_CHECK_DATE, value);
         }
     },
+    account: {
+        get paidUntil(): Date | null {
+            return getDateValue(ACCOUNT_PAID_UNTIL);
+        },
+        set paidUntil(value: Date | null) {
+            setDateValue(ACCOUNT_PAID_UNTIL, value);
+        },
+        get accountOwner(): AccountType | null {
+            const getValue = localStorage.getItem(ACCOUNT_OWNER);
+            if (_.isNull(getValue)) {
+                return null;
+            } else if (Object.values(AccountType).includes(getValue as AccountType)) {
+                return getValue as AccountType;
+            } else {
+                return null;
+            }
+        },
+        set accountOwner(value: AccountType | null) {
+            const owner = _.isNull(value) ? null : AccountType[value];
+            setItem(ACCOUNT_OWNER, owner);
+        },
+        get accountStatus(): AccountType | null {
+            const getValue = localStorage.getItem(ACCOUNT_OWNER);
+            if (_.isNull(getValue)) {
+                return null;
+            } else if (Object.values(AccountType).includes(getValue as AccountType)) {
+                return getValue as AccountType;
+            } else {
+                return null;
+            }
+        },
+        set accountStatus(value: AccountType | null) {
+            const status = _.isNull(value) ? null : AccountType[value];
+            setItem(ACCOUNT_STATUS, status);
+        }
+    } ,
     session: {
         get userType(): string | null {
             return localStorage.getItem(SESSION_USER_TYPE);
