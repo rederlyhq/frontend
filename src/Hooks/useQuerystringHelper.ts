@@ -5,6 +5,9 @@ import { useQuery } from './UseQuery';
 
 type QuerystringObject = {[key: string]: {
     val: string | null,
+    // Toggle based on the VALUE of the key passed in.
+    // If false, just replace the key with this value.
+    // Currently must be true if using arrays.
     toggle?: Boolean,
 }}
 
@@ -40,6 +43,8 @@ export const useQuerystringHelper = () => {
 
                 if (!_.isEmpty(filteredVal)) {
                     newQueryObject[key] = filteredVal;
+                } else {
+                    delete newQueryObject[key];
                 }
             } else {
                 newQueryObject[key] = [...currVal, val.val];

@@ -428,10 +428,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                             onSelect={
                                                                 ()=>{
                                                                     updateRoute({
-                                                                        edit: {val: inEditMode ? 'true' : null},
-                                                                        tab: {val: 'Topics'},
                                                                         unitId: {val: unitId, toggle: true},
-                                                                    });
+                                                                    }, true);
                                                                 }
                                                             }
                                                         >
