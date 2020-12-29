@@ -298,6 +298,12 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     }
 
     function insertListeners(problemForm: HTMLFormElement) {
+        const iframeWindow = iframeRef?.current?.contentWindow as any | null | undefined;
+        if (iframeWindow.rederlyInsertedListeners) {
+            logger.warn('ProblemIframe: insertListeners: is attempting to load twice ... skipping!');
+            return;
+        }
+        logger.debug('ProblemIframe: insertListeners: is inserting listeners');
         const debouncedSaveHandler = _.debounce(prepareAndSubmit, 2000, { leading: false, trailing: true });
         const debouncedSubmitHandler = _.debounce(prepareAndSubmit, 300, { leading: true, trailing: false });
 
@@ -319,7 +325,6 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         // TODO: remove once MathQuill events properly bubble
         // solves two issues - backspace nor mq-menu buttons trigger input/update
         // fires too often, onFocus etc - throttle handles it
-        const iframeWindow = iframeRef?.current?.contentWindow as any | null | undefined;
         currentMutationObserver.current?.disconnect();
         (currentMutationObserver.current as any) = new MutationObserver(updateSubmitActive);
         iframeWindow.jQuery('#problemMainForm span.mq-root-block').each( (_index: number, subElm: HTMLSpanElement) => {
@@ -330,6 +335,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 characterData: false
             });
         });
+        iframeWindow.rederlyInsertedListeners = true;
     }
 
     const onLoadHandlers = async () => {
