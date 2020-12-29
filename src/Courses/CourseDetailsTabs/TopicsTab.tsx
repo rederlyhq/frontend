@@ -26,14 +26,20 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         identifierText: ''
     };
 
-    const [inEditMode, setInEditMode] = useState<boolean>(false);
+    const {getQuerystring, updateRoute} = useQuerystringHelper();
+    const [inEditMode, setInEditMode] = useState<boolean>(getQuerystring.get('edit') === 'true');
     const [error, setError] = useState<Error | null | undefined>(null);
     const userType: UserRole = getUserRole();
 
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [loading, setLoading] = useState<boolean>(false);
 
-    const {getQuerystring, updateRoute} = useQuerystringHelper();
+    const setInEditModeWrapper = (val: boolean) => {
+        setInEditMode(val);
+        updateRoute({
+            edit: {val: val ? 'true' : null},
+        }, true);
+    };
 
     const removeTopic = async (unitId: number, topicId: number) => {
         try {
@@ -393,7 +399,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                             }
                             <EditToggleButton
                                 selectedState={inEditMode}
-                                onClick={() => { setInEditMode(!inEditMode); }}
+                                onClick={() => { setInEditModeWrapper(!inEditMode); }}
                                 style={{
                                     padding: '0em 0em 0em 1em'
                                 }}
@@ -422,6 +428,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                             onSelect={
                                                                 ()=>{
                                                                     updateRoute({
+                                                                        edit: {val: inEditMode ? 'true' : null},
                                                                         tab: {val: 'Topics'},
                                                                         unitId: {val: unitId, toggle: true},
                                                                     });
