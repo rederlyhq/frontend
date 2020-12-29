@@ -14,6 +14,7 @@ interface AccountDetailsPageProps {
 export const AccountDetailsPage: React.FC<AccountDetailsPageProps> = () => {
     const userName = session.username;
     const [paymentURL, setPaymentURL] = useState<string | null>(null);
+    const [paidUntilMoment, setPaidUntilMoment] = useState<moment.Moment | null>(null);
 
     useEffect(() => {
         (async () => {
@@ -27,6 +28,7 @@ export const AccountDetailsPage: React.FC<AccountDetailsPageProps> = () => {
                 const universityPaidMoment = data.universityPaidUntil.toMoment();
 
                 const paidUntil = userPaidMoment;
+                setPaidUntilMoment(userPaidMoment);
                 let accountType: AccountType | undefined;
                 if (userPaidMoment.isAfter(universityPaidMoment)) {
                     accountType = AccountType.INDIVIDUAL;
@@ -54,15 +56,15 @@ export const AccountDetailsPage: React.FC<AccountDetailsPageProps> = () => {
             </Grid>
             <Grid container item xs={12} justify='center' direction='column' alignItems='center' spacing={5}>
                 <TextField id="user-name" label="Name" value={userName} disabled />
-                <Grid item>
+                {paidUntilMoment && <Grid item>
                     <p>
-                        <strong>Paid Until: </strong>{`${account.paidUntil?.toDateString()}`}
+                        <strong>Paid Until: </strong>{`${paidUntilMoment.format('LL')}`}
                         <br />
                         {paymentURL && getUserRole() !== UserRole.STUDENT &&
-                            <a href={paymentURL}>Renew your account</a>
+                            <a href={paymentURL} target={paymentURL}>Renew your account</a>
                         }
                     </p>
-                </Grid>
+                </Grid>}
             </Grid>
         </Grid>
     );
