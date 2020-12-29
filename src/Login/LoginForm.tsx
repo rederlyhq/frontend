@@ -11,9 +11,8 @@ import ResendVerificationModal from './ResendVerificationModal';
 import logger from '../Utilities/Logger';
 import _ from 'lodash';
 import { gaTrackLogin } from '../Hooks/useTracking';
-import localPreferences, { AccountType } from '../Utilities/LocalPreferences';
-import AxiosRequest from '../Hooks/AxiosRequest';
-const { general, session, account } = localPreferences;
+import localPreferences from '../Utilities/LocalPreferences';
+const { general, session } = localPreferences;
 
 interface LoginFormProps {
 
@@ -78,29 +77,6 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                 setLoginAlertMsg({ message: err.message, variant: 'danger' });
             }
         }
-
-        try {
-            const res = await AxiosRequest.get('/users/status');
-            const data = res.data.data as { userPaidUntil: Date, universityPaidUntil: Date };
-            const userPaidMoment = data.userPaidUntil.toMoment();
-            const universityPaidMoment = data.universityPaidUntil.toMoment();
-
-            const paidUntil = userPaidMoment;
-            let accountType: AccountType | undefined;
-            if (userPaidMoment.isAfter(universityPaidMoment)) {
-                accountType = AccountType.INDIVIDUAL;
-            } else if (userPaidMoment.isSame(universityPaidMoment)) {
-                accountType = AccountType.INSTITUTIONAL;
-            } else {
-                accountType = AccountType.DISABLED;
-            }
-
-            account.paidUntil = paidUntil.toDate();
-            account.accountOwner = accountType;
-        } catch (e) {
-            logger.error('Could not get user status', e);
-        }
-
     };
 
     const handleSubmit = (event: any) => {

@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Avatar, Grid, TextField } from '@material-ui/core';
 import _ from 'lodash';
-import localPreferences from '../Utilities/LocalPreferences';
+import localPreferences, { AccountType } from '../Utilities/LocalPreferences';
+import { getUserRole, UserRole } from '../Enums/UserRole';
+import AxiosRequest from '../Hooks/AxiosRequest';
+import logger from '../Utilities/Logger';
 const { session, account } = localPreferences;
 
 interface AccountDetailsPageProps {
@@ -16,6 +19,28 @@ export const AccountDetailsPage: React.FC<AccountDetailsPageProps> = () => {
         (async () => {
             const rederlyConfig = await window.rederlyConfig;
             setPaymentURL(rederlyConfig?.paymentURL ?? null);
+
+            try {
+                const res = await AxiosRequest.get('/users/status');
+                const data = res.data.data as { userPaidUntil: Date, universityPaidUntil: Date };
+                const userPaidMoment = data.userPaidUntil.toMoment();
+                const universityPaidMoment = data.universityPaidUntil.toMoment();
+
+                const paidUntil = userPaidMoment;
+                let accountType: AccountType | undefined;
+                if (userPaidMoment.isAfter(universityPaidMoment)) {
+                    accountType = AccountType.INDIVIDUAL;
+                } else if (userPaidMoment.isSame(universityPaidMoment)) {
+                    accountType = AccountType.INSTITUTIONAL;
+                } else {
+                    accountType = AccountType.DISABLED;
+                }
+
+                account.paidUntil = paidUntil.toDate();
+                account.accountOwner = accountType;
+            } catch (e) {
+                logger.error('Could not get user status', e);
+            }
         })();
     }, []);
 
@@ -33,7 +58,7 @@ export const AccountDetailsPage: React.FC<AccountDetailsPageProps> = () => {
                     <p>
                         <strong>Paid Until: </strong>{`${account.paidUntil?.toDateString()}`}
                         <br />
-                        {paymentURL &&
+                        {paymentURL && getUserRole() !== UserRole.STUDENT &&
                             <a href={paymentURL}>Renew your account</a>
                         }
                     </p>

@@ -20,9 +20,9 @@ declare global {
     }
 }
 
-const getConfig = () => axios.get<RederlyConfig>(`/config.json?cache_bust=${new Date().getTime()}`).
-    then(resp => resp.data).
-    catch(err => {
+const getConfig = () => axios.get<RederlyConfig>(`/config.json?cache_bust=${new Date().getTime()}`)
+    .then(resp => resp.data)
+    .catch(err => {
         logger.error('Failed to load frontend config file.', err);
         return null;
     });
