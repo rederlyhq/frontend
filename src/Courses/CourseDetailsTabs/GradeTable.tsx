@@ -4,6 +4,7 @@ import _ from 'lodash';
 import MaterialTable from 'material-table';
 import MaterialIcons from '../../Components/MaterialIcons';
 import { TablePagination } from '@material-ui/core';
+import { GRADES_SIMPLIFIED_HEADERS, GRADES_SIMPLIFIED_PROBLEM_HEADERS, GRADES_SIMPLIFIED_TOPICS_HEADERS } from './TableColumnHeaders';
 
 interface GradeTableProps {
     courseName: string;
@@ -24,14 +25,22 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
         ...(_.isUndefined(obj.systemScore) ? undefined : {systemScore: _.isNull(obj.systemScore) ? '--' : obj.systemScore.toPercentString()}),
     }));
 
-    const headers = _(safeGrades[0]).keys().filter(n => n !== 'id').value();
+    const getHeaders = (grades: Array<any>) => {
+        if (_.has(grades.first, 'openAverage')) {
+            return GRADES_SIMPLIFIED_HEADERS;
+        } else if (_.has(grades.first, 'numAttempts')) {
+            return GRADES_SIMPLIFIED_PROBLEM_HEADERS;
+        } else {
+            return GRADES_SIMPLIFIED_TOPICS_HEADERS;
+        }
+    };
 
     return (
         <div style={{maxWidth: '100%'}}>
             <MaterialTable
                 icons={MaterialIcons}
                 title={courseName}
-                columns={headers.map(col => ({title: _.startCase(_.replace(col, 'ProblemCount', '')), field: col}))}
+                columns={getHeaders(safeGrades)}
                 data={safeGrades || []}
                 onRowClick={onRowClick}
                 options={{
