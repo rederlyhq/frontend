@@ -10,7 +10,7 @@ import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
 import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
-import useQuerystringHelper from '../../Hooks/useQuerystringHelper';
+import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystringHelper';
 import { CourseTarballImportButton } from '../CourseCreation/CourseTarballImportButton';
 import { Backdrop, CircularProgress } from '@material-ui/core';
 
@@ -26,8 +26,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         identifierText: ''
     };
 
-    const {getQuerystring, updateRoute} = useQuerystringHelper();
-    const [inEditMode, setInEditMode] = useState<boolean>(getQuerystring.get('edit') === 'true');
+    const {getCurrentQueryStrings, updateRoute} = useQuerystringHelper();
+    const [inEditMode, setInEditMode] = useState<boolean>(getCurrentQueryStrings()['edit'] === 'true');
     const [error, setError] = useState<Error | null | undefined>(null);
     const userType: UserRole = getUserRole();
 
@@ -37,7 +37,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     const setInEditModeWrapper = (val: boolean) => {
         setInEditMode(val);
         updateRoute({
-            edit: {val: val ? 'true' : null},
+            edit: {
+                val: val ? 'true' : null,
+                mode: QueryStringMode.OVERWRITE,
+            },
         }, true);
     };
 
@@ -416,7 +419,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                 <div ref={provided.innerRef} style={{ backgroundColor: 'white' }} {...provided.droppableProps}>
                                     {course?.units?.map((unit: any, index) => {
                                         const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
-                                        const expandedUnits = getQuerystring.getAll('unitId');
+                                        const expandedUnits = getCurrentQueryStrings()['unitId'];
                                         const unitId: string = unit.id.toString();
                                         return (
                                             <Draggable draggableId={`unitRow${unit.id}`} index={index} key={`problem-row-${unit.id}`} isDragDisabled={!inEditMode}>
@@ -428,7 +431,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                             onSelect={
                                                                 ()=>{
                                                                     updateRoute({
-                                                                        unitId: {val: unitId, toggle: true},
+                                                                        unitId: {
+                                                                            val: unitId, 
+                                                                            mode: QueryStringMode.APPEND_OR_REMOVE,
+                                                                        },
                                                                     }, true);
                                                                 }
                                                             }

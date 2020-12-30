@@ -1,14 +1,20 @@
 import { useRouteMatch } from 'react-router-dom';
 import * as qs from 'querystring';
 import _ from 'lodash';
-import { useQuery } from './UseQuery';
+import logger from '../Utilities/Logger';
+
+export enum QueryStringMode {
+    // A single value in the query string will always get overwritten
+    OVERWRITE,
+    // An array value will get appended, or removed if already existing.
+    APPEND_OR_REMOVE,
+    // If you want an array to ignore duplicate calls rather than remove them.
+    APPEND_OR_IGNORE,
+}
 
 type QuerystringObject = {[key: string]: {
     val: string | null,
-    // Toggle based on the VALUE of the key passed in.
-    // If false, just replace the key with this value.
-    // Currently must be true if using arrays.
-    toggle?: Boolean,
+    mode: QueryStringMode,
 }}
 
 /**
@@ -16,30 +22,39 @@ type QuerystringObject = {[key: string]: {
  */
 export const useQuerystringHelper = () => {
     const { url } = useRouteMatch();
-    const queryParams = useQuery();
 
+    /* @param append -  This copies the existing query string to an object and then adds tabs on top of it.
+                        This is specifically to reduce boilerplate when only updating one part of an otherwise static querystring.
+                        If you only mean to append to an array, use the QueryStringMode.ARRAY instead.
+    */
     const updateRoute = (tabs: QuerystringObject, append: boolean = false): void => {
-        const currentQuerystrings = new URLSearchParams(window.location.search);
+        const currentQuerystrings = qs.parse(window.location.search.substring(1));
 
-        const newQueryObject: {[x: string]: string | string[]} = append ? qs.parse(currentQuerystrings.toString()) : {};
+        const newQueryObject: qs.ParsedUrlQuery = append ? currentQuerystrings : {};
 
-        _.forOwn(tabs, (val: {val: string | null, toggle?: Boolean}, key: string) => {
-            // A nil value is omitted from the URL.
-            if (_.isNil(val.val)) {
-                newQueryObject[key] = [];
+        _.forOwn(tabs, ({val, mode}: {val: string | null, mode: QueryStringMode}, key: string) => {
+            if (mode === QueryStringMode.OVERWRITE) {
+                if (_.isNil(val)) {
+                    delete newQueryObject[key];
+                } else {
+                    newQueryObject[key] = val;
+                }
                 return;
             }
 
-            if (val.toggle !== true) {
-                newQueryObject[key] = [val.val];
+            if (_.isNil(val)) {
+                logger.error('Cannot add a nil value to the querystring array! If you intended to remove the array entirely, use the OVERWRITE mode.', tabs, currentQuerystrings);
                 return;
             }
 
-            const currVal = currentQuerystrings.getAll(key);
+            // Implicitly QueryStringMode.APPEND_OR_REMOVE
+            const currentValue = currentQuerystrings[key];
+            const currentArray = _.isArray(currentValue) ? currentValue : (
+                _.isNil(currentValue) ? [] : [currentValue]
+            );
 
-            // If the val is already in the URL, remove it.
-            if (_.includes(currVal, val.val)) {
-                const filteredVal = _.without(currVal, val.val);
+            if (_.includes(currentArray, val)) {
+                const filteredVal = _.without(currentArray, val);
 
                 if (!_.isEmpty(filteredVal)) {
                     newQueryObject[key] = filteredVal;
@@ -47,7 +62,7 @@ export const useQuerystringHelper = () => {
                     delete newQueryObject[key];
                 }
             } else {
-                newQueryObject[key] = [...currVal, val.val];
+                newQueryObject[key] = [...currentArray, val];
             }
         });
 
@@ -63,9 +78,10 @@ export const useQuerystringHelper = () => {
         // history.replace(`${url}?${queryString}`);
     };
 
-    const getQuerystring = queryParams;
+    // qs doesn't like the ? in the beginning of the search string.
+    const getCurrentQueryStrings = () => qs.parse(window.location.search.substring(1));
 
-    return {getQuerystring, updateRoute};
+    return {getCurrentQueryStrings, updateRoute};
 };
 
 export default useQuerystringHelper;
