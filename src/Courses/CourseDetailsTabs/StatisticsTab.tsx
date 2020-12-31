@@ -19,7 +19,7 @@ import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
 import { CircularProgress, Chip, Grid, Tooltip } from '@material-ui/core';
 import MaterialIcons from '../../Components/MaterialIcons';
-import { STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_HEADERS } from './TableColumnHeaders';
+import { STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_TOPIC_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_PROBLEM_HEADERS, STUDENT_STATISTICS_ATTEMPTS_HEADERS } from './TableColumnHeaders';
 
 const FILTERED_STRING = '_FILTERED';
 
@@ -50,20 +50,6 @@ const statisticsViewFromAllStatisticsViewFilter = (view: StatisticsViewAll): Sta
     }
     return view as StatisticsView;
 };
-
-const attemptCols: Array<Column<any>> = [
-    { title: 'Result', field: 'result' },
-    {
-        title: 'Attempt Time',
-        field: 'time',
-        defaultSort: 'asc',
-        sorting: true,
-        type: 'datetime',
-        render: (datetime: any) => <span title={moment(datetime.time).toString()}>{moment(datetime.time).fromNow()}</span>,
-        customSort: (a: any, b: any) => moment(b.time).diff(moment(a.time))
-    },
-];
-
 
 interface BreadCrumbFilter {
     id: number;
@@ -116,19 +102,6 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [loading, setLoading] = useState<boolean>(false);
     const [titleGrade, setTitleGrade] = useState<TitleData | null>(null);
     const userType: UserRole = getUserRole();
-    // Efficient numeric-safe sorting https://stackoverflow.com/a/38641281/4752397
-    const collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
-
-    const aggregateTitlePrefix = _.isNil(userId) ? 'Average ' : '';
-    const gradeCols: Column<object>[] = [
-        { title: 'Name', field: 'name', customSort: (x: any, y: any)  => collator.compare(x.name, y.name)},
-        { title: _.capitalize(`${aggregateTitlePrefix}number of attempts`), field: 'averageAttemptedCount' },
-        { title: _.capitalize(`${aggregateTitlePrefix}grade`), field: 'averageScore' },
-        { title: _.capitalize(`${aggregateTitlePrefix}system score`), field: 'systemScore' },
-        // { title: _.capitalize(`${aggregateTitlePrefix}open score`), field: 'openAverage' },
-        // { title: _.capitalize(`${aggregateTitlePrefix}dead score`), field: 'deadAverage' },
-        { title: _.capitalize(`${aggregateTitlePrefix}mastered`), field: 'completionPercent' },
-    ];
 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
 
@@ -369,6 +342,25 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         }
     };
 
+    const getColumnHeaders = () => {
+        switch (view) {
+        case StatisticsView.UNITS:
+            return _.isNil(userId) ? STATISTICS_SIMPLIFIED_HEADERS : STUDENT_STATISTICS_SIMPLIFIED_HEADERS;
+        case StatisticsViewFilter.UNITS_FILTERED:
+        case StatisticsView.TOPICS:
+            return _.isNil(userId) ? STATISTICS_SIMPLIFIED_HEADERS : STUDENT_STATISTICS_SIMPLIFIED_TOPIC_HEADERS;
+        case StatisticsViewFilter.TOPICS_FILTERED:
+        case StatisticsView.PROBLEMS:
+            return _.isNil(userId) ? STATISTICS_SIMPLIFIED_HEADERS : STUDENT_STATISTICS_SIMPLIFIED_PROBLEM_HEADERS;
+        case StatisticsViewFilter.PROBLEMS_FILTERED:
+        case StatisticsView.ATTEMPTS:
+            return STUDENT_STATISTICS_ATTEMPTS_HEADERS;
+        default:
+            logger.error('You should not have a view that is not the views or filtered views');
+            return [];
+        }
+    };
+
     const hasDetailPanel = userId !== undefined ?
         (view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED):
         (view === StatisticsView.PROBLEMS || view === StatisticsViewFilter.TOPICS_FILTERED);
@@ -543,9 +535,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                             gradesState={gradesState}
                             titleGrade={titleGrade}
                         />}
-                        columns={(view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) ? 
-                            attemptCols : 
-                            (_.isNil(userId) ? STATISTICS_SIMPLIFIED_HEADERS : STUDENT_STATISTICS_SIMPLIFIED_HEADERS)}
+                        columns={getColumnHeaders()}
                         data={rowData}
                         actions={actions}
                         onRowClick={nextView}
