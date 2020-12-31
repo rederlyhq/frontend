@@ -47,7 +47,7 @@ export const StudentTopicPreferences: React.FC<StudentTopicPreferencesProps> = (
 
     return (<Grid container item spacing={3} xs={6} justify='center'>
         <form onChange={() => clearAlert()} onSubmit={handleSubmit(onSubmit)}>
-            <Alert variant={alert.variant} show={alert.message.length > 0}>{alert.message}</Alert>
+            <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message}</Alert>
             <Grid item md={12}>
                 <h1>Topic Preferences</h1>
                 <p>These preferences are stored locally. If you clear browser storage, switch browsers or use another computer they are subject to change.</p>

@@ -87,7 +87,9 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
             const gradesArr: Array<any> = res.data.data || [];
 
             const flatGradesArr = _.map(gradesArr, grade => {
-                const mergedGrade = {...grade.user, ...grade};
+                // This order causes the id field from the user to take precedence.
+                // One will have to be renamed when implementing URL querystrings for the Student's Grades view link.
+                const mergedGrade = {...grade, ...grade.user};
                 delete mergedGrade.user;
                 return mergedGrade;
             });
