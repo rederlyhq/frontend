@@ -14,6 +14,33 @@ import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystrin
 import { CourseTarballImportButton } from '../CourseCreation/CourseTarballImportButton';
 import { Backdrop, CircularProgress } from '@material-ui/core';
 import useAlertState from '../../Hooks/useAlertState';
+import BackendAPIError from '../../APIInterfaces/BackendAPI/BackendAPIError';
+
+interface CourseTarballImportWarningsProps {
+    message: string;
+    missingPGFileErrors: Array<string>;
+    missingAssetFileErrors: Array<string>;
+}
+
+export const CourseTarballImportWarnings: React.FC<CourseTarballImportWarningsProps> = ({message, missingPGFileErrors, missingAssetFileErrors}) => (
+    <div>
+        {message}<br/><br/>
+
+        {!_.isEmpty(missingPGFileErrors) && <div>
+            The following problem files are missing:
+            <ul>
+                {missingPGFileErrors.map(message => (<li key={message}>{message}</li>))}
+            </ul>
+        </div>}
+
+        {!_.isEmpty(missingAssetFileErrors) && <div>
+            The following image files are missing:
+            <ul>
+                {missingAssetFileErrors.map(message => (<li key={message}>{message}</li>))}
+            </ul>
+        </div>}
+    </div>
+);
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -420,34 +447,37 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                             }
                                             switch (event.status) {
                                             case 'error':
-                                                setAlert({
-                                                    variant: 'danger',
-                                                    message: event.data.message
-                                                });
+                                                if (event.data instanceof BackendAPIError) {
+                                                    const data = event.data.data as {
+                                                        missingPGFileErrors: Array<string>;
+                                                        missingAssetFileErrors: Array<string>;                                                    
+                                                    };
+                                                    setAlert({
+                                                        variant: 'danger',
+                                                        message: CourseTarballImportWarnings({
+                                                            message: 'The course archive upload failed with the following errors:',
+                                                            missingAssetFileErrors: data.missingAssetFileErrors,
+                                                            missingPGFileErrors: data.missingPGFileErrors,
+                                                        })
+                                                    });
+                                                } else {
+                                                    setAlert({
+                                                        variant: 'danger',
+                                                        message: event.data.message
+                                                    });
+                                                }
                                                 break;
                                             case 'success': {
                                                 setUnitInCourse(event.data);
                                                 if (!_.isEmpty(event.warnings.missingAssetFileErrors) || !_.isEmpty(event.warnings.missingPGFileErrors)) {
                                                     setAlert({
                                                         variant: 'warning',
-                                                        message: (<div>
-                                                            The course archive uploaded successfully with the following warnings:<br/><br/>
-
-                                                            {!_.isEmpty(event.warnings.missingPGFileErrors) && <div>
-                                                                The following problem files are missing:
-                                                                <ul>
-                                                                    {event.warnings.missingPGFileErrors.map(message => (<li key={message}>{message}</li>))}
-                                                                </ul>
-                                                            </div>}
-
-                                                            {!_.isEmpty(event.warnings.missingAssetFileErrors) && <div>
-                                                                The following image files are missing:
-                                                                <ul>
-                                                                    {event.warnings.missingAssetFileErrors.map(message => (<li key={message}>{message}</li>))}
-                                                                </ul>
-                                                            </div>}
-                                                        </div>)
-                                                    });    
+                                                        message: CourseTarballImportWarnings({
+                                                            message: 'The course archive uploaded successfully with the following warnings:',
+                                                            missingAssetFileErrors: event.warnings.missingAssetFileErrors,
+                                                            missingPGFileErrors: event.warnings.missingPGFileErrors,
+                                                        })
+                                                    });
                                                 }
                                                 break;
                                             }
