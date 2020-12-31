@@ -13,6 +13,7 @@ import logger from '../../Utilities/Logger';
 import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystringHelper';
 import { CourseTarballImportButton } from '../CourseCreation/CourseTarballImportButton';
 import { Backdrop, CircularProgress } from '@material-ui/core';
+import useAlertState from '../../Hooks/useAlertState';
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -28,7 +29,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const {getCurrentQueryStrings, updateRoute} = useQuerystringHelper();
     const [inEditMode, setInEditMode] = useState<boolean>(getCurrentQueryStrings()['edit'] === 'true');
-    const [error, setError] = useState<Error | null | undefined>(null);
+    const [alert, setAlert] = useAlertState();
     const userType: UserRole = getUserRole();
 
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
@@ -46,7 +47,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const removeTopic = async (unitId: number, topicId: number) => {
         try {
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
             await deleteTopic({
                 id: topicId
             });
@@ -68,7 +72,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             unit.topics = _.reject(unit.topics, ['id', topicId]);
             setCourse?.(newCourse);
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
         }
     };
 
@@ -83,7 +90,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const createTopic = async (courseUnitContentId: number) => {
         try {
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
             const result = await postTopic({
                 data: {
                     courseUnitContentId
@@ -101,7 +111,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             unit.topics.push(new TopicObject(result.data.data));
             setCourse?.(newCourse);
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
         }
     };
 
@@ -118,7 +131,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const addUnit = async (courseId: number) => {
         try {
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
             const result = await postUnit({
                 data: {
                     courseId
@@ -127,7 +143,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             const unit = new UnitObject(result.data.data);
             setUnitInCourse(unit);    
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
         }
     };
 
@@ -137,7 +156,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const removeUnit = async (unitId: number) => {
         try {
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
             await deleteUnit({
                 id: unitId
             });
@@ -150,7 +172,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             newCourse.units = _.reject(newCourse.units, ['id', unitId]);
             setCourse?.(newCourse);
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
         }
     };
 
@@ -166,7 +191,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const onUnitBlur = async (event: React.FocusEvent<HTMLHeadingElement>, unitId: number) => {
         try {
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
             const newCourse = _.cloneDeep(course);
             const updatingUnit = _.find(newCourse.units, ['id', unitId]);
             if (!updatingUnit) {
@@ -182,7 +210,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             });
             setCourse?.(newCourse);
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
         }
     };
 
@@ -202,7 +233,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             }
 
             // TODO when should the error disappear
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
 
             const newCourse = _.cloneDeep(course);
             const [removed] = newCourse.units.splice(result.source.index, 1);
@@ -225,7 +259,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             });
             setCourse?.(new CourseObject(newCourse));
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
             setCourse?.(course);
         }
     };
@@ -285,7 +322,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             destinationUnit.topics.splice(result.destination.index, 0, removed);
 
             setCourse?.(newCourse);
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
             if (_.isNil(topicId)) {
                 // This should not be possible
                 logger.error('topicId was nil when dropping');
@@ -307,7 +347,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             });
             setCourse?.(new CourseObject(newCourse));
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
             setCourse?.(course);
         }
     };
@@ -347,7 +390,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 headerContent={<h5>Confirm delete</h5>}
                 bodyContent={`Are you sure you want to remove ${confirmationParamters.identifierText}?`}
             />
-            {error && <Alert variant="danger">{error.message}</Alert>}
+            <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message}</Alert>
             <Row style={{padding: '0.5em'}}>
                 <Col xs={1} md={1}><h4>Units</h4></Col>
                 <Col>
@@ -367,18 +410,47 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                             // Grabbing this for error handling (see default below)
                                             const { status } = event;
                                             if (status !== 'error') {
-                                                setError(null);
+                                                setAlert({
+                                                    variant: 'info',
+                                                    message: ''
+                                                });
                                             }
                                             if (status !== 'loading') {
                                                 setLoading(false);
                                             }
                                             switch (event.status) {
                                             case 'error':
-                                                setError(event.data);
+                                                setAlert({
+                                                    variant: 'danger',
+                                                    message: event.data.message
+                                                });
                                                 break;
-                                            case 'success':
+                                            case 'success': {
                                                 setUnitInCourse(event.data);
+                                                if (!_.isEmpty(event.warnings.missingAssetFileErrors) || !_.isEmpty(event.warnings.missingPGFileErrors)) {
+                                                    setAlert({
+                                                        variant: 'warning',
+                                                        message: (<div>
+                                                            The course archive uploaded successfully with the following warnings:<br/><br/>
+
+                                                            {!_.isEmpty(event.warnings.missingPGFileErrors) && <div>
+                                                                The following problem files are missing:
+                                                                <ul>
+                                                                    {event.warnings.missingPGFileErrors.map(message => (<li key={message}>{message}</li>))}
+                                                                </ul>
+                                                            </div>}
+
+                                                            {!_.isEmpty(event.warnings.missingAssetFileErrors) && <div>
+                                                                The following image files are missing:
+                                                                <ul>
+                                                                    {event.warnings.missingAssetFileErrors.map(message => (<li key={message}>{message}</li>))}
+                                                                </ul>
+                                                            </div>}
+                                                        </div>)
+                                                    });    
+                                                }
                                                 break;
+                                            }
                                             case 'loading':
                                                 setLoading(true);
                                                 break;

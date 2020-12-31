@@ -11,6 +11,10 @@ import { UnitObject } from '../CourseInterfaces';
 type CourseTarballImportButtonState = {
     status: 'success';
     data: UnitObject;
+    warnings: {
+        missingPGFileErrors: Array<string>;
+        missingAssetFileErrors: Array<string>;
+    }
 } | {
     status: 'error';
     data: Error;
@@ -56,8 +60,10 @@ export const CourseTarballImportButton: React.FC<CourseTarballImportButtonProps>
                     });
                     onEvent?.({
                         status: 'success',
-                        data: new UnitObject(resp.data.data)
-                    });    
+                        data: new UnitObject(resp.data.data.unit),
+                        warnings: resp.data.data.missingFileErrors
+                    });
+
                 } catch(e) {
                     onEvent?.({
                         status: 'error',

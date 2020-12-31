@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Color } from '@material-ui/lab';
 
 export interface IAlertModalState {
-    message: string;
+    message: string | JSX.Element;
     variant: AlertProps['variant'];
 }
 

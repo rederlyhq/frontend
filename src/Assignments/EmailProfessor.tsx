@@ -54,7 +54,7 @@ export const EmailProfessor: React.FC<EmailProfessorProps> = ({problem}) => {
                 </ModalHeader>
                 <ModalBody>
                     <Form>
-                        <Alert variant={sendEmailRespAlertType} show={sendEmailRespMsg.length > 0}>{sendEmailRespMsg}</Alert>
+                        <Alert variant={sendEmailRespAlertType} show={Boolean(sendEmailRespMsg)}>{sendEmailRespMsg}</Alert>
                         <FormGroup>
                             <FormLabel>Compose your email below:</FormLabel>
                             <FormControl 
