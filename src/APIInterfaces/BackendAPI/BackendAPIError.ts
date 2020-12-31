@@ -6,10 +6,10 @@ export function isAxiosError(error: any): error is AxiosError {
     return (error as AxiosError).isAxiosError !== undefined;
 }
 
-export default class BackendAPIError extends Error {
+export default class BackendAPIError<T = unknown> extends Error {
     public name: string;
     public originalError: any;
-    public data?: unknown;
+    public data?: T;
 
     get axiosError(): AxiosError | null {
         if (isAxiosError(this.originalError)) {

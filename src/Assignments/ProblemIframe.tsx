@@ -424,7 +424,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     return (
         <>
             { loading && <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>}
-            <Alert variant={alert.variant} show={alert.message.length > 0}>{alert.message} -- Please refresh your page.</Alert>
+            <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message} -- Please refresh your page.</Alert>
             <IframeResizer
                 // Using onInit instead of ref because:
                 // ref never get's set and a warning saying to use `forwardRef` comes up in the console
@@ -442,7 +442,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     }
                 }}
                 title='Problem Frame'
-                style={{ width: '100%', height: height, border: 'none', minHeight: readonly ? '' : '350px', visibility: (loading || alert.message.length > 0) ? 'hidden' : 'visible'}}
+                style={{ width: '100%', height: height, border: 'none', minHeight: readonly ? '' : '350px', visibility: (loading || Boolean(alert.message)) ? 'hidden' : 'visible'}}
                 sandbox='allow-same-origin allow-forms allow-scripts allow-popups'
                 srcDoc={renderedHTML}
                 onLoad={onLoadHandlers}

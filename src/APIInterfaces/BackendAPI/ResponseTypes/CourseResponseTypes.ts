@@ -6,7 +6,14 @@ import { BackendAPIResponse } from '../BackendAPIResponse';
 /* *************** *************** */
 export type CreateCourseResponse = BackendAPIResponse<Partial<CourseObject>>;
 
-export type PostImportCourseArchiveResponse = BackendAPIResponse<UnitObject>;
+interface PostImportCourseArchive {
+    unit: UnitObject;
+    missingFileErrors: {
+        missingPGFileErrors: Array<string>;
+        missingAssetFileErrors: Array<string>;
+    };
+}
+export type PostImportCourseArchiveResponse = BackendAPIResponse<PostImportCourseArchive>;
 
 interface PutCourseUpdates {
     updatesResult: Partial<CourseObject>[]

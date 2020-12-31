@@ -39,7 +39,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) =
             </ModalHeader>
             <ModalBody>
                 <Form>
-                    <Alert variant={sendEmailRespAlertType} show={sendEmailRespMsg.length > 0}>{sendEmailRespMsg}</Alert>
+                    <Alert variant={sendEmailRespAlertType} show={Boolean(sendEmailRespMsg)}>{sendEmailRespMsg}</Alert>
                     <div>You are sending an email to {users.length} students.</div>
                     <FormGroup controlId='Subject'>
                         <FormLabel>Subject: </FormLabel>

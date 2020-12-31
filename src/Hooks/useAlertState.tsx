@@ -1,9 +1,10 @@
+import React from 'react';
 import { AlertProps } from 'react-bootstrap';
 import { useState } from 'react';
 import { Color } from '@material-ui/lab';
 
 export interface IAlertModalState {
-    message: string;
+    message: string | React.ReactNode;
     variant: AlertProps['variant'];
 }
 
