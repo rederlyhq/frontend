@@ -28,6 +28,7 @@ const COURSE_ATTACHMENTS_LIST_PATH = url.resolve(COURSE_ATTACHMENTS_PATH, 'list/
 const COURSE_PROBLEM_EDITOR = url.resolve(COURSE_PATH, 'question/editor/');
 const COURSE_PROBLEM_EDITOR_READ = url.resolve(COURSE_PROBLEM_EDITOR, 'read/');
 const COURSE_PROBLEM_EDITOR_SAVE = url.resolve(COURSE_PROBLEM_EDITOR, 'save/');
+const COURSE_PROBLEM_EDITOR_UPLOAD_ASSET = url.resolve(COURSE_PROBLEM_EDITOR, 'upload-asset/');
 const COURSE_PROBLEM_EDITOR_CATALOG = url.resolve(COURSE_PROBLEM_EDITOR, 'catalog/');
 const COURSE_GRADES_PATH = url.resolve(COURSE_PATH, 'grades/');
 
@@ -649,6 +650,32 @@ export const saveProblem = async ({
             problemSource: problemSource,
             relativePath: relativePath,
         });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const uploadAsset = async ({
+    file,
+    relativePath,
+}: {
+    file: File;
+    relativePath: string;
+}): Promise<AxiosResponse<SaveQuestionResponse>> => {
+    const data = new FormData();
+    data.append('relativePath', relativePath);
+    data.append('asset-file', file);
+
+    try {
+        return await AxiosRequest.post(
+            COURSE_PROBLEM_EDITOR_UPLOAD_ASSET,
+            data,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
+        );
     } catch (e) {
         throw new BackendAPIError(e);
     }
