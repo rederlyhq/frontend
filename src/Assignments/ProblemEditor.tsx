@@ -21,6 +21,8 @@ import { useQuery } from '../Hooks/UseQuery';
 import { motion, useCycle } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import localPreferences from '../Utilities/LocalPreferences';
+import { ProblemEditorAssetUploadButton } from './ProblemEditorAssetUploadButton';
+import BackendAPIError from '../APIInterfaces/BackendAPI/BackendAPIError';
 const { session } = localPreferences;
 
 const defaultLoadPath = 'private/templates/barebones.pg';
@@ -334,6 +336,48 @@ export const ProblemEditor: React.FC = () => {
                     <input {...getInputProps()} />
                     Load PG File
                 </Button>
+            </Grid>
+            <Grid item md={2} style={{position: 'relative'}}>
+                <ProblemEditorAssetUploadButton
+                    defaultDirectory={path.dirname(problemEditorForm.getValues().userPath)}
+                    sandboxPath={savePathAdornmentText}
+                    onEvent={(event) => {
+                        // Grabbing this for error handling (see default below)
+                        const { status } = event;
+                        if (status !== 'error') {
+                            setAlertState({
+                                variant: 'info',
+                                message: ''
+                            });
+                        }
+                        if (status !== 'loading') {
+                            // TODO use loading state if needed
+                            // setLoading(false);
+                        }
+                        switch (event.status) {
+                        case 'error':
+                            setAlertState({
+                                variant: 'danger',
+                                message: event.data.message
+                            });
+                            break;
+                        case 'success': {
+                            setAlertState({
+                                variant: 'success',
+                                message: 'Successfully uploaded asset'
+                            });
+                            break;
+                        }
+                        case 'loading':
+                            // TODO use loading state if needed
+                            // setLoading(true);
+                            break;
+                        default:
+                            // Event is never in this case so can't use event.status
+                            logger.error(`Unhandled case ${status} in tarball upload`);
+                        }
+                    }}
+                />
             </Grid>
             <Grid item md={2} style ={{
                 marginLeft: 'auto'
