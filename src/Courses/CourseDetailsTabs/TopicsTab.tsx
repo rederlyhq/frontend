@@ -448,24 +448,27 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                             switch (event.status) {
                                             case 'error':
                                                 if (event.data instanceof BackendAPIError) {
-                                                    const data = event.data.data as {
-                                                        missingPGFileErrors: Array<string>;
-                                                        missingAssetFileErrors: Array<string>;                                                    
-                                                    };
-                                                    setAlert({
-                                                        variant: 'danger',
-                                                        message: CourseTarballImportWarnings({
-                                                            message: 'The course archive upload failed with the following errors:',
-                                                            missingAssetFileErrors: data.missingAssetFileErrors,
-                                                            missingPGFileErrors: data.missingPGFileErrors,
-                                                        })
-                                                    });
-                                                } else {
-                                                    setAlert({
-                                                        variant: 'danger',
-                                                        message: event.data.message
-                                                    });
+                                                    const { missingPGFileErrors = [], missingAssetFileErrors = [] } = (event.data.data as {
+                                                        missingPGFileErrors?: Array<string>;
+                                                        missingAssetFileErrors?: Array<string>;                                                    
+                                                    } | undefined) ?? {};
+
+                                                    if (!_.isEmpty(missingPGFileErrors) || !_.isEmpty(missingAssetFileErrors)) {
+                                                        setAlert({
+                                                            variant: 'danger',
+                                                            message: CourseTarballImportWarnings({
+                                                                message: 'The course archive upload failed with the following errors:',
+                                                                missingAssetFileErrors: missingAssetFileErrors,
+                                                                missingPGFileErrors: missingPGFileErrors,
+                                                            })
+                                                        });
+                                                        break;
+                                                    }
                                                 }
+                                                setAlert({
+                                                    variant: 'danger',
+                                                    message: event.data.message
+                                                });
                                                 break;
                                             case 'success': {
                                                 setUnitInCourse(event.data);
