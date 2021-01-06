@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Grid, Snackbar } from '@material-ui/core';
-import { MultipleProblemPaths, OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
+import { Button, Grid, Snackbar, Switch } from '@material-ui/core';
+import { GenerateSwitchField, MultipleProblemPaths, OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import { Link } from 'react-router-dom';
 import { ProblemObject, TopicObject, TopicTypeId } from '../CourseInterfaces';
@@ -207,7 +207,15 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                             <ProblemWeight />
                         </Grid><Grid item md={12}>
                             This problem is {optional ? 'optional' : 'required'}.<br/>
-                            <OptionalField />
+                            <OptionalField /><br />
+                            Show Me Another <br />
+                            <Switch
+                                onBlur={()=>{}}
+                                onChange={() => {}}
+                                color='primary'
+                                checked={true}
+                                name='showMeAnother'
+                            />
                         </Grid>
                         {topic.topicTypeId === TopicTypeId.EXAM && (
                             <Grid item md={12}>
