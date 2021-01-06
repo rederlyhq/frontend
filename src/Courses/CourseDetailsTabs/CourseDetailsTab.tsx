@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Spinner, Row, Alert } from 'react-bootstrap';
+import { Spinner, Col, Row, Alert } from 'react-bootstrap';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { CourseObject } from '../CourseInterfaces';
 import ActiveTopics from '../CourseDetailsTabs/ActiveTopics';
@@ -10,6 +10,9 @@ import { nameof } from '../../Utilities/TypescriptUtils';
 import { EditableCourseDetailsForm } from '../CourseCreation/EditableCourseDetailsForm';
 import { putCourse } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
+import { Alert as MUIAlert } from '@material-ui/lab';
+import { Link } from 'react-router-dom';
+import * as qs from 'querystring';
 
 interface CourseDetailsTabProps {
     course?: CourseObject;
@@ -71,16 +74,32 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
         return <Alert variant="danger">{error}</Alert>;
     }
 
+    const unitsWithErrors: number[] = [];
+    const hasErrors = _.sumBy(course.units, unit => {
+        const errorsInUnit = _.sumBy(unit.topics, 'errors');
+        if (errorsInUnit > 0) unitsWithErrors.push(unit.id);
+        return errorsInUnit;
+    });
+
     return (
         <>
             {userType !== UserRole.STUDENT && (
-                <Row>
+                <Row style={{padding: '20px'}}>
+                    {hasErrors && 
+                        <Col>
+                            <Link to={`/common/courses/${course.id}?${qs.stringify({tab: 'Topics', unitId: unitsWithErrors})}`}>
+                                <MUIAlert severity='warning'>
+                                    This course has <b>{hasErrors}</b> questions with errors. Click here to fix them.
+                                </MUIAlert>
+                            </Link>
+                        </Col>
+                    }
                     <EditToggleButton
                         selectedState={inEditMode}
                         onClick={() => {setInEditMode(!inEditMode); }}
                         style={{
                             marginLeft: 'auto',
-                            padding: '20px'
+                            padding: '2px'
                         }}
                     />
                 </Row>

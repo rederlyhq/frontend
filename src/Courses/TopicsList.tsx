@@ -60,9 +60,12 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
                                 </Link>
                             </Row>
                             <Row>
-                                <Col>
-                                    {topic.errors > 0 && <><MdWarning style={{fontSize: '1.2em'}} /> There are {topic.errors} issues with this topic.</>}
-                                </Col>                               
+                                {topic.errors > 0 && <Link to={loc => ({pathname: `${loc.pathname}/topic/${topic.id}/settings`})} style={{color: 'red'}}>
+                                    <Col>
+                                        <MdWarning style={{fontSize: '1.2em'}} /> 
+                                        There {topic.errors === 1 ? 'is' : 'are'} {topic.errors} issue{topic.errors === 1 ? null : 's'} with this topic.
+                                    </Col>
+                                </Link>  }                      
                             </Row>
                         </Col>
                         <Col>
@@ -116,9 +119,12 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
                             )}
                             {topic.errors > 0 && (
                                 <Row>
-                                    <Col>
-                                        <MdWarning style={{fontSize: '1.2em'}} /> There are {topic.errors} issues with this topic.
-                                    </Col>
+                                    <Link to={loc => ({pathname: `${loc.pathname}/topic/${topic.id}/settings`})} style={{color: 'red'}}>
+                                        <Col>
+                                            <MdWarning style={{fontSize: '1.2em'}} /> 
+                                            There {topic.errors === 1 ? 'is' : 'are'} {topic.errors} issue{topic.errors === 1 ? null : 's'} with this topic.
+                                        </Col>
+                                    </Link>
                                 </Row>
                             )
                             }

@@ -151,9 +151,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             });
 
             setTopic(newTopic);
-            if (selected instanceof ProblemObject) {
-                setSelected(selected => new ProblemObject({...selected}));
-            }
+            setSelected(selected => selected instanceof ProblemObject ? new ProblemObject({...selected}) : selected);
         } catch (e) {
             logger.error('Drag/Drop error:', e);
         }
