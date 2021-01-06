@@ -33,6 +33,7 @@ export interface ProblemSettingsInputs extends ExamProblemSettingsFields {
     maxAttempts?: number;
     weight?: number;
     optional?: boolean;
+    smaEnabled?: boolean;
     additionalProblemPaths?: Array<{path: string}>;
 }
 

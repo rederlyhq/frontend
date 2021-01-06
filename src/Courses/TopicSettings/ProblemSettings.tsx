@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Grid, Snackbar, Switch } from '@material-ui/core';
-import { GenerateSwitchField, MultipleProblemPaths, OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
+import { Button, Grid, Snackbar } from '@material-ui/core';
+import { MultipleProblemPaths, ToggleField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import { Link } from 'react-router-dom';
 import { ProblemObject, TopicObject, TopicTypeId } from '../CourseInterfaces';
@@ -50,7 +50,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const topicForm = useForm<ProblemSettingsInputs>(formSettings);
 
     const { handleSubmit, control, watch, reset } = topicForm;
-    const { optional, webworkQuestionPath } = watch();
+    const { optional, smaEnabled, webworkQuestionPath } = watch();
     const additionalProblemPaths = watch('courseQuestionAssessmentInfo.additionalProblemPaths', [{path: ''}]);
     const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
@@ -207,15 +207,9 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                             <ProblemWeight />
                         </Grid><Grid item md={12}>
                             This problem is {optional ? 'optional' : 'required'}.<br/>
-                            <OptionalField /><br />
+                            <ToggleField name={'optional'} label={'Optional'} /><br />
                             Show Me Another <br />
-                            <Switch
-                                onBlur={()=>{}}
-                                onChange={() => {}}
-                                color='primary'
-                                checked={true}
-                                name='showMeAnother'
-                            />
+                            <ToggleField name={'smaEnabled'} label={(smaEnabled) ? 'Enabled' : 'Disabled'} /><br />
                         </Grid>
                         {topic.topicTypeId === TopicTypeId.EXAM && (
                             <Grid item md={12}>
