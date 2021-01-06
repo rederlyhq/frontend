@@ -6,7 +6,7 @@ import ProblemIframe from './ProblemIframe';
 import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
 import { ProblemDoneState } from '../Enums/AssignmentEnums';
 import _ from 'lodash';
-import { askForHelp, endVersion, generateNewVersion, getQuestions, submitVersion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { askForHelp, endVersion, generateNewVersion, getQuestions, requestNewProblemVersion, submitVersion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { ProblemDetails } from './ProblemDetails';
 import { ProblemStateProvider } from '../Contexts/CurrentProblemState';
 import { useCourseContext } from '../Courses/CourseProvider';
@@ -412,6 +412,17 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         newTab?.document.write(res.data.data);
     };
 
+    const requestShowMeAnother = async (questionId: number) => {
+        const res = await requestNewProblemVersion({ questionId });
+        const grade = res.data.data;
+        if (_.isNil(grade)) {
+            logger.info('Failed to find another version of this problem.');
+            setError(`${res.data.message}`);
+        } else {
+            setProblemStudentGrade(grade);
+        }
+    };
+
     if (loading) {
         return <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>;
     }
@@ -535,7 +546,13 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 setAttemptsRemaining={setAttemptsRemaining}
                                 setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
                             />
-                            {/* Custom feature for CityTech (university #5). TODO: make this solution more robust */}
+                            {selectedProblemId && topic && topic.topicTypeId !== 2 &&
+                                <Button
+                                    className='float-right'
+                                    onClick={()=>requestShowMeAnother(selectedProblemId)}>
+                                    Show Me Another
+                                </Button>
+                            }
                             {selectedProblemId && course.canAskForHelp &&
                                 <Button 
                                     className='float-right'
@@ -543,10 +560,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                     Ask for help
                                 </Button>
                             }
-                            {<ProblemIframe
+                            <ProblemIframe
                                 problem={problems[selectedProblemId]}
                                 setProblemStudentGrade={setProblemStudentGrade}
-                            />}
+                            />
                         </ProblemStateProvider>
                     </Col>
                 </Row>

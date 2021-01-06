@@ -108,7 +108,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
         setLastSubmission({});
-    }, [problem, problem.id, workbookId, previewPath, previewProblemSource, previewSeed]);
+    }, [problem, problem.id, problem.grades?.first?.randomSeed, workbookId, previewPath, previewProblemSource, previewSeed]);
 
     const getHTML = async () => {
         logger.debug('ProblemIframe: Getting new renderedHTML.');

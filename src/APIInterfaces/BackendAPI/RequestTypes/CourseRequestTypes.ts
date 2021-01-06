@@ -183,6 +183,10 @@ export interface AskForHelpOptions {
     questionId: number;
 }
 
+export interface ShowMeAnotherOptions {
+    questionId: number;
+}
+
 /* *************** *************** */
 /* ********* Attachments ********* */
 /* *************** *************** */
