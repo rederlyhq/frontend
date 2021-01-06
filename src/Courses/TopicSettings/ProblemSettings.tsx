@@ -124,7 +124,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             _.assign(newQuestion, dataFromBackend, updateAssessmentInfo);
             setTopic(newTopic);
         } catch (e) {
-            logger.error('Error updating topic.', e);
+            logger.error('Error updating question.', e);
             setUpdateAlert({message: e.message, severity: 'error'});
         }
     };

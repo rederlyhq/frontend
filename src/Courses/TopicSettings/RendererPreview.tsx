@@ -1,4 +1,4 @@
-import { ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, Grid, TextField, InputAdornment, IconButton, Tooltip, Button } from '@material-ui/core';
+import { Accordion, AccordionSummary, AccordionDetails, Grid, TextField, InputAdornment, IconButton, Tooltip, Button } from '@material-ui/core';
 import { ExpandMore, Refresh } from '@material-ui/icons';
 import { motion, useAnimation, useCycle } from 'framer-motion';
 import _ from 'lodash';
@@ -36,16 +36,16 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
     }, [defaultPath]);
 
     return (
-        <ExpansionPanel elevation={5}>
-            <ExpansionPanelSummary
+        <Accordion TransitionProps={{ mountOnEnter: true, unmountOnExit: true }} elevation={5}>
+            <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-label="Expand"
-                aria-controls="additional-actions3-content"
-                id="additional-actions3-header"
+                aria-controls="rendered-problem-preview"
+                id="rendered-problem-preview"
             >
                 Problem Preview Pane
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
+            </AccordionSummary>
+            <AccordionDetails>
                 <Grid container xs={12}>
                     <Grid item xs={10}>
                         <TextField
@@ -160,8 +160,8 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
                         }
                     </Grid>                    
                 </Grid>
-            </ExpansionPanelDetails>
-        </ExpansionPanel>
+            </AccordionDetails>
+        </Accordion>
     );
 };
 
