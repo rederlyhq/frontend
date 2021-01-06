@@ -2,6 +2,7 @@ import React from 'react';
 import { ListGroup, ListGroupItem, Row, Col, Button } from 'react-bootstrap';
 import { TopicObject, TopicOverride } from './CourseInterfaces';
 import { BsPencilSquare, BsTrash } from 'react-icons/bs';
+import { MdWarning } from 'react-icons/md';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
 import MomentUtils from '@date-io/moment';
@@ -50,22 +51,23 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
                     <>
                         <Col md={8}>
                             <Row>
-                                <Link to={loc =>(userType !== UserRole.STUDENT ?
-                                    {pathname: `${loc.pathname}/topic/${topic.id}/settings`} :
-                                    {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
-                                )}>
+                                <Link to={loc => ({pathname: `${loc.pathname}/topic/${topic.id}/settings`})}>
                                     <Col>
-                                        <h5>{topic.name}</h5>
+                                        <h5>
+                                            {topic.name}
+                                        </h5>
                                     </Col>
                                 </Link>
+                            </Row>
+                            <Row>
+                                <Col>
+                                    {topic.errors > 0 && <><MdWarning style={{fontSize: '1.2em'}} /> There are {topic.errors} issues with this topic.</>}
+                                </Col>                               
                             </Row>
                         </Col>
                         <Col>
                             <Row style={{justifyContent: 'flex-end'}}>
-                                <Link to={loc =>(userType !== UserRole.STUDENT ?
-                                    {pathname: `${loc.pathname}/topic/${topic.id}/settings`} :
-                                    {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
-                                )}>
+                                <Link to={loc =>({pathname: `${loc.pathname}/topic/${topic.id}/settings`})}>
                                     <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}}>
                                         <BsPencilSquare/> Edit
                                     </Button>
@@ -78,43 +80,49 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
                     </>
                 ) : (
                     <>
-                        <Row>
-                            <Col>
+                        <Col>
+                            <Row>
+                                <Link to={loc =>(userType !== UserRole.STUDENT ?
+                                    {pathname: `${loc.pathname}/topic/${topic.id}/grading`} :
+                                    {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
+                                )}>
+                                    <Col>
+                                        <h5>{topic.name}</h5>
+                                    </Col>
+                                </Link>
+                            </Row>
+                            {activeExtensions.length > 0 && (
                                 <Row>
-                                    <Link to={loc =>(userType !== UserRole.STUDENT ?
-                                        {pathname: `${loc.pathname}/topic/${topic.id}/grading`} :
-                                        {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
-                                    )}>
-                                        <Col>
-                                            <h5>{topic.name}</h5>
-                                        </Col>
-                                    </Link>
-                                </Row>
-                                {activeExtensions.length > 0 && (
-                                    <Row>
-                                        { userType !== UserRole.STUDENT ? (
-                                            <Link to={loc =>({pathname: `${loc.pathname}/settings`, selectedTopic: topic.id})}>
+                                    { userType !== UserRole.STUDENT ? (
+                                        <Link to={loc =>({pathname: `${loc.pathname}/settings`, selectedTopic: topic.id})}>
+                                            <Col>
+                                                <p style={{color: 'black', fontStyle: 'italic'}}>
+                                                    This topic has {activeExtensions.length} active extension{activeExtensions.length > 1 && 's'}
+                                                </p>
+                                            </Col>
+                                        </Link>
+                                    ) : (
+                                        <>
+                                            { _.find(activeExtensions, ['userId', userId]) !== undefined && (
                                                 <Col>
                                                     <p style={{color: 'black', fontStyle: 'italic'}}>
-                                                        This topic has {activeExtensions.length} active extension{activeExtensions.length > 1 && 's'}
+                                                        You have an extension for this topic.
                                                     </p>
                                                 </Col>
-                                            </Link>
-                                        ) : (
-                                            <>
-                                                { _.find(activeExtensions, ['userId', userId]) !== undefined && (
-                                                    <Col>
-                                                        <p style={{color: 'black', fontStyle: 'italic'}}>
-                                                            You have an extension for this topic.
-                                                        </p>
-                                                    </Col>
-                                                )}
-                                            </>
-                                        )}
-                                    </Row>
-                                )}
-                            </Col>
-                        </Row>
+                                            )}
+                                        </>
+                                    )}
+                                </Row>
+                            )}
+                            {topic.errors > 0 && (
+                                <Row>
+                                    <Col>
+                                        <MdWarning style={{fontSize: '1.2em'}} /> There are {topic.errors} issues with this topic.
+                                    </Col>
+                                </Row>
+                            )
+                            }
+                        </Col>
                         <MuiPickersUtilsProvider utils={MomentUtils}>
                             <>
                                 <DateTimePicker
@@ -178,7 +186,8 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
         const topic = listOfTopics[rubric.source.index];
 
         return (
-            <ListGroupItem {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
+            <ListGroupItem {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef} variant={topic.errors > 0 ? 'danger' : undefined}>
+                {/* {topic.errors > 0 && <MdWarning style={{position: 'absolute', left: '9px', fontSize: '1.2em', top: '25%'}} />} */}
                 {renderSingleTopic(topic)}
             </ListGroupItem>
         );

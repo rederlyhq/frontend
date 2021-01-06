@@ -181,6 +181,7 @@ export class TopicObject {
     partialExtend: boolean = false;
     studentTopicOverride: TopicOverride[] = [];
     topicAssessmentInfo?: TopicAssessmentFields = new TopicAssessmentFields();
+    errors: number = 0;
 
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
