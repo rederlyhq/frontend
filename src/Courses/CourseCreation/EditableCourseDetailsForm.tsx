@@ -24,7 +24,6 @@ export const EditableCourseDetailsForm: React.FC<CourseDetailsProps> = ({ course
     // It might make sense to have a use effect that if the course changes the form updates
     // However overriding what the user has done might be annoying
 
-
     return (
         <CourseDetailsForm course={currentCourseState} updateCourseValue={updateCourseValue} disabled={disabled} onBlur={onBlur} />
     );

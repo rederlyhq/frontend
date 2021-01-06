@@ -193,7 +193,6 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
 
         return (
             <ListGroupItem {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef} variant={topic.errors > 0 ? 'danger' : undefined}>
-                {/* {topic.errors > 0 && <MdWarning style={{position: 'absolute', left: '9px', fontSize: '1.2em', top: '25%'}} />} */}
                 {renderSingleTopic(topic)}
             </ListGroupItem>
         );

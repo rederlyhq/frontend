@@ -89,7 +89,7 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
                         <Col>
                             <Link to={`/common/courses/${course.id}?${qs.stringify({tab: 'Topics', unitId: unitsWithErrors})}`}>
                                 <MUIAlert severity='warning'>
-                                    This course has <b>{hasErrors}</b> questions with errors. Click here to fix them.
+                                    There are <b>{hasErrors}</b> issues across <b>{unitsWithErrors.length}</b> units.
                                 </MUIAlert>
                             </Link>
                         </Col>
