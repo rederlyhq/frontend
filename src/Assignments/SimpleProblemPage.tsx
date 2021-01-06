@@ -590,7 +590,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
                             />
                             {selectedProblemId && topic && topic.topicTypeId !== 2 && 
-                            (problems[selectedProblemId].grades?.first?.bestScore === 1 || topic.deadDate.toMoment().isBefore(moment())) &&
+                            (problems[selectedProblemId].grades?.first?.overallBestScore === 1 || topic.deadDate.toMoment().isBefore(moment())) &&
                                 <Button
                                     className='float-right'
                                     onClick={()=>requestShowMeAnother(selectedProblemId)}>
