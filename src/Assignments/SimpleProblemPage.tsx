@@ -45,7 +45,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [modalLoading, setModalLoading] = useState<boolean>(false);
     const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
-    // const [error, setError] = useState('');
     const [alert, setAlert] = useAlertState();
     const [confirmationParameters, setConfirmationParameters] = useState<ConfirmationModalProps>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
@@ -79,7 +78,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     variant: 'error',
                     message: e.message
                 });
-                // setError(e.message);
                 setLoading(false);
             }
         })();
@@ -196,7 +194,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     variant: 'warning',
                     message: `${res.data.message} You have used all available versions for this assessment.`
                 });
-                // setError(`${res.data.message} You have used all available versions for this assessment.`);
             }
         } else {
             const message = res.data.message || 'This topic does not contain any problems. Please contact your professor.';
@@ -204,7 +201,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 variant: 'error',
                 message
             });
-            // setError(message);
         }
     };
 
@@ -306,7 +302,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 variant: 'error',
                 message: e.message
             });
-            // setError(e.message);
             clearModal();
         }
     };
@@ -339,20 +334,17 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                             variant: 'error',
                             message: e.message
                         });
-                        // setError(e.message);
                     } else {
                         setAlert({
                             variant: 'warning',
                             message: `Another version of this assessment will be available after ${new Date(nextAvailableStartTime).toLocaleString()}.`
                         });
-                        // setError(`Another version of this assessment will be available after ${new Date(nextAvailableStartTime).toLocaleString()}.`);
                     }
                 } else {
                     setAlert({
                         variant: 'error',
                         message: e.message
                     });
-                    // setError(e.message);
                 }
                 clearModal();
             }
@@ -376,7 +368,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         variant: 'error',
                         message: e.message
                     });
-                    // setError(e.message);
                     logger.error('End version failed', e);
                     clearModal();
                 }
@@ -472,7 +463,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 variant: 'warning',
                 message: res.data.message
             });
-            // setError(`${res.data.message}`);
         } else {
             setProblemStudentGrade(grade);
         }
@@ -481,10 +471,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     if (loading) {
         return <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>;
     }
-
-    // if (error) {
-    //     return <div>{error}</div>;
-    // }
 
     // there's a serious problem if we get a topic, but no problems, and the topicType isn't an assessment
     if (_.isEmpty(problems) &&
