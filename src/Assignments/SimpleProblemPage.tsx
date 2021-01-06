@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ProblemObject, TopicObject } from '../Courses/CourseInterfaces';
-import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
+import { Row, Col, Container, Nav, NavLink, Button, Spinner, Alert } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
 import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
@@ -16,6 +16,7 @@ import logger from '../Utilities/Logger';
 import AttachmentsSidebar from './AttachmentsSidebar';
 import { getUserId } from '../Enums/UserRole';
 import { Alert as MUIAlert } from '@material-ui/lab';
+import useAlertState from '../Hooks/useAlertState';
 
 interface SimpleProblemPageProps {
 }
@@ -44,13 +45,26 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [modalLoading, setModalLoading] = useState<boolean>(false);
     const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    // const [error, setError] = useState('');
+    const [alert, setAlert] = useAlertState();
     const [confirmationParameters, setConfirmationParameters] = useState<ConfirmationModalProps>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
     const {course, users} = useCourseContext();
 
+    const resetAlert = (): void => {
+        setAlert({
+            variant: 'info',
+            message: ''
+        });
+    };
+
+    useEffect(() => {
+        resetAlert();
+    }, [selectedProblemId]);
+
     useEffect(() => {
         setLoading(true);
+        resetAlert();
         (async () => {
             try {
                 if (_.isNil(params.topicId)) {
@@ -61,7 +75,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 }
                 setLoading(false);
             } catch (e) {
-                setError(e.message);
+                setAlert({
+                    variant: 'error',
+                    message: e.message
+                });
+                // setError(e.message);
                 setLoading(false);
             }
         })();
@@ -128,13 +146,17 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         if (attemptsRemaining !== 0) setAttemptsRemaining(0); // avoid render loop when exam ends without having used all available attempts
                         if (currentTopic.topicAssessmentInfo.hideProblemsAfterFinish) {
                             if (currentVersionsRemaining > 0) {
-                                setConfirmationParameters({
-                                    show: true,
-                                    onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
-                                    onConfirm: () => confirmStartNewVersion(currentTopic, currentVersionsRemaining),
-                                    headerContent: 'This version has expired',
-                                    bodyContent: 'Would you like to start a new version of this assessment?'
-                                });
+                                // don't automatically offer a new version if we're currently looking at
+                                // our scores from the last version...
+                                if (confirmationParameters.bodyContent !== '') {
+                                    setConfirmationParameters({
+                                        show: true,
+                                        onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
+                                        onConfirm: () => confirmStartNewVersion(currentTopic, currentVersionsRemaining),
+                                        headerContent: 'This version has expired',
+                                        bodyContent: 'Would you like to start a new version of this assessment?'
+                                    });
+                                }
                             } else {
                                 setConfirmationParameters({
                                     show: true,
@@ -170,16 +192,25 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 confirmStartNewVersion(currentTopic, actualVersionsRemaining, res.data.message);
             } else {
                 // no problems were sent back, and user has used the maximum versions allowed
-                setError(`${res.data.message} You have used all available versions for this assessment.`);
+                setAlert({
+                    variant: 'warning',
+                    message: `${res.data.message} You have used all available versions for this assessment.`
+                });
+                // setError(`${res.data.message} You have used all available versions for this assessment.`);
             }
         } else {
             const message = res.data.message || 'This topic does not contain any problems. Please contact your professor.';
-            setError(message);
+            setAlert({
+                variant: 'error',
+                message
+            });
+            // setError(message);
         }
     };
 
     // This should always be used on the selectedProblem.
     const setProblemStudentGrade = (val: any) => {
+        resetAlert();
         if (_.isEmpty(problems) || problems === null || _.isNaN(selectedProblemId) || selectedProblemId === null) return;
         problems[selectedProblemId].grades = [val];
         setProblems({ ...problems });
@@ -271,7 +302,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             }
             setModalLoading(false);
         } catch (e) {
-            setError(e.message);
+            setAlert({
+                variant: 'error',
+                message: e.message
+            });
+            // setError(e.message);
             clearModal();
         }
     };
@@ -300,12 +335,24 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     const nextAvailableStartTime = data.nextAvailableStartTime;
                     if (_.isNil(nextAvailableStartTime)) {
                         logger.error('Could properly format version available string because response.data.nextAvailableStartTime was nil');
-                        setError(e.message);
+                        setAlert({
+                            variant: 'error',
+                            message: e.message
+                        });
+                        // setError(e.message);
                     } else {
-                        setError(`Another version of this assessment will be available after ${new Date(nextAvailableStartTime).toLocaleString()}.`);
+                        setAlert({
+                            variant: 'warning',
+                            message: `Another version of this assessment will be available after ${new Date(nextAvailableStartTime).toLocaleString()}.`
+                        });
+                        // setError(`Another version of this assessment will be available after ${new Date(nextAvailableStartTime).toLocaleString()}.`);
                     }
                 } else {
-                    setError(e.message);
+                    setAlert({
+                        variant: 'error',
+                        message: e.message
+                    });
+                    // setError(e.message);
                 }
                 clearModal();
             }
@@ -325,7 +372,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     setAttemptsRemaining(0);
                     fetchProblems(topic.id); // reload the problems in case they are supposed to be hidden after close
                 } catch (e) {
-                    setError(e.message);
+                    setAlert({
+                        variant: 'error',
+                        message: e.message
+                    });
+                    // setError(e.message);
                     logger.error('End version failed', e);
                     clearModal();
                 }
@@ -417,7 +468,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         const grade = res.data.data;
         if (_.isNil(grade)) {
             logger.info('Failed to find another version of this problem.');
-            setError(`${res.data.message}`);
+            setAlert({
+                variant: 'warning',
+                message: res.data.message
+            });
+            // setError(`${res.data.message}`);
         } else {
             setProblemStudentGrade(grade);
         }
@@ -427,9 +482,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         return <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>;
     }
 
-    if (error) {
-        return <div>{error}</div>;
-    }
+    // if (error) {
+    //     return <div>{error}</div>;
+    // }
 
     // there's a serious problem if we get a topic, but no problems, and the topicType isn't an assessment
     if (_.isEmpty(problems) &&
@@ -438,6 +493,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     if (problems === null || selectedProblemId === null) return (
         <>
+            <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message}</Alert>
             { (topic?.topicTypeId === 2 && versionsRemaining > 0 && topic.endDate.toMoment().isAfter(moment())) &&
                 <Button variant='success'
                     tabIndex={0}
@@ -467,6 +523,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     return (
         <>
+            <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message}</Alert>
             <Container fluid>
                 <Row>
                     <Col md={3}>
