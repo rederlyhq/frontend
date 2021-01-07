@@ -568,32 +568,27 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                             {unit.name}
                                                                         </h4>
                                                                     </Col>
-                                                                    <Col xs={2} md={2} className='d-flex' style={{alignSelf: 'center', justifyContent: 'flex-end'}}>
-                                                                        {
-                                                                            inEditMode &&
-                                                                            <>
-                                                                                <Tooltip title='Delete Unit'>
-                                                                                    <IconButton 
-                                                                                        aria-label='Delete Unit'
-                                                                                        tabIndex={0}
-                                                                                        onClick={_.partial(removeUnitClick, _, unit.id)}
-                                                                                        onKeyPress={_.partial(removeUnitClick, _, unit.id)}
-                                                                                    >
-                                                                                        <Delete color='error' />
-                                                                                    </IconButton>
-                                                                                </Tooltip>    
-                                                                                <Tooltip title='New Topic'>
-                                                                                    <IconButton
-                                                                                        aria-label='New Topic'
-                                                                                        tabIndex={0}
-                                                                                        onClick={_.partial(addTopicClick, _, unit.id)}
-                                                                                        onKeyPress={_.partial(addTopicClick, _, unit.id)}
-                                                                                    >
-                                                                                        <AddCircle htmlColor='#28a745' />
-                                                                                    </IconButton>
-                                                                                </Tooltip>
-                                                                            </>
-                                                                        }
+                                                                    <Col xs={2} md={2} hidden={!inEditMode} className='d-flex' style={{alignSelf: 'center', justifyContent: 'flex-end'}}>
+                                                                        <Tooltip title='Delete Unit'>
+                                                                            <IconButton 
+                                                                                aria-label='Delete Unit'
+                                                                                tabIndex={0}
+                                                                                onClick={_.partial(removeUnitClick, _, unit.id)}
+                                                                                onKeyPress={_.partial(removeUnitClick, _, unit.id)}
+                                                                            >
+                                                                                <Delete color='error' />
+                                                                            </IconButton>
+                                                                        </Tooltip>    
+                                                                        <Tooltip title='New Topic'>
+                                                                            <IconButton
+                                                                                aria-label='New Topic'
+                                                                                tabIndex={0}
+                                                                                onClick={_.partial(addTopicClick, _, unit.id)}
+                                                                                onKeyPress={_.partial(addTopicClick, _, unit.id)}
+                                                                            >
+                                                                                <AddCircle htmlColor='#28a745' />
+                                                                            </IconButton>
+                                                                        </Tooltip>
                                                                     </Col>
                                                                 </Row>
                                                             </Accordion.Toggle>
