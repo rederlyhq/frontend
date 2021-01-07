@@ -10,7 +10,7 @@ import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { UserRole, getUserRole, getUserId } from '../Enums/UserRole';
 import moment from 'moment';
-
+import { Button as MUIButton } from '@material-ui/core';
 import './TopicList.css';
 import logger from '../Utilities/Logger';
 
@@ -71,13 +71,24 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
                         <Col xs={4} md={4}>
                             <Row style={{justifyContent: 'flex-end'}}>
                                 <Link to={loc =>({pathname: `${loc.pathname}/topic/${topic.id}/settings`})}>
-                                    <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}}>
-                                        <BsPencilSquare/> Edit
-                                    </Button>
+                                    <MUIButton 
+                                        style={{alignSelf: 'flex-end', margin: '0em 1em'}}
+                                        startIcon={<BsPencilSquare/>}
+                                        color='primary'
+                                        variant='outlined'
+                                    >
+                                        Edit
+                                    </MUIButton>
                                 </Link>
-                                <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}} variant='danger' onClick={(e: any) => removeTopic(e, topic.id)}>
-                                    <BsTrash /> Delete
-                                </Button>
+                                <MUIButton
+                                    style={{alignSelf: 'flex-end', margin: '0em 1em'}}
+                                    onClick={(e: any) => removeTopic(e, topic.id)}
+                                    startIcon={<BsTrash />}
+                                    color='secondary'
+                                    variant='outlined'
+                                >
+                                    Delete
+                                </MUIButton>
                             </Row>
                         </Col>
                     </>
