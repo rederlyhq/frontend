@@ -49,7 +49,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
                 {/* If we're in edit mode, show the edit topic buttons. */}
                 {(removeTopic) ? (
                     <>
-                        <Col md={8}>
+                        <Col xs={8} md={8}>
                             <Row>
                                 <Link to={loc => ({pathname: `${loc.pathname}/topic/${topic.id}/settings`})}>
                                     <Col>
@@ -68,7 +68,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
                                 </Link>  }                      
                             </Row>
                         </Col>
-                        <Col>
+                        <Col xs={4} md={4}>
                             <Row style={{justifyContent: 'flex-end'}}>
                                 <Link to={loc =>({pathname: `${loc.pathname}/topic/${topic.id}/settings`})}>
                                     <Button style={{alignSelf: 'flex-end', margin: '0em 1em'}}>
