@@ -83,6 +83,9 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                             _.chain(topic.questions)
                                                 .sortBy(['problemNumber'])
                                                 .map((prob, index) => {
+                                                    const errors = _.assign({}, prob.errors, prob.courseQuestionAssessmentInfo?.errors);
+                                                    const hasErrors = !_.isEmpty(errors);
+                                                    console.log(errors, prob.errors, prob.courseQuestionAssessmentInfo?.errors);
                                                     return (
                                                         <Draggable draggableId={`problemRow${prob.id}`} index={index} key={`problem-row-${prob.id}`}>
                                                             {(dragProvided: DraggableProvided) => (
@@ -90,7 +93,7 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                                     ref={dragProvided.innerRef} 
                                                                     {...dragProvided.draggableProps} 
                                                                     {...dragProvided.dragHandleProps}
-                                                                    style={prob.errors ? {backgroundColor: 'rgba(255, 0, 0, 0.2)'} : undefined}
+                                                                    style={hasErrors ? {backgroundColor: 'rgba(255, 0, 0, 0.2)'} : undefined}
                                                                 >
                                                                     <NavLink
                                                                         eventKey={prob.id}
@@ -107,10 +110,10 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                                     >
                                                                         <span 
                                                                             className='icon-container' 
-                                                                            style={{cursor: 'pointer', color: prob.errors ? 'red' : 'inherit'}}
+                                                                            style={{cursor: 'pointer', color: hasErrors ? 'red' : 'inherit'}}
                                                                         >
                                                                             <GrDrag className='grDragHandle' style={{cursor: 'grab', marginRight: '0.7em'}} />
-                                                                            { prob.errors && <MdWarning />}
+                                                                            { hasErrors && <MdWarning />}
                                                                             {`Problem ${prob.problemNumber} (${prob.weight} Point${prob.weight === 1 ? '' : 's'})`}
                                                                         </span>
                                                                         <Chip style={{float: 'right', cursor: 'pointer'}} size='small' label={prob.id} />

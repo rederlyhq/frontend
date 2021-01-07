@@ -327,6 +327,7 @@ export class ProblemObject implements IProblemObject {
     courseQuestionAssessmentInfo?: {
         additionalProblemPaths?: Array<string>;
         randomSeedSet?: number[];
+        errors?: CourseTopicQuestionErrors | null;
     }
     rendererData?: any;
     errors: CourseTopicQuestionErrors | null = null;
