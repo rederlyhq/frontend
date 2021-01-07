@@ -205,12 +205,15 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                         </Grid>)}<Grid item md={12}>
                             Enter the number of points available for this problem. If the problem is marked as <b>optional</b>, these points will be treated as extra credit.<br/>
                             <ProblemWeight />
-                        </Grid><Grid item md={12}>
+                        </Grid>
+                        {topic.topicTypeId === TopicTypeId.PROBLEM_SET &&
+                        <Grid item md={12}>
                             This problem is {optional ? 'optional' : 'required'}.<br/>
                             <ToggleField name={'optional'} label={'Optional'} /><br />
                             Show Me Another <br />
                             <ToggleField name={'smaEnabled'} label={(smaEnabled) ? 'Enabled' : 'Disabled'} /><br />
                         </Grid>
+                        }
                         {topic.topicTypeId === TopicTypeId.EXAM && (
                             <Grid item md={12}>
                                 <Grid item md={10}>
