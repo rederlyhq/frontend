@@ -18,7 +18,7 @@ type ResetExpectedDispatch = {type: PrintLoadingActions.RESET_EXPECTED_COUNT}
 type PrintDispatch = {type: PrintLoadingActions.PRINT, expected: number}
 type PrintLoadingDispatch = AddExpectedDispatch | AddPromiseDispatch | ResetExpectedDispatch | PrintDispatch;
 
-const print = _.debounce(window.print, 3000, {leading: false, trailing: true});
+const print = _.debounce(() => window.print(), 3000, {leading: false, trailing: true});
 
 interface PrintLoadingState {
     expected: number;
