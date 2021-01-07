@@ -58,10 +58,12 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     useEffect(() => {
+        logger.info('SimpleProblemPage: selected problem has changed');
         resetAlert();
     }, [selectedProblemId]);
 
     useEffect(() => {
+        logger.info('SimpleProblemPage: topic or version or attempts remaining has changed');
         setLoading(true);
         resetAlert();
         (async () => {
@@ -84,6 +86,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     }, [params.topicId, versionId, attemptsRemaining]);
 
     const fetchProblems = async (topicId: number) => {
+        logger.info('SimpleProblemPage: fetching problems');
         const res = await getQuestions({
             userId: 'me',
             courseTopicContentId: topicId
@@ -146,7 +149,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                             if (currentVersionsRemaining > 0) {
                                 // don't automatically offer a new version if we're currently looking at
                                 // our scores from the last version...
-                                if (confirmationParameters.bodyContent !== '') {
+                                if (confirmationParameters.show === false) {
                                     setConfirmationParameters({
                                         show: true,
                                         onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
@@ -185,9 +188,12 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             }
 
             if (actualVersionsRemaining > 0 &&
-                moment().isBetween(currentTopic.startDate.toMoment(), currentTopic.endDate.toMoment())
+                moment().isBetween(currentTopic.startDate.toMoment(), currentTopic.endDate.toMoment())  
             ) {
-                confirmStartNewVersion(currentTopic, actualVersionsRemaining, res.data.message);
+                // don't overwrite score modal on final graded submission
+                if (confirmationParameters.show === false) {
+                    confirmStartNewVersion(currentTopic, actualVersionsRemaining, res.data.message);
+                }
             } else {
                 // no problems were sent back, and user has used the maximum versions allowed
                 setAlert({
@@ -206,6 +212,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     // This should always be used on the selectedProblem.
     const setProblemStudentGrade = (val: any) => {
+        logger.info('SimpleProblemPage: setting student grade on current problem');
         resetAlert();
         if (_.isEmpty(problems) || problems === null || _.isNaN(selectedProblemId) || selectedProblemId === null) return;
         problems[selectedProblemId].grades = [val];
@@ -213,11 +220,14 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const clearModal = () => {
+        logger.info('SimpleProblemPage: clearing modal');
+        if (modalLoading === true) return;
         setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS);
         setModalLoading(false);
     };
 
     const confirmSubmitVersion = (topicId: number, versionId: number) => {
+        logger.info('SimpleProblemPage: confirming submit version');
         setConfirmationParameters({
             show: true,
             headerContent: <h5>Submit my exam</h5>,
@@ -228,6 +238,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const confirmStartNewVersion = (topic: TopicObject, actualVersionsRemaining?: number, message?: string) => {
+        logger.info('SimpleProblemPage: confirming new version start');
         actualVersionsRemaining = actualVersionsRemaining ?? versionsRemaining; // retrieve from state if not supplied
         setConfirmationParameters({
             show: true,
@@ -245,6 +256,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const confirmEndVersion = (actualAttemptsRemaining?: number) => {
+        logger.info('SimpleProblemPage: confirming current version end');
         actualAttemptsRemaining = actualAttemptsRemaining ?? attemptsRemaining;
         let message = 'You have successfully completed this exam.';
         if (actualAttemptsRemaining > 0) {
@@ -265,6 +277,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const getResultsOfSubmission = async (topicId: number, versionId: number) => {
+        logger.info('SimpleProblemPage: getting the results of submission');
         setModalLoading(true);
         try {
             const result = await submitVersion({ topicId, versionId });
@@ -307,6 +320,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const loadNewVersion = async (topic: TopicObject) => {
+        logger.info('SimpleProblemPage: loading new version');
         setModalLoading(true);
         if (_.isNil(topic)) {
             logger.error('This should not happen - no topic loaded');
@@ -352,6 +366,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const endCurrentVersion = async (versionId: number) => {
+        logger.info('SimpleProblemPage: ending the current version');
         // const result = await endVersion({topicId, versionId});
         // if zero attemptsRemaining, we don't need to tell the backend to close
         if (!_.isNil(attemptsRemaining) && attemptsRemaining > 0) {
@@ -381,6 +396,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const generateScoreTable = (data: any) => {
+        logger.info('SimpleProblemPage: generating a table of scores');
         const { problemScores, bestVersionScore, bestOverallVersion } = data;
         return (
             <div className="d-flex flex-column">
@@ -449,12 +465,14 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const clickedAskForHelp = async (questionId: number) => {
+        logger.info('SimpleProblemPage: user clicked "Ask for Help"');
         const res = await askForHelp({questionId});
         const newTab = window.open(undefined, 'openlab');
         newTab?.document.write(res.data.data);
     };
 
     const requestShowMeAnother = async (questionId: number) => {
+        logger.info('SimpleProblemPage: user requested "Show Me Another"');
         const res = await requestNewProblemVersion({ questionId });
         const grade = res.data.data;
         if (_.isNil(grade)) {
