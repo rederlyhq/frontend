@@ -49,7 +49,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
     const topicForm = useForm<ProblemSettingsInputs>(formSettings);
 
-    const { handleSubmit, control, watch, reset } = topicForm;
+    const { handleSubmit, control, watch, reset, setError } = topicForm;
     const { optional, webworkQuestionPath } = watch();
     const additionalProblemPaths = watch('courseQuestionAssessmentInfo.additionalProblemPaths', [{path: ''}]);
     const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
@@ -77,10 +77,45 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             )
         });
 
-        const errors = _.assign({}, selected.errors, selected.courseQuestionAssessmentInfo?.errors);
-        setPGErrorsAlert(_(errors).values().flatten().value());
         setUpdateAlert({message: '', severity: 'warning'});
     }, [selected, additionalProblemPathsArray, additionalProblemPathsArrayIsEmpty, reset, setUpdateAlert, topic.topicTypeId]);
+
+
+    useEffect(()=>{
+        (topic.topicTypeId === TopicTypeId.PROBLEM_SET) ?
+            setErrorsForProblemSets() :
+            setErrorsForAssessments();
+
+    }, [selected, additionalProblemPathsArray, topic.topicTypeId]);
+
+    const setErrorsForProblemSets = () => {
+        if (_.isNil(selected.errors)) return;
+
+        setError('webworkQuestionPath', {
+            type: 'manual',
+            message: 'There was an error with this path.'
+        });
+
+        setPGErrorsAlert(_(selected.errors).values().flatten().value());
+    };
+
+    const setErrorsForAssessments = () => {
+        const paths = (additionalProblemPathsArray === undefined) ? [selected.webworkQuestionPath] : [selected.webworkQuestionPath, ...additionalProblemPathsArray];
+
+        const errors = _.assign({}, selected.errors, selected.courseQuestionAssessmentInfo?.errors);
+
+        _.forEach(paths, (path, index) => {
+            const error = errors[path];
+            if (_.isNil(error)) return;
+
+            setError(`courseQuestionAssessmentInfo.additionalProblemPaths[${index}].path`, {
+                type: 'manual',
+                message: 'There was an error with this path.',
+            });
+        });
+
+        setPGErrorsAlert(_(errors).values().flatten().value());
+    };
 
     const onSubmit = async (data: ProblemSettingsInputs) => {
         if (_.isNil(selected)) {
