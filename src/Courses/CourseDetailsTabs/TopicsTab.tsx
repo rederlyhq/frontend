@@ -568,7 +568,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                             {unit.name}
                                                                         </h4>
                                                                     </Col>
-                                                                    <Col xs={2} md={2} hidden={!inEditMode} className='d-flex' style={{alignSelf: 'center', justifyContent: 'flex-end'}}>
+                                                                    <Col xs={2} md={2} className='d-flex' style={{alignSelf: 'center', justifyContent: 'flex-end', visibility: !inEditMode ? 'hidden' : 'inherit'}}>
                                                                         <Tooltip title='Delete Unit'>
                                                                             <IconButton 
                                                                                 aria-label='Delete Unit'
