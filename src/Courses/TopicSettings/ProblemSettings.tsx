@@ -53,6 +53,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const { optional, webworkQuestionPath } = watch();
     const additionalProblemPaths = watch('courseQuestionAssessmentInfo.additionalProblemPaths', [{path: ''}]);
     const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
+    const [{ message: PGErrorsMsg }, setPGErrorsAlert] = useMUIAlertState();
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
     useEffect(()=>{
@@ -76,6 +77,8 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             )
         });
 
+        const errors = _.assign({}, selected.errors, selected.courseQuestionAssessmentInfo?.errors);
+        setPGErrorsAlert({message: _.values(errors).join('\n'), severity: 'error'});
         setUpdateAlert({message: '', severity: 'warning'});
     }, [selected, additionalProblemPathsArray, additionalProblemPathsArrayIsEmpty, reset, setUpdateAlert, topic.topicTypeId]);
 
@@ -113,16 +116,24 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             });
 
             const dataFromBackend = res.data.data.updatesResult?.[0];
-            setUpdateAlert({message: 'Successfully updated', severity: 'success'});
 
             // Overwrite fields from the original object. This resets the state object when clicking between options.
             const newTopic = new TopicObject(topic);
             const newQuestion = _.find(newTopic.questions, ['id', selected.id]);
 
+            if (_.isNil(newQuestion)) {
+                logger.error(`Problem ${selected.id} was updated, but the API response did not include it in Topic ${topic.id}.`);
+                setUpdateAlert({message: 'We were unable to update this question as part of this topic.', severity: 'error'});
+                return;
+            }
+            setUpdateAlert({message: 'Successfully updated', severity: 'success'});
+
             // TODO: Right now, the backend does not return the courseQuestionAssessmentInfo, so we should use the local data
             // if the attempt was a success.
             _.assign(newQuestion, dataFromBackend, updateAssessmentInfo);
             setTopic(newTopic);
+            // This is a hack to avoid having to implement a state management solution right now.
+            setSelected(newQuestion);
         } catch (e) {
             logger.error('Error updating question.', e);
             setUpdateAlert({message: e.message, severity: 'error'});
@@ -182,7 +193,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                         <MUIAlert
                             onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
                             severity={updateAlertType}
-                            variant='filled'
+                            variant='standard'
                             style={{fontSize: '1.1em'}}
                         >
                             {updateAlertMsg}
@@ -190,6 +201,13 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                     </Snackbar>
                     <Grid container item md={12} spacing={3}>
                         <Grid item container md={12}><h1>Problem Settings</h1></Grid>
+                        {PGErrorsMsg !== '' && <MUIAlert 
+                            severity='error'
+                            variant='filled'
+                            style={{'whiteSpace': 'pre-line'}}
+                        >
+                            {PGErrorsMsg}
+                        </MUIAlert>}
                         <Grid item md={8}>
                             Enter the path to the problem on the Rederly server. This is prefaced either
                             with <code>Library/</code> or <code>Contrib/</code> if the desired problem is included
