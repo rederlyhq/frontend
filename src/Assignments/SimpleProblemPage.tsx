@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ProblemObject, TopicObject } from '../Courses/CourseInterfaces';
-import { Row, Col, Container, Nav, NavLink, Button, Spinner, Alert } from 'react-bootstrap';
+import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
 import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
@@ -15,8 +15,8 @@ import moment from 'moment';
 import logger from '../Utilities/Logger';
 import AttachmentsSidebar from './AttachmentsSidebar';
 import { getUserId } from '../Enums/UserRole';
-import { Alert as MUIAlert } from '@material-ui/lab';
-import useAlertState from '../Hooks/useAlertState';
+import { Alert } from '@material-ui/lab';
+import { IMUIAlertModalState, useMUIAlertState } from '../Hooks/useAlertState';
 
 interface SimpleProblemPageProps {
 }
@@ -45,16 +45,14 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [modalLoading, setModalLoading] = useState<boolean>(false);
     const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
-    const [alert, setAlert] = useAlertState();
+    const [alert, setAlert] = useMUIAlertState();
     const [confirmationParameters, setConfirmationParameters] = useState<ConfirmationModalProps>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
     const {course, users} = useCourseContext();
+    const noAlert = useRef<IMUIAlertModalState>({severity: 'info', message: ''});
 
     const resetAlert = (): void => {
-        setAlert({
-            variant: 'info',
-            message: ''
-        });
+        setAlert(noAlert.current);
     };
 
     useEffect(() => {
@@ -77,7 +75,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 setLoading(false);
             } catch (e) {
                 setAlert({
-                    variant: 'error',
+                    severity: 'error',
                     message: e.message
                 });
                 setLoading(false);
@@ -197,14 +195,14 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             } else {
                 // no problems were sent back, and user has used the maximum versions allowed
                 setAlert({
-                    variant: 'warning',
+                    severity: 'warning',
                     message: `${res.data.message} You have used all available versions for this assessment.`
                 });
             }
         } else {
             const message = res.data.message || 'This topic does not contain any problems. Please contact your professor.';
             setAlert({
-                variant: 'error',
+                severity: 'error',
                 message
             });
         }
@@ -245,7 +243,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             headerContent: <h5>Begin a new version</h5>,
             bodyContent: <div>
                 {message} {message && <br />}
-                <MUIAlert severity='warning'>You will <u><b>not</b></u> be able to upload attachments for this version of the exam once you have started a new version.</MUIAlert>
+                <Alert severity='warning'>You will <u><b>not</b></u> be able to upload attachments for this version of the exam once you have started a new version.</Alert>
                 {/* Should we use the term "version attempt"? */}
                 You have <b>{actualVersionsRemaining}</b> {(actualVersionsRemaining === 1) ? ' version ' : ' versions '} remaining.<br />
                 Are you ready to begin a new version of this assessment?
@@ -312,7 +310,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             setModalLoading(false);
         } catch (e) {
             setAlert({
-                variant: 'error',
+                severity: 'error',
                 message: e.message
             });
             clearModal();
@@ -345,18 +343,18 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     if (_.isNil(nextAvailableStartTime)) {
                         logger.error('Could properly format version available string because response.data.nextAvailableStartTime was nil');
                         setAlert({
-                            variant: 'error',
+                            severity: 'error',
                             message: e.message
                         });
                     } else {
                         setAlert({
-                            variant: 'warning',
+                            severity: 'warning',
                             message: `Another version of this assessment will be available after ${new Date(nextAvailableStartTime).toLocaleString()}.`
                         });
                     }
                 } else {
                     setAlert({
-                        variant: 'error',
+                        severity: 'error',
                         message: e.message
                     });
                 }
@@ -380,7 +378,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     fetchProblems(topic.id); // reload the problems in case they are supposed to be hidden after close
                 } catch (e) {
                     setAlert({
-                        variant: 'error',
+                        severity: 'error',
                         message: e.message
                     });
                     logger.error('End version failed', e);
@@ -478,8 +476,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         if (_.isNil(grade)) {
             logger.info('Failed to find another version of this problem.');
             setAlert({
-                variant: 'warning',
-                message: res.data.message
+                severity: 'warning',
+                message: res.data.message ?? 'Failed to find another version of this problem.'
             });
         } else {
             setProblemStudentGrade(grade);
@@ -497,7 +495,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     if (problems === null || selectedProblemId === null) return (
         <>
-            <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message}</Alert>
+            {alert.message !== '' && <Alert severity={alert.severity}>{alert.message}</Alert>}
             { (topic?.topicTypeId === 2 && versionsRemaining > 0 && topic.endDate.toMoment().isAfter(moment())) &&
                 <Button variant='success'
                     tabIndex={0}
@@ -527,7 +525,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     return (
         <>
-            <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message}</Alert>
+            {alert.message !== '' && <Alert severity={alert.severity}>{alert.message}</Alert>}
             <Container fluid>
                 <Row>
                     <Col md={3}>
