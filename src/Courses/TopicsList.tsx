@@ -1,5 +1,5 @@
 import React from 'react';
-import { ListGroup, ListGroupItem, Row, Col, Button } from 'react-bootstrap';
+import { ListGroup, ListGroupItem, Row, Col } from 'react-bootstrap';
 import { TopicObject, TopicOverride } from './CourseInterfaces';
 import { BsPencilSquare, BsTrash } from 'react-icons/bs';
 import { MdWarning } from 'react-icons/md';
@@ -10,7 +10,7 @@ import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { UserRole, getUserRole, getUserId } from '../Enums/UserRole';
 import moment from 'moment';
-import { Button as MUIButton } from '@material-ui/core';
+import { Button } from '@material-ui/core';
 import './TopicList.css';
 import logger from '../Utilities/Logger';
 
@@ -45,19 +45,20 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
     const renderSingleTopic = (topic: TopicObject) => {
         const activeExtensions = getActiveExtensions(topic);
         return (
-            <div className='d-flex'>
+            // This is the minimum size of the datepicker, hardcoded to prevent flickering between modes.
+            <div className='d-flex' style={{minHeight: '56px'}}>
                 {/* If we're in edit mode, show the edit topic buttons. */}
                 {(removeTopic) ? (
                     <>
                         <Col xs={8} md={8}>
                             <Row>
-                                <Link to={loc => ({pathname: `${loc.pathname}/topic/${topic.id}/settings`})}>
-                                    <Col>
+                                <Col>
+                                    <Link to={loc => ({pathname: `${loc.pathname}/topic/${topic.id}/settings`})}>
                                         <h5>
                                             {topic.name}
                                         </h5>
-                                    </Col>
-                                </Link>
+                                    </Link>
+                                </Col>
                             </Row>
                             <Row>
                                 {topic.errors > 0 && <Link to={loc => ({pathname: `${loc.pathname}/topic/${topic.id}/settings`})} style={{color: 'red'}}>
@@ -71,24 +72,24 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
                         <Col xs={4} md={4}>
                             <Row style={{justifyContent: 'flex-end'}}>
                                 <Link to={loc =>({pathname: `${loc.pathname}/topic/${topic.id}/settings`})}>
-                                    <MUIButton 
-                                        style={{alignSelf: 'flex-end', margin: '0em 1em'}}
+                                    <Button 
+                                        style={{ margin: '0em 1em' }}
                                         startIcon={<BsPencilSquare/>}
                                         color='primary'
                                         variant='outlined'
                                     >
                                         Edit
-                                    </MUIButton>
+                                    </Button>
                                 </Link>
-                                <MUIButton
-                                    style={{alignSelf: 'flex-end', margin: '0em 1em'}}
+                                <Button
+                                    style={{ margin: '0em 1em' }}
                                     onClick={(e: any) => removeTopic(e, topic.id)}
                                     startIcon={<BsTrash />}
                                     color='secondary'
                                     variant='outlined'
                                 >
                                     Delete
-                                </MUIButton>
+                                </Button>
                             </Row>
                         </Col>
                     </>
