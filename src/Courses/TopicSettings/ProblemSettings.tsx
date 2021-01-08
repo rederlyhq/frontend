@@ -236,14 +236,16 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                     </Snackbar>
                     <Grid container item md={12} spacing={3}>
                         <Grid item container md={12}><h1>Problem Settings</h1></Grid>
-                        {PGErrorsMsg.length > 0 && <MUIAlert 
-                            severity='error'
-                            variant='standard'
-                        >
-                            {PGErrorsMsg.map((msg, i) => {
-                                return (i !== PGErrorsMsg.length - 1) ? <>{msg}<br/></> : msg;
-                            })}
-                        </MUIAlert>}
+                        <Grid item container md={12}>
+                            {PGErrorsMsg.length > 0 && <MUIAlert 
+                                severity='error'
+                                variant='standard'
+                            >
+                                {PGErrorsMsg.map((msg, i) => {
+                                    return (i !== PGErrorsMsg.length - 1 && i > 0) ? <>{msg}<br/></> : msg;
+                                })}
+                            </MUIAlert>}
+                        </Grid>
                         <Grid item md={8}>
                             Enter the path to the problem on the Rederly server. This is prefaced either
                             with <code>Library/</code> or <code>Contrib/</code> if the desired problem is included
