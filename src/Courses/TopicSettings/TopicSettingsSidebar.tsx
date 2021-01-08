@@ -85,7 +85,6 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                 .map((prob, index) => {
                                                     const errors = _.assign({}, prob.errors, prob.courseQuestionAssessmentInfo?.errors);
                                                     const hasErrors = !_.isEmpty(errors);
-                                                    console.log(errors, prob.errors, prob.courseQuestionAssessmentInfo?.errors);
                                                     return (
                                                         <Draggable draggableId={`problemRow${prob.id}`} index={index} key={`problem-row-${prob.id}`}>
                                                             {(dragProvided: DraggableProvided) => (
