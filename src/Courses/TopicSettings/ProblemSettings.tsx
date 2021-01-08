@@ -53,7 +53,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const { optional, webworkQuestionPath } = watch();
     const additionalProblemPaths = watch('courseQuestionAssessmentInfo.additionalProblemPaths', [{path: ''}]);
     const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
-    const [{ message: PGErrorsMsg }, setPGErrorsAlert] = useMUIAlertState();
+    const [PGErrorsMsg, setPGErrorsAlert] = useState<string[]>([]);
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
     useEffect(()=>{
@@ -78,7 +78,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
         });
 
         const errors = _.assign({}, selected.errors, selected.courseQuestionAssessmentInfo?.errors);
-        setPGErrorsAlert({message: _.values(errors).join('\n'), severity: 'error'});
+        setPGErrorsAlert(_(errors).values().flatten().value());
         setUpdateAlert({message: '', severity: 'warning'});
     }, [selected, additionalProblemPathsArray, additionalProblemPathsArrayIsEmpty, reset, setUpdateAlert, topic.topicTypeId]);
 
@@ -193,20 +193,21 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                         <MUIAlert
                             onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
                             severity={updateAlertType}
-                            variant='standard'
+                            variant='filled'
                             style={{fontSize: '1.1em'}}
                         >
-                            {updateAlertMsg}
+                            <div>{updateAlertMsg}</div>
                         </MUIAlert>
                     </Snackbar>
                     <Grid container item md={12} spacing={3}>
                         <Grid item container md={12}><h1>Problem Settings</h1></Grid>
-                        {PGErrorsMsg !== '' && <MUIAlert 
+                        {PGErrorsMsg.length > 0 && <MUIAlert 
                             severity='error'
-                            variant='filled'
-                            style={{'whiteSpace': 'pre-line'}}
+                            variant='standard'
                         >
-                            {PGErrorsMsg}
+                            {PGErrorsMsg.map((msg, i) => {
+                                return (i !== PGErrorsMsg.length - 1) ? <>{msg}<br/></> : msg;
+                            })}
                         </MUIAlert>}
                         <Grid item md={8}>
                             Enter the path to the problem on the Rederly server. This is prefaced either
