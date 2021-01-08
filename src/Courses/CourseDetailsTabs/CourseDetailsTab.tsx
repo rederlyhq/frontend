@@ -85,7 +85,7 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
         <>
             {userType !== UserRole.STUDENT && (
                 <Row style={{padding: '20px'}}>
-                    {hasErrors && 
+                    {hasErrors > 0 && 
                         <Col>
                             <Link to={`/common/courses/${course.id}?${qs.stringify({tab: 'Topics', unitId: unitsWithErrors})}`}>
                                 <MUIAlert severity='warning'>
