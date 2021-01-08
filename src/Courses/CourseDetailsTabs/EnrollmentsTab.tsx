@@ -4,12 +4,16 @@ import { Row, FormLabel, InputGroup, FormControl, Button, Col } from 'react-boot
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { useCourseContext } from '../CourseProvider';
 import logger from '../../Utilities/Logger';
+import { Snackbar } from '@material-ui/core';
+import { Alert as MUIAlert } from '@material-ui/lab';
+import { useMUIAlertState } from '../../Hooks/useAlertState';
 
 interface EnrollmentsTabProps {
 }
 
 export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = () => {
     const {course, users} = useCourseContext();
+    const [{ message, severity }, setUpdateAlert] = useMUIAlertState();
     const courseCode = course.code;
     // I don't understand why I need two encodeURIComponent here
     // I want one to be in the enroll user page (since the params decodes it anyway, but it needs to be encoded so it can be decoded by express)
@@ -30,7 +34,13 @@ export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = () => {
         try {
             const res = document.execCommand('copy');
             logger.info(`Copy operation ${res ? 'was successful' : 'failed'}`);
+            setUpdateAlert({message: 'Enrollment link copied to your clipboard!', severity: 'success'});
         } catch (err) {
+            setUpdateAlert({
+                message: 'Your browser does not support the copy button. Please highlight the enrollment link and press CTRL+C or CMD+C keys to copy the link.', 
+                severity: 'error'
+            });
+            // We should check the user agent to see what browser failed this.
             logger.error('Copy to clipboard failed', err);
         } finally {
             e.target.focus();
@@ -61,7 +71,17 @@ export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = () => {
                     </InputGroup>
                 </>
             )}
-
+            <Snackbar
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                open={message !== ''}
+                autoHideDuration={6000}
+                onClose={() => setUpdateAlert({message: '', severity: 'error'})}
+                style={{ maxWidth: '50vw' }}
+            >
+                <MUIAlert severity={severity}>
+                    {message}
+                </MUIAlert>
+            </Snackbar>
             <EmailComponentWrapper users={users} />
         </>
     );
