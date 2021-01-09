@@ -33,6 +33,7 @@ export interface ProblemSettingsInputs extends ExamProblemSettingsFields {
     maxAttempts?: number;
     weight?: number;
     optional?: boolean;
+    smaEnabled?: boolean;
     additionalProblemPaths?: Array<{path: string}>;
 }
 
@@ -151,9 +152,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             });
 
             setTopic(newTopic);
-            if (selected instanceof ProblemObject) {
-                setSelected(selected => new ProblemObject({...selected}));
-            }
+            setSelected(selected => selected instanceof ProblemObject ? new ProblemObject({...selected}) : selected);
         } catch (e) {
             logger.error('Drag/Drop error:', e);
         }

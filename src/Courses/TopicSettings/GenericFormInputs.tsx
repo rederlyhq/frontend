@@ -71,9 +71,8 @@ export const ProblemWeight: React.FC<{}> = () => {
     );
 };
 
-export const OptionalField: React.FC<{}> = () => {
+export const ToggleField: React.FC<{name: string, label: string}> = ({name, label}) => {
     const { control, errors } = useFormContext();
-    const name = 'optional';
 
     return (
         <>
@@ -83,8 +82,8 @@ export const OptionalField: React.FC<{}> = () => {
                 defaultValue={false}
                 render={({ onChange, onBlur, value, name }) => (
                     <FormControlLabel
-                        name='optional'
-                        label={'Optional'}
+                        name={name}
+                        label={label}
                         labelPlacement='end'
                         control={
                             <Switch

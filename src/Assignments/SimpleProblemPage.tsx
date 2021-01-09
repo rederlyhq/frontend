@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ProblemObject, TopicObject } from '../Courses/CourseInterfaces';
 import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
@@ -6,7 +6,7 @@ import ProblemIframe from './ProblemIframe';
 import { BsCheckCircle, BsXCircle, BsSlashCircle } from 'react-icons/bs';
 import { ProblemDoneState } from '../Enums/AssignmentEnums';
 import _ from 'lodash';
-import { askForHelp, endVersion, generateNewVersion, getQuestions, submitVersion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { askForHelp, endVersion, generateNewVersion, getQuestions, requestNewProblemVersion, submitVersion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { ProblemDetails } from './ProblemDetails';
 import { ProblemStateProvider } from '../Contexts/CurrentProblemState';
 import { useCourseContext } from '../Courses/CourseProvider';
@@ -15,7 +15,8 @@ import moment from 'moment';
 import logger from '../Utilities/Logger';
 import AttachmentsSidebar from './AttachmentsSidebar';
 import { getUserId } from '../Enums/UserRole';
-import { Alert as MUIAlert } from '@material-ui/lab';
+import { Alert } from '@material-ui/lab';
+import { IMUIAlertModalState, useMUIAlertState } from '../Hooks/useAlertState';
 
 interface SimpleProblemPageProps {
 }
@@ -44,13 +45,25 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [modalLoading, setModalLoading] = useState<boolean>(false);
     const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [alert, setAlert] = useMUIAlertState();
     const [confirmationParameters, setConfirmationParameters] = useState<ConfirmationModalProps>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
     const {course, users} = useCourseContext();
+    const noAlert = useRef<IMUIAlertModalState>({severity: 'info', message: ''});
+
+    const resetAlert = (): void => {
+        setAlert(noAlert.current);
+    };
 
     useEffect(() => {
+        logger.info('SimpleProblemPage: selected problem has changed');
+        resetAlert();
+    }, [selectedProblemId]);
+
+    useEffect(() => {
+        logger.info('SimpleProblemPage: topic or version or attempts remaining has changed');
         setLoading(true);
+        resetAlert();
         (async () => {
             try {
                 if (_.isNil(params.topicId)) {
@@ -61,13 +74,17 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 }
                 setLoading(false);
             } catch (e) {
-                setError(e.message);
+                setAlert({
+                    severity: 'error',
+                    message: e.message
+                });
                 setLoading(false);
             }
         })();
     }, [params.topicId, versionId, attemptsRemaining]);
 
     const fetchProblems = async (topicId: number) => {
+        logger.info('SimpleProblemPage: fetching problems');
         const res = await getQuestions({
             userId: 'me',
             courseTopicContentId: topicId
@@ -128,13 +145,17 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         if (attemptsRemaining !== 0) setAttemptsRemaining(0); // avoid render loop when exam ends without having used all available attempts
                         if (currentTopic.topicAssessmentInfo.hideProblemsAfterFinish) {
                             if (currentVersionsRemaining > 0) {
-                                setConfirmationParameters({
-                                    show: true,
-                                    onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
-                                    onConfirm: () => confirmStartNewVersion(currentTopic, currentVersionsRemaining),
-                                    headerContent: 'This version has expired',
-                                    bodyContent: 'Would you like to start a new version of this assessment?'
-                                });
+                                // don't automatically offer a new version if we're currently looking at
+                                // our scores from the last version...
+                                if (confirmationParameters.show === false) {
+                                    setConfirmationParameters({
+                                        show: true,
+                                        onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
+                                        onConfirm: () => confirmStartNewVersion(currentTopic, currentVersionsRemaining),
+                                        headerContent: 'This version has expired',
+                                        bodyContent: 'Would you like to start a new version of this assessment?'
+                                    });
+                                }
                             } else {
                                 setConfirmationParameters({
                                     show: true,
@@ -165,32 +186,46 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             }
 
             if (actualVersionsRemaining > 0 &&
-                moment().isBetween(currentTopic.startDate.toMoment(), currentTopic.endDate.toMoment())
+                moment().isBetween(currentTopic.startDate.toMoment(), currentTopic.endDate.toMoment())  
             ) {
-                confirmStartNewVersion(currentTopic, actualVersionsRemaining, res.data.message);
+                // don't overwrite score modal on final graded submission
+                if (confirmationParameters.show === false) {
+                    confirmStartNewVersion(currentTopic, actualVersionsRemaining, res.data.message);
+                }
             } else {
                 // no problems were sent back, and user has used the maximum versions allowed
-                setError(`${res.data.message} You have used all available versions for this assessment.`);
+                setAlert({
+                    severity: 'warning',
+                    message: `${res.data.message} You have used all available versions for this assessment.`
+                });
             }
         } else {
             const message = res.data.message || 'This topic does not contain any problems. Please contact your professor.';
-            setError(message);
+            setAlert({
+                severity: 'error',
+                message
+            });
         }
     };
 
     // This should always be used on the selectedProblem.
     const setProblemStudentGrade = (val: any) => {
+        logger.info('SimpleProblemPage: setting student grade on current problem');
+        resetAlert();
         if (_.isEmpty(problems) || problems === null || _.isNaN(selectedProblemId) || selectedProblemId === null) return;
         problems[selectedProblemId].grades = [val];
         setProblems({ ...problems });
     };
 
     const clearModal = () => {
+        logger.info('SimpleProblemPage: clearing modal');
+        if (modalLoading === true) return;
         setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS);
         setModalLoading(false);
     };
 
     const confirmSubmitVersion = (topicId: number, versionId: number) => {
+        logger.info('SimpleProblemPage: confirming submit version');
         setConfirmationParameters({
             show: true,
             headerContent: <h5>Submit my exam</h5>,
@@ -201,13 +236,14 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const confirmStartNewVersion = (topic: TopicObject, actualVersionsRemaining?: number, message?: string) => {
+        logger.info('SimpleProblemPage: confirming new version start');
         actualVersionsRemaining = actualVersionsRemaining ?? versionsRemaining; // retrieve from state if not supplied
         setConfirmationParameters({
             show: true,
             headerContent: <h5>Begin a new version</h5>,
             bodyContent: <div>
                 {message} {message && <br />}
-                <MUIAlert severity='warning'>You will <u><b>not</b></u> be able to upload attachments for this version of the exam once you have started a new version.</MUIAlert>
+                <Alert severity='warning'>You will <u><b>not</b></u> be able to upload attachments for this version of the exam once you have started a new version.</Alert>
                 {/* Should we use the term "version attempt"? */}
                 You have <b>{actualVersionsRemaining}</b> {(actualVersionsRemaining === 1) ? ' version ' : ' versions '} remaining.<br />
                 Are you ready to begin a new version of this assessment?
@@ -218,6 +254,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const confirmEndVersion = (actualAttemptsRemaining?: number) => {
+        logger.info('SimpleProblemPage: confirming current version end');
         actualAttemptsRemaining = actualAttemptsRemaining ?? attemptsRemaining;
         let message = 'You have successfully completed this exam.';
         if (actualAttemptsRemaining > 0) {
@@ -238,6 +275,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const getResultsOfSubmission = async (topicId: number, versionId: number) => {
+        logger.info('SimpleProblemPage: getting the results of submission');
         setModalLoading(true);
         try {
             const result = await submitVersion({ topicId, versionId });
@@ -271,12 +309,16 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             }
             setModalLoading(false);
         } catch (e) {
-            setError(e.message);
+            setAlert({
+                severity: 'error',
+                message: e.message
+            });
             clearModal();
         }
     };
 
     const loadNewVersion = async (topic: TopicObject) => {
+        logger.info('SimpleProblemPage: loading new version');
         setModalLoading(true);
         if (_.isNil(topic)) {
             logger.error('This should not happen - no topic loaded');
@@ -300,12 +342,21 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     const nextAvailableStartTime = data.nextAvailableStartTime;
                     if (_.isNil(nextAvailableStartTime)) {
                         logger.error('Could properly format version available string because response.data.nextAvailableStartTime was nil');
-                        setError(e.message);
+                        setAlert({
+                            severity: 'error',
+                            message: e.message
+                        });
                     } else {
-                        setError(`Another version of this assessment will be available after ${new Date(nextAvailableStartTime).toLocaleString()}.`);
+                        setAlert({
+                            severity: 'warning',
+                            message: `Another version of this assessment will be available after ${new Date(nextAvailableStartTime).toLocaleString()}.`
+                        });
                     }
                 } else {
-                    setError(e.message);
+                    setAlert({
+                        severity: 'error',
+                        message: e.message
+                    });
                 }
                 clearModal();
             }
@@ -313,6 +364,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const endCurrentVersion = async (versionId: number) => {
+        logger.info('SimpleProblemPage: ending the current version');
         // const result = await endVersion({topicId, versionId});
         // if zero attemptsRemaining, we don't need to tell the backend to close
         if (!_.isNil(attemptsRemaining) && attemptsRemaining > 0) {
@@ -325,7 +377,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     setAttemptsRemaining(0);
                     fetchProblems(topic.id); // reload the problems in case they are supposed to be hidden after close
                 } catch (e) {
-                    setError(e.message);
+                    setAlert({
+                        severity: 'error',
+                        message: e.message
+                    });
                     logger.error('End version failed', e);
                     clearModal();
                 }
@@ -339,6 +394,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const generateScoreTable = (data: any) => {
+        logger.info('SimpleProblemPage: generating a table of scores');
         const { problemScores, bestVersionScore, bestOverallVersion } = data;
         return (
             <div className="d-flex flex-column">
@@ -407,17 +463,29 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const clickedAskForHelp = async (questionId: number) => {
+        logger.info('SimpleProblemPage: user clicked "Ask for Help"');
         const res = await askForHelp({questionId});
         const newTab = window.open(undefined, 'openlab');
         newTab?.document.write(res.data.data);
     };
 
+    const requestShowMeAnother = async (questionId: number) => {
+        logger.info('SimpleProblemPage: user requested "Show Me Another"');
+        const res = await requestNewProblemVersion({ questionId });
+        const grade = res.data.data;
+        if (_.isNil(grade)) {
+            logger.info('Failed to find another version of this problem.');
+            setAlert({
+                severity: 'warning',
+                message: res.data.message ?? 'Failed to find another version of this problem.'
+            });
+        } else {
+            setProblemStudentGrade(grade);
+        }
+    };
+
     if (loading) {
         return <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>;
-    }
-
-    if (error) {
-        return <div>{error}</div>;
     }
 
     // there's a serious problem if we get a topic, but no problems, and the topicType isn't an assessment
@@ -427,6 +495,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     if (problems === null || selectedProblemId === null) return (
         <>
+            {alert.message !== '' && <Alert severity={alert.severity}>{alert.message}</Alert>}
             { (topic?.topicTypeId === 2 && versionsRemaining > 0 && topic.endDate.toMoment().isAfter(moment())) &&
                 <Button variant='success'
                     tabIndex={0}
@@ -456,6 +525,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     return (
         <>
+            {alert.message !== '' && <Alert severity={alert.severity}>{alert.message}</Alert>}
             <Container fluid>
                 <Row>
                     <Col md={3}>
@@ -535,7 +605,14 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 setAttemptsRemaining={setAttemptsRemaining}
                                 setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
                             />
-                            {/* Custom feature for CityTech (university #5). TODO: make this solution more robust */}
+                            {selectedProblemId && topic && topic.topicTypeId !== 2 && 
+                            (problems[selectedProblemId].smaEnabled && (problems[selectedProblemId].grades?.first?.overallBestScore === 1 || topic.deadDate.toMoment().isBefore(moment()))) &&
+                                <Button
+                                    className='float-right'
+                                    onClick={()=>requestShowMeAnother(selectedProblemId)}>
+                                    Show Me Another
+                                </Button>
+                            }
                             {selectedProblemId && course.canAskForHelp &&
                                 <Button 
                                     className='float-right'
@@ -543,10 +620,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                     Ask for help
                                 </Button>
                             }
-                            {<ProblemIframe
+                            <ProblemIframe
                                 problem={problems[selectedProblemId]}
                                 setProblemStudentGrade={setProblemStudentGrade}
-                            />}
+                            />
                         </ProblemStateProvider>
                     </Col>
                 </Row>

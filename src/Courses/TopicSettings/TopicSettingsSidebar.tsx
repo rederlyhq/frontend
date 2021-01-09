@@ -4,7 +4,7 @@ import React from 'react';
 import { Draggable, DragDropContext, Droppable, DraggableProvided } from 'react-beautiful-dnd';
 import { Nav, NavLink } from 'react-bootstrap';
 import { FaFileUpload } from 'react-icons/fa';
-import { MdAdd } from 'react-icons/md';
+import { MdAdd, MdWarning } from 'react-icons/md';
 import { GrDrag } from 'react-icons/gr';
 import { TopicObject, CourseTopicAssessmentInfo, ProblemObject } from '../CourseInterfaces';
 import { DropzoneInputProps } from 'react-dropzone';
@@ -83,10 +83,17 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                             _.chain(topic.questions)
                                                 .sortBy(['problemNumber'])
                                                 .map((prob, index) => {
+                                                    const errors = _.assign({}, prob.errors, prob.courseQuestionAssessmentInfo?.errors);
+                                                    const hasErrors = !_.isEmpty(errors);
                                                     return (
                                                         <Draggable draggableId={`problemRow${prob.id}`} index={index} key={`problem-row-${prob.id}`}>
                                                             {(dragProvided: DraggableProvided) => (
-                                                                <div ref={dragProvided.innerRef} {...dragProvided.draggableProps} {...dragProvided.dragHandleProps}>
+                                                                <div 
+                                                                    ref={dragProvided.innerRef} 
+                                                                    {...dragProvided.draggableProps} 
+                                                                    {...dragProvided.dragHandleProps}
+                                                                    style={hasErrors ? {backgroundColor: 'rgba(255, 0, 0, 0.2)'} : undefined}
+                                                                >
                                                                     <NavLink
                                                                         eventKey={prob.id}
                                                                         key={`problemNavLink${prob.id}`}
@@ -100,8 +107,12 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                                             cursor: 'grab',
                                                                         }}
                                                                     >
-                                                                        <span className='icon-container' style={{cursor: 'pointer'}}>
+                                                                        <span 
+                                                                            className='icon-container' 
+                                                                            style={{cursor: 'pointer', color: hasErrors ? 'red' : 'inherit'}}
+                                                                        >
                                                                             <GrDrag className='grDragHandle' style={{cursor: 'grab', marginRight: '0.7em'}} />
+                                                                            { hasErrors && <MdWarning />}
                                                                             {`Problem ${prob.problemNumber} (${prob.weight} Point${prob.weight === 1 ? '' : 's'})`}
                                                                         </span>
                                                                         <Chip style={{float: 'right', cursor: 'pointer'}} size='small' label={prob.id} />

@@ -12,9 +12,11 @@ import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from 
 import logger from '../../Utilities/Logger';
 import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystringHelper';
 import { CourseTarballImportButton } from '../CourseCreation/CourseTarballImportButton';
-import { Backdrop, CircularProgress } from '@material-ui/core';
+import { Backdrop, CircularProgress, Tooltip } from '@material-ui/core';
 import useAlertState from '../../Hooks/useAlertState';
 import BackendAPIError from '../../APIInterfaces/BackendAPI/BackendAPIError';
+import { IconButton } from '@material-ui/core';
+import { Delete, AddCircle } from '@material-ui/icons';
 
 interface CourseTarballImportWarningsProps {
     message: string;
@@ -520,103 +522,95 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 <Droppable droppableId='unitsList' type='UNIT'>
                     {
                         (provided: any) => (
-                            <>
-                                <div ref={provided.innerRef} style={{ backgroundColor: 'white' }} {...provided.droppableProps}>
-                                    {course?.units?.map((unit: any, index) => {
-                                        const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
-                                        const expandedUnits = getCurrentQueryStrings()['unitId'];
-                                        const unitId: string = unit.id.toString();
-                                        return (
-                                            <Draggable draggableId={`unitRow${unit.id}`} index={index} key={`problem-row-${unit.id}`} isDragDisabled={!inEditMode}>
-                                                {(provided) => (
-                                                    <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} key={unit.id}>
-                                                        {/* 0 is an actual reference, which opens this accordion. 1 or any other value keeps it closed. */}
-                                                        <Accordion 
-                                                            defaultActiveKey={_.includes(expandedUnits, unitId) ? '0' : ''} 
-                                                            onSelect={
-                                                                ()=>{
-                                                                    updateRoute({
-                                                                        unitId: {
-                                                                            val: unitId, 
-                                                                            mode: QueryStringMode.APPEND_OR_REMOVE,
-                                                                        },
-                                                                    }, true);
-                                                                }
+                            <div ref={provided.innerRef} style={{ backgroundColor: 'white' }} {...provided.droppableProps}>
+                                {course?.units?.map((unit: any, index) => {
+                                    const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
+                                    const expandedUnits = getCurrentQueryStrings()['unitId'];
+                                    const unitId: string = unit.id.toString();
+                                    return (
+                                        <Draggable draggableId={`unitRow${unit.id}`} index={index} key={`problem-row-${unit.id}`} isDragDisabled={!inEditMode}>
+                                            {(provided) => (
+                                                <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} key={unit.id}>
+                                                    {/* 0 is an actual reference, which opens this accordion. 1 or any other value keeps it closed. */}
+                                                    <Accordion 
+                                                        defaultActiveKey={_.includes(expandedUnits, unitId) ? '0' : ''} 
+                                                        onSelect={
+                                                            ()=>{
+                                                                updateRoute({
+                                                                    unitId: {
+                                                                        val: unitId, 
+                                                                        mode: QueryStringMode.APPEND_OR_REMOVE,
+                                                                    },
+                                                                }, true);
                                                             }
-                                                        >
-                                                            <Card>
-                                                                <Accordion.Toggle as={Card.Header} eventKey="0">
-                                                                    <Row>
-                                                                        <Col>
-                                                                            {
-                                                                                // This is complaining because of the click event, however it is not a true click event, it is just stopping the accordion
-                                                                                // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-                                                                            } <h4
-                                                                                contentEditable={inEditMode}
-                                                                                suppressContentEditableWarning={true}
-                                                                                className='active-editable'
-                                                                                onClick={inEditMode ? ((event: React.MouseEvent<HTMLHeadingElement, MouseEvent>) => { event.stopPropagation(); }) : undefined}
-                                                                                onKeyDown={(e: any) => {
-                                                                                    if (e.keyCode === 13) {
-                                                                                        e.preventDefault();
-                                                                                        e.target.blur();
-                                                                                    }
-                                                                                }}
-                                                                                onBlur={_.partial(onUnitBlur, _, unit.id)}
-                                                                            >
-                                                                                {unit.name}
-                                                                            </h4>
-                                                                        </Col>
-                                                                        <Col />
+                                                        }
+                                                    >
+                                                        <Card>
+                                                            <Accordion.Toggle as={Card.Header} eventKey="0">
+                                                                <Row>
+                                                                    <Col xs={10} md={10} style={{alignSelf: 'center'}}>
                                                                         {
-                                                                            inEditMode &&
-                                                                            <div style={{ marginLeft: 'auto' }}>
-                                                                                <span
-                                                                                    role="button"
-                                                                                    tabIndex={0}
-                                                                                    style={{
-                                                                                        padding: '6px'
-                                                                                    }}
-                                                                                    onClick={_.partial(removeUnitClick, _, unit.id)}
-                                                                                    onKeyPress={_.partial(removeUnitClick, _, unit.id)}
-                                                                                >
-                                                                                    <FaTrash color='#AA0000' />
-                                                                                </span>
-                                                                                <span
-                                                                                    role="button"
-                                                                                    tabIndex={0}
-                                                                                    style={{
-                                                                                        padding: '6px'
-                                                                                    }}
-                                                                                    onClick={_.partial(addTopicClick, _, unit.id)}
-                                                                                    onKeyPress={_.partial(addTopicClick, _, unit.id)}
-                                                                                >
-                                                                                    <FaPlusCircle color='#00AA00' />
-                                                                                </span>
-                                                                            </div>
-                                                                        }
-                                                                    </Row>
-                                                                </Accordion.Toggle>
-                                                                <Accordion.Collapse eventKey="0">
-                                                                    <Card.Body>
-                                                                        <TopicsList
-                                                                            flush
-                                                                            listOfTopics={unit.topics}
-                                                                            removeTopic={inEditMode ? onTopicDeleteClickedWithUnitId : undefined}
-                                                                            unitUnique={unit.id}
-                                                                        />
-                                                                    </Card.Body>
-                                                                </Accordion.Collapse>
-                                                            </Card>
-                                                        </Accordion>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        );
-                                    })
-                                    }
-                                </div>
-                            </>
+                                                                            // This is complaining because of the click event, however it is not a true click event, it is just stopping the accordion
+                                                                            // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                                                                        } <h4
+                                                                            contentEditable={inEditMode}
+                                                                            suppressContentEditableWarning={true}
+                                                                            className='active-editable'
+                                                                            onClick={inEditMode ? ((event: React.MouseEvent<HTMLHeadingElement, MouseEvent>) => { event.stopPropagation(); }) : undefined}
+                                                                            onKeyDown={(e: any) => {
+                                                                                if (e.keyCode === 13) {
+                                                                                    e.preventDefault();
+                                                                                    e.target.blur();
+                                                                                }
+                                                                            }}
+                                                                            onBlur={_.partial(onUnitBlur, _, unit.id)}
+                                                                        >
+                                                                            {unit.name}
+                                                                        </h4>
+                                                                    </Col>
+                                                                    <Col xs={2} md={2} className='d-flex' style={{alignSelf: 'center', justifyContent: 'flex-end', visibility: !inEditMode ? 'hidden' : 'inherit'}}>
+                                                                        <Tooltip title='Delete Unit'>
+                                                                            <IconButton 
+                                                                                aria-label='Delete Unit'
+                                                                                tabIndex={0}
+                                                                                onClick={_.partial(removeUnitClick, _, unit.id)}
+                                                                                onKeyPress={_.partial(removeUnitClick, _, unit.id)}
+                                                                            >
+                                                                                <Delete color='error' />
+                                                                            </IconButton>
+                                                                        </Tooltip>    
+                                                                        <Tooltip title='New Topic'>
+                                                                            <IconButton
+                                                                                aria-label='New Topic'
+                                                                                tabIndex={0}
+                                                                                onClick={_.partial(addTopicClick, _, unit.id)}
+                                                                                onKeyPress={_.partial(addTopicClick, _, unit.id)}
+                                                                            >
+                                                                                <AddCircle htmlColor='#28a745' />
+                                                                            </IconButton>
+                                                                        </Tooltip>
+                                                                    </Col>
+                                                                </Row>
+                                                            </Accordion.Toggle>
+                                                            <Accordion.Collapse eventKey="0">
+                                                                <Card.Body>
+                                                                    <TopicsList
+                                                                        flush
+                                                                        listOfTopics={unit.topics}
+                                                                        removeTopic={inEditMode ? onTopicDeleteClickedWithUnitId : undefined}
+                                                                        unitUnique={unit.id}
+                                                                    />
+                                                                </Card.Body>
+                                                            </Accordion.Collapse>
+                                                        </Card>
+                                                    </Accordion>
+                                                </div>
+                                            )}
+                                        </Draggable>
+                                    );
+                                })
+                                }
+                            </div>
                         )
                     }
                 </ Droppable>
