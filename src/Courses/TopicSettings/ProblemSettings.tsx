@@ -49,10 +49,11 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
     const topicForm = useForm<ProblemSettingsInputs>(formSettings);
 
-    const { handleSubmit, control, watch, reset } = topicForm;
+    const { handleSubmit, control, watch, reset, setError } = topicForm;
     const { optional, webworkQuestionPath } = watch();
     const additionalProblemPaths = watch('courseQuestionAssessmentInfo.additionalProblemPaths', [{path: ''}]);
     const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
+    const [PGErrorsMsg, setPGErrorsAlert] = useState<string[]>([]);
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
     useEffect(()=>{
@@ -78,6 +79,43 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
         setUpdateAlert({message: '', severity: 'warning'});
     }, [selected, additionalProblemPathsArray, additionalProblemPathsArrayIsEmpty, reset, setUpdateAlert, topic.topicTypeId]);
+
+
+    useEffect(()=>{
+        (topic.topicTypeId === TopicTypeId.PROBLEM_SET) ?
+            setErrorsForProblemSets() :
+            setErrorsForAssessments();
+
+    }, [selected, additionalProblemPathsArray, topic.topicTypeId]);
+
+    const setErrorsForProblemSets = () => {
+        if (_.isNil(selected.errors)) return;
+
+        setError('webworkQuestionPath', {
+            type: 'manual',
+            message: 'There was an error with this path.'
+        });
+
+        setPGErrorsAlert(_(selected.errors).values().flatten().value());
+    };
+
+    const setErrorsForAssessments = () => {
+        const paths = (additionalProblemPathsArray === undefined) ? [selected.webworkQuestionPath] : [selected.webworkQuestionPath, ...additionalProblemPathsArray];
+
+        const errors = _.assign({}, selected.errors, selected.courseQuestionAssessmentInfo?.errors);
+
+        _.forEach(paths, (path, index) => {
+            const error = errors[path];
+            if (_.isNil(error)) return;
+
+            setError(`courseQuestionAssessmentInfo.additionalProblemPaths[${index}].path`, {
+                type: 'manual',
+                message: 'There was an error with this path.',
+            });
+        });
+
+        setPGErrorsAlert(_(errors).values().flatten().value());
+    };
 
     const onSubmit = async (data: ProblemSettingsInputs) => {
         if (_.isNil(selected)) {
@@ -113,16 +151,24 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             });
 
             const dataFromBackend = res.data.data.updatesResult?.[0];
-            setUpdateAlert({message: 'Successfully updated', severity: 'success'});
 
             // Overwrite fields from the original object. This resets the state object when clicking between options.
             const newTopic = new TopicObject(topic);
             const newQuestion = _.find(newTopic.questions, ['id', selected.id]);
 
+            if (_.isNil(newQuestion)) {
+                logger.error(`Problem ${selected.id} was updated, but the API response did not include it in Topic ${topic.id}.`);
+                setUpdateAlert({message: 'We were unable to update this question as part of this topic.', severity: 'error'});
+                return;
+            }
+            setUpdateAlert({message: 'Successfully updated', severity: 'success'});
+
             // TODO: Right now, the backend does not return the courseQuestionAssessmentInfo, so we should use the local data
             // if the attempt was a success.
             _.assign(newQuestion, dataFromBackend, updateAssessmentInfo);
             setTopic(newTopic);
+            // This is a hack to avoid having to implement a state management solution right now.
+            setSelected(newQuestion);
         } catch (e) {
             logger.error('Error updating question.', e);
             setUpdateAlert({message: e.message, severity: 'error'});
@@ -185,11 +231,21 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                             variant='filled'
                             style={{fontSize: '1.1em'}}
                         >
-                            {updateAlertMsg}
+                            <div>{updateAlertMsg}</div>
                         </MUIAlert>
                     </Snackbar>
                     <Grid container item md={12} spacing={3}>
                         <Grid item container md={12}><h1>Problem Settings</h1></Grid>
+                        <Grid item container md={12}>
+                            {PGErrorsMsg.length > 0 && <MUIAlert 
+                                severity='error'
+                                variant='standard'
+                            >
+                                {PGErrorsMsg.map((msg, i) => {
+                                    return (i !== PGErrorsMsg.length - 1 && i > 0) ? <>{msg}<br/></> : msg;
+                                })}
+                            </MUIAlert>}
+                        </Grid>
                         <Grid item md={8}>
                             Enter the path to the problem on the Rederly server. This is prefaced either
                             with <code>Library/</code> or <code>Contrib/</code> if the desired problem is included
