@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Grid, Snackbar } from '@material-ui/core';
-import { MultipleProblemPaths, OptionalField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
+import { MultipleProblemPaths, ToggleField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import { Link } from 'react-router-dom';
 import { ProblemObject, TopicObject, TopicTypeId } from '../CourseInterfaces';
@@ -50,7 +50,8 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const topicForm = useForm<ProblemSettingsInputs>(formSettings);
 
     const { handleSubmit, control, watch, reset, setError } = topicForm;
-    const { optional, webworkQuestionPath } = watch();
+    const { optional, smaEnabled, webworkQuestionPath } = watch();
+
     const additionalProblemPaths = watch('courseQuestionAssessmentInfo.additionalProblemPaths', [{path: ''}]);
     const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
     const [PGErrorsMsg, setPGErrorsAlert] = useState<string[]>([]);
@@ -261,10 +262,15 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                         </Grid>)}<Grid item md={12}>
                             Enter the number of points available for this problem. If the problem is marked as <b>optional</b>, these points will be treated as extra credit.<br/>
                             <ProblemWeight />
-                        </Grid><Grid item md={12}>
-                            This problem is {optional ? 'optional' : 'required'}.<br/>
-                            <OptionalField />
                         </Grid>
+                        {topic.topicTypeId === TopicTypeId.PROBLEM_SET &&
+                        <Grid item md={12}>
+                            This problem is {optional ? 'optional' : 'required'}.<br/>
+                            <ToggleField name={'optional'} label={'Optional'} /><br />
+                            Show Me Another <br />
+                            <ToggleField name={'smaEnabled'} label={(smaEnabled) ? 'Enabled' : 'Disabled'} /><br />
+                        </Grid>
+                        }
                         {topic.topicTypeId === TopicTypeId.EXAM && (
                             <Grid item md={12}>
                                 <Grid item md={10}>

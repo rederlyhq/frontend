@@ -323,6 +323,8 @@ export class ProblemObject implements IProblemObject {
     optional: boolean = false;
     unique: number = newProblemUniqueGen.next().value || 0;
     grades?: StudentGrade[];
+    smaEnabled?: boolean;
+    
     studentTopicQuestionOverride: any[] = [];
     courseQuestionAssessmentInfo?: {
         additionalProblemPaths?: Array<string>;
