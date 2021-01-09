@@ -181,6 +181,7 @@ export class TopicObject {
     partialExtend: boolean = false;
     studentTopicOverride: TopicOverride[] = [];
     topicAssessmentInfo?: TopicAssessmentFields = new TopicAssessmentFields();
+    errors: number = 0;
 
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
@@ -305,6 +306,10 @@ export class StudentGrade {
     }
 }
 
+export interface CourseTopicQuestionErrors {
+    [path: string]: string[];
+}
+
 const newProblemUniqueGen = uniqueGen();
 export class ProblemObject implements IProblemObject {
     id: number = 0;
@@ -322,8 +327,10 @@ export class ProblemObject implements IProblemObject {
     courseQuestionAssessmentInfo?: {
         additionalProblemPaths?: Array<string>;
         randomSeedSet?: number[];
+        errors?: CourseTopicQuestionErrors | null;
     }
     rendererData?: any;
+    errors: CourseTopicQuestionErrors | null = null;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
@@ -344,7 +351,7 @@ export class CourseTopicAssessmentInfo extends TopicObject {
     hideProblemsAfterFinish?: boolean;
     randomizeOrder?: boolean;
 
-    public constructor(init?:Partial<ProblemObject>) {
+    public constructor(init?:Partial<CourseTopicAssessmentInfo>) {
         super(init);
         Object.assign(this, init);
     }
