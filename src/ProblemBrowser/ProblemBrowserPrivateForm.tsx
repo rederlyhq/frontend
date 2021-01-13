@@ -11,14 +11,17 @@ interface ProblemBrowserPrivateFormProps {
 export const ProblemBrowserPrivateForm: React.FC<ProblemBrowserPrivateFormProps> = () => {
     const history = useHistory();
     return (
-        <Button
-            color='primary'
-            variant='contained'
-            style={{margin:'1em'}}
-            onClick={() => history.push(`/common/problem-browser/search?${querystring.stringify(_.omitBy({
-                type: 'private',
-            }, _.isUndefined))}`)}>
-                Submit
-        </Button>
+        <>
+            <h5 style={{padding:'1em'}}>Click submit to go through the list of problems you have authored.</h5>
+            <Button
+                color='primary'
+                variant='contained'
+                style={{margin:'1em'}}
+                onClick={() => history.push(`/common/problem-browser/search?${querystring.stringify(_.omitBy({
+                    type: 'private',
+                }, _.isUndefined))}`)}>
+                    Submit
+            </Button>
+        </>
     );
 };
