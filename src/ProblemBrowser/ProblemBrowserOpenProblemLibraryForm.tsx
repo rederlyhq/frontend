@@ -23,6 +23,7 @@ interface ProblemBrowserOpenProblemLibraryDropDownOptions<T> {
     control: Control;
     label: string;
     name: string;
+    disabled?: boolean;
 }
 const ProblemBrowserOpenProblemLibraryDropDown = <T extends unknown>({
     options,
@@ -31,6 +32,7 @@ const ProblemBrowserOpenProblemLibraryDropDown = <T extends unknown>({
     control,
     label,
     name,
+    disabled,
 }: ProblemBrowserOpenProblemLibraryDropDownOptions<T>) => (
         <Controller
             name={name}
@@ -46,6 +48,7 @@ const ProblemBrowserOpenProblemLibraryDropDown = <T extends unknown>({
                     }}
                     renderInput={(params: unknown) => <TextField {...params} label={label} variant="outlined" />}
                     {...props}
+                    disabled={disabled}
                 />
             }
             onChange={([, data]: [unknown, unknown]) => data}
@@ -56,7 +59,7 @@ const ProblemBrowserOpenProblemLibraryDropDown = <T extends unknown>({
 
 export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenProblemLibraryFormProps> = () => {
     const searchForm = useForm<SearchFormInputs>();
-    const { getValues, control, watch, setValue } = searchForm;
+    const { control, watch, setValue } = searchForm;
     const [ subjects, setSubjects ] = useState<Array<OPL_DBSubject>>([]);
     const [ chapters, setChapters ] = useState<Array<OPL_DBChapter> | null>(null);
     const [ sections, setSections ] = useState<Array<OPL_DBSection> | null>(null);
@@ -130,6 +133,7 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
                 }}
                 getLabel={(arg: OPL_DBSubject) => arg.name}
                 control={control}
+                disabled={_.isNil(subjects)}
             />
 
             <ProblemBrowserOpenProblemLibraryDropDown
@@ -141,6 +145,7 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
                 }}
                 getLabel={(arg: OPL_DBChapter) => arg.name}
                 control={control}
+                disabled={_.isNil(chapters)}
             />
 
             <ProblemBrowserOpenProblemLibraryDropDown
@@ -152,7 +157,9 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
                 }}
                 getLabel={(arg: OPL_DBSection) => arg.name}
                 control={control}
+                disabled={_.isNil(sections)}
             />
+            <Button color='primary' variant='contained' style={{margin:'1em'}}>Submit</Button>
         </FormProvider>
     );
 };
