@@ -203,7 +203,9 @@ export const ProblemEditor: React.FC = () => {
             <Modal.Body>
                 <ul style={{
                     padding: '10px',
-                    listStyleType: 'none'
+                    listStyleType: 'none',
+                    maxHeight: '75vh',
+                    overflow: 'auto'
                 }}>
                     {myCatalog.map(catalogProblem => 
                         <li key={catalogProblem}>
