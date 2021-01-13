@@ -1,18 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Avatar, Grid, TextField } from '@material-ui/core';
-import _ from 'lodash';
-import localPreferences, { AccountType } from '../Utilities/LocalPreferences';
-import { getUserRole, UserRole } from '../Enums/UserRole';
-import AxiosRequest from '../Hooks/AxiosRequest';
-import logger from '../Utilities/Logger';
 import { Tabs, Tab, Container } from 'react-bootstrap';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useQuery } from '../Hooks/UseQuery';
 import { ProblemBrowserOpenProblemLibraryForm } from './ProblemBrowserOpenProblemLibraryForm';
 import { ProblemBrowserCourseForm } from './ProblemBrowserCourseForm';
 import { ProblemBrowserPrivateForm } from './ProblemBrowserPrivateForm';
-
-const { session, account } = localPreferences;
 
 interface ProblemBrowserSearchPageProps {
 

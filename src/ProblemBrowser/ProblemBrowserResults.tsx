@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Button, Nav, NavLink } from 'react-bootstrap';
-import { ConfirmationModal } from '../Components/ConfirmationModal';
+import { Container, Row, Col, Nav, NavLink } from 'react-bootstrap';
 import _ from 'lodash';
 import { ProblemStateProvider } from '../Contexts/CurrentProblemState';
-import { ProblemDetails } from '../Assignments/ProblemDetails';
-import moment from 'moment';
 import ProblemIframe from '../Assignments/ProblemIframe';
-import AttachmentsSidebar from '../Assignments/AttachmentsSidebar';
-import { TopicObject, ProblemObject } from '../Courses/CourseInterfaces';
+import { ProblemObject } from '../Courses/CourseInterfaces';
 import { useQuery } from '../Hooks/UseQuery';
 import { getSearch } from '../APIInterfaces/LibraryBrowser/LibraryBrowserRequests';
 import nodePath from 'path';
+import { catalog } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 const urlJoin: (...args: string[]) => string = require('url-join');
 
 interface ProblemBrowserResultsProps {
@@ -19,6 +16,7 @@ interface ProblemBrowserResultsProps {
 
 enum SearchType {
     LIBRARY='library',
+    PRIVATE='private',
 }
 
 interface ProblemNavItemOptions {
@@ -50,7 +48,6 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
     const [selectedProblem, setSelectedProblem] = useState<string | null>(null);
 
     useEffect(() => {
-        console.log('tomtom useeffect');
         (async () => {
             switch (searchType) {
             case SearchType.LIBRARY: {
@@ -67,7 +64,13 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
                 setProblems(result.data.data.result.map(pgPath => urlJoin('Library', pgPath.opl_path.path, pgPath.filename)));
                 break;
             }
+            case SearchType.PRIVATE: {
+                const result = await catalog();
+                setProblems(result.data.data.problems);
+                break;
+            }
             default:
+                setProblems([]);
                 break;
             }
         })();
