@@ -5,6 +5,8 @@ import { useForm, FormProvider, Controller, Control } from 'react-hook-form';
 import { TextField, Button } from '@material-ui/core';
 import { Autocomplete } from '@material-ui/lab';
 import { getSubjects, getChapters, getSections, OPL_DBSubject, OPL_DBChapter, OPL_DBSection } from '../APIInterfaces/LibraryBrowser/LibraryBrowserRequests';
+import { useHistory } from 'react-router-dom';
+import querystring from 'querystring';
 
 interface ProblemBrowserOpenProblemLibraryFormProps {
 
@@ -58,6 +60,7 @@ const ProblemBrowserOpenProblemLibraryDropDown = <T extends unknown>({
     );
 
 export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenProblemLibraryFormProps> = () => {
+    const history = useHistory();
     const searchForm = useForm<SearchFormInputs>();
     const { control, watch, setValue } = searchForm;
     const [ subjects, setSubjects ] = useState<Array<OPL_DBSubject>>([]);
@@ -69,6 +72,15 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
         chapter,
         section
     } = watch();
+
+    const submit = () => {
+        history.push(`/common/problem-browser/search?${querystring.stringify(_.omitBy({
+            type: 'library',
+            subjectId: subject?.dbsubject_id,
+            chapterId: chapter?.dbchapter_id,
+            sectionId: section?.dbsection_id,
+        }, _.isUndefined))}`);
+    };
 
     useEffect(() => {
         (async () => {
@@ -159,7 +171,7 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
                 control={control}
                 disabled={_.isNil(sections)}
             />
-            <Button color='primary' variant='contained' style={{margin:'1em'}}>Submit</Button>
+            <Button color='primary' variant='contained' style={{margin:'1em'}} onClick={submit}>Submit</Button>
         </FormProvider>
     );
 };
