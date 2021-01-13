@@ -55,6 +55,12 @@ export interface OPL_DBSection {
     dbsection_id: number;
 }
 
+export interface OPL_PGFile {
+    filename: string;
+    opl_path: {
+        path: string;
+    }
+}
 /**
  * ############### ###############
  * ########## Responses ##########
@@ -70,6 +76,10 @@ interface GetChaptersResponse {
 
 interface GetSectionsResponse {
     sections: Array<OPL_DBSection>;
+}
+
+interface GetSearchResponse {
+    result: Array<OPL_PGFile>;
 }
 
 export const getSubjects = async (): Promise<AxiosResponse<BackendAPIResponse<GetSubjectsResponse>>> => {
@@ -100,7 +110,7 @@ export const getSections = async (options?: GetSectionsOptions): Promise<AxiosRe
     }
 };
 
-export const getSearch = async (options?: GetSearchOptions): Promise<AxiosResponse<unknown>> => {
+export const getSearch = async (options?: GetSearchOptions): Promise<AxiosResponse<BackendAPIResponse<GetSearchResponse>>> => {
     try {
         return await libraryBrowserAxios.get(SEARCH_ROUTE, {
             params: options?.params
