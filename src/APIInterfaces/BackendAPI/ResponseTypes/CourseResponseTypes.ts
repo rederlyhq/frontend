@@ -185,3 +185,26 @@ type EnrollByCode = {
     courseId: number;
 };
 export type EnrollByCodeResponse = BackendAPIResponse<EnrollByCode>;
+
+/* *************** *************** */
+/* ****** Problem  Browsing ****** */
+/* *************** *************** */
+type GetBrowserProblemsListObject = {
+    name: string;
+    id: number;
+}
+
+type GetBrowseProblemsCourseList = {
+    courses: Array<GetBrowserProblemsListObject>;
+}
+export type GetBrowseProblemsCourseListResponse = BackendAPIResponse<GetBrowseProblemsCourseList>;
+
+type GetBrowseProblemsUnitList = {
+    units: Array<GetBrowserProblemsListObject>;
+}
+export type GetBrowseProblemsUnitListResponse = BackendAPIResponse<GetBrowseProblemsUnitList>;
+
+type GetBrowseProblemsTopicList = {
+    topics: Array<GetBrowserProblemsListObject>;
+}
+export type GetBrowseProblemsTopicListResponse = BackendAPIResponse<GetBrowseProblemsTopicList>;

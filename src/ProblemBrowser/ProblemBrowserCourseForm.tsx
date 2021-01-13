@@ -64,12 +64,12 @@ export const ProblemBrowserCourseForm: React.FC<ProblemBrowserCourseFormProps> =
         }
 
         (async () => {
-            const chaptersResponse = await getBrowseProblemsUnitList({
+            const unitsResponse = await getBrowseProblemsUnitList({
                 params: {
                     courseId: course.id
                 }
             });
-            setUnits(chaptersResponse.data.data.units);
+            setUnits(unitsResponse.data.data.units);
         })();
     }, [course]);
 
@@ -80,12 +80,12 @@ export const ProblemBrowserCourseForm: React.FC<ProblemBrowserCourseFormProps> =
         }
 
         (async () => {
-            const sectionsResponse = await getBrowseProblemsTopicList({
+            const topicsResponse = await getBrowseProblemsTopicList({
                 params: {
                     unitId: unit.id
                 }
             });
-            setTopics(sectionsResponse.data.data.topics);
+            setTopics(topicsResponse.data.data.topics);
         })();
     }, [unit]);
 

@@ -246,3 +246,24 @@ export interface GetQuestionGradeOptions {
 export interface QuestionGradeResponse {
     data: StudentGrade;
 }
+
+/* *************** *************** */
+/* ****** Problem  Browsing ****** */
+/* *************** *************** */
+export interface GetBrowseProblemsCourseListOptions {
+    params: {
+        instructorId?: number | 'me';
+    }
+}
+
+export interface GetBrowseProblemsUnitListOptions {
+    params: {
+        courseId: number;
+    }
+}
+
+export interface GetBrowseProblemsTopicListOptions {
+    params: {
+        unitId: number;
+    }
+}
