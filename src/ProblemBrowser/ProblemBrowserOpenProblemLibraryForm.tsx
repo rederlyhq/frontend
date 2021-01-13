@@ -1,7 +1,7 @@
 /* eslint-disable no-debugger */
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
-import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { useForm, FormProvider, Controller, Control } from 'react-hook-form';
 import { TextField, Button } from '@material-ui/core';
 import { Autocomplete } from '@material-ui/lab';
 import { getSubjects, getChapters, getSections, OPL_DBSubject, OPL_DBChapter, OPL_DBSection } from '../APIInterfaces/LibraryBrowser/LibraryBrowserRequests';
@@ -15,6 +15,44 @@ interface SearchFormInputs {
     chapter?: OPL_DBChapter;
     section?: OPL_DBSection;
 }
+
+interface ProblemBrowserOpenProblemLibraryDropDownOptions<T> {
+    options: Array<T>;
+    comparator: (a: T, b: T) => boolean;
+    getLabel: (arg: T) => string;
+    control: Control;
+    label: string;
+    name: string;
+}
+const ProblemBrowserOpenProblemLibraryDropDown = <T extends unknown>({
+    options,
+    comparator,
+    getLabel,
+    control,
+    label,
+    name,
+}: ProblemBrowserOpenProblemLibraryDropDownOptions<T>) => (
+        <Controller
+            name={name}
+            render={({ onChange, ...props}) =>
+                <Autocomplete
+                    options={options}
+                    getOptionLabel={getLabel}
+                    getOptionSelected={comparator}
+                    onChange={(_event, data) => onChange(data)}
+                    fullWidth={true}
+                    style={{
+                        padding: '1em'
+                    }}
+                    renderInput={(params: unknown) => <TextField {...params} label={label} variant="outlined" />}
+                    {...props}
+                />
+            }
+            onChange={([, data]: [unknown, unknown]) => data}
+            control={control}
+            defaultValue={null}
+        />
+    );
 
 export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenProblemLibraryFormProps> = () => {
     const searchForm = useForm<SearchFormInputs>();
@@ -82,65 +120,38 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
 
     return (
         <FormProvider {...searchForm}>
-            <div>ProblemBrowserOpenProblemLibraryForm</div>
-            <Controller
-                name="subject"
-                render={({ onChange, ...props}) =>
-                    <Autocomplete
-                        options={subjects}
-                        getOptionLabel={(option: OPL_DBSubject) => option.name}
-                        getOptionSelected={(option: OPL_DBSubject, value: OPL_DBSubject) => {
-                            return option.dbsubject_id === value.dbsubject_id;
-                        }}
-                        onChange={(_event, data) => onChange(data)}
-                        fullWidth={true}
-                        renderInput={(params: unknown) => <TextField {...params} label="Subject" variant="outlined" />}
-                        {...props}
-                    />
-                }
-                onChange={([, data]: [unknown, unknown]) => data}
+            <h5 style={{padding:'1em'}}>Fill out any number of the below drop downs to search to <code>Open Problem Library</code></h5>
+            <ProblemBrowserOpenProblemLibraryDropDown
+                name='subject'
+                label='Subject'
+                options={subjects}
+                comparator={(option: OPL_DBSubject, value: OPL_DBSubject) => {
+                    return option.dbsubject_id === value.dbsubject_id;
+                }}
+                getLabel={(arg: OPL_DBSubject) => arg.name}
                 control={control}
-                defaultValue={null}
             />
 
-            <Controller
-                name="chapter"
-                render={({ onChange, ...props}) =>
-                    <Autocomplete
-                        options={chapters ?? []}
-                        getOptionLabel={(option: OPL_DBChapter) => option.name}
-                        getOptionSelected={(option: OPL_DBChapter, value: OPL_DBChapter) => {
-                            return option.dbchapter_id === value.dbchapter_id;
-                        }}
-                        onChange={(_event, data) => onChange(data)}
-                        fullWidth={true}
-                        renderInput={(params: unknown) => <TextField {...params} label="Chapter" variant="outlined" />}
-                        {...props}
-                    />
-                }
-                onChange={([, data]: [unknown, unknown]) => data}
+            <ProblemBrowserOpenProblemLibraryDropDown
+                name='chapter'
+                label='Chapter'
+                options={chapters ?? []}
+                comparator={(option: OPL_DBChapter, value: OPL_DBChapter) => {
+                    return option.dbchapter_id === value.dbchapter_id;
+                }}
+                getLabel={(arg: OPL_DBChapter) => arg.name}
                 control={control}
-                defaultValue={null}
             />
 
-            <Controller
-                name="section"
-                render={({ onChange, ...props}) =>
-                    <Autocomplete
-                        options={sections ?? []}
-                        getOptionLabel={(option: OPL_DBSection) => option.name}
-                        getOptionSelected={(option: OPL_DBSection, value: OPL_DBSection) => {
-                            return option.dbsection_id === value.dbsection_id;
-                        }}
-                        onChange={(_event, data) => onChange(data)}
-                        fullWidth={true}
-                        renderInput={(params: unknown) => <TextField {...params} label="Section" variant="outlined" />}
-                        {...props}
-                    />
-                }
-                onChange={([, data]: [unknown, unknown]) => data}
+            <ProblemBrowserOpenProblemLibraryDropDown
+                name='section'
+                label='Section'
+                options={sections ?? []}
+                comparator={(option: OPL_DBSection, value: OPL_DBSection) => {
+                    return option.dbsection_id === value.dbsection_id;
+                }}
+                getLabel={(arg: OPL_DBSection) => arg.name}
                 control={control}
-                defaultValue={null}
             />
         </FormProvider>
     );
