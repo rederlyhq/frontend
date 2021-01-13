@@ -762,3 +762,70 @@ export const getQuestionGrade = async ({
         throw new BackendAPIError(e);
     }
 };
+
+const COURSE_BROWSE_PROBLEMS = urlJoin(COURSE_PATH, 'browse-problems/');
+const COURSE_BROWSE_PROBLEMS_COURSES = urlJoin(COURSE_BROWSE_PROBLEMS, 'course-list/');
+const COURSE_BROWSE_PROBLEMS_UNITS = urlJoin(COURSE_BROWSE_PROBLEMS, 'unit-list/');
+const COURSE_BROWSE_PROBLEMS_TOPICS = urlJoin(COURSE_BROWSE_PROBLEMS, 'topic-list/');
+const COURSE_BROWSE_PROBLEMS_SEARCH = urlJoin(COURSE_BROWSE_PROBLEMS, 'search/');
+
+export const getBrowseProblemsCourseList = async ({
+    params: {
+        instructorId = 'me'
+    }
+}: {
+    params: {
+        instructorId?: number | 'me';
+    }
+}): Promise<AxiosResponse<any>> => {
+    try {
+        return await AxiosRequest.get(COURSE_BROWSE_PROBLEMS_COURSES, {
+            params: {
+                instructorId: instructorId,
+                
+            }
+        });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getBrowseProblemsUnitList = async ({
+    params: {
+        courseId
+    }
+}: {
+    params: {
+        courseId: number;
+    }
+}): Promise<AxiosResponse<any>> => {
+    try {
+        return await AxiosRequest.get(COURSE_BROWSE_PROBLEMS_UNITS, {
+            params: {
+                courseId: courseId,
+            }
+        });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getBrowseProblemsTopicList = async ({
+    params: {
+        unitId
+    }
+}: {
+    params: {
+        unitId: number;
+    }
+}): Promise<AxiosResponse<any>> => {
+    try {
+        return await AxiosRequest.get(COURSE_BROWSE_PROBLEMS_TOPICS, {
+            params: {
+                unitId: unitId,
+            }
+        });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
