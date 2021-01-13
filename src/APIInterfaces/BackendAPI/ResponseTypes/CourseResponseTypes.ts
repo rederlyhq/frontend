@@ -208,3 +208,8 @@ type GetBrowseProblemsTopicList = {
     topics: Array<GetBrowserProblemsListObject>;
 }
 export type GetBrowseProblemsTopicListResponse = BackendAPIResponse<GetBrowseProblemsTopicList>;
+
+type GetProblemSearchResults = {
+    problems: Array<ProblemObject>
+}
+export type GetProblemSearchResultsResponse = BackendAPIResponse<GetProblemSearchResults>;

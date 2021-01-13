@@ -267,3 +267,12 @@ export interface GetBrowseProblemsTopicListOptions {
         unitId: number;
     }
 }
+
+export interface GetProblemSearchResultsOptions {
+    params: {
+        instructorId?: number | 'me';
+        courseId?: number;
+        unitId?: number;
+        topicId?: number;
+    }
+}

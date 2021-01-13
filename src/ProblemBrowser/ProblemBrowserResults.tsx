@@ -7,7 +7,8 @@ import { ProblemObject } from '../Courses/CourseInterfaces';
 import { useQuery } from '../Hooks/UseQuery';
 import { getSearch } from '../APIInterfaces/LibraryBrowser/LibraryBrowserRequests';
 import nodePath from 'path';
-import { catalog } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { catalog, getProblemSearchResults } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import logger from '../Utilities/Logger';
 const urlJoin: (...args: string[]) => string = require('url-join');
 
 interface ProblemBrowserResultsProps {
@@ -17,6 +18,7 @@ interface ProblemBrowserResultsProps {
 enum SearchType {
     LIBRARY='library',
     PRIVATE='private',
+    COURSE='course',
 }
 
 interface ProblemNavItemOptions {
@@ -69,7 +71,23 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
                 setProblems(result.data.data.problems);
                 break;
             }
+            case SearchType.COURSE: {
+                const courseId = parseInt(queryParams.get('courseId') ?? '', 10);
+                const unitId = parseInt(queryParams.get('unitId') ?? '', 10);
+                const topicId = parseInt(queryParams.get('topicId') ?? '', 10);
+                const result = await getProblemSearchResults({
+                    params: _.omitBy({
+                        instructorId: 'me',
+                        courseId: courseId,
+                        unitId: unitId,
+                        topicId: topicId,
+                    }, _.isNaN)
+                });
+                setProblems(result.data.data.problems.map((problem) => problem.webworkQuestionPath));
+                break;
+            }
             default:
+                logger.warn('ProblemBrowserResults: Invalid type, either a bug or someone is manipulating the url');
                 setProblems([]);
                 break;
             }
