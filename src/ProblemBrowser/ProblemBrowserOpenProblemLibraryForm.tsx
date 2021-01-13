@@ -1,12 +1,11 @@
-/* eslint-disable no-debugger */
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
-import { useForm, FormProvider, Controller, Control } from 'react-hook-form';
-import { TextField, Button } from '@material-ui/core';
-import { Autocomplete } from '@material-ui/lab';
+import { useForm, FormProvider } from 'react-hook-form';
+import { Button } from '@material-ui/core';
 import { getSubjects, getChapters, getSections, OPL_DBSubject, OPL_DBChapter, OPL_DBSection } from '../APIInterfaces/LibraryBrowser/LibraryBrowserRequests';
 import { useHistory } from 'react-router-dom';
 import querystring from 'querystring';
+import { ProblemBrowserSearchDropDown } from './ProblemBrowserSearchDropDown';
 
 interface ProblemBrowserOpenProblemLibraryFormProps {
 
@@ -17,47 +16,6 @@ interface SearchFormInputs {
     chapter?: OPL_DBChapter;
     section?: OPL_DBSection;
 }
-
-interface ProblemBrowserOpenProblemLibraryDropDownOptions<T> {
-    options: Array<T>;
-    comparator: (a: T, b: T) => boolean;
-    getLabel: (arg: T) => string;
-    control: Control;
-    label: string;
-    name: string;
-    disabled?: boolean;
-}
-const ProblemBrowserOpenProblemLibraryDropDown = <T extends unknown>({
-    options,
-    comparator,
-    getLabel,
-    control,
-    label,
-    name,
-    disabled,
-}: ProblemBrowserOpenProblemLibraryDropDownOptions<T>) => (
-        <Controller
-            name={name}
-            render={({ onChange, ...props}) =>
-                <Autocomplete
-                    options={options}
-                    getOptionLabel={getLabel}
-                    getOptionSelected={comparator}
-                    onChange={(_event, data) => onChange(data)}
-                    fullWidth={true}
-                    style={{
-                        padding: '1em'
-                    }}
-                    renderInput={(params: unknown) => <TextField {...params} label={label} variant="outlined" />}
-                    {...props}
-                    disabled={disabled}
-                />
-            }
-            onChange={([, data]: [unknown, unknown]) => data}
-            control={control}
-            defaultValue={null}
-        />
-    );
 
 export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenProblemLibraryFormProps> = () => {
     const history = useHistory();
@@ -136,7 +94,7 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
     return (
         <FormProvider {...searchForm}>
             <h5 style={{padding:'1em'}}>Fill out any number of the below drop downs to search to <code>Open Problem Library</code></h5>
-            <ProblemBrowserOpenProblemLibraryDropDown
+            <ProblemBrowserSearchDropDown
                 name='subject'
                 label='Subject'
                 options={subjects}
@@ -148,7 +106,7 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
                 disabled={_.isNil(subjects)}
             />
 
-            <ProblemBrowserOpenProblemLibraryDropDown
+            <ProblemBrowserSearchDropDown
                 name='chapter'
                 label='Chapter'
                 options={chapters ?? []}
@@ -160,7 +118,7 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
                 disabled={_.isNil(chapters)}
             />
 
-            <ProblemBrowserOpenProblemLibraryDropDown
+            <ProblemBrowserSearchDropDown
                 name='section'
                 label='Section'
                 options={sections ?? []}
