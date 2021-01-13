@@ -8,6 +8,11 @@ const CHAPTERS_ROUTE = '/chapters';
 const SECTIONS_ROUTE = '/sections';
 const SEARCH_ROUTE = '/search';
 
+/**
+ * ############### ###############
+ * ########### Options ###########
+ * ############### ###############
+ */
 interface GetChaptersOptions {
     params?: {
         subjectId?: number;
@@ -28,7 +33,46 @@ interface GetSearchOptions {
     }
 }
 
-export const getSubjects = async (): Promise<AxiosResponse<unknown>> => {
+/**
+ * ############### ###############
+ * ############ Types ############
+ * ############### ###############
+ */
+export interface OPL_DBSubject {
+    dbsubject_id: number;
+    name: string;
+}
+
+export interface OPL_DBChapter {
+    dbsubject_id: number;
+    name: string;
+    dbchapter_id: number;
+}
+
+export interface OPL_DBSection {
+    dbchapter_id: number;
+    name: string;
+    dbsection_id: number;
+}
+
+/**
+ * ############### ###############
+ * ########## Responses ##########
+ * ############### ###############
+ */
+interface GetSubjectsResponse {
+    subjects: Array<OPL_DBSubject>;
+}
+
+interface GetChaptersResponse {
+    chapters: Array<OPL_DBChapter>;
+}
+
+interface GetSectionsResponse {
+    sections: Array<OPL_DBSection>;
+}
+
+export const getSubjects = async (): Promise<AxiosResponse<BackendAPIResponse<GetSubjectsResponse>>> => {
     try {
         return await libraryBrowserAxios.get(SUBJECTS_ROUTE);
     } catch (e) {
@@ -36,7 +80,7 @@ export const getSubjects = async (): Promise<AxiosResponse<unknown>> => {
     }
 };
 
-export const getChapters = async (options?: GetChaptersOptions): Promise<AxiosResponse<unknown>> => {
+export const getChapters = async (options?: GetChaptersOptions): Promise<AxiosResponse<BackendAPIResponse<GetChaptersResponse>>> => {
     try {
         return await libraryBrowserAxios.get(CHAPTERS_ROUTE, {
             params: options?.params
@@ -46,7 +90,7 @@ export const getChapters = async (options?: GetChaptersOptions): Promise<AxiosRe
     }
 };
 
-export const getSections = async (options?: GetSectionsOptions): Promise<AxiosResponse<unknown>> => {
+export const getSections = async (options?: GetSectionsOptions): Promise<AxiosResponse<BackendAPIResponse<GetSectionsResponse>>> => {
     try {
         return await libraryBrowserAxios.get(SECTIONS_ROUTE, {
             params: options?.params
