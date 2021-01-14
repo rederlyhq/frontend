@@ -57,7 +57,7 @@ interface SearchResults<T = unknown> {
 
 export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () => {
     const queryParams = useQuery();
-    const { updateRoute, getCurrentQueryStrings } = useQuerystringHelper();
+    const { updateRoute } = useQuerystringHelper();
     const searchType = queryParams.get('type') as SearchType | null;
     const [problemDictionary, setProblemDictionary] = useState<SearchResults | null>(null);
     const problems = useMemo<Array<SearchProblemResult> | null>(() => _.isNil(problemDictionary) ? null : Object.values(problemDictionary.problems), [problemDictionary]);
@@ -122,7 +122,20 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
                         topicId: topicId,
                     }, _.isNaN)
                 });
-                const problemObjects = result.data.data.problems.map((problem) => ({ path: problem.webworkQuestionPath}));
+                const allProblems = _.flatMap(result.data.data.problems, (problem =>
+                    [
+                        // Include the original problem
+                        problem,
+                        // create new problems for each additional problem path
+                        ..._.map(problem.courseQuestionAssessmentInfo?.additionalProblemPaths, additionalProblemPath => ({
+                            // This problem is the original problem
+                            ...problem,
+                            // with the path switched with each additional path
+                            webworkQuestionPath: additionalProblemPath
+                        }))
+                    ]
+                ));
+                const problemObjects = allProblems.map((problem) => ({ path: problem.webworkQuestionPath}));
                 setProblemDictionary({
                     type: SearchType.COURSE,
                     problems: _.keyBy(problemObjects, 'path'),
