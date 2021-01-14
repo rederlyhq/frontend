@@ -10,16 +10,12 @@ import nodePath from 'path';
 import { catalog, getProblemSearchResults } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../Utilities/Logger';
 import { useQuerystringHelper, QueryStringMode } from '../Hooks/useQuerystringHelper';
+import { ProblemBrowserSearchType, ProblemBrowserDataCourseMeta, ProblemBrowserDataMeta } from './ProblemBrowserTypes';
+import { ProblemBrowserHeader } from './ProblemBrowserHeader';
 const urlJoin: (...args: string[]) => string = require('url-join');
 
 interface ProblemBrowserResultsProps {
 
-}
-
-enum SearchType {
-    LIBRARY='library',
-    PRIVATE='private',
-    COURSE='course',
 }
 
 interface ProblemNavItemOptions {
@@ -37,28 +33,37 @@ export const ProblemNavItem: React.FC<ProblemNavItemOptions> = ({
             key={problemPath}
             onSelect={() => onSelect(problemPath)}
             role='link'
+            style={{
+                display: 'block',
+                width: '100%'
+            }}
         >
             <h5>{nodePath.basename(problemPath)}</h5>
-            <h6>{problemPath}</h6>
+            <h6
+                style={{
+                    // wordBreak: 'break-all',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                }}
+            >{problemPath}</h6>
         </NavLink>
     );
 };
 
 
-interface SearchProblemResult<T = unknown> {
+interface SearchProblemResult {
     path: string;
-    meta?: T;
+    meta: ProblemBrowserDataMeta;
 }
 
-interface SearchResults<T = unknown> {
-    type: SearchType;
-    problems: {[key: string]: SearchProblemResult<T>}
+interface SearchResults {
+    problems: Dictionary<SearchProblemResult>
 }
 
 export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () => {
     const queryParams = useQuery();
     const { updateRoute } = useQuerystringHelper();
-    const searchType = queryParams.get('type') as SearchType | null;
+    const searchType = queryParams.get('type') as ProblemBrowserSearchType | null;
     const [problemDictionary, setProblemDictionary] = useState<SearchResults | null>(null);
     const problems = useMemo<Array<SearchProblemResult> | null>(() => _.isNil(problemDictionary) ? null : Object.values(problemDictionary.problems), [problemDictionary]);
     const [selectedProblem, setSelectedProblem] = useState<string | null>(queryParams.get('path'));
@@ -83,7 +88,7 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
     useEffect(() => {
         (async () => {
             switch (searchType) {
-            case SearchType.LIBRARY: {
+            case ProblemBrowserSearchType.LIBRARY: {
                 const subjectId = parseInt(queryParams.get('subjectId') ?? '', 10);
                 const chapterId = parseInt(queryParams.get('chapterId') ?? '', 10);
                 const sectionId = parseInt(queryParams.get('sectionId') ?? '', 10);
@@ -94,23 +99,36 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
                         sectionId,
                     }, _.isNaN)
                 });
-                setProblemDictionary({
-                    type: SearchType.LIBRARY,
-                    problems: _.keyBy(result.data.data.result.map(pgPath => ({ path: urlJoin('Library', pgPath.opl_path.path, pgPath.filename)})), 'path')
-                });
-                break;
-            }
-            case SearchType.PRIVATE: {
-                const result = await catalog();
-                const problemObjects = result.data.data.problems.map((problem: string) => ({ path: problem }));
+                const problemArray: Array<SearchProblemResult> = result.data.data.result.map(pgPath => ({
+                    path: urlJoin('Library', pgPath.opl_path.path, pgPath.filename),
+                    meta: {
+                        type: ProblemBrowserSearchType.LIBRARY,
+                    }
+                }));
+                const problemDictionary: Dictionary<SearchProblemResult> = _.keyBy(problemArray, 'path');
 
                 setProblemDictionary({
-                    type: SearchType.PRIVATE,
-                    problems: _.keyBy(problemObjects, 'path'),
+                    problems: problemDictionary
                 });
                 break;
             }
-            case SearchType.COURSE: {
+            case ProblemBrowserSearchType.PRIVATE: {
+                const result = await catalog();
+                const problemArray: Array<SearchProblemResult> = result.data.data.problems.map((problem: string) => ({
+                    path: problem,
+                    meta: {
+                        type: ProblemBrowserSearchType.PRIVATE,
+                    }
+                }));
+
+                const problemDictionary: Dictionary<SearchProblemResult> = _.keyBy(problemArray, 'path');
+
+                setProblemDictionary({
+                    problems: problemDictionary,
+                });
+                break;
+            }
+            case ProblemBrowserSearchType.COURSE: {
                 const courseId = parseInt(queryParams.get('courseId') ?? '', 10);
                 const unitId = parseInt(queryParams.get('unitId') ?? '', 10);
                 const topicId = parseInt(queryParams.get('topicId') ?? '', 10);
@@ -135,9 +153,16 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
                         }))
                     ]
                 ));
-                const problemObjects = allProblems.map((problem) => ({ path: problem.webworkQuestionPath}));
+                const problemObjects = allProblems.map((problem) => ({
+                    path: problem.webworkQuestionPath,
+                    meta: {
+                        type: ProblemBrowserSearchType.COURSE,
+                        topicName: problem.topic?.name,
+                        unitName: problem.topic?.unit?.name,
+                        courseName: problem.topic?.unit?.course?.name
+                    }
+                }));
                 setProblemDictionary({
-                    type: SearchType.COURSE,
                     problems: _.keyBy(problemObjects, 'path'),
                 });
                 break;
@@ -145,7 +170,6 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
             default:
                 logger.warn('ProblemBrowserResults: Invalid type, either a bug or someone is manipulating the url');
                 setProblemDictionary({
-                    type: SearchType.COURSE,
                     problems: {}
                 });
                 break;
@@ -153,7 +177,7 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
         })();
     }, [searchType]);
 
-    if (_.isNil(problems)) {
+    if (_.isNil(problems) || _.isNil(problemDictionary)) {
         return <div>Loading...</div>;
     }
 
@@ -171,20 +195,29 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
             <Container fluid>
                 <Row>
                     <Col md={3}>
-                        <Nav variant='pills' className='flex-column' defaultActiveKey={selectedProblem} style={{wordBreak: 'break-word'}}>
+                        <Nav variant='pills' className='flex-column' defaultActiveKey={selectedProblem} style={{
+                            // wordBreak: 'break-word'
+                            // display: 'block'
+                        }}>
                             {/* {problems.map(problem => ProblemNavItem({problemPath: problem.path, onSelect: (path: string) => setSelectedProblem(path)}))} */}
                             {problems.map(problem => <ProblemNavItem key={problem.path} problemPath={problem.path} onSelect={(path: string) => setSelectedProblem(path)} /> )}
                         </Nav>
                     </Col>
                     <Col md={9}>
                         <ProblemStateProvider>
-                            {!_.isNil(selectedProblem) &&
-                                <ProblemIframe 
-                                    problem={new ProblemObject()} 
-                                    previewPath={selectedProblem}
-                                    previewSeed={1}
-                                    setProblemStudentGrade={() => {}}
-                                    readonly={false} /> 
+                            {!_.isNil(selectedProblem) && !_.isNil(problemDictionary.problems[selectedProblem]) &&
+                                <>
+                                    <ProblemBrowserHeader
+                                        path={selectedProblem}
+                                        meta={problemDictionary.problems[selectedProblem].meta}
+                                    />
+                                    <ProblemIframe 
+                                        problem={new ProblemObject()} 
+                                        previewPath={selectedProblem}
+                                        previewSeed={1}
+                                        setProblemStudentGrade={() => {}}
+                                        readonly={false} /> 
+                                </>
                             }
                         </ProblemStateProvider>
                     </Col>
