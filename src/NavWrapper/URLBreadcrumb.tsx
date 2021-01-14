@@ -18,7 +18,12 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
         'topic': 'Topic',
         'new': 'New Course',
         'edit': 'Customize Curriculum',
+        'problem-browser': 'Problem Browser',
+        'search': 'Search',
+        'editor': 'Editor'
     };
+
+    const noIdFields = ['editor', 'search', 'problem-browser'];
 
     const genStatefulCrumbs = () => {
         const arr: JSX.Element[] = [];
@@ -37,8 +42,10 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
                 continue;
             }
 
-            // Increment to get the ID in the URL.
-            ++i;
+            if (noIdFields.indexOf(p) < 0) {
+                // Increment to get the ID in the URL.
+                ++i;
+            }
 
             const to = `/${pathnames.slice(0, i + 1).join('/')}`;
             arr.push((<span key={`Span${to}`} style={{padding: '0em 1em 0em 1em' }}>/</span>));
