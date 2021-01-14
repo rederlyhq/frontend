@@ -17,6 +17,9 @@ export interface ProblemBrowserDataPrivateMeta {
 
 export interface ProblemBrowserDataLibraryMeta {
     type: ProblemBrowserSearchType.LIBRARY;
+    subjectName?: string;
+    chapterName?: string;
+    sectionName?: string;
 }
 
 export type ProblemBrowserDataMeta = ProblemBrowserDataCourseMeta | ProblemBrowserDataPrivateMeta | ProblemBrowserDataLibraryMeta;

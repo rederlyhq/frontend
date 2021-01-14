@@ -1,5 +1,6 @@
 import React from 'react';
-import { ProblemBrowserSearchType, ProblemBrowserDataCourseMeta, ProblemBrowserData } from './ProblemBrowserTypes';
+import { ProblemBrowserSearchType, ProblemBrowserDataCourseMeta, ProblemBrowserData, ProblemBrowserDataLibraryMeta } from './ProblemBrowserTypes';
+import logger from '../Utilities/Logger';
 
 
 export const ProblemBrowserBrowserCourseHeader: React.FC<ProblemBrowserDataCourseMeta> = ({
@@ -14,6 +15,18 @@ export const ProblemBrowserBrowserCourseHeader: React.FC<ProblemBrowserDataCours
     </div>);
 };
 
+export const ProblemBrowserBrowserLibraryHeader: React.FC<ProblemBrowserDataLibraryMeta> = ({
+    subjectName,
+    chapterName,
+    sectionName,
+}) => {
+    return (<div>
+        <p><strong>Subject:</strong> {subjectName}</p>
+        <p><strong>Chapter:</strong> {chapterName}</p>
+        <p><strong>Section:</strong> {sectionName}</p>
+    </div>);
+};
+
 export const ProblemBrowserHeader: React.FC<ProblemBrowserData> = ({
     path,
     meta
@@ -21,10 +34,12 @@ export const ProblemBrowserHeader: React.FC<ProblemBrowserData> = ({
 
     const getSpecificHeader = () => {
         switch (meta.type) {
-        case ProblemBrowserSearchType.LIBRARY: return <div>TODO</div>;
+        case ProblemBrowserSearchType.LIBRARY: return <ProblemBrowserBrowserLibraryHeader {...meta} />;
         case ProblemBrowserSearchType.COURSE: return <ProblemBrowserBrowserCourseHeader {...meta} />;
-        case ProblemBrowserSearchType.PRIVATE: return <div>TODO</div>;
-        default: return <div>ERROR</div>;
+        case ProblemBrowserSearchType.PRIVATE: return <></>; // There is no header here yet
+        default:
+            logger.warn(`ProblemBrowserHeader: invalid type ${(meta as any).type}`); 
+            return <></>;
         }
     };
 

@@ -10,7 +10,7 @@ import nodePath from 'path';
 import { catalog, getProblemSearchResults } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../Utilities/Logger';
 import { useQuerystringHelper, QueryStringMode } from '../Hooks/useQuerystringHelper';
-import { ProblemBrowserSearchType, ProblemBrowserDataCourseMeta, ProblemBrowserDataMeta } from './ProblemBrowserTypes';
+import { ProblemBrowserSearchType, ProblemBrowserDataMeta } from './ProblemBrowserTypes';
 import { ProblemBrowserHeader } from './ProblemBrowserHeader';
 const urlJoin: (...args: string[]) => string = require('url-join');
 
@@ -42,6 +42,7 @@ export const ProblemNavItem: React.FC<ProblemNavItemOptions> = ({
             <h6
                 style={{
                     // wordBreak: 'break-all',
+                    whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                 }}
@@ -100,9 +101,12 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
                     }, _.isNaN)
                 });
                 const problemArray: Array<SearchProblemResult> = result.data.data.result.map(pgPath => ({
-                    path: urlJoin('Library', pgPath.opl_path.path, pgPath.filename),
+                    path: urlJoin('Library', pgPath.path, pgPath.filename),
                     meta: {
                         type: ProblemBrowserSearchType.LIBRARY,
+                        subjectName: pgPath.subjectName,
+                        chapterName: pgPath.chapterName,
+                        sectionName: pgPath.sectionName,
                     }
                 }));
                 const problemDictionary: Dictionary<SearchProblemResult> = _.keyBy(problemArray, 'path');

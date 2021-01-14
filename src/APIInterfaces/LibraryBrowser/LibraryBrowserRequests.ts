@@ -55,11 +55,12 @@ export interface OPL_DBSection {
     dbsection_id: number;
 }
 
-export interface OPL_PGFile {
+export interface OPLSearchResult {
     filename: string;
-    opl_path: {
-        path: string;
-    }
+    path: string;
+    subjectName: string;
+    chapterName: string;
+    sectionName: string;
 }
 /**
  * ############### ###############
@@ -79,7 +80,7 @@ interface GetSectionsResponse {
 }
 
 interface GetSearchResponse {
-    result: Array<OPL_PGFile>;
+    result: Array<OPLSearchResult>;
 }
 
 export const getSubjects = async (): Promise<AxiosResponse<BackendAPIResponse<GetSubjectsResponse>>> => {
