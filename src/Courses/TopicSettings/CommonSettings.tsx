@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { FormControl, FormControlLabel, FormLabel, Grid, Radio, RadioGroup, Switch, TextField } from '@material-ui/core';
-import { DateTimePicker } from '@material-ui/pickers';
+import { KeyboardDateTimePicker } from '@material-ui/pickers';
 import moment, { Moment } from 'moment';
 import { Controller } from 'react-hook-form';
 import { TopicTypeId } from '../../Enums/TopicType';
@@ -73,7 +73,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
             <Grid item container md={12} spacing={3}>
                 <Grid item>
                     <Controller
-                        as={<DateTimePicker value="" onChange={() => {}} />}
+                        as={<KeyboardDateTimePicker value="" onChange={() => {}} />}
                         name='startDate'
                         control={control}
                         autoOk
@@ -84,6 +84,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         maxDate={endDate}
                         maxDateMessage='Start date must come before end date'
                         onAccept={() => {setUpdateAlert({message: '', severity: 'warning'});}}
+                        format="MM/DD/YYYY hh:mm A"
                         rules={{
                             required: true,
                             validate: {
@@ -97,7 +98,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                 </Grid>
                 <Grid item>
                     <Controller
-                        as={<DateTimePicker value="" onChange={() => {}} />}
+                        as={<KeyboardDateTimePicker value="" onChange={() => {}} />}
                         name="endDate"
                         control={control}
                         autoOk
@@ -108,6 +109,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         minDate={startDate}
                         minDateMessage='End date should not be set before the start date'
                         onAccept={() => {setUpdateAlert({message: '', severity: 'warning'});}}
+                        format="MM/DD/YYYY hh:mm A"
                         rules={{
                             required: true,
                             validate: {
@@ -126,7 +128,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                 <Grid item>
                     {partialExtend &&
                     <Controller
-                        as={<DateTimePicker value="" onChange={() => {}} />}
+                        as={<KeyboardDateTimePicker value="" onChange={() => {}} />}
                         name="deadDate"
                         control={control}
                         autoOk
@@ -136,6 +138,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         label='End (partial credit)'
                         minDate={endDate}
                         onAccept={() => {setUpdateAlert({message: '', severity: 'warning'});}}
+                        format="MM/DD/YYYY hh:mm A"
                         rules={{
                             required: true,
                             validate: {
