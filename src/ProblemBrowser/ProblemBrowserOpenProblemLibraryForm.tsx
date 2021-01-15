@@ -6,6 +6,10 @@ import { getSubjects, getChapters, getSections, OPL_DBSubject, OPL_DBChapter, OP
 import { useHistory } from 'react-router-dom';
 import querystring from 'querystring';
 import { ProblemBrowserSearchDropDown } from './ProblemBrowserSearchDropDown';
+import logger from '../Utilities/Logger';
+import { Snackbar } from '@material-ui/core';
+import { useMUIAlertState } from '../Hooks/useAlertState';
+import { Alert as MUIAlert } from '@material-ui/lab';
 
 interface ProblemBrowserOpenProblemLibraryFormProps {
 
@@ -24,6 +28,7 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
     const [ subjects, setSubjects ] = useState<Array<OPL_DBSubject>>([]);
     const [ chapters, setChapters ] = useState<Array<OPL_DBChapter> | null>(null);
     const [ sections, setSections ] = useState<Array<OPL_DBSection> | null>(null);
+    const [updateAlert, setUpdateAlert] = useMUIAlertState();
 
     const {
         subject,
@@ -42,8 +47,16 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
 
     useEffect(() => {
         (async () => {
-            const subjectResponse = await getSubjects();
-            setSubjects(subjectResponse.data.data.subjects);
+            try {
+                const subjectResponse = await getSubjects();
+                setSubjects(subjectResponse.data.data.subjects);    
+            } catch (e) {
+                logger.error('Could not fetch subjects', e);
+                setUpdateAlert({
+                    message: `Could not fetch subjects: ${e.message}`,
+                    severity: 'error'
+                });
+            }
         })();
     }, []);
 
@@ -54,12 +67,20 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
         }
 
         (async () => {
-            const chaptersResponse = await getChapters({
-                params: {
-                    subjectId: subject.dbsubject_id
-                }
-            });
-            setChapters(chaptersResponse.data.data.chapters);
+            try {
+                const chaptersResponse = await getChapters({
+                    params: {
+                        subjectId: subject.dbsubject_id
+                    }
+                });
+                setChapters(chaptersResponse.data.data.chapters);    
+            } catch (e) {
+                logger.error('Could not fetch chapters', e);
+                setUpdateAlert({
+                    message: `Could not fetch chapters: ${e.message}`,
+                    severity: 'error'
+                });
+            }
         })();
     }, [subject]);
 
@@ -70,12 +91,20 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
         }
 
         (async () => {
-            const sectionsResponse = await getSections({
-                params: {
-                    chapterId: chapter.dbchapter_id
-                }
-            });
-            setSections(sectionsResponse.data.data.sections);
+            try {
+                const sectionsResponse = await getSections({
+                    params: {
+                        chapterId: chapter.dbchapter_id
+                    }
+                });
+                setSections(sectionsResponse.data.data.sections);    
+            } catch (e) {
+                logger.error('Could not fetch sections', e);
+                setUpdateAlert({
+                    message: `Could not fetch sections: ${e.message}`,
+                    severity: 'error'
+                });
+            }
         })();
     }, [chapter]);
 
@@ -93,6 +122,23 @@ export const ProblemBrowserOpenProblemLibraryForm: React.FC<ProblemBrowserOpenPr
 
     return (
         <FormProvider {...searchForm}>
+            <Snackbar
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                open={updateAlert.message !== ''}
+                autoHideDuration={updateAlert.severity === 'success' ? 6000 : undefined}
+                // onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                style={{maxWidth: '50vw'}}
+            >
+                <MUIAlert
+                    // onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                    severity={updateAlert.severity}
+                    variant='filled'
+                    style={{fontSize: '1.1em'}}
+                >
+                    {updateAlert.message}
+                </MUIAlert>
+            </Snackbar>
+
             <h5 style={{padding:'1em'}}>Fill out any number of the below drop downs to search to <code>Open Problem Library</code></h5>
             <ProblemBrowserSearchDropDown
                 name='subject'
