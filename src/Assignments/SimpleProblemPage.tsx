@@ -40,7 +40,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [problems, setProblems] = useState<Record<number, ProblemObject> | null>(null);
     const [topic, setTopic] = useState<TopicObject | null>(null);
     const [versionId, setVersionId] = useState<number | null>(null);
-    const [attemptsRemaining, setAttemptsRemaining] = useState<number>(1); // the only time these two are not set
+    const [attemptsRemaining, setAttemptsRemaining] = useState<number | 'unlimited'>(1); // the only time these two are not set
     const [versionsRemaining, setVersionsRemaining] = useState<number>(1); // is when an exam hasn't been attempted at all
     const [modalLoading, setModalLoading] = useState<boolean>(false);
     const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
@@ -131,7 +131,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 const currentVersion = _.maxBy(currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo, 'startTime');
                 if (!_.isNil(currentVersion) && !_.isNil(currentVersion?.numAttempts) && !_.isNil(currentVersion.maxAttempts)) {
                     // determine status from current version, don't rely on useState variables to be immediately accurate
-                    const currentAttemptsRemaining = currentVersion.maxAttempts - currentVersion.numAttempts;
+                    const currentAttemptsRemaining = (currentVersion.maxAttempts <= 0) ? 'unlimited' : currentVersion.maxAttempts - currentVersion.numAttempts;
                     let currentVersionsRemaining = versionsRemaining;
                     if (!_.isNil(currentTopic.topicAssessmentInfo.maxVersions)) {
                         currentVersionsRemaining = currentTopic.topicAssessmentInfo.maxVersions - currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo.length;
@@ -253,11 +253,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         });
     };
 
-    const confirmEndVersion = (actualAttemptsRemaining?: number) => {
+    const confirmEndVersion = (actualAttemptsRemaining?: number | 'unlimited') => {
         logger.info('SimpleProblemPage: confirming current version end');
         actualAttemptsRemaining = actualAttemptsRemaining ?? attemptsRemaining;
         let message = 'You have successfully completed this exam.';
-        if (actualAttemptsRemaining > 0) {
+        if (actualAttemptsRemaining > 0 || actualAttemptsRemaining === 'unlimited') {
             const nit = (actualAttemptsRemaining === 1) ? 'attempt' : 'attempts';
             message = `You still have ${actualAttemptsRemaining} graded ${nit} remaining. If you end the exam now, you will no longer be able to improve your score on this version. Are you sure you want to end this exam?`;
         }
@@ -280,7 +280,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         try {
             const result = await submitVersion({ topicId, versionId });
             const bodyContent = (_.isEmpty(result.data.data)) ? 'Your professor has blocked you from seeing your exam results at this time.' : generateScoreTable(result.data.data);
-            const actualAttemptsRemaining = attemptsRemaining - 1;
+            const actualAttemptsRemaining = (attemptsRemaining === 'unlimited') ? attemptsRemaining : attemptsRemaining - 1;
 
             if (_.isNil(attemptsRemaining)) {
                 logger.error('This should never happen - attemptsRemaining is still undefined.');
@@ -308,6 +308,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 });
             }
             setModalLoading(false);
+            resetAlert();
         } catch (e) {
             setAlert({
                 severity: 'error',
@@ -367,7 +368,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         logger.info('SimpleProblemPage: ending the current version');
         // const result = await endVersion({topicId, versionId});
         // if zero attemptsRemaining, we don't need to tell the backend to close
-        if (!_.isNil(attemptsRemaining) && attemptsRemaining > 0) {
+        if (!_.isNil(attemptsRemaining) && (attemptsRemaining > 0 || attemptsRemaining === 'unlimited')) {
             if (_.isNil(topic)) {
                 logger.error('This should not happen - no topic loaded');
             } else {
@@ -533,7 +534,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                             (topic?.topicTypeId === 2 && versionId) && (
                                 <div className='flex-column text-center'>
                                     <div className='p-1 text-center flex-row'>
-                                        {(attemptsRemaining > 0) ?
+                                        {(attemptsRemaining > 0 || attemptsRemaining === 'unlimited') ?
                                             <Button variant='success'
                                                 tabIndex={0}
                                                 onClick={() => confirmSubmitVersion(topic.id, versionId)}
@@ -550,7 +551,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                         }
                                         { topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion &&
                                         attemptsRemaining !== 0 &&
-                                        attemptsRemaining < topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion &&
+                                        (attemptsRemaining === 'unlimited' || 
+                                        attemptsRemaining < topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion) &&
                                             <Button variant='danger'
                                                 tabIndex={0}
                                                 onClick={() => confirmEndVersion()}
