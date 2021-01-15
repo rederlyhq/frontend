@@ -80,7 +80,12 @@ export const CourseTarballImportButton: React.FC<CourseTarballImportButtonProps>
         onDrop: onDrop,
         accept: [
             '.tgz',
-            '.tar.gz'
+            '.tar.gz',
+            '.tar',
+            // I don't like including .gz
+            // but browsers like IE and safari don't accept the double extension
+            // for .tar.gz
+            '.gz',
         ],
         multiple: false
     });
