@@ -93,95 +93,99 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
 
     useEffect(() => {
         (async () => {
-            switch (searchType) {
-            case ProblemBrowserSearchType.LIBRARY: {
-                const subjectId = parseInt(queryParams.get('subjectId') ?? '', 10);
-                const chapterId = parseInt(queryParams.get('chapterId') ?? '', 10);
-                const sectionId = parseInt(queryParams.get('sectionId') ?? '', 10);
-                const result = await getSearch({
-                    params: _.omitBy({
-                        subjectId,
-                        chapterId,
-                        sectionId,
-                    }, _.isNaN)
-                });
-                const problemArray: Array<SearchProblemResult> = result.data.data.result.map(pgPath => ({
-                    path: urlJoin('Library', pgPath.path, pgPath.filename),
-                    meta: {
-                        type: ProblemBrowserSearchType.LIBRARY,
-                        subjectName: pgPath.subjectName,
-                        chapterName: pgPath.chapterName,
-                        sectionName: pgPath.sectionName,
-                    }
-                }));
-                const problemDictionary: Dictionary<SearchProblemResult> = _.keyBy(problemArray, 'path');
-
-                setProblemDictionary({
-                    problems: problemDictionary
-                });
-                break;
-            }
-            case ProblemBrowserSearchType.PRIVATE: {
-                const result = await catalog();
-                const problemArray: Array<SearchProblemResult> = result.data.data.problems.map((problem: string) => ({
-                    path: problem,
-                    meta: {
-                        type: ProblemBrowserSearchType.PRIVATE,
-                    }
-                }));
-
-                const problemDictionary: Dictionary<SearchProblemResult> = _.keyBy(problemArray, 'path');
-
-                setProblemDictionary({
-                    problems: problemDictionary,
-                });
-                break;
-            }
-            case ProblemBrowserSearchType.COURSE: {
-                const courseId = parseInt(queryParams.get('courseId') ?? '', 10);
-                const unitId = parseInt(queryParams.get('unitId') ?? '', 10);
-                const topicId = parseInt(queryParams.get('topicId') ?? '', 10);
-                const result = await getProblemSearchResults({
-                    params: _.omitBy({
-                        instructorId: 'me',
-                        courseId: courseId,
-                        unitId: unitId,
-                        topicId: topicId,
-                    }, _.isNaN)
-                });
-                const allProblems = _.flatMap(result.data.data.problems, (problem =>
-                    [
-                        // Include the original problem
-                        problem,
-                        // create new problems for each additional problem path
-                        ..._.map(problem.courseQuestionAssessmentInfo?.additionalProblemPaths, additionalProblemPath => ({
-                            // This problem is the original problem
-                            ...problem,
-                            // with the path switched with each additional path
-                            webworkQuestionPath: additionalProblemPath
-                        }))
-                    ]
-                ));
-                const problemObjects = allProblems.map((problem) => ({
-                    path: problem.webworkQuestionPath,
-                    meta: {
-                        type: ProblemBrowserSearchType.COURSE,
-                        topicName: problem.topic?.name,
-                        unitName: problem.topic?.unit?.name,
-                        courseName: problem.topic?.unit?.course?.name
-                    }
-                }));
-                setProblemDictionary({
-                    problems: _.keyBy(problemObjects, 'path'),
-                });
-                break;
-            }
-            default:
-                logger.warn('ProblemBrowserResults: Invalid type, either a bug or someone is manipulating the url');
-                setProblemDictionary({
-                    problems: {}
-                });
-                break;
+            try {
+                switch (searchType) {
+                case ProblemBrowserSearchType.LIBRARY: {
+                    const subjectId = parseInt(queryParams.get('subjectId') ?? '', 10);
+                    const chapterId = parseInt(queryParams.get('chapterId') ?? '', 10);
+                    const sectionId = parseInt(queryParams.get('sectionId') ?? '', 10);
+                    const result = await getSearch({
+                        params: _.omitBy({
+                            subjectId,
+                            chapterId,
+                            sectionId,
+                        }, _.isNaN)
+                    });
+                    const problemArray: Array<SearchProblemResult> = result.data.data.result.map(pgPath => ({
+                        path: urlJoin('Library', pgPath.path, pgPath.filename),
+                        meta: {
+                            type: ProblemBrowserSearchType.LIBRARY,
+                            subjectName: pgPath.subjectName,
+                            chapterName: pgPath.chapterName,
+                            sectionName: pgPath.sectionName,
+                        }
+                    }));
+                    const problemDictionary: Dictionary<SearchProblemResult> = _.keyBy(problemArray, 'path');
+    
+                    setProblemDictionary({
+                        problems: problemDictionary
+                    });
+                    break;
+                }
+                case ProblemBrowserSearchType.PRIVATE: {
+                    const result = await catalog();
+                    const problemArray: Array<SearchProblemResult> = result.data.data.problems.map((problem: string) => ({
+                        path: problem,
+                        meta: {
+                            type: ProblemBrowserSearchType.PRIVATE,
+                        }
+                    }));
+    
+                    const problemDictionary: Dictionary<SearchProblemResult> = _.keyBy(problemArray, 'path');
+    
+                    setProblemDictionary({
+                        problems: problemDictionary,
+                    });
+                    break;
+                }
+                case ProblemBrowserSearchType.COURSE: {
+                    const courseId = parseInt(queryParams.get('courseId') ?? '', 10);
+                    const unitId = parseInt(queryParams.get('unitId') ?? '', 10);
+                    const topicId = parseInt(queryParams.get('topicId') ?? '', 10);
+                    const result = await getProblemSearchResults({
+                        params: _.omitBy({
+                            instructorId: 'me',
+                            courseId: courseId,
+                            unitId: unitId,
+                            topicId: topicId,
+                        }, _.isNaN)
+                    });
+                    const allProblems = _.flatMap(result.data.data.problems, (problem =>
+                        [
+                            // Include the original problem
+                            problem,
+                            // create new problems for each additional problem path
+                            ..._.map(problem.courseQuestionAssessmentInfo?.additionalProblemPaths, additionalProblemPath => ({
+                                // This problem is the original problem
+                                ...problem,
+                                // with the path switched with each additional path
+                                webworkQuestionPath: additionalProblemPath
+                            }))
+                        ]
+                    ));
+                    const problemObjects = allProblems.map((problem) => ({
+                        path: problem.webworkQuestionPath,
+                        meta: {
+                            type: ProblemBrowserSearchType.COURSE,
+                            topicName: problem.topic?.name,
+                            unitName: problem.topic?.unit?.name,
+                            courseName: problem.topic?.unit?.course?.name
+                        }
+                    }));
+                    setProblemDictionary({
+                        problems: _.keyBy(problemObjects, 'path'),
+                    });
+                    break;
+                }
+                default:
+                    logger.warn('ProblemBrowserResults: Invalid type, either a bug or someone is manipulating the url');
+                    setProblemDictionary({
+                        problems: {}
+                    });
+                    break;
+                }        
+            } catch (e) {
+                logger.error(e);
             }
         })();
     }, [searchType]);
