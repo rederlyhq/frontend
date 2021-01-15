@@ -7,6 +7,10 @@ import querystring from 'querystring';
 import { ProblemBrowserSearchDropDown } from './ProblemBrowserSearchDropDown';
 import { nameof } from '../Utilities/TypescriptUtils';
 import { getBrowseProblemsCourseList, getBrowseProblemsUnitList, getBrowseProblemsTopicList } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import logger from '../Utilities/Logger';
+import { Snackbar } from '@material-ui/core';
+import { useMUIAlertState } from '../Hooks/useAlertState';
+import { Alert as MUIAlert } from '@material-ui/lab';
 
 interface ProblemBrowserCourseFormProps {
 
@@ -30,6 +34,7 @@ export const ProblemBrowserCourseForm: React.FC<ProblemBrowserCourseFormProps> =
     const [ courses, setCourses ] = useState<Array<DropDownObject>>([]);
     const [ units, setUnits ] = useState<Array<DropDownObject> | null>(null);
     const [ topics, setTopics ] = useState<Array<DropDownObject> | null>(null);
+    const [updateAlert, setUpdateAlert] = useMUIAlertState();
 
     const {
         course,
@@ -48,12 +53,20 @@ export const ProblemBrowserCourseForm: React.FC<ProblemBrowserCourseFormProps> =
 
     useEffect(() => {
         (async () => {
-            const subjectResponse = await getBrowseProblemsCourseList({
-                params: {
-                    instructorId: 'me'
-                }
-            });
-            setCourses(subjectResponse.data.data.courses);
+            try {
+                const subjectResponse = await getBrowseProblemsCourseList({
+                    params: {
+                        instructorId: 'me'
+                    }
+                });
+                setCourses(subjectResponse.data.data.courses);
+            } catch (e) {
+                logger.error('Could not fetch courses', e);
+                setUpdateAlert({
+                    message: `Could not fetch courses: ${e.message}`,
+                    severity: 'error'
+                });
+            }
         })();
     }, []);
 
@@ -64,12 +77,20 @@ export const ProblemBrowserCourseForm: React.FC<ProblemBrowserCourseFormProps> =
         }
 
         (async () => {
-            const unitsResponse = await getBrowseProblemsUnitList({
-                params: {
-                    courseId: course.id
-                }
-            });
-            setUnits(unitsResponse.data.data.units);
+            try {
+                const unitsResponse = await getBrowseProblemsUnitList({
+                    params: {
+                        courseId: course.id
+                    }
+                });
+                setUnits(unitsResponse.data.data.units);    
+            } catch (e) {
+                logger.error('Could not fetch units', e);
+                setUpdateAlert({
+                    message: `Could not fetch units: ${e.message}`,
+                    severity: 'error'
+                });
+            }
         })();
     }, [course]);
 
@@ -80,12 +101,20 @@ export const ProblemBrowserCourseForm: React.FC<ProblemBrowserCourseFormProps> =
         }
 
         (async () => {
-            const topicsResponse = await getBrowseProblemsTopicList({
-                params: {
-                    unitId: unit.id
-                }
-            });
-            setTopics(topicsResponse.data.data.topics);
+            try {
+                const topicsResponse = await getBrowseProblemsTopicList({
+                    params: {
+                        unitId: unit.id
+                    }
+                });
+                setTopics(topicsResponse.data.data.topics);                    
+            } catch (e) {
+                logger.error('Could not fetch topics', e);
+                setUpdateAlert({
+                    message: `Could not fetch topics: ${e.message}`,
+                    severity: 'error'
+                });
+            }
         })();
     }, [unit]);
 
@@ -103,6 +132,22 @@ export const ProblemBrowserCourseForm: React.FC<ProblemBrowserCourseFormProps> =
 
     return (
         <FormProvider {...searchForm}>
+            <Snackbar
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                open={updateAlert.message !== ''}
+                autoHideDuration={updateAlert.severity === 'success' ? 6000 : undefined}
+                // onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                style={{maxWidth: '50vw'}}
+            >
+                <MUIAlert
+                    // onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                    severity={updateAlert.severity}
+                    variant='filled'
+                    style={{fontSize: '1.1em'}}
+                >
+                    {updateAlert.message}
+                </MUIAlert>
+            </Snackbar>
             <h5 style={{padding:'1em'}}>Fill out any number of the below drop downs to search your previously used content</h5>
             <ProblemBrowserSearchDropDown
                 name={nameof<SearchFormInputs>('course')}
