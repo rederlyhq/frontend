@@ -43,7 +43,9 @@ export const ProblemBrowserHeader: React.FC<ProblemBrowserData> = ({
         }
     };
 
-    return <div>
+    return <div style={{
+        padding: '0.5em'
+    }}>
         {getSpecificHeader()}
         <strong>Problem Path:</strong> {path}
     </div>;

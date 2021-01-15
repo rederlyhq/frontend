@@ -38,7 +38,12 @@ export const ProblemNavItem: React.FC<ProblemNavItemOptions> = ({
                 width: '100%'
             }}
         >
-            <h5>{nodePath.basename(problemPath)}</h5>
+            <h5 style={{
+                // wordBreak: 'break-all',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+            }}>{nodePath.basename(problemPath)}</h5>
             <h6
                 style={{
                     // wordBreak: 'break-all',
@@ -196,18 +201,33 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
     return (
         <>
             {/* {alert.message !== '' && <Alert severity={alert.severity}>{alert.message}</Alert>} */}
-            <Container fluid>
-                <Row>
-                    <Col md={3}>
+            <Container fluid style={{
+                position: 'absolute',
+                top: '137px',
+                bottom: '35px',
+                left: 0,
+                right: 0,
+                overflow: 'auto',
+            }}>
+                <Row style={{
+                    height: '100%'
+                }}>
+                    <Col md={3} style={{
+                        height: '100%',
+                        overflowY: 'auto',
+                    }}>
                         <Nav variant='pills' className='flex-column' defaultActiveKey={selectedProblem} style={{
                             // wordBreak: 'break-word'
                             // display: 'block'
                         }}>
-                            {/* {problems.map(problem => ProblemNavItem({problemPath: problem.path, onSelect: (path: string) => setSelectedProblem(path)}))} */}
                             {problems.map(problem => <ProblemNavItem key={problem.path} problemPath={problem.path} onSelect={(path: string) => setSelectedProblem(path)} /> )}
                         </Nav>
                     </Col>
-                    <Col md={9}>
+                    <Col md={9} style={{
+                        height: '100%',
+                        overflowY: 'auto',
+                        overflowX: 'hidden'
+                    }}>
                         <ProblemStateProvider>
                             {!_.isNil(selectedProblem) && !_.isNil(problemDictionary.problems[selectedProblem]) &&
                                 <>
