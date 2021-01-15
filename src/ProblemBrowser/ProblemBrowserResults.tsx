@@ -12,6 +12,10 @@ import logger from '../Utilities/Logger';
 import { useQuerystringHelper, QueryStringMode } from '../Hooks/useQuerystringHelper';
 import { ProblemBrowserSearchType, ProblemBrowserDataMeta } from './ProblemBrowserTypes';
 import { ProblemBrowserHeader } from './ProblemBrowserHeader';
+import { Snackbar } from '@material-ui/core';
+import { useMUIAlertState } from '../Hooks/useAlertState';
+import { Alert as MUIAlert } from '@material-ui/lab';
+
 const urlJoin: (...args: string[]) => string = require('url-join');
 
 interface ProblemBrowserResultsProps {
@@ -73,6 +77,7 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
     const [problemDictionary, setProblemDictionary] = useState<SearchResults | null>(null);
     const problems = useMemo<Array<SearchProblemResult> | null>(() => _.isNil(problemDictionary) ? null : Object.values(problemDictionary.problems), [problemDictionary]);
     const [selectedProblem, setSelectedProblem] = useState<string | null>(queryParams.get('path'));
+    const [updateAlert, setUpdateAlert] = useMUIAlertState();
 
     useEffect(() => {
         queryParams.get('path');
@@ -186,6 +191,10 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
                 }        
             } catch (e) {
                 logger.error(e);
+                setUpdateAlert({message: e.message, severity: 'error'});
+                setProblemDictionary({
+                    problems: {}
+                });
             }
         })();
     }, [searchType]);
@@ -195,7 +204,25 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
     }
 
     if (_.isEmpty(problems)) {
-        return <div>There are no problems to display</div>;
+        return <div>
+            <Snackbar
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                open={updateAlert.message !== ''}
+                autoHideDuration={updateAlert.severity === 'success' ? 6000 : undefined}
+                // onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                style={{maxWidth: '50vw'}}
+            >
+                <MUIAlert
+                    // onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                    severity={updateAlert.severity}
+                    variant='filled'
+                    style={{fontSize: '1.1em'}}
+                >
+                    {updateAlert.message}
+                </MUIAlert>
+            </Snackbar>
+            There are no problems to display
+        </div>;
     }
 
     if (_.isNil(selectedProblem)) {
