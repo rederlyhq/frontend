@@ -7,6 +7,10 @@ module.exports =  function(app) {
         target: 'http://localhost:3001'
     }));
 
+    app.use(createProxyMiddleware('/library-browser', {
+        target: 'http://localhost:3004'
+    }));
+
     app.use(createProxyMiddleware('/webwork2_files', {
         target: 'http://localhost:3000'
     }));
