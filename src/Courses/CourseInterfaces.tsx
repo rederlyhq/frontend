@@ -182,6 +182,7 @@ export class TopicObject {
     studentTopicOverride: TopicOverride[] = [];
     topicAssessmentInfo?: TopicAssessmentFields = new TopicAssessmentFields();
     errors: number = 0;
+    unit?: UnitObject;
 
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
@@ -201,6 +202,7 @@ export class UnitObject {
     unique: number = newUnitUniqueGen.next().value || 0;
     contentOrder: number = 0;
     courseId: number = 0;
+    course?: CourseObject;
 
     public constructor(init?:Partial<UnitObject>) {
         Object.assign(this, init);
@@ -324,6 +326,7 @@ export class ProblemObject implements IProblemObject {
     unique: number = newProblemUniqueGen.next().value || 0;
     grades?: StudentGrade[];
     smaEnabled?: boolean;
+    topic?: TopicObject;
     
     studentTopicQuestionOverride: any[] = [];
     courseQuestionAssessmentInfo?: {

@@ -17,8 +17,8 @@ const INFINITE_MAX_ATTEMPT_VALUE = 0;
 interface ProblemDetailsProps {
     problem: ProblemObject;
     topic: TopicObject | null;
-    attemptsRemaining?: number;
-    setAttemptsRemaining?: React.Dispatch<React.SetStateAction<number>>;
+    attemptsRemaining?: number | 'unlimited';
+    setAttemptsRemaining?: React.Dispatch<React.SetStateAction<number | 'unlimited'>>;
     setOpenDrawer?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -116,7 +116,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                             {(currentMoment: moment.Moment) => {
                                 let message = '';
                                 const formatKey = topicPreferences.useSeconds ? 'formattedFromNow': 'fromNow';
-                                if (currentMoment.isBefore(endDate) && (_.isNil(attemptsRemaining) || (attemptsRemaining > 0 && !isClosed))) {
+                                if (currentMoment.isBefore(endDate) && (_.isNil(attemptsRemaining) || ((attemptsRemaining === 'unlimited' || attemptsRemaining > 0) && !isClosed))) {
                                     message = `Due ${endDate[formatKey]()}`;
                                 } else if (currentMoment.isBefore(deadDate) && (_.isNil(attemptsRemaining) || (attemptsRemaining > 0 && !isClosed))) {
                                     message = `Partial credit expires ${deadDate[formatKey]()}`;

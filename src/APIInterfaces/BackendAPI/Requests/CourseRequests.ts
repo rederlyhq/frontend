@@ -1,9 +1,9 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, getAssessmentProblemsWithWorkbooksOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions, ListAttachmentOptions, ReadQuestionOptions, SaveQuestionOptions, GetGradesOptions, EnrollByCodeOptions, GetRawQuestionOptions, QuestionGradeResponse, GetQuestionGradeOptions, AskForHelpOptions, PostImportCourseArchiveOptions, ShowMeAnotherOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, getAssessmentProblemsWithWorkbooksOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions, ListAttachmentOptions, ReadQuestionOptions, SaveQuestionOptions, GetGradesOptions, EnrollByCodeOptions, GetRawQuestionOptions, QuestionGradeResponse, GetQuestionGradeOptions, AskForHelpOptions, PostImportCourseArchiveOptions, ShowMeAnotherOptions, GetBrowseProblemsCourseListOptions, GetBrowseProblemsUnitListOptions, GetBrowseProblemsTopicListOptions, GetProblemSearchResultsOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse, ListAttachmentsResponse, ReadQuestionResponse, SaveQuestionResponse, CatalogResponse, GradesResponse, EnrollByCodeResponse, PostImportCourseArchiveResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse, ListAttachmentsResponse, ReadQuestionResponse, SaveQuestionResponse, CatalogResponse, GradesResponse, EnrollByCodeResponse, PostImportCourseArchiveResponse, GetBrowseProblemsUnitListResponse, GetBrowseProblemsTopicListResponse, GetBrowseProblemsCourseListResponse, GetProblemSearchResultsResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 import _ from 'lodash';
@@ -31,6 +31,11 @@ const COURSE_PROBLEM_EDITOR_SAVE = url.resolve(COURSE_PROBLEM_EDITOR, 'save/');
 const COURSE_PROBLEM_EDITOR_UPLOAD_ASSET = url.resolve(COURSE_PROBLEM_EDITOR, 'upload-asset/');
 const COURSE_PROBLEM_EDITOR_CATALOG = url.resolve(COURSE_PROBLEM_EDITOR, 'catalog/');
 const COURSE_GRADES_PATH = url.resolve(COURSE_PATH, 'grades/');
+const COURSE_BROWSE_PROBLEMS = urlJoin(COURSE_PATH, 'browse-problems/');
+const COURSE_BROWSE_PROBLEMS_COURSES = urlJoin(COURSE_BROWSE_PROBLEMS, 'course-list/');
+const COURSE_BROWSE_PROBLEMS_UNITS = urlJoin(COURSE_BROWSE_PROBLEMS, 'unit-list/');
+const COURSE_BROWSE_PROBLEMS_TOPICS = urlJoin(COURSE_BROWSE_PROBLEMS, 'topic-list/');
+const COURSE_BROWSE_PROBLEMS_SEARCH = urlJoin(COURSE_BROWSE_PROBLEMS, 'search/');
 
 /* *************** *************** */
 /* *********** Courses *********** */
@@ -758,6 +763,81 @@ export const getQuestionGrade = async ({
                     includeWorkbooks,
                 }, _.isUndefined))}`
             ));
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+/* *************** *************** */
+/* ****** Problem  Browsing ****** */
+/* *************** *************** */
+
+export const getBrowseProblemsCourseList = async ({
+    params: {
+        instructorId = 'me'
+    }
+}: GetBrowseProblemsCourseListOptions): Promise<AxiosResponse<GetBrowseProblemsCourseListResponse>> => {
+    try {
+        return await AxiosRequest.get(COURSE_BROWSE_PROBLEMS_COURSES, {
+            params: {
+                instructorId: instructorId,
+                
+            }
+        });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getBrowseProblemsUnitList = async ({
+    params: {
+        courseId
+    }
+}: GetBrowseProblemsUnitListOptions): Promise<AxiosResponse<GetBrowseProblemsUnitListResponse>> => {
+    try {
+        return await AxiosRequest.get(COURSE_BROWSE_PROBLEMS_UNITS, {
+            params: {
+                courseId: courseId,
+            }
+        });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getBrowseProblemsTopicList = async ({
+    params: {
+        unitId
+    }
+}: GetBrowseProblemsTopicListOptions): Promise<AxiosResponse<GetBrowseProblemsTopicListResponse>> => {
+    try {
+        return await AxiosRequest.get(COURSE_BROWSE_PROBLEMS_TOPICS, {
+            params: {
+                unitId: unitId,
+            }
+        });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getProblemSearchResults = async ({
+    params: {
+        unitId,
+        courseId,
+        topicId,
+        instructorId = 'me'
+    }
+}: GetProblemSearchResultsOptions): Promise<AxiosResponse<GetProblemSearchResultsResponse>> => {
+    try {
+        return await AxiosRequest.get(COURSE_BROWSE_PROBLEMS_SEARCH, {
+            params: _.omitBy({
+                unitId: unitId,
+                courseId: courseId,
+                topicId: topicId,
+                instructorId: instructorId,
+            }, _.isUndefined)
+        });
     } catch (e) {
         throw new BackendAPIError(e);
     }

@@ -24,6 +24,8 @@ import TopicSettingsPage from '../Courses/TopicSettings/TopicSettingsPage';
 import logger from '../Utilities/Logger';
 import TopicGradingPage from '../Courses/TopicGrades/GradingPage';
 import { ProblemEditor } from '../Assignments/ProblemEditor';
+import { ProblemBrowserSearchPage } from '../ProblemBrowser/ProblemBrowserSearchPage';
+import { ProblemBrowserResults } from '../ProblemBrowser/ProblemBrowserResults';
 import PrintEverything from '../Courses/TopicGrades/PrintEverything';
 import { PrintLoadingProvider } from '../Contexts/PrintLoadingContext';
 import localPreferences from '../Utilities/LocalPreferences';
@@ -108,6 +110,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             {getUserRole() !== UserRole.STUDENT &&
                                 <NavDropdown.Item onClick={()=>{history.push(`${path}/editor`);}}>Problem Editor</NavDropdown.Item>
                             }
+                            {getUserRole() !== UserRole.STUDENT &&
+                                <NavDropdown.Item onClick={()=>{history.push(`${path}/problem-browser`);}}>Problem Browser</NavDropdown.Item>
+                            }
                             <NavDropdown.Item onClick={logoutClicked}>Log out</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
@@ -124,6 +129,12 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             </Route>
                             <Route exact path={`${path}/editor`}>
                                 <ProblemEditor />
+                            </Route>
+                            <Route exact path={`${path}/problem-browser`}>
+                                <ProblemBrowserSearchPage />
+                            </Route>
+                            <Route exact path={`${path}/problem-browser/search`}>
+                                <ProblemBrowserResults />
                             </Route>
                             <Route exact path={`${path}/adviser`}>
                                 <AdviserPage />
