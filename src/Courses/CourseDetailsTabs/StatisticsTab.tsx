@@ -1,4 +1,3 @@
-/* eslint-disable react/display-name */
 import React, { useState, useEffect } from 'react';
 import { Alert, Button as BSButton, Col, Nav } from 'react-bootstrap';
 import MaterialTable, { Column } from 'material-table';
@@ -13,11 +12,12 @@ import moment from 'moment';
 import { BsLock, BsPencilSquare, BsUnlock } from 'react-icons/bs';
 import { OverrideGradeModal } from './OverrideGradeModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
-import { IAlertModalState } from '../../Hooks/useAlertState';
+import { IAlertModalState, useMUIAlertState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
-import { CircularProgress, Chip, Grid, Tooltip } from '@material-ui/core';
+import { CircularProgress, Chip, Grid, Tooltip, TablePagination } from '@material-ui/core';
+import { Alert as MUIAlert } from '@material-ui/lab';
 import MaterialIcons from '../../Components/MaterialIcons';
 import { STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_TOPIC_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_PROBLEM_HEADERS, STUDENT_STATISTICS_ATTEMPTS_HEADERS } from './TableColumnHeaders';
 
@@ -100,6 +100,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [gradesState, setGradesState] = useState<GradesState>(defaultGradesState);
     const [grade, setGrade] = useState<StudentGrade | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [statisticsAlert, setStatisticsAlert] = useMUIAlertState();
     const [titleGrade, setTitleGrade] = useState<TitleData | null>(null);
     const userType: UserRole = getUserRole();
 
@@ -107,7 +108,9 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
     useEffect(() => {
         logger.debug(`Stats tab: [useEffect] course.id ${course.id}, globalView ${globalView}, idFilter ${idFilter}, userId ${userId}, userType ${userType}`);
-        if (course?.id === 0) return;
+        if (_.isNil(course)) return;
+
+        setStatisticsAlert(state => ({...state, message: ''}));
 
         let url = '/courses/statistics';
         let filterParam: string = '';
@@ -207,9 +210,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 }
                 logger.debug('Stats tab: [useEffect] setting rowData');
                 setRowData(data);
+                setLoading(false);
             } catch (e) {
                 logger.error('Failed to get statistics.', e);
-            } finally {
+                setStatisticsAlert({
+                    message: `Failed to load statistics: ${e.message}`,
+                    severity: 'error',
+                });
                 setLoading(false);
             }
         })();
@@ -368,7 +375,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     let actions: Array<any> | undefined = [];
     if(!hasDetailPanel) {
         actions.push({
-            icon: () => <ChevronRight />,
+            icon: function IconWrapper() {return <ChevronRight />; },
             tooltip: 'See More',
             onClick: _.curryRight(nextView)(() => { }),
         });
@@ -382,7 +389,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     return;
                 }
                 return {
-                    icon: () => <BsPencilSquare />,
+                    icon:  function IconWrapper() { return <BsPencilSquare />; },
                     tooltip: 'Override grade',
                     onClick: (_event: any, rowData: any) => {
                         logger.debug('Stats tab: [root] setting grade and gradesstate');
@@ -520,8 +527,18 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         )}
                     />
                 </>}
-                { loading ?
-                    <CircularProgress /> :
+                { loading && <CircularProgress />}
+                { !loading && statisticsAlert.message !== '' && (
+                    <MUIAlert
+                        onClose={() => setStatisticsAlert(alertState => ({ ...alertState, message: '' }))}
+                        severity={statisticsAlert.severity}
+                        variant='filled'
+                        style={{ fontSize: '1.1em' }}
+                    >
+                        {statisticsAlert.message}
+                    </MUIAlert>
+                )}
+                {!loading && statisticsAlert.message === '' && rowData.length > 0 && (
                     <MaterialTable
                         icons={MaterialIcons}
                         title={<TableTitleComponent
@@ -544,14 +561,23 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                             exportAllData: true,
                             sorting: true,
                             emptyRowsWhenPaging: false,
+                            pageSize: rowData.length ?? 0,
                         }}
                         detailPanel={hasDetailPanel ? [{
-                            icon: () => <ChevronRight />,
+                            icon:  function IconWrapper() { return <ChevronRight />; },
                             render: renderProblemPreview
                         }] : undefined}
                         localization={{ header: { actions: '' } }}
+                        components={{
+                            Pagination: function PaginationWrapper(props) {
+                                return <TablePagination
+                                    {...props}
+                                    rowsPerPageOptions={[..._.range(0, rowData.length, 5), { label: 'All', value: rowData.length }]}
+                                />;
+                            }
+                        }}
                     />
-                }
+                )}
             </div>
         </>
     );
