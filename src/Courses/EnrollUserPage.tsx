@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Jumbotron } from 'react-bootstrap';
 import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import logger from '../Utilities/Logger';
 import { enrollByCode } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import localPreferences from '../Utilities/LocalPreferences';
 import { gaTrackEnroll } from '../Hooks/useTracking';
+import { Container, Grid } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 
 interface EnrollUserPageProps {
 
@@ -54,15 +55,19 @@ export const EnrollUserPage: React.FC<EnrollUserPageProps> = () => {
     if (!enrollCode) return <div>This page is no longer valid.</div>;
 
     return (
-        <Jumbotron>
-            {enrollError ?
-                <h2>{enrollError}</h2> :
-                (enrollData.courseId > -1 ? <>
-                    <h4>You have been enrolled in this class!</h4>
-                    <h3><Link to={`/common/courses/${enrollData.courseId}`}>Visit the class now.</Link></h3>
-                </> : <h2>Loading...</h2>)
-            }
-        </Jumbotron>
+        <Container>
+            <Grid>
+                <h1>Course Enrollment</h1>
+                <div>
+                    {enrollError ?
+                        <Alert severity='error'>{enrollError}</Alert> :
+                        (enrollData.courseId > -1 ? <>
+                            <Alert severity='success'>You have been enrolled in this class! <Link to={`/common/courses/${enrollData.courseId}`}>Visit the class now.</Link></Alert>
+                        </> : <h2>Loading...</h2>)
+                    }
+                </div>
+            </Grid>
+        </Container>
     );
 };
 
