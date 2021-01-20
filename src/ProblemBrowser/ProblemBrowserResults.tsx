@@ -15,6 +15,8 @@ import { ProblemBrowserHeader } from './ProblemBrowserHeader';
 import { Snackbar } from '@material-ui/core';
 import { useMUIAlertState } from '../Hooks/useAlertState';
 import { Alert as MUIAlert } from '@material-ui/lab';
+import { FixedSizeList, ListChildComponentProps } from 'react-window'; 
+import AutoSizer from 'react-virtualized-auto-sizer';
 
 const urlJoin: (...args: string[]) => string = require('url-join');
 
@@ -27,7 +29,7 @@ interface ProblemNavItemOptions {
     onSelect: (path: string) => unknown;
 }
 
-export const ProblemNavItem: React.FC<ProblemNavItemOptions> = ({
+const ProblemNavItem: React.FC<ProblemNavItemOptions> = ({
     problemPath,
     onSelect,
 }) => {
@@ -250,8 +252,28 @@ export const ProblemBrowserResults: React.FC<ProblemBrowserResultsProps> = () =>
                         <Nav variant='pills' className='flex-column' defaultActiveKey={selectedProblem} style={{
                             // wordBreak: 'break-word'
                             // display: 'block'
+                            height: '100%',
+                            width: '100%'
                         }}>
-                            {problems.map(problem => <ProblemNavItem key={problem.path} problemPath={problem.path} onSelect={(path: string) => setSelectedProblem(path)} /> )}
+                            <AutoSizer>
+                                {({ height, width }) => (
+                                    <FixedSizeList
+                                        // className='List'
+                                        height={height}
+                                        width={width}
+                                        itemCount={problems.length}
+                                        itemSize={100}
+                                    >
+                                        {({index, style}: ListChildComponentProps) => (
+                                            <div
+                                                style={style}
+                                            >
+                                                <ProblemNavItem key={problems[index].path} problemPath={problems[index].path} onSelect={(path: string) => setSelectedProblem(path)} />
+                                            </div>
+                                        )}
+                                    </FixedSizeList>
+                                )}
+                            </AutoSizer>
                         </Nav>
                     </Col>
                     <Col md={9} style={{
