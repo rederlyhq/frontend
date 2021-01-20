@@ -13,6 +13,7 @@ import { deleteEnrollment } from '../../APIInterfaces/BackendAPI/Requests/Course
 import { courseContext } from '../CourseDetailsPage';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import logger from '../../Utilities/Logger';
+import { TablePagination } from '@material-ui/core';
 
 interface EmailComponentWrapperProps {
     users: Array<UserObject>;
@@ -88,11 +89,18 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                         rowStyle: unit => ({
                             backgroundColor: _.includes(selectedStudents, unit.id) ? '#EEE' : '#FFF'
                         }),
-                        pageSize: 10,
-                        pageSizeOptions: [10, 15, 20],
+                        pageSize: users.length,
                         selection: userType !== UserRole.STUDENT,
                         showTextRowsSelected: false,
                         emptyRowsWhenPaging: false,
+                    }}
+                    components={{
+                        Pagination: function PaginationWrapper(props) {
+                            return <TablePagination
+                                {...props}
+                                rowsPerPageOptions={[..._.range(0, users.length, 5), { label: 'All', value: users.length }]}
+                            />;
+                        }
                     }}
                     actions={userType !== UserRole.STUDENT ? [
                         {

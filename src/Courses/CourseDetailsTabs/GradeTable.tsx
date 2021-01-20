@@ -1,4 +1,3 @@
-/* eslint-disable react/display-name */
 import React from 'react';
 import _ from 'lodash';
 import MaterialTable from 'material-table';
@@ -47,16 +46,15 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
                     exportButton: true,
                     exportAllData: true,
                     pageSize: safeGrades.length,
-                    // pageSizeOptions: [..._.range(0, safeGrades.length, 5), safeGrades.length],
                     emptyRowsWhenPaging: false,
                 }}
                 components={{
-                    Pagination: props => (
-                        <TablePagination
+                    Pagination: function PaginationWrapper(props) {
+                        return <TablePagination
                             {...props}
                             rowsPerPageOptions={[..._.range(0, safeGrades.length, 5), { label: 'All', value: safeGrades.length }]}
-                        />
-                    )
+                        />;
+                    }
                 }}
             />
         </div>
