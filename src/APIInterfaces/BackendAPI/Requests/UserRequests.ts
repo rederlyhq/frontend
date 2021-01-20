@@ -129,14 +129,16 @@ export const postResendVerification = async ({
 };
 
 export const getVerification = async ({
-    verifyToken
+    verifyToken,
+    confirmEmail,
 }: GetVerificationOptions): Promise<GetVerificationResponse> => {
     try {
         return await AxiosRequest.get(
             url.resolve(
                 USER_VERIFICATION_PATH,
                 `?${qs.stringify({
-                    verifyToken: verifyToken
+                    verifyToken: verifyToken,
+                    confirmEmail: confirmEmail,
                 })}`
             ));
     } catch (e) {

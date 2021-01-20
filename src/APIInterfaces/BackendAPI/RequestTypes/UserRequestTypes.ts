@@ -24,6 +24,7 @@ export interface PostResendVerificationOptions {
 
 export interface GetVerificationOptions {
     verifyToken: string;
+    confirmEmail: string;
 }
 
 export interface GetUsersOptions {
