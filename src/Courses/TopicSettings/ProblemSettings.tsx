@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, Grid, Snackbar } from '@material-ui/core';
 import { MultipleProblemPaths, ToggleField, ProblemMaxAttempts, ProblemPath, ProblemWeight, RandomSeedSet } from './GenericFormInputs';
 import { Alert as MUIAlert } from '@material-ui/lab';
@@ -49,12 +49,13 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
     const topicForm = useForm<ProblemSettingsInputs>(formSettings);
 
-    const { handleSubmit, control, watch, reset, setError } = topicForm;
+    const { handleSubmit, control, watch, reset, setError, clearErrors } = topicForm;
     const { optional, smaEnabled, webworkQuestionPath } = watch();
 
     const additionalProblemPaths = watch('courseQuestionAssessmentInfo.additionalProblemPaths', [{path: ''}]);
     const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
-    const [PGErrorsMsg, setPGErrorsAlert] = useState<string[]>([]);
+    const noPGErrorObject = useRef([]);
+    const [PGErrorsMsg, setPGErrorsAlert] = useState<string[]>(noPGErrorObject.current);
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
 
     useEffect(()=>{
@@ -90,7 +91,11 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     }, [selected, additionalProblemPathsArray, topic.topicTypeId]);
 
     const setErrorsForProblemSets = () => {
-        if (_.isNil(selected.errors)) return;
+        if (_.isNil(selected.errors) || _.isEmpty(selected.errors)) {
+            clearErrors('webworkQuestionPath');
+            setPGErrorsAlert(noPGErrorObject.current);
+            return;
+        }
 
         setError('webworkQuestionPath', {
             type: 'manual',
@@ -102,8 +107,13 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
     const setErrorsForAssessments = () => {
         const paths = (additionalProblemPathsArray === undefined) ? [selected.webworkQuestionPath] : [selected.webworkQuestionPath, ...additionalProblemPathsArray];
-
         const errors = _.assign({}, selected.errors, selected.courseQuestionAssessmentInfo?.errors);
+
+        if (_.isNil(errors) || _.isEmpty(errors)) {
+            clearErrors('courseQuestionAssessmentInfo.additionalProblemPaths');
+            setPGErrorsAlert(noPGErrorObject.current);
+            return;
+        }
 
         _.forEach(paths, (path, index) => {
             const error = errors[path];
