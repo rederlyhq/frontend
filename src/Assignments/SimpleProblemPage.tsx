@@ -48,8 +48,13 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [alert, setAlert] = useMUIAlertState();
     const [confirmationParameters, setConfirmationParameters] = useState<ConfirmationModalProps>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
+    const [smaHasNoVersions, setSmaHasNoVersions] = useState<boolean>(false);
     const {course, users} = useCourseContext();
     const noAlert = useRef<IMUIAlertModalState>({severity: 'info', message: ''});
+
+    useEffect(() => {
+        setSmaHasNoVersions(false);
+    }, [setSmaHasNoVersions, selectedProblemId]);
 
     const resetAlert = (): void => {
         setAlert(noAlert.current);
@@ -471,17 +476,26 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const requestShowMeAnother = async (questionId: number) => {
-        logger.info('SimpleProblemPage: user requested "Show Me Another"');
-        const res = await requestNewProblemVersion({ questionId });
-        const grade = res.data.data;
-        if (_.isNil(grade)) {
-            logger.info('Failed to find another version of this problem.');
+        try {
+            logger.info('SimpleProblemPage: user requested "Show Me Another"');
+            const res = await requestNewProblemVersion({ questionId });
+            const grade = res.data.data;
+            if (_.isNil(grade)) {
+                logger.info('Failed to find another version of this problem.');
+                setSmaHasNoVersions(true);
+                setAlert({
+                    severity: 'warning',
+                    message: res.data.message ?? 'Failed to find another version of this problem.'
+                });
+            } else {
+                setProblemStudentGrade(grade);
+            }    
+        } catch (e) {
+            logger.error('requestShowMeAnother failed', e);
             setAlert({
-                severity: 'warning',
-                message: res.data.message ?? 'Failed to find another version of this problem.'
+                severity: 'error',
+                message: 'An error occurred trying to fetch another version.'
             });
-        } else {
-            setProblemStudentGrade(grade);
         }
     };
 
@@ -611,7 +625,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                             (problems[selectedProblemId].smaEnabled && (problems[selectedProblemId].grades?.first?.overallBestScore === 1 || topic.deadDate.toMoment().isBefore(moment()))) &&
                                 <Button
                                     className='float-right'
-                                    onClick={()=>requestShowMeAnother(selectedProblemId)}>
+                                    onClick={()=>requestShowMeAnother(selectedProblemId)}
+                                    disabled={smaHasNoVersions}
+                                >
                                     Show Me Another
                                 </Button>
                             }
