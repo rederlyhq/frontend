@@ -7,7 +7,6 @@ import { putUpdateForgottonPassword } from '../APIInterfaces/BackendAPI/Requests
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import logger from '../Utilities/Logger';
-import { Container, Grid } from '@material-ui/core';
 import LandingPageWrapper from '../Components/LandingPageWrapper';
 
 interface ForgotPasswordLandingPageProps {
