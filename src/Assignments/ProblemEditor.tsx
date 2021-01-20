@@ -33,6 +33,7 @@ interface PreviewProps {
     problemSource?: string;
     showHints: boolean;
     showSolutions: boolean;
+    webworkQuestionPath: string;
 }
 
 export interface ProblemEditorInputs extends PreviewProps {
@@ -56,18 +57,19 @@ export const ProblemEditor: React.FC = () => {
         return result;
     };
 
+    const loadPath = queryParams.get('loadPath')?.fromBase64() ?? defaultLoadPath;
     const [alertState, setAlertState] = useAlertState();
     const [previewState, setPreviewState] = useState<PreviewProps>({
         seedValue: 1,
         showHints: false,
         showSolutions: false,
-        problemSource: undefined
+        problemSource: undefined,
+        webworkQuestionPath: loadPath,
     });
 
     const [myCatalog, setMyCatalog] = useState<Array<string>>([]);
     const [catalogOpen, setCatalogOpen] = useState<boolean>(false);
 
-    const loadPath = queryParams.get('loadPath')?.fromBase64() ?? defaultLoadPath;
     const problemEditorForm = useForm<ProblemEditorInputs>({
         mode: 'onSubmit', 
         shouldFocusError: true,
@@ -86,6 +88,7 @@ export const ProblemEditor: React.FC = () => {
             showHints: problemEditorForm.getValues().showHints,
             showSolutions: problemEditorForm.getValues().showSolutions,
             problemSource: problemEditorForm.getValues().problemSource,
+            webworkQuestionPath: problemEditorForm.getValues().loadPath,
         });
     };
 
@@ -463,6 +466,7 @@ export const ProblemEditor: React.FC = () => {
                     previewSeed={previewState.seedValue}
                     previewShowHints={previewState.showHints}
                     previewShowSolutions={previewState.showSolutions}
+                    previewPath={previewState.webworkQuestionPath}
                     problem={dummyProblem}
                 />}
             </Grid>

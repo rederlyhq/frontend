@@ -383,8 +383,8 @@ export const postPreviewQuestion = async ({
     showHints,
     showSolutions
 }: PreviewQuestionOptions): Promise<AxiosResponse<GetQuestionResponse>> => {
-    if (_.isNil(problemSource) === _.isNil(webworkQuestionPath)) {
-        throw new Error('Either problem source or webwork question path must be defined, not neither, not both');
+    if (_.isNil(problemSource) && _.isNil(webworkQuestionPath)) {
+        throw new Error('Problem source or webwork question path must be defined');
     }
 
     if (!_.isNil(problemSource)) {
@@ -392,6 +392,12 @@ export const postPreviewQuestion = async ({
         formData.set('problemSource', Buffer.from(problemSource).toString('base64'));
         !_.isNil(showHints) && formData.set('showHints', showHints.toString());
         !_.isNil(showSolutions) && formData.set('showSolutions', showSolutions.toString());
+    }
+
+    // TODO remove, problem seed shouldn't be here anyway so this is temporary
+    formData?.delete('problemSeed');
+    if (!_.isNil(webworkQuestionPath) && !_.isNil(formData)) {
+        formData.set('sourceFilePath', webworkQuestionPath);
     }
 
     try {
