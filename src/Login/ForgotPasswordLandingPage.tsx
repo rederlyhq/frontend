@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import logger from '../Utilities/Logger';
 import { Container, Grid } from '@material-ui/core';
+import LandingPageWrapper from '../Components/LandingPageWrapper';
 
 interface ForgotPasswordLandingPageProps {
 
@@ -107,65 +108,58 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
     }
 
     return (
-        <Container style={{'height': '100vh'}}>
-            <Grid container style={{flexDirection: 'column', height: '80%'}} justify='space-evenly'>
-                <img
-                    src={'/rederly-logo-dark.png'}
-                    alt='Rederly logo'
-                    style={{height: '20vh', alignSelf: 'center'}}
+        <LandingPageWrapper>
+            <h1>Forgot Password</h1>
+            <Form noValidate validated={validated} onSubmit={handleSubmit} action='#'>
+                {(forgotPasswordAlertMsg !== '') && <Alert variant={forgotPasswordAlertType}>{forgotPasswordAlertMsg}</Alert>}
+                <SimpleFormRow
+                    id="email"
+                    label="Institutional Email Address"
+                    errmsg="An Institutional email address is required."
+                    required
+                    defaultValue=''
+                    name="email"
+                    autoComplete="email"
+                    type="email"
+                    onChange={handleNamedChange('email')}
+                    placeholder="cxavier@xavierinstitute.edu"
                 />
-                <h1>Forgot Password</h1>
-                <Form noValidate validated={validated} onSubmit={handleSubmit} action='#'>
-                    {(forgotPasswordAlertMsg !== '') && <Alert variant={forgotPasswordAlertType}>{forgotPasswordAlertMsg}</Alert>}
-                    <SimpleFormRow
-                        id="email"
-                        label="Institutional Email Address"
-                        errmsg="An Institutional email address is required."
-                        required
-                        defaultValue=''
-                        name="email"
-                        autoComplete="email"
-                        type="email"
-                        onChange={handleNamedChange('email')}
-                        placeholder="cxavier@xavierinstitute.edu"
-                    />
-                    <SimpleFormRow
-                        id="password"
-                        label="New Password"
-                        errmsg="Your password must be at least 4 characters long."
-                        required
-                        defaultValue=''
-                        name="password"
-                        autoComplete="new-password"
-                        type="password"
-                        onChange={handleNamedChange('password')}
-                        placeholder="******"
-                        // TODO: Minimum password requirements
-                        minLength={4}
-                        maxLength={26}
-                    />
-                    <SimpleFormRow
-                        id="password"
-                        label="Confirm New Password"
-                        errmsg="Your password must be at least 4 characters long."
-                        required
-                        defaultValue=''
-                        name="passwordConf"
-                        autoComplete="new-password"
-                        type="password"
-                        onChange={handleNamedChange('passwordConf')}
-                        placeholder="******"
-                        // TODO: Minimum password requirements
-                        minLength={4}
-                        maxLength={26}
-                    />
-                    <Form.Group>
-                        <Button type="submit" disabled={forgotPasswordAlertType === 'success'}>Submit</Button>
-                    </Form.Group>
-                </Form>
-            </Grid>
-        </Container>
+                <SimpleFormRow
+                    id="password"
+                    label="New Password"
+                    errmsg="Your password must be at least 4 characters long."
+                    required
+                    defaultValue=''
+                    name="password"
+                    autoComplete="new-password"
+                    type="password"
+                    onChange={handleNamedChange('password')}
+                    placeholder="******"
+                    // TODO: Minimum password requirements
+                    minLength={4}
+                    maxLength={26}
+                />
+                <SimpleFormRow
+                    id="password"
+                    label="Confirm New Password"
+                    errmsg="Your password must be at least 4 characters long."
+                    required
+                    defaultValue=''
+                    name="passwordConf"
+                    autoComplete="new-password"
+                    type="password"
+                    onChange={handleNamedChange('passwordConf')}
+                    placeholder="******"
+                    // TODO: Minimum password requirements
+                    minLength={4}
+                    maxLength={26}
+                />
+                <Form.Group>
+                    <Button type="submit" disabled={forgotPasswordAlertType === 'success'}>Submit</Button>
+                </Form.Group>
+            </Form>
+        </LandingPageWrapper>
     );
 };
-
+    
 export default ForgotPasswordLandingPage;

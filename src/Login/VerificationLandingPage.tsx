@@ -8,6 +8,7 @@ import { getVerification } from '../APIInterfaces/BackendAPI/Requests/UserReques
 import logger from '../Utilities/Logger';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import { useMUIAlertState } from '../Hooks/useAlertState';
+import LandingPageWrapper from '../Components/LandingPageWrapper';
 
 interface VerificationLandingPageProps {
 
@@ -53,46 +54,44 @@ export const VerificationLandingPage: React.FC<VerificationLandingPageProps> = (
     if (!uid) return <div>This page is no longer valid.</div>;
 
     return (
-        <Container style={{'height': '100vh'}}>
-            <form onSubmit={handleSubmit(onSubmit)} style={{height: '100%'}}>
-                <Grid container style={{flexDirection: 'column', height: '80%'}} justify='space-evenly'>
-                    <img
-                        src={'/rederly-logo-dark.png'}
-                        alt='Rederly logo'
-                        style={{height: '20vh', alignSelf: 'center'}}
-                    />
-                    {message !== '' && 
+        <form onSubmit={handleSubmit(onSubmit)} style={{height: '100%'}}>
+            <LandingPageWrapper>
+                {message !== '' && 
                         <MUIAlert severity={severity}>
                             {message}
                         </MUIAlert>
-                    }
-                    <Grid container item style={{flexDirection: 'column', height: '40vh'}} justify='space-evenly'>
-                        <div>
-                            <h1>Verify Your Account</h1>
-                            <h3>Please enter your email address below and click Verify to confirm your email address.</h3>
-                        </div>
-                        <TextField 
-                            id='confirmEmail' 
-                            name='confirmEmail' 
-                            label='Confirm Email' 
-                            variant='outlined' 
-                            inputRef={register({required: true})}
-                            type='email'
-                            fullWidth={true}
-                        />
-                        <Button 
-                            variant='contained' 
-                            size='large' 
-                            type='submit'
-                            color='primary'
-                            style={{alignSelf: 'flex-end'}}
-                        >
+                }
+                <Grid
+                    container 
+                    item 
+                    style={{flexDirection: 'column', height: '40vh'}} 
+                    justify='space-evenly'
+                >
+                    <div>
+                        <h1>Verify Your Account</h1>
+                        <h3>Please enter your email address below and click Verify to confirm your email address.</h3>
+                    </div>
+                    <TextField 
+                        id='confirmEmail' 
+                        name='confirmEmail' 
+                        label='Confirm Email' 
+                        variant='outlined' 
+                        inputRef={register({required: true})}
+                        type='email'
+                        fullWidth={true}
+                    />
+                    <Button 
+                        variant='contained' 
+                        size='large' 
+                        type='submit'
+                        color='primary'
+                        style={{alignSelf: 'flex-end'}}
+                    >
                                 Verify
-                        </Button>
-                    </Grid>
+                    </Button>
                 </Grid>
-            </form>
-        </Container>
+            </LandingPageWrapper>
+        </form>
     );
 };
 
