@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useReducer } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
 import { TextField, Button, Grid, InputAdornment, IconButton, Tooltip } from '@material-ui/core';
 import _ from 'lodash';
@@ -22,12 +22,10 @@ import { motion, useCycle } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import localPreferences from '../Utilities/LocalPreferences';
 import { ProblemEditorAssetUploadButton } from './ProblemEditorAssetUploadButton';
-import BackendAPIError from '../APIInterfaces/BackendAPI/BackendAPIError';
 const { session } = localPreferences;
 
 const defaultLoadPath = 'private/templates/barebones.pg';
 
-const dummyProblem = new ProblemObject();
 interface PreviewProps {
     seedValue: number;
     problemSource?: string;
@@ -40,6 +38,19 @@ export interface ProblemEditorInputs extends PreviewProps {
     loadPath: string;
     userPath: string;
 }
+
+interface DummyProblemReducerAction {
+    type: string;
+}
+const dummyProblemReducer = (state: ProblemObject, action: DummyProblemReducerAction) => {
+    switch(action.type) {
+    case 'force-render':
+        return new ProblemObject();
+    default:
+        logger.warn(`dummyProblemReducer rececieved unexpected event: ${action.type}`);
+        return state;
+    }
+};
 
 export const ProblemEditor: React.FC = () => {
     const [flipped, cycleFlipped] = useCycle(-1, 1);
@@ -69,6 +80,7 @@ export const ProblemEditor: React.FC = () => {
 
     const [myCatalog, setMyCatalog] = useState<Array<string>>([]);
     const [catalogOpen, setCatalogOpen] = useState<boolean>(false);
+    const [dummyProblem, dummyProblemDispatch] = useReducer(dummyProblemReducer, new ProblemObject());
 
     const problemEditorForm = useForm<ProblemEditorInputs>({
         mode: 'onSubmit', 
@@ -367,6 +379,7 @@ export const ProblemEditor: React.FC = () => {
                             });
                             break;
                         case 'success': {
+                            dummyProblemDispatch({ type: 'force-render' });
                             setAlertState({
                                 variant: 'success',
                                 message: 'Successfully uploaded asset'
@@ -399,6 +412,7 @@ export const ProblemEditor: React.FC = () => {
                     label='Problem Seed'
                     type='number'
                     style={{width:'100%'}}
+                    onBlur={render}
                     // className='hideNumberSpinners'
                     InputProps={{
                         startAdornment: <InputAdornment position='start'>
@@ -409,6 +423,7 @@ export const ProblemEditor: React.FC = () => {
                                         event.stopPropagation();
                                         problemEditorForm.setValue(nameof<ProblemEditorInputs>('seedValue'), _.random(0, 999999, false));
                                         cycleFlipped();
+                                        render();
                                     }}
                                 >
                                     <motion.div animate={{scaleX: flipped}} ><FaDice/></motion.div>
