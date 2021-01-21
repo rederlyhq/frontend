@@ -41,7 +41,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [topic, setTopic] = useState<TopicObject | null>(null);
     const [versionId, setVersionId] = useState<number | null>(null);
     const [attemptsRemaining, setAttemptsRemaining] = useState<number | 'unlimited'>(1); // the only time these two are not set
-    const [versionsRemaining, setVersionsRemaining] = useState<number>(1); // is when an exam hasn't been attempted at all
+    const [versionsRemaining, setVersionsRemaining] = useState<number | 'unlimited'>(1); // is when an exam hasn't been attempted at all
     const [modalLoading, setModalLoading] = useState<boolean>(false);
     const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
@@ -139,7 +139,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     const currentAttemptsRemaining = (currentVersion.maxAttempts <= 0) ? 'unlimited' : currentVersion.maxAttempts - currentVersion.numAttempts;
                     let currentVersionsRemaining = versionsRemaining;
                     if (!_.isNil(currentTopic.topicAssessmentInfo.maxVersions)) {
-                        currentVersionsRemaining = currentTopic.topicAssessmentInfo.maxVersions - currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo.length;
+                        currentVersionsRemaining = (currentTopic.topicAssessmentInfo.maxVersions <= 0) ? 'unlimited' : currentTopic.topicAssessmentInfo.maxVersions - currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo.length;
                         setVersionsRemaining(currentVersionsRemaining);
                     }
 
@@ -149,7 +149,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     ) {
                         if (attemptsRemaining !== 0) setAttemptsRemaining(0); // avoid render loop when exam ends without having used all available attempts
                         if (currentTopic.topicAssessmentInfo.hideProblemsAfterFinish) {
-                            if (currentVersionsRemaining > 0) {
+                            if (currentVersionsRemaining === 'unlimited' || currentVersionsRemaining > 0) {
                                 // don't automatically offer a new version if we're currently looking at
                                 // our scores from the last version...
                                 if (confirmationParameters.show === false) {
@@ -186,11 +186,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             let actualVersionsRemaining = versionsRemaining;
 
             if (!_.isNil(currentTopic.topicAssessmentInfo.maxVersions)) {
-                actualVersionsRemaining = currentTopic.topicAssessmentInfo.maxVersions - usedVersions;
+                actualVersionsRemaining = (currentTopic.topicAssessmentInfo.maxVersions <= 0) ? 'unlimited' : currentTopic.topicAssessmentInfo.maxVersions - usedVersions;
                 setVersionsRemaining(actualVersionsRemaining);
             }
 
-            if (actualVersionsRemaining > 0 &&
+            if (actualVersionsRemaining === 'unlimited' || actualVersionsRemaining > 0 &&
                 moment().isBetween(currentTopic.startDate.toMoment(), currentTopic.endDate.toMoment())  
             ) {
                 // don't overwrite score modal on final graded submission
@@ -240,7 +240,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         });
     };
 
-    const confirmStartNewVersion = (topic: TopicObject, actualVersionsRemaining?: number, message?: string) => {
+    const confirmStartNewVersion = (topic: TopicObject, actualVersionsRemaining?: number | 'unlimited', message?: string) => {
         logger.info('SimpleProblemPage: confirming new version start');
         actualVersionsRemaining = actualVersionsRemaining ?? versionsRemaining; // retrieve from state if not supplied
         setConfirmationParameters({
@@ -511,7 +511,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     if (problems === null || selectedProblemId === null) return (
         <>
             {alert.message !== '' && <Alert severity={alert.severity}>{alert.message}</Alert>}
-            { (topic?.topicTypeId === 2 && versionsRemaining > 0 && topic.endDate.toMoment().isAfter(moment())) &&
+            { (topic?.topicTypeId === 2 && (versionsRemaining === 'unlimited' || versionsRemaining > 0) && topic.endDate.toMoment().isAfter(moment())) &&
                 <Button variant='success'
                     tabIndex={0}
                     onClick={() => confirmStartNewVersion(topic, versionsRemaining)}
@@ -560,7 +560,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                                 onClick={() => confirmStartNewVersion(topic)}
                                                 disabled={versionsRemaining <= 0}
                                             >
-                                                {(versionsRemaining>0) ? 'New Version' : 'Exam Completed'}
+                                                {(versionsRemaining==='unlimited'||versionsRemaining>0) ? 'New Version' : 'Exam Completed'}
                                             </Button>
                                         }
                                         { topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion &&
