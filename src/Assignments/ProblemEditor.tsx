@@ -114,7 +114,7 @@ export const ProblemEditor: React.FC = () => {
             // I think this is a windows line ending issue so it only matters on file upload
             const problemSource: string = (await acceptedFiles.first.text()).replace(/\r/gm, '');
             problemEditorForm.setValue(nameof<ProblemEditorInputs>('problemSource'), problemSource);
-            const userPath = getSavePathForLoadPath(path);
+            const userPath = getSavePathForLoadPath(path.replace(/\s/g, ''));
             problemEditorForm.setValue(nameof<ProblemEditorInputs>('userPath'), userPath);
             problemEditorForm.setValue(nameof<ProblemEditorInputs>('loadPath'), `${savePathAdornmentText}${userPath}`);
             render();
