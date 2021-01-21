@@ -32,7 +32,7 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
         }
 
         // TODO, the form gives strings and we aren't validating type properly
-        if(course[field].toString() !== value.toString()) {
+        if(course[field].toString() !== value.toString() && value.toString() !== '') {
             const courseObjectWithUpdates = new CourseObject(course);
             (courseObjectWithUpdates as any)[field] = value;
             if(field === nameof<CourseObject>('semesterCodeYear')) {
