@@ -563,10 +563,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                                 {(versionsRemaining==='unlimited'||versionsRemaining>0) ? 'New Version' : 'Exam Completed'}
                                             </Button>
                                         }
-                                        { topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion &&
+                                        { !_.isNil(topic.topicAssessmentInfo) &&
+                                        !_.isNil(topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion) &&
                                         attemptsRemaining !== 0 &&
                                         (attemptsRemaining === 'unlimited' || 
-                                        attemptsRemaining < topic.topicAssessmentInfo?.maxGradedAttemptsPerVersion) &&
+                                        attemptsRemaining < topic.topicAssessmentInfo.maxGradedAttemptsPerVersion) &&
                                             <Button variant='danger'
                                                 tabIndex={0}
                                                 onClick={() => confirmEndVersion()}
