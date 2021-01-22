@@ -37,6 +37,7 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
     return (
         <div style={{maxWidth: '100%'}}>
             <MaterialTable
+                key={safeGrades.length}
                 icons={MaterialIcons}
                 title={courseName}
                 columns={getHeaders(safeGrades)}
