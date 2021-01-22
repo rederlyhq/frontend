@@ -73,6 +73,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
             />
             <div style={{maxWidth: '100%'}}>
                 <MaterialTable
+                    key={users.length}
                     icons={MaterialIcons}
                     title={course.name}
                     columns={[
