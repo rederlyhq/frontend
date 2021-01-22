@@ -540,6 +540,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 )}
                 {!loading && statisticsAlert.message === '' && rowData.length > 0 && (
                     <MaterialTable
+                        key={rowData.length}
                         icons={MaterialIcons}
                         title={<TableTitleComponent
                             userType={userType}
