@@ -8,7 +8,8 @@ import MaterialBiSelect from '../../Components/MaterialBiSelect';
 import { useCourseContext } from '../CourseProvider';
 import { UserObject, TopicObject, ProblemObject, StudentGrade, StudentGradeInstance, ProblemState } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
-import { getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { getTopic, startExportOfTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import ExportAllButton from './ExportAllButton';
 import { GradeInfoHeader } from './GradeInfoHeader';
 import { useQuery } from '../../Hooks/UseQuery';
 import AttachmentsPreview from './AttachmentsPreview';
@@ -132,6 +133,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                     <h1>Grading {topic && topic.name}</h1>
                 </Grid>
                 <Grid item>
+                    {topic && <ExportAllButton topicId={topic.id} />}
                     {selected.gradeInstance &&
                         <Link
                             to={path => `${path.pathname}/print/${selected.user?.id}`}

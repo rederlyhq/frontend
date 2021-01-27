@@ -722,6 +722,17 @@ export const deleteAttachments = async ({
     }
 };
 
+export const startExportOfTopic = async ({
+    topicId,
+    force = false,
+}: {topicId: number; force: boolean}): Promise<AxiosResponse<any>> => {
+    try {
+        return await AxiosRequest.post(url.resolve(COURSE_TOPIC_PATH, `${topicId}/startExport?force=${force}`));
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
 export const getAllContentForVersion = async ({
     userId,
     topicId
