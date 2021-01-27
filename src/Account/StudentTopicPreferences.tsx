@@ -6,11 +6,13 @@ import { nameof } from '../Utilities/TypescriptUtils';
 import localPreferences from '../Utilities/LocalPreferences';
 import useAlertState from '../Hooks/useAlertState';
 import { Alert } from 'react-bootstrap';
+import { getUserRole, UserRole } from '../Enums/UserRole';
 
-const { topicPreferences } = localPreferences;
+const { topicPreferences, coursePreferences } = localPreferences;
 
 export interface StudentTopicPreferencesInputs {
     useSeconds: boolean;
+    keepBucketsAsTopics: boolean;
 }
 
 interface StudentTopicPreferencesProps {
@@ -24,14 +26,18 @@ export const StudentTopicPreferences: React.FC<StudentTopicPreferencesProps> = (
         mode: 'onSubmit',
         shouldFocusError: true,
         defaultValues: {
-            useSeconds: topicPreferences.useSeconds
+            useSeconds: topicPreferences.useSeconds,
+            keepBucketsAsTopics: coursePreferences.keepBucketsAsTopics
         }
     });
     const { control, getValues, handleSubmit, watch } = preferences;
     const useSeconds = watch('useSeconds');
+    const keepBucketsAsTopics = watch('keepBucketsAsTopics');
 
     const onSubmit = (values: StudentTopicPreferencesInputs) => {
         topicPreferences.useSeconds = values.useSeconds;
+        coursePreferences.keepBucketsAsTopics = values.keepBucketsAsTopics;
+
         setAlert({
             variant: 'success',
             message: 'Saved Successful'
@@ -49,8 +55,11 @@ export const StudentTopicPreferences: React.FC<StudentTopicPreferencesProps> = (
         <form onChange={() => clearAlert()} onSubmit={handleSubmit(onSubmit)}>
             <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message}</Alert>
             <Grid item md={12}>
-                <h1>Topic Preferences</h1>
+                <h1>Settings</h1>
                 <p>These preferences are stored locally. If you clear browser storage, switch browsers or use another computer they are subject to change.</p>
+            </Grid>
+            <Grid item md={12}>
+                <h2>Topic Preferences</h2>
             </Grid>
             <Grid item md={12}>
                 <p>
@@ -83,6 +92,38 @@ export const StudentTopicPreferences: React.FC<StudentTopicPreferencesProps> = (
                     )}
                 />
             </Grid>
+            {getUserRole() === UserRole.PROFESSOR && <>
+                <Grid item md={12}>
+                    <h2>Course Preferences</h2>
+                </Grid>
+                <Grid item md={12}>
+                    <p>
+                        <strong>Keep buckets as topics</strong>, if on when importing an exam it will keep any problem buckets as topics as well.
+                    </p>
+                    <Controller
+                        name={nameof<StudentTopicPreferencesInputs>('keepBucketsAsTopics')}
+                        control={control}
+                        defaultValue={getValues().keepBucketsAsTopics}
+                        render={({ onChange, onBlur, value, name }) => (
+                            <FormControlLabel
+                                name='keepBucketsAsTopics'
+                                label={'Keep buckets as topics'}
+                                labelPlacement='start'
+                                control={
+                                    <Switch
+                                        onBlur={onBlur}
+                                        onChange={e => onChange(e.target.checked)}
+                                        color='primary'
+                                        checked={value}
+                                        value={value}
+                                        name={name}
+                                    />
+                                }
+                            />
+                        )}
+                    />
+                </Grid>
+            </>}
             <Grid>
                 <Button
                     variant="contained"
@@ -90,9 +131,11 @@ export const StudentTopicPreferences: React.FC<StudentTopicPreferencesProps> = (
                     type="submit"
                     style={{ fontSize: '1.2em' }}
                     disabled={_.isEqual({
-                        useSeconds: topicPreferences.useSeconds
+                        useSeconds: topicPreferences.useSeconds,
+                        keepBucketsAsTopics: coursePreferences.keepBucketsAsTopics
                     }, {
-                        useSeconds: useSeconds
+                        useSeconds: useSeconds,
+                        keepBucketsAsTopics: keepBucketsAsTopics
                     })}
                 >
                     Save

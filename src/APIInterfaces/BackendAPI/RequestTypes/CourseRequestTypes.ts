@@ -12,6 +12,7 @@ export interface CreateCourseOptions {
 export interface PostImportCourseArchiveOptions {
     archiveFile: File;
     courseId: number;
+    keepBucketsAsTopics: boolean;
 }
 
 export interface PutCourseOptions {
