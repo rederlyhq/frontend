@@ -12,11 +12,13 @@ export const LandingPageWrapper: React.FC<LandingPageWrapperProps> = ({children}
     return (
         <Container style={{'height': '100vh'}}>
             <Grid container style={{flexDirection: 'column', height: '80%'}} justify='space-evenly'>
-                <img
-                    src={'/rederly-logo-dark.png'}
-                    alt='Rederly logo'
-                    style={{height: '20vh', alignSelf: 'center'}}
-                />
+                <a href="/" style={{alignSelf: 'center'}}>
+                    <img
+                        src={'/rederly-logo-dark.png'}
+                        alt='Rederly logo'
+                        style={{height: '20vh'}}
+                    />
+                </a>
                 {children}
             </Grid>
         </Container>
