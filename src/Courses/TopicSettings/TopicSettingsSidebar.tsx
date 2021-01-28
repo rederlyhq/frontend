@@ -92,7 +92,7 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                                     ref={dragProvided.innerRef} 
                                                                     {...dragProvided.draggableProps} 
                                                                     {...dragProvided.dragHandleProps}
-                                                                    style={hasErrors ? {backgroundColor: 'rgba(255, 0, 0, 0.2)'} : undefined}
+                                                                    className={hasErrors ? 'problem-row-audit-has-errors' : undefined}
                                                                 >
                                                                     <NavLink
                                                                         eventKey={prob.id}
