@@ -29,7 +29,7 @@ import { ProblemBrowserResults } from '../ProblemBrowser/ProblemBrowserResults';
 import PrintEverything from '../Courses/TopicGrades/PrintEverything';
 import { PrintLoadingProvider } from '../Contexts/PrintLoadingContext';
 import localPreferences from '../Utilities/LocalPreferences';
-import { logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
+import { impersonate, logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 const { session } = localPreferences;
 
 
@@ -112,6 +112,35 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             }
                             {getUserRole() !== UserRole.STUDENT &&
                                 <NavDropdown.Item onClick={()=>{history.push(`${path}/problem-browser`);}}>Problem Browser</NavDropdown.Item>
+                            }
+                            {(session.userType !== UserRole.STUDENT || ((session.actualUserType !== null) && session.actualUserType !== UserRole.STUDENT)) &&
+                                <NavDropdown.Item onClick={()=> {
+                                    (async () => {
+                                        if (session.actualUserType === null) {
+                                            session.actualUserType = session.userType;
+                                        }
+                                        try {
+                                            const roleToSend = session.userType === UserRole.STUDENT ?
+                                                null :
+                                                UserRole.STUDENT;
+                                            
+                                            await impersonate({
+                                                role: roleToSend
+                                            });
+                                            
+                                            session.userType = session.userType === UserRole.STUDENT ?
+                                                UserRole.PROFESSOR :
+                                                UserRole.STUDENT;
+                                        } catch (e) {
+                                            logger.error('Could not get impersonation cookie', e);
+                                            // TODO show on UI
+                                        }
+                                        
+                                        history.push('/');    
+                                    })();
+                                }}>
+                                    {session.userType === UserRole.STUDENT ? 'Professor' : 'Student'} View (BETA)
+                                </NavDropdown.Item>
                             }
                             <NavDropdown.Item onClick={logoutClicked}>Log out</NavDropdown.Item>
                         </NavDropdown>
