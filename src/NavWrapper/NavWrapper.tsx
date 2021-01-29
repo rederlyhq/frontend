@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Switch, Route, useRouteMatch, Redirect, useHistory, Link } from 'react-router-dom';
 import { History } from 'history';
 import CoursePage from '../Courses/CoursePage';
@@ -65,6 +65,11 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     const sessionCookie = Cookies.get(CookieEnum.SESSION);
     const userName = localPreferences.session.username;
     const { Provider } = userContext;
+    const [ softReloadFlag, setSoftReloadFlag ] = useState<boolean>(false);
+
+    useEffect(() => {
+        setSoftReloadFlag(false);
+    }, [softReloadFlag]);
 
     // TODO: Check if the user has been deauthenticated (ex: expired) and display a message.
     if (!sessionCookie) {
@@ -78,6 +83,10 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     const logoutClicked = async () => {
         performLogout(history);
     };
+
+    if (softReloadFlag) {
+        return <></>;
+    }
 
     return (
         <Container fluid id='navbarParent'>
@@ -138,7 +147,8 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                         
                                         // Doing this updates the ui appropriately, however it doesn't refetch all the data
                                         // history.replace(window.location.pathname + window.location.search);
-                                        window.location.reload();
+                                        // window.location.reload();
+                                        setSoftReloadFlag(true);
                                     })();
                                 }}>
                                     {session.userType === UserRole.STUDENT ? 'Professor' : 'Student'} View (BETA)
