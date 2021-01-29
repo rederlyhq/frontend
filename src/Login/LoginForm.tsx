@@ -57,6 +57,7 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
                 setLoginAlertMsg({ message: resp.data?.msg || 'Logged in!', variant: 'success' });
                 session.userId = resp.data.data.userId;
                 session.userType = getUserRoleFromServer(resp.data.data.roleId);
+                session.actualUserType = session.userType;
                 session.userUUID = resp.data.data.uuid;
                 session.username = `${resp.data.data.firstName} ${resp.data.data.lastName}`;
                 gaTrackLogin('EMAIL', session.userId);
