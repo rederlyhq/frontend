@@ -195,7 +195,15 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     </AnimatePresence>
                 </Provider>
                 <Navbar fixed="bottom" variant='dark' bg='dark' className='footer'>
-                    <Row><Col>You&apos;re using v{version} of Rederly!</Col></Row>
+                    <Row style={{
+                        // There is some weird spacing here, if you do 100% it ignores the parents padding and starts all the way to left
+                        // The parent has 16px padding, each column has 15
+                        // So width 100% has 16px padding leading but trailing it has 31px
+                        width: '100vw'
+                    }}>
+                        <Col>You&apos;re using v{version} of Rederly!</Col>
+                        <Col style={{float: 'right', textAlign: 'right'}}>User Role: {localPreferences.session.userType}</Col>
+                    </Row>
                 </Navbar>
             </Container>
         </Container>
