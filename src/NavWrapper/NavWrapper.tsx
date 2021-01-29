@@ -136,7 +136,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                             // TODO show on UI
                                         }
                                         
-                                        history.push('/');    
+                                        // Doing this updates the ui appropriately, however it doesn't refetch all the data
+                                        // history.replace(window.location.pathname + window.location.search);
+                                        window.location.reload();
                                     })();
                                 }}>
                                     {session.userType === UserRole.STUDENT ? 'Professor' : 'Student'} View (BETA)
