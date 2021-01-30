@@ -128,19 +128,12 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                     {gradeAlert.message}
                 </MUIAlert>
             </Snackbar>
-            <Grid container spacing={1} alignItems='center'>
+            <Grid container spacing={1} alignItems='center' justify='space-between'>
                 <Grid item className='text-left'>
                     <h1>Grading {topic && topic.name}</h1>
                 </Grid>
                 <Grid item>
-                    {topic && <ExportAllButton topicId={topic.id} />}
-                    {selected.gradeInstance &&
-                        <Link
-                            to={path => `${path.pathname}/print/${selected.user?.id}`}
-                            target="_blank" rel='noopener noreferrer'
-                        >
-                            <Button variant='contained' color='primary'>Export/Print</Button>
-                        </Link>}
+                    {topic && <ExportAllButton topicId={topic.id} userId={selected.gradeInstance ? selected.user?.id : undefined}/>}
                 </Grid>
             </Grid>
             <Grid container spacing={1}>
