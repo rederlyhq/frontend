@@ -1,6 +1,7 @@
 import _ from 'lodash';
 
 const STUDENT_TOPIC_PREFERENCES_USE_SECONDS = 'STUDENT_TOPIC_PREFERENCES_USE_SECONDS';
+const PROFESSOR_COURSE_PREFERENCES_KEEP_BUCKETS_AS_TOPICS = 'PROFESSOR_COURSE_PREFERENCES_KEEP_BUCKETS_AS_TOPICS';
 const LOGGING_LEVEL = 'LOGGING_LEVEL';
 const VERSION_CHECK_DATE = 'VERSION_CHECK_DATE';
 const GENERAL_LOGIN_REDIRECT_URL = 'GENERAL_LOGIN_REDIRECT_URL'; 
@@ -93,6 +94,14 @@ const localPreferences = {
         set useSeconds(value: boolean) {
             setBooleanValue(STUDENT_TOPIC_PREFERENCES_USE_SECONDS, value);
         }
+    },
+    coursePreferences: {
+        get keepBucketsAsTopics(): boolean {
+            return getBooleanValue(PROFESSOR_COURSE_PREFERENCES_KEEP_BUCKETS_AS_TOPICS, true) as boolean;
+        },
+        set keepBucketsAsTopics(value: boolean) {
+            setBooleanValue(PROFESSOR_COURSE_PREFERENCES_KEEP_BUCKETS_AS_TOPICS, value);
+        },
     },
     loggingPreferences: {
         get loggingLevel(): string {

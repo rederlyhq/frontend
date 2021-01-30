@@ -60,7 +60,8 @@ export const postCourse = async ({
 
 export const postImportCourseArchive = async ({
     archiveFile,
-    courseId
+    courseId,
+    keepBucketsAsTopics
 }: PostImportCourseArchiveOptions): Promise<AxiosResponse<PostImportCourseArchiveResponse>> => {
     const data = new FormData();
     data.append('file', archiveFile);
@@ -72,6 +73,9 @@ export const postImportCourseArchive = async ({
             {
                 headers: {
                     'Content-Type': 'multipart/form-data'
+                },
+                params: {
+                    keepBucketsAsTopics: keepBucketsAsTopics
                 }
             }
         );

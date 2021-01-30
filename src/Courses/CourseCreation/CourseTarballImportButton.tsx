@@ -7,6 +7,7 @@ import { FaArchive, FaFileUpload } from 'react-icons/fa';
 import logger from '../../Utilities/Logger';
 import { postImportCourseArchive } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { UnitObject } from '../CourseInterfaces';
+import localPreferences from '../../Utilities/LocalPreferences';
 
 type CourseTarballImportButtonState = {
     status: 'success';
@@ -56,7 +57,8 @@ export const CourseTarballImportButton: React.FC<CourseTarballImportButtonProps>
                 try {
                     const resp = await postImportCourseArchive({
                         courseId: courseId,
-                        archiveFile: acceptedFiles.first
+                        archiveFile: acceptedFiles.first,
+                        keepBucketsAsTopics: localPreferences.coursePreferences.keepBucketsAsTopics
                     });
                     onEvent?.({
                         status: 'success',
