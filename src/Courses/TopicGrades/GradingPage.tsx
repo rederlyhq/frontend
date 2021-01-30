@@ -1,14 +1,14 @@
-import { Grid, Button, Snackbar } from '@material-ui/core';
+import { Grid, Snackbar } from '@material-ui/core';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
-import { Link, useHistory, useParams, useRouteMatch } from 'react-router-dom';
+import { useHistory, useParams, useRouteMatch } from 'react-router-dom';
 import logger from '../../Utilities/Logger';
 import MaterialBiSelect from '../../Components/MaterialBiSelect';
 import { useCourseContext } from '../CourseProvider';
 import { UserObject, TopicObject, ProblemObject, StudentGrade, StudentGradeInstance, ProblemState } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
-import { getTopic, startExportOfTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import ExportAllButton from './ExportAllButton';
 import { GradeInfoHeader } from './GradeInfoHeader';
 import { useQuery } from '../../Hooks/UseQuery';
@@ -19,11 +19,6 @@ import * as qs from 'querystring';
 interface TopicGradingPageProps {
     topicId?: string;
     courseId?: string;
-}
-
-interface VersionInfo {
-    studentTopicAssessmentInfoId: number;
-    endTime: Date;
 }
 
 export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {

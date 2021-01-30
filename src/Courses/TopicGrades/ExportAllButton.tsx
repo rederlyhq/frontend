@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, ButtonGroup, CircularProgress, ClickAwayListener, Grow, Menu, MenuItem, MenuList, Paper, Popper } from '@material-ui/core';
+import { Button, ButtonGroup, CircularProgress, ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper } from '@material-ui/core';
 import { startExportOfTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import _ from 'lodash';
@@ -19,7 +19,8 @@ enum LoadingState {
 
 enum ButtonOptions {
     EXPORT_ALL = 'Export All (.zip)',
-    EXPORT_ALL_NO_SOLUTIONS = 'Export All without Solutions (.zip)',
+    // TODO: Implement
+    // EXPORT_ALL_NO_SOLUTIONS = 'Export All without Solutions (.zip)',
     RECALCULATE = 'Recreate Archive',
     PRINT_SINGLE = 'Export Selected Student (.pdf)',
 }
@@ -48,7 +49,6 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
 
         try {
             const res = await startExportOfTopic({topicId, force});
-            console.log(res);
 
             if (_.isNil(res.data.data.lastExported) && force === false) {
                 setLoading(LoadingState.UNTOUCHED);
@@ -64,6 +64,7 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                 intervalRef.current = undefined;
                 setLoading(LoadingState.SUCCESS);
                 setUrl(res.data.data.exportUrl);
+                setButtonState(ButtonOptions.EXPORT_ALL);
 
                 // This was more friendly, but since it is ambiguous as to whether this includes solutions or not.
                 // setButtonState(ButtonOptions.DOWNLOAD_ZIP);
