@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import AxiosRequest from '../../Hooks/AxiosRequest';
 import { Nav } from 'react-bootstrap';
 import GradeTable from './GradeTable';
 import _ from 'lodash';
@@ -8,6 +7,8 @@ import { UnitObject, TopicObject, ProblemObject, CourseObject } from '../CourseI
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import logger from '../../Utilities/Logger';
 import localPreferences from '../../Utilities/LocalPreferences';
+import { getGrades } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { GetGradesOptions } from '../../APIInterfaces/BackendAPI/RequestTypes/CourseRequestTypes';
 
 interface GradesTabProps {
     course: CourseObject;
@@ -67,22 +68,30 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
 
     // This hook gets the grades for all users, filtered by the type of view selected.
     const getCourseGradesHook = () => {
-        if (_.isNil(course) || !course.id) return;
         (async () => {
-            let urlArg = `courseId=${course.id}`;
+            if (_.isNil(course) || !course.id) return;
+            const params: GetGradesOptions = {
+                courseId: course.id
+            };
 
             if (selectedObjects.problem) {
-                urlArg = `questionId=${selectedObjects.problem?.id}`;
+                params.questionId = selectedObjects.problem?.id;
             } else if (selectedObjects.topic) {
-                urlArg = `topicId=${selectedObjects.topic?.id}`;
+                params.topicId = selectedObjects.topic?.id;
             } else if (selectedObjects.unit) {
-                urlArg = `unitId=${selectedObjects.unit?.id}`;
+                params.unitId = selectedObjects.unit?.id;
             }
 
             if (userType === UserRole.STUDENT) {
-                urlArg = `${urlArg}&userId=${userId}`;
+                if (_.isNil(userId)) {
+                    logger.error('Tried to get grades for a student but they did not have a user id');
+                    throw new Error('Something went wrong');
+                } else {
+                    params.userId = parseInt(userId, 10);
+                }
             }
-            const res = await AxiosRequest(`/courses/grades?${urlArg}`);
+            
+            const res = await getGrades(params);
 
             const gradesArr: Array<any> = res.data.data || [];
 
