@@ -88,10 +88,11 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                         return;
                     }
 
-                    if (url) {
+                    if (url && buttonState !== ButtonOptions.RECALCULATE) {
                         window.open('https://staging.rederly.com/' + url, '_blank');
                         return;
-                    }    
+                    }
+
                     checkAndStatusUpdateExport(true);
                 }
             }>{buttonState}</Button>
@@ -110,12 +111,12 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                 }
             </Button>
         </ButtonGroup>
-        <Popper open={open} anchorEl={splitButtonRef.current} role='menu' transition disablePortal style={{zIndex: 2}}>
+        <Popper open={open} anchorEl={splitButtonRef.current} role='menu' transition disablePortal style={{zIndex: 2}} placement='bottom-end'>
             {({ TransitionProps, placement }) => (
                 <Grow
                     {...TransitionProps}
                     style={{
-                        transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
+                        transformOrigin: placement === 'bottom' ? 'left top' : 'left bottom',
                     }}
                 >
                     <Paper>
