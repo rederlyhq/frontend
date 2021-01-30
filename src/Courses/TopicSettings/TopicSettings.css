@@ -57,3 +57,7 @@ svg.grDragHandle path {
 .hideNumberSpinners input[type=number] {
   -moz-appearance: textfield;
 }
+
+.problem-row-audit-has-errors {
+  background-color: rgba(255, 0, 0, 0.2)
+}
