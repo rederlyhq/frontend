@@ -236,6 +236,7 @@ export interface GetGradesOptions {
     topicId?: number;
     unitId?: number;
     questionId?: number;
+    courseId?: number;
 }
 
 export interface GetQuestionGradeOptions {

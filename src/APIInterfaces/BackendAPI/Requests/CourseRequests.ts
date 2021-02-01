@@ -742,6 +742,7 @@ export const getGrades = async ({
     questionId,
     topicId,
     unitId,
+    courseId,
 }: GetGradesOptions): Promise<AxiosResponse<GradesResponse>> => {
     try {
         return await AxiosRequest.get(
@@ -752,6 +753,7 @@ export const getGrades = async ({
                     questionId: questionId,
                     topicId: topicId,
                     unitId: unitId,
+                    courseId: courseId,
                 }, _.isUndefined))}`
             ));
     } catch (e) {
