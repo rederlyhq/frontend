@@ -11,6 +11,7 @@ interface ExportAllButtonProps {
 }
 
 enum LoadingState {
+    UNINITIALIZED,
     UNTOUCHED,
     LOADING,
     SUCCESS,
@@ -18,11 +19,11 @@ enum LoadingState {
 }
 
 enum ButtonOptions {
-    EXPORT_ALL = 'Export All (.zip)',
-    // TODO: Implement
-    // EXPORT_ALL_NO_SOLUTIONS = 'Export All without Solutions (.zip)',
-    RECALCULATE = 'Recreate Archive',
-    PRINT_SINGLE = 'Export Selected Student (.pdf)',
+    DOWNLOAD = 'Download PDFs (.zip)',
+    EXPORT_ALL = 'Build Student Grade PDFs (.zip)',
+    EXPORT_ALL_NO_SOLUTIONS = 'Build Student Grade PDFs without Solutions (.zip)',
+    // RECALCULATE = 'Recreate Archive',
+    PRINT_SINGLE = 'Download Selected Student\'s Grades (.pdf)',
 }
 
 function enumKeys<O extends object, K extends keyof O = keyof O>(obj: O): K[] {
@@ -30,7 +31,7 @@ function enumKeys<O extends object, K extends keyof O = keyof O>(obj: O): K[] {
 }
 
 export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId}) => {
-    const [loading, setLoading] = useState<LoadingState>(LoadingState.UNTOUCHED);
+    const [loading, setLoading] = useState<LoadingState>(LoadingState.UNINITIALIZED);
     const [url, setUrl] = useState<string | null>(null);
     const [open, setOpen] = React.useState(false);
     const [buttonState, setButtonState] = useState<ButtonOptions>(ButtonOptions.EXPORT_ALL);
@@ -41,6 +42,8 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
     // On mount, check 
     useEffect(()=>{
         checkAndStatusUpdateExport(false);
+
+        return () => clearInterval(intervalRef.current);
     }, []);
 
     const checkAndStatusUpdateExport = async (force: boolean = false) => {
@@ -48,13 +51,13 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
         if (force) setLoading(LoadingState.LOADING);
 
         try {
-            const res = await startExportOfTopic({topicId, force});
+            const res = await startExportOfTopic({topicId, force, showSolutions: buttonState === ButtonOptions.EXPORT_ALL});
 
             if (_.isNil(res.data.data.lastExported) && force === false) {
                 setLoading(LoadingState.UNTOUCHED);
-            // If the Export URL is null but Last Export wasn't, it's loading.
-            // If we're forcing the request, we're always in loading.
             } else if (_.isNil(res.data.data.exportUrl) || force === true) {
+                // If the Export URL is null but Last Export wasn't, it's loading.
+                // If we're forcing the request, we're always in loading.
                 setLoading(LoadingState.LOADING);
                 if (_.isNil(intervalRef.current)) {
                     intervalRef.current = setInterval(checkAndStatusUpdateExport, 5000);
@@ -64,7 +67,7 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                 intervalRef.current = undefined;
                 setLoading(LoadingState.SUCCESS);
                 setUrl(res.data.data.exportUrl);
-                setButtonState(ButtonOptions.EXPORT_ALL);
+                setButtonState(ButtonOptions.DOWNLOAD);
 
                 // This was more friendly, but since it is ambiguous as to whether this includes solutions or not.
                 // setButtonState(ButtonOptions.DOWNLOAD_ZIP);
@@ -72,7 +75,7 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                 // Only open the Window on a click. This prevents us from hitting popup blockers
                 // and from opening it on every page load.
                 if (force)
-                    window.open('https://staging.rederly.com/' + url, '_blank');
+                    window.open(`/${res.data.data.exportUrl}`, '_blank');
             }
         } catch (e) {
             setLoading(LoadingState.ERROR);
@@ -81,7 +84,13 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
     };
 
     return <>
-        <ButtonGroup variant="contained" color="primary" ref={splitButtonRef} aria-label="split button" disabled={loading === LoadingState.LOADING}>
+        <ButtonGroup 
+            variant="contained" 
+            color="primary" 
+            ref={splitButtonRef} 
+            aria-label="download all grades as pdfs" 
+            disabled={loading === LoadingState.UNINITIALIZED || loading === LoadingState.LOADING}
+        >
             <Button onClick={
                 () => {
                     if (userId && buttonState === ButtonOptions.PRINT_SINGLE) {
@@ -89,8 +98,8 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                         return;
                     }
 
-                    if (url && buttonState !== ButtonOptions.RECALCULATE) {
-                        window.open('https://staging.rederly.com/' + url, '_blank');
+                    if (url && buttonState === ButtonOptions.DOWNLOAD) {
+                        window.open(`/${url}`, '_blank');
                         return;
                     }
 
@@ -133,7 +142,7 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                             <MenuList id="split-button-menu">
                                 {
                                     enumKeys(ButtonOptions).map((value) => {
-                                        if (ButtonOptions[value] === ButtonOptions.RECALCULATE  && loading !== LoadingState.SUCCESS) return null;
+                                        if (ButtonOptions[value] === ButtonOptions.DOWNLOAD  && loading !== LoadingState.SUCCESS) return null;
                                         // if (ButtonOptions[value] === ButtonOptions.DOWNLOAD_ZIP && loading !== LoadingState.SUCCESS) return null;
 
                                         return <MenuItem
