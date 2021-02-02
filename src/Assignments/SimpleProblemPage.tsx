@@ -309,7 +309,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     confirmDisabled: (actualAttemptsRemaining === 0 && versionsRemaining === 0) ? true : false,
                     onConfirm: (actualAttemptsRemaining === 0) ?
                         () => confirmStartNewVersion(topic) :
-                        clearModal
+                        () => {
+                            fetchProblems(topicId);
+                            clearModal();
+                        }
                 });
             }
             setModalLoading(false);
