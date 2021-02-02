@@ -1,14 +1,15 @@
-import { Grid, Button, Snackbar } from '@material-ui/core';
+import { Grid, Snackbar } from '@material-ui/core';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
-import { Link, useHistory, useParams, useRouteMatch } from 'react-router-dom';
+import { useHistory, useParams, useRouteMatch } from 'react-router-dom';
 import logger from '../../Utilities/Logger';
 import MaterialBiSelect from '../../Components/MaterialBiSelect';
 import { useCourseContext } from '../CourseProvider';
 import { UserObject, TopicObject, ProblemObject, StudentGrade, StudentGradeInstance, ProblemState } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import { getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import ExportAllButton from './ExportAllButton';
 import { GradeInfoHeader } from './GradeInfoHeader';
 import { useQuery } from '../../Hooks/UseQuery';
 import AttachmentsPreview from './AttachmentsPreview';
@@ -18,11 +19,6 @@ import * as qs from 'querystring';
 interface TopicGradingPageProps {
     topicId?: string;
     courseId?: string;
-}
-
-interface VersionInfo {
-    studentTopicAssessmentInfoId: number;
-    endTime: Date;
 }
 
 export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
@@ -127,18 +123,12 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                     {gradeAlert.message}
                 </MUIAlert>
             </Snackbar>
-            <Grid container spacing={1} alignItems='center'>
+            <Grid container spacing={1} alignItems='center' justify='space-between'>
                 <Grid item className='text-left'>
                     <h1>Grading {topic && topic.name}</h1>
                 </Grid>
                 <Grid item>
-                    {selected.gradeInstance &&
-                        <Link
-                            to={path => `${path.pathname}/print/${selected.user?.id}`}
-                            target="_blank" rel='noopener noreferrer'
-                        >
-                            <Button variant='contained' color='primary'>Export/Print</Button>
-                        </Link>}
+                    {topic && <ExportAllButton topicId={topic.id} userId={selected.gradeInstance ? selected.user?.id : undefined}/>}
                 </Grid>
             </Grid>
             <Grid container spacing={1}>
