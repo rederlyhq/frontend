@@ -2,12 +2,13 @@ import React, { useContext, useEffect, useState } from 'react';
 import { UserObject } from '../CourseInterfaces';
 import { Link } from 'react-router-dom';
 import EmailModal from './EmailModal';
+import { AddEnrollmentModal } from './AddEnrollmentModal';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { Email } from '@material-ui/icons';
 import _ from 'lodash';
 import MaterialTable, { Action } from 'material-table';
 import { TiUserDelete } from 'react-icons/ti';
-import { MdLaunch } from 'react-icons/md';
+import { MdLaunch, MdPersonAdd } from 'react-icons/md';
 import MaterialIcons from '../../Components/MaterialIcons';
 import { deleteEnrollment } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { courseContext } from '../CourseDetailsPage';
@@ -26,7 +27,8 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
     const [users, setUsers] = useState(propUsers);
     const [selectedStudents, setSelectedStudents] = useState<UserObject[]>([]);
     const [showModal, setShowModal] = useState(false);
-    const [showConfirmDelete, setShowConfirmDelete] = useState<{state: boolean, user: UserObject | null}>({state: false, user: null});
+    const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
+    const [showConfirmDelete, setShowConfirmDelete] = useState<{ state: boolean, user: UserObject | null }>({ state: false, user: null });
     const userType: UserRole = getUserRole();
     const course = useContext(courseContext);
 
@@ -34,16 +36,23 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
         setUsers(propUsers);
     }, [propUsers]);
 
-    const onDropStudent = (userId: number, courseId: number) => {
+    const onDropStudent = async (userId: number, courseId: number) => {
         try {
-            deleteEnrollment({userId, courseId});
+            await deleteEnrollment({ userId, courseId });
             setUsers(_.filter(users, user => user.id !== userId));
         } catch (e) {
             // TODO: display errors to user.
             logger.error('Drop student failed', e);
         }
     };
-    
+
+    const onStudentEnrollment = async (user: UserObject) => {
+        const existingUser = _.find(users, existingUser => user.id === existingUser.id);
+        if (_.isNil(existingUser)) {
+            setUsers(users => [...users, user]);
+        }
+    };
+
     const emailProfessorButtonOptions: Action<UserObject> = {
         icon: function IconWrapper() {
             return <span><Email style={{color: '#007bff'}}/> Email</span>;
@@ -56,6 +65,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
 
     return (
         <>
+            <AddEnrollmentModal show={showEnrollmentModal} onClose={() => setShowEnrollmentModal(false)} courseId={course.id} onEnrollment={onStudentEnrollment} />
             <EmailModal show={showModal} setClose={() => setShowModal(false)} users={selectedStudents} />
             <ConfirmationModal
                 show={showConfirmDelete.state}
@@ -73,11 +83,11 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                 headerContent={<h4>Drop Student</h4>}
                 bodyContent={(
                     <div className='text-center'>
-                        <p>Are you sure you want to drop <br/>
-                            <b>{showConfirmDelete.user?.firstName} {showConfirmDelete.user?.lastName}</b><br/>
-                        from the course <br/>
+                        <p>Are you sure you want to drop <br />
+                            <b>{showConfirmDelete.user?.firstName} {showConfirmDelete.user?.lastName}</b><br />
+                        from the course <br />
                             <b>{course.sectionCode} {course.semesterCode}{course.semesterCodeYear}</b>?</p>
-                        <p>This action cannot be undone.</p>
+                        <p>This student will no longer be able to use the enrollment link.</p>
                     </div>
                 )}
             />
@@ -104,6 +114,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                         selection: userType !== UserRole.STUDENT,
                         showTextRowsSelected: false,
                         emptyRowsWhenPaging: false,
+
                     }}
                     components={{
                         Pagination: function PaginationWrapper(props) {
@@ -129,6 +140,13 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                             position: 'row'
                         },
                         {
+                            icon: function IconWrapper() {
+                                return <span><MdPersonAdd style={{color: '#28a745'}}/></span>;
+                            },
+                            onClick: () => setShowEnrollmentModal(true),
+                            position: 'toolbar',
+                            tooltip: 'Enroll student in course',
+                        },
                         emailProfessorButtonOptions,
                         {
                             ...emailProfessorButtonOptions,
