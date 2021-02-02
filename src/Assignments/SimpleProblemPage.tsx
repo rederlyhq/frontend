@@ -17,6 +17,7 @@ import AttachmentsSidebar from './AttachmentsSidebar';
 import { getUserId } from '../Enums/UserRole';
 import { Alert } from '@material-ui/lab';
 import { IMUIAlertModalState, useMUIAlertState } from '../Hooks/useAlertState';
+import { FaRegSave } from 'react-icons/fa';
 
 interface SimpleProblemPageProps {
 }
@@ -214,11 +215,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     // This should always be used on the selectedProblem.
-    const setProblemStudentGrade = (val: any) => {
+    const setProblemStudentGrade = (id: number, val: any) => {
         logger.info('SimpleProblemPage: setting student grade on current problem');
         resetAlert();
-        if (_.isEmpty(problems) || problems === null || _.isNaN(selectedProblemId) || selectedProblemId === null) return;
-        problems[selectedProblemId].grades = [val];
+        if (_.isEmpty(problems) || problems === null || _.isNil(problems[id])) return;
+        problems[id].grades = [val];
         setProblems({ ...problems });
     };
 
@@ -309,7 +310,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     confirmDisabled: (actualAttemptsRemaining === 0 && versionsRemaining === 0) ? true : false,
                     onConfirm: (actualAttemptsRemaining === 0) ?
                         () => confirmStartNewVersion(topic) :
-                        clearModal
+                        () => {
+                            fetchProblems(topicId);
+                            clearModal();
+                        }
                 });
             }
             setModalLoading(false);
@@ -428,11 +432,12 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     const renderDoneStateIcon = (problem: ProblemObject) => {
         let doneState: ProblemDoneState = ProblemDoneState.UNTOUCHED;
-        const grade = problem.grades?.[0];
-        const instance = grade?.gradeInstances?.[0];
-        const overallBestScore = (topic?.topicTypeId === 2) ? instance?.overallBestScore : grade?.overallBestScore;
-        const numAttempts = (topic?.topicTypeId === 2) ?
-            _.maxBy(topic.topicAssessmentInfo?.studentTopicAssessmentInfo, 'startTime')?.numAttempts :
+        const grade = problem.grades?.first;
+        const instance = grade?.gradeInstances?.first; // this only exists on exams
+        const overallBestScore = (!_.isNil(instance)) ? instance.overallBestScore : grade?.overallBestScore;
+        const numAttempts = (!_.isNil(instance)) ?
+            // one grade instance returned - which must carry the proper studentTopicAssessmentInfoId
+            _.find(topic?.topicAssessmentInfo?.studentTopicAssessmentInfo, ['id', instance?.studentTopicAssessmentInfoId])?.numAttempts :
             grade?.numAttempts;
 
         if (_.isNil(numAttempts)) {
@@ -446,13 +451,17 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 logger.error(`No overall best score found for User ${getUserId()} + Problem #${problem.id}`);
             }
         } else if (numAttempts === 0 || topic?.topicAssessmentInfo?.showItemizedResults === false) {
-            // Do nothing but skip everything else
+            if (grade?.hasBeenSaved === true) {
+                doneState = ProblemDoneState.SAVED;
+            }
         } else if (overallBestScore === 1) {
             doneState = ProblemDoneState.COMPLETE;
         } else if (overallBestScore === 0) {
             doneState = ProblemDoneState.INCORRECT;
         } else if (overallBestScore < 1) {
             doneState = ProblemDoneState.PARTIAL;
+        } else if (grade?.hasBeenSaved === true) {
+            doneState = ProblemDoneState.SAVED;
         }
 
         switch (doneState) {
@@ -462,6 +471,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             return (<> INCORRECT <BsXCircle className='text-danger' role='status' /></>);
         case ProblemDoneState.PARTIAL:
             return (<> PARTIAL <BsSlashCircle className='text-warning' role='status' /></>);
+        case ProblemDoneState.SAVED:
+            return (<> SAVED <FaRegSave className='text-success' role='status' /></>);
         case ProblemDoneState.UNTOUCHED:
         default:
             return;
@@ -488,7 +499,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     message: res.data.message ?? 'Failed to find another version of this problem.'
                 });
             } else {
-                setProblemStudentGrade(grade);
+                setProblemStudentGrade(questionId, grade);
             }    
         } catch (e) {
             logger.error('requestShowMeAnother failed', e);

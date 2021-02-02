@@ -302,6 +302,8 @@ export class StudentGrade {
     lastInfluencingCreditedAttemptId?: number;
     // Updated with overallBestScore
     lastInfluencingAttemptId?: number;
+    // for tracking saved inputs
+    hasBeenSaved?: boolean;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);
