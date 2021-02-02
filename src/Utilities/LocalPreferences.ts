@@ -1,10 +1,12 @@
 import _ from 'lodash';
 
 const STUDENT_TOPIC_PREFERENCES_USE_SECONDS = 'STUDENT_TOPIC_PREFERENCES_USE_SECONDS';
+const PROFESSOR_COURSE_PREFERENCES_KEEP_BUCKETS_AS_TOPICS = 'PROFESSOR_COURSE_PREFERENCES_KEEP_BUCKETS_AS_TOPICS';
 const LOGGING_LEVEL = 'LOGGING_LEVEL';
 const VERSION_CHECK_DATE = 'VERSION_CHECK_DATE';
 const GENERAL_LOGIN_REDIRECT_URL = 'GENERAL_LOGIN_REDIRECT_URL'; 
 const SESSION_USER_TYPE = 'SESSION_USER_TYPE'; 
+const SESSION_ACTUAL_USER_TYPE = 'SESSION_ACTUAL_USER_TYPE'; 
 const SESSION_USER_ID = 'SESSION_USER_ID'; 
 const SESSION_USER_UUID = 'SESSION_USER_UUID'; 
 const SESSION_USER_USERNAME = 'SESSION_USER_USERNAME'; 
@@ -94,6 +96,14 @@ const localPreferences = {
             setBooleanValue(STUDENT_TOPIC_PREFERENCES_USE_SECONDS, value);
         }
     },
+    coursePreferences: {
+        get keepBucketsAsTopics(): boolean {
+            return getBooleanValue(PROFESSOR_COURSE_PREFERENCES_KEEP_BUCKETS_AS_TOPICS, true) as boolean;
+        },
+        set keepBucketsAsTopics(value: boolean) {
+            setBooleanValue(PROFESSOR_COURSE_PREFERENCES_KEEP_BUCKETS_AS_TOPICS, value);
+        },
+    },
     loggingPreferences: {
         get loggingLevel(): string {
             // This cannot be null because of the default value
@@ -166,6 +176,12 @@ const localPreferences = {
         set userType(value: string | null) {
             setItem(SESSION_USER_TYPE, value);
         },
+        get actualUserType(): string | null {
+            return localStorage.getItem(SESSION_ACTUAL_USER_TYPE);
+        },
+        set actualUserType(value: string | null) {
+            setItem(SESSION_ACTUAL_USER_TYPE, value);
+        },
         get userId(): string | null {
             return localStorage.getItem(SESSION_USER_ID);
         },
@@ -187,6 +203,7 @@ const localPreferences = {
         nullifySession: (): void => {
             const { session } = localPreferences;
             session.userType = null;
+            session.actualUserType = null;
             session.userId = null;
             session.userUUID = null;
             session.username = null;

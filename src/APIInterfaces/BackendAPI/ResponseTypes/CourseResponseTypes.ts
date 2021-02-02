@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, TopicObject, ProblemObject, StudentGrade, StudentGradeInstance, ProblemAttachments } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, TopicObject, ProblemObject, StudentGrade, StudentGradeInstance, ProblemAttachments, UserObject } from '../../../Courses/CourseInterfaces';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 
 /* *************** *************** */
@@ -152,6 +152,8 @@ export interface GetAllVersionAttachmentsResponse {
 
 export type GetAllVersionDataResponse = BackendAPIResponse<GetAllVersionAttachmentsResponse>;
 
+// export interface 
+
 /* *************** *************** */
 /* *********** Editor  *********** */
 /* *************** *************** */
@@ -185,6 +187,12 @@ type EnrollByCode = {
     courseId: number;
 };
 export type EnrollByCodeResponse = BackendAPIResponse<EnrollByCode>;
+
+type EnrollManually = {
+    user: UserObject;
+    enrollment: unknown;
+};
+export type EnrollManuallyResponse = BackendAPIResponse<EnrollManually>;
 
 /* *************** *************** */
 /* ****** Problem  Browsing ****** */

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Switch, Route, useRouteMatch, Redirect, useHistory, Link } from 'react-router-dom';
 import { History } from 'history';
 import CoursePage from '../Courses/CoursePage';
@@ -29,7 +29,7 @@ import { ProblemBrowserResults } from '../ProblemBrowser/ProblemBrowserResults';
 import PrintEverything from '../Courses/TopicGrades/PrintEverything';
 import { PrintLoadingProvider } from '../Contexts/PrintLoadingContext';
 import localPreferences from '../Utilities/LocalPreferences';
-import { logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
+import { impersonate, logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 const { session } = localPreferences;
 
 
@@ -65,6 +65,11 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     const sessionCookie = Cookies.get(CookieEnum.SESSION);
     const userName = localPreferences.session.username;
     const { Provider } = userContext;
+    const [ softReloadFlag, setSoftReloadFlag ] = useState<boolean>(false);
+
+    useEffect(() => {
+        setSoftReloadFlag(false);
+    }, [softReloadFlag]);
 
     // TODO: Check if the user has been deauthenticated (ex: expired) and display a message.
     if (!sessionCookie) {
@@ -78,6 +83,10 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
     const logoutClicked = async () => {
         performLogout(history);
     };
+
+    if (softReloadFlag) {
+        return <></>;
+    }
 
     return (
         <Container fluid id='navbarParent'>
@@ -112,6 +121,38 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             }
                             {getUserRole() !== UserRole.STUDENT &&
                                 <NavDropdown.Item onClick={()=>{history.push(`${path}/problem-browser`);}}>Problem Browser</NavDropdown.Item>
+                            }
+                            {(session.userType !== UserRole.STUDENT || ((session.actualUserType !== null) && session.actualUserType !== UserRole.STUDENT)) &&
+                                <NavDropdown.Item onClick={()=> {
+                                    (async () => {
+                                        if (session.actualUserType === null) {
+                                            session.actualUserType = session.userType;
+                                        }
+                                        try {
+                                            const roleToSend = session.userType === UserRole.STUDENT ?
+                                                null :
+                                                UserRole.STUDENT;
+                                            
+                                            await impersonate({
+                                                role: roleToSend
+                                            });
+                                            
+                                            session.userType = session.userType === UserRole.STUDENT ?
+                                                UserRole.PROFESSOR :
+                                                UserRole.STUDENT;
+                                        } catch (e) {
+                                            logger.error('Could not get impersonation cookie', e);
+                                            // TODO show on UI
+                                        }
+                                        
+                                        // Doing this updates the ui appropriately, however it doesn't refetch all the data
+                                        // history.replace(window.location.pathname + window.location.search);
+                                        // window.location.reload();
+                                        setSoftReloadFlag(true);
+                                    })();
+                                }}>
+                                    {session.userType === UserRole.STUDENT ? 'Professor' : 'Student'} View (BETA)
+                                </NavDropdown.Item>
                             }
                             <NavDropdown.Item onClick={logoutClicked}>Log out</NavDropdown.Item>
                         </NavDropdown>
@@ -195,7 +236,15 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     </AnimatePresence>
                 </Provider>
                 <Navbar fixed="bottom" variant='dark' bg='dark' className='footer'>
-                    <Row><Col>You&apos;re using v{version} of Rederly!</Col></Row>
+                    <Row style={{
+                        // There is some weird spacing here, if you do 100% it ignores the parents padding and starts all the way to left
+                        // The parent has 16px padding, each column has 15
+                        // So width 100% has 16px padding leading but trailing it has 31px
+                        width: '100vw'
+                    }}>
+                        <Col>You&apos;re using v{version} of Rederly!</Col>
+                        <Col style={{float: 'right', textAlign: 'right'}}>User Role: {localPreferences.session.userType}</Col>
+                    </Row>
                 </Navbar>
             </Container>
         </Container>

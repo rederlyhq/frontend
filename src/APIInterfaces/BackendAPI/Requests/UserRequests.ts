@@ -5,6 +5,8 @@ import BackendAPIError from '../BackendAPIError';
 import url from 'url';
 import * as qs from 'querystring';
 import { BackendAPIResponse } from '../BackendAPIResponse';
+// This module can only be referenced with ECMAScript imports/exports by turning on the 'allowSyntheticDefaultImports' flag and referencing its default export.
+const urlJoin: (...args: string[]) => string = require('url-join');
 
 const USER_PATH = '/users/';
 const USER_FORGOT_PASSWORD_PATH = url.resolve(
@@ -43,6 +45,11 @@ const USER_CHECK_IN_PATH = url.resolve(
 const USER_LOGOUT_PATH = url.resolve(
     USER_PATH,
     'logout'
+);
+
+const USER_IMPERSONATE_PATH = urlJoin(
+    USER_PATH,
+    'impersonate'
 );
 
 export const postForgotPassword = async ({
@@ -176,6 +183,20 @@ export const checkIn = async (): Promise<BackendAPIResponse> => {
 export const logout = async (): Promise<BackendAPIResponse> => {
     try {
         return await AxiosRequest.post(USER_LOGOUT_PATH);
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const impersonate = async ({
+    role
+}: {
+    role: string | null;
+}): Promise<BackendAPIResponse> => {
+    try {
+        return await AxiosRequest.post(USER_IMPERSONATE_PATH, {
+            role: role
+        });
     } catch (e) {
         throw new BackendAPIError(e);
     }

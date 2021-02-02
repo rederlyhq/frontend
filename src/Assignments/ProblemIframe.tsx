@@ -13,7 +13,7 @@ import useAlertState from '../Hooks/useAlertState';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
-    setProblemStudentGrade?: (val: any) => void;
+    setProblemStudentGrade?: (id: number, val: any) => void;
     previewPath?: string;
     previewSeed?: number;
     previewProblemSource?: string;
@@ -247,7 +247,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 setRenderedHTML(result.data.data.rendererData.renderedHTML);
 
                 if (clickedButton.name === 'submitAnswers'){
-                    setProblemStudentGrade(result.data.data.studentGrade);
+                    setProblemStudentGrade(problem.id, result.data.data.studentGrade);
                     setLastSubmission(saveMeLater);
                     setLastSubmittedAt?.(moment());
                 }
@@ -285,6 +285,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     });
 
                 if (result.data.data.updatesCount > 0) {
+                    setProblemStudentGrade(problem.id, {...problem.grades[0], hasBeenSaved: true});
                     setLastSavedAt?.(moment());
                 }
             } catch (e) {

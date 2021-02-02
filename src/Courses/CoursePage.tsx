@@ -57,7 +57,7 @@ export const CoursePage: React.FC<CoursePageProps> = () => {
             <Container>
                 <Row>
                     <Col md={10}>
-                        <h1>My Courses</h1>
+                        <h1>{getUserRole() === UserRole.PROFESSOR ? 'My Courses' : 'Enrolled Courses'}</h1>
                     </Col>
                     <Col md={2}>
                         {userType === UserRole.PROFESSOR && (

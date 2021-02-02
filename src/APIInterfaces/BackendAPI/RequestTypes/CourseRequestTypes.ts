@@ -12,6 +12,7 @@ export interface CreateCourseOptions {
 export interface PostImportCourseArchiveOptions {
     archiveFile: File;
     courseId: number;
+    keepBucketsAsTopics: boolean;
 }
 
 export interface PutCourseOptions {
@@ -151,6 +152,11 @@ export interface EnrollByCodeOptions {
     enrollCode: string;
 }
 
+export interface EnrollStudentOptions {
+    studentEmail: string;
+    courseId: number;
+}
+
 export interface DeleteEnrollmentOptions {
     userId: number;
     courseId: number;
@@ -235,6 +241,7 @@ export interface GetGradesOptions {
     topicId?: number;
     unitId?: number;
     questionId?: number;
+    courseId?: number;
 }
 
 export interface GetQuestionGradeOptions {
