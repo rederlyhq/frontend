@@ -152,6 +152,11 @@ export interface EnrollByCodeOptions {
     enrollCode: string;
 }
 
+export interface EnrollStudentOptions {
+    studentEmail: string;
+    courseId: number;
+}
+
 export interface DeleteEnrollmentOptions {
     userId: number;
     courseId: number;

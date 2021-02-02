@@ -6,6 +6,7 @@ interface SimpleFormRowProps {
     label: String;
     id: String;
     errmsg: String;
+    disabled?: boolean;
     [x: string]: any;
 }
 

@@ -2,12 +2,13 @@ import React, { useContext, useEffect, useState } from 'react';
 import { UserObject } from '../CourseInterfaces';
 import { Link } from 'react-router-dom';
 import EmailModal from './EmailModal';
+import { AddEnrollmentModal } from './AddEnrollmentModal';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { Email } from '@material-ui/icons';
 import _ from 'lodash';
-import MaterialTable from 'material-table';
+import MaterialTable, { Action } from 'material-table';
 import { TiUserDelete } from 'react-icons/ti';
-import { MdLaunch } from 'react-icons/md';
+import { MdLaunch, MdPersonAdd } from 'react-icons/md';
 import MaterialIcons from '../../Components/MaterialIcons';
 import { deleteEnrollment } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { courseContext } from '../CourseDetailsPage';
@@ -26,59 +27,78 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
     const [users, setUsers] = useState(propUsers);
     const [selectedStudents, setSelectedStudents] = useState<UserObject[]>([]);
     const [showModal, setShowModal] = useState(false);
-    const [showConfirmDelete, setShowConfirmDelete] = useState<{state: boolean, user: UserObject | null}>({state: false, user: null});
+    const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
+    const [showConfirmDelete, setShowConfirmDelete] = useState<{ state: boolean, user: UserObject | null }>({ state: false, user: null });
     const userType: UserRole = getUserRole();
     const course = useContext(courseContext);
 
-    useEffect(()=>{
+    useEffect(() => {
         setUsers(propUsers);
     }, [propUsers]);
 
-    const onDropStudent = (userId: number, courseId: number) => {
+    const onDropStudent = async (userId: number, courseId: number) => {
         try {
-            deleteEnrollment({userId, courseId});
+            await deleteEnrollment({ userId, courseId });
             setUsers(_.filter(users, user => user.id !== userId));
         } catch (e) {
             // TODO: display errors to user.
             logger.error('Drop student failed', e);
         }
     };
-    
+
+    const onStudentEnrollment = async (user: UserObject) => {
+        const existingUser = _.find(users, existingUser => user.id === existingUser.id);
+        if (_.isNil(existingUser)) {
+            setUsers(users => [...users, user]);
+        }
+    };
+
+    const emailProfessorButtonOptions: Action<UserObject> = {
+        icon: function IconWrapper() {
+            return <span><Email style={{color: '#007bff'}}/> Email</span>;
+        },
+        // isFreeAction: true,
+        tooltip: 'Email selected students',
+        onClick: () => setShowModal(true),
+        position: 'toolbarOnSelect'
+    };
+
     return (
         <>
+            <AddEnrollmentModal show={showEnrollmentModal} onClose={() => setShowEnrollmentModal(false)} courseId={course.id} onEnrollment={onStudentEnrollment} />
             <EmailModal show={showModal} setClose={() => setShowModal(false)} users={selectedStudents} />
-            <ConfirmationModal 
+            <ConfirmationModal
                 show={showConfirmDelete.state}
-                onHide={() => setShowConfirmDelete({state: false, user: null})}
+                onHide={() => setShowConfirmDelete({ state: false, user: null })}
                 onConfirm={() => {
                     if (_.isNull(showConfirmDelete.user)) {
                         logger.error('Tried deleting a null user!');
                         return;
                     }
                     onDropStudent(showConfirmDelete.user.id, course.id);
-                    setShowConfirmDelete({state: false, user: null});
+                    setShowConfirmDelete({ state: false, user: null });
                 }}
                 confirmText={`Drop ${showConfirmDelete.user?.firstName} from ${course.sectionCode}`}
                 confirmVariant='danger'
                 headerContent={<h4>Drop Student</h4>}
                 bodyContent={(
                     <div className='text-center'>
-                        <p>Are you sure you want to drop <br/>
-                            <b>{showConfirmDelete.user?.firstName} {showConfirmDelete.user?.lastName}</b><br/>
-                        from the course <br/>
+                        <p>Are you sure you want to drop <br />
+                            <b>{showConfirmDelete.user?.firstName} {showConfirmDelete.user?.lastName}</b><br />
+                        from the course <br />
                             <b>{course.sectionCode} {course.semesterCode}{course.semesterCodeYear}</b>?</p>
-                        <p>This action cannot be undone.</p>
+                        <p>This student will no longer be able to use the enrollment link.</p>
                     </div>
                 )}
             />
-            <div style={{maxWidth: '100%'}}>
+            <div style={{ maxWidth: '100%' }}>
                 <MaterialTable
                     key={users.length}
                     icons={MaterialIcons}
                     title={course.name}
                     columns={[
-                        {title: 'First Name', field: 'firstName'},
-                        {title: 'Last Name', field: 'lastName'},
+                        { title: 'First Name', field: 'firstName' },
+                        { title: 'Last Name', field: 'lastName' },
                     ]}
                     data={users}
                     // onRowClick={(e: any, user: any) => onClickStudent(user.id)}
@@ -94,6 +114,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                         selection: userType !== UserRole.STUDENT,
                         showTextRowsSelected: false,
                         emptyRowsWhenPaging: false,
+
                     }}
                     components={{
                         Pagination: function PaginationWrapper(props) {
@@ -106,28 +127,35 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                     actions={userType !== UserRole.STUDENT ? [
                         {
                             // eslint-disable-next-line react/display-name
-                            icon: () => <TiUserDelete style={{color: 'red'}} />,
+                            icon: () => <TiUserDelete style={{ color: 'red' }} />,
                             tooltip: 'Drop student from course',
-                            onClick: (_event: any, user: any) => setShowConfirmDelete({state: true, user}),
+                            onClick: (_event: any, user: any) => setShowConfirmDelete({ state: true, user }),
                             position: 'row'
                         },
                         {
                             // eslint-disable-next-line react/display-name
-                            icon: () => <Link to={(loc: any) => ({...loc, pathname: `${loc.pathname}/settings`})}><MdLaunch style={{color: 'black'}} /></Link>,
+                            icon: () => <Link to={(loc: any) => ({ ...loc, pathname: `${loc.pathname}/settings` })}><MdLaunch style={{ color: 'black' }} /></Link>,
                             tooltip: 'Go to Extensions',
                             onClick: () => null,
                             position: 'row'
                         },
                         {
-                            // eslint-disable-next-line react/display-name
-                            icon: () => <span><Email style={{color: '#007bff'}}/> Email</span>,
-                            // isFreeAction: true,
-                            tooltip: 'Email selected students',
-                            onClick: () => setShowModal(true),
-                            position: 'toolbarOnSelect'
-                        }
+                            icon: function IconWrapper() {
+                                return <span><MdPersonAdd style={{color: '#28a745'}}/></span>;
+                            },
+                            onClick: () => setShowEnrollmentModal(true),
+                            position: 'toolbar',
+                            tooltip: 'Enroll student in course',
+                        },
+                        emailProfessorButtonOptions,
+                        {
+                            ...emailProfessorButtonOptions,
+                            position: 'toolbar',
+                            onClick: () => undefined,
+                            disabled: true,
+                        },
                     ] : undefined}
-                    localization={{header: { actions: 'Actions'}}}
+                    localization={{ header: { actions: 'Actions' } }}
                 />
             </div>
         </>
