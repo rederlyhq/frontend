@@ -725,9 +725,15 @@ export const deleteAttachments = async ({
 export const startExportOfTopic = async ({
     topicId,
     force = false,
-}: {topicId: number; force: boolean}): Promise<AxiosResponse<any>> => {
+    showSolutions = false,
+}: {topicId: number; force: boolean; showSolutions: boolean}): Promise<AxiosResponse<any>> => {
     try {
-        return await AxiosRequest.post(url.resolve(COURSE_TOPIC_PATH, `${topicId}/startExport?force=${force}`));
+        return await AxiosRequest.post(urlJoin(COURSE_TOPIC_PATH, `${topicId}/startExport`), {}, {
+            params: {
+                force,
+                showSolutions
+            }
+        });
     } catch (e) {
         throw new BackendAPIError(e);
     }
