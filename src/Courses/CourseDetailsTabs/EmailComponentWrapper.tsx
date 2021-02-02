@@ -5,7 +5,7 @@ import EmailModal from './EmailModal';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { Email } from '@material-ui/icons';
 import _ from 'lodash';
-import MaterialTable from 'material-table';
+import MaterialTable, { Action } from 'material-table';
 import { TiUserDelete } from 'react-icons/ti';
 import { MdLaunch } from 'react-icons/md';
 import MaterialIcons from '../../Components/MaterialIcons';
@@ -30,7 +30,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
     const userType: UserRole = getUserRole();
     const course = useContext(courseContext);
 
-    useEffect(()=>{
+    useEffect(() => {
         setUsers(propUsers);
     }, [propUsers]);
 
@@ -44,19 +44,29 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
         }
     };
     
+    const emailProfessorButtonOptions: Action<UserObject> = {
+        icon: function IconWrapper() {
+            return <span><Email style={{color: '#007bff'}}/> Email</span>;
+        },
+        // isFreeAction: true,
+        tooltip: 'Email selected students',
+        onClick: () => setShowModal(true),
+        position: 'toolbarOnSelect'
+    };
+
     return (
         <>
             <EmailModal show={showModal} setClose={() => setShowModal(false)} users={selectedStudents} />
-            <ConfirmationModal 
+            <ConfirmationModal
                 show={showConfirmDelete.state}
-                onHide={() => setShowConfirmDelete({state: false, user: null})}
+                onHide={() => setShowConfirmDelete({ state: false, user: null })}
                 onConfirm={() => {
                     if (_.isNull(showConfirmDelete.user)) {
                         logger.error('Tried deleting a null user!');
                         return;
                     }
                     onDropStudent(showConfirmDelete.user.id, course.id);
-                    setShowConfirmDelete({state: false, user: null});
+                    setShowConfirmDelete({ state: false, user: null });
                 }}
                 confirmText={`Drop ${showConfirmDelete.user?.firstName} from ${course.sectionCode}`}
                 confirmVariant='danger'
@@ -71,14 +81,14 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                     </div>
                 )}
             />
-            <div style={{maxWidth: '100%'}}>
+            <div style={{ maxWidth: '100%' }}>
                 <MaterialTable
                     key={users.length}
                     icons={MaterialIcons}
                     title={course.name}
                     columns={[
-                        {title: 'First Name', field: 'firstName'},
-                        {title: 'Last Name', field: 'lastName'},
+                        { title: 'First Name', field: 'firstName' },
+                        { title: 'Last Name', field: 'lastName' },
                     ]}
                     data={users}
                     // onRowClick={(e: any, user: any) => onClickStudent(user.id)}
@@ -106,28 +116,28 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                     actions={userType !== UserRole.STUDENT ? [
                         {
                             // eslint-disable-next-line react/display-name
-                            icon: () => <TiUserDelete style={{color: 'red'}} />,
+                            icon: () => <TiUserDelete style={{ color: 'red' }} />,
                             tooltip: 'Drop student from course',
-                            onClick: (_event: any, user: any) => setShowConfirmDelete({state: true, user}),
+                            onClick: (_event: any, user: any) => setShowConfirmDelete({ state: true, user }),
                             position: 'row'
                         },
                         {
                             // eslint-disable-next-line react/display-name
-                            icon: () => <Link to={(loc: any) => ({...loc, pathname: `${loc.pathname}/settings`})}><MdLaunch style={{color: 'black'}} /></Link>,
+                            icon: () => <Link to={(loc: any) => ({ ...loc, pathname: `${loc.pathname}/settings` })}><MdLaunch style={{ color: 'black' }} /></Link>,
                             tooltip: 'Go to Extensions',
                             onClick: () => null,
                             position: 'row'
                         },
                         {
-                            // eslint-disable-next-line react/display-name
-                            icon: () => <span><Email style={{color: '#007bff'}}/> Email</span>,
-                            // isFreeAction: true,
-                            tooltip: 'Email selected students',
-                            onClick: () => setShowModal(true),
-                            position: 'toolbarOnSelect'
-                        }
+                        emailProfessorButtonOptions,
+                        {
+                            ...emailProfessorButtonOptions,
+                            position: 'toolbar',
+                            onClick: () => undefined,
+                            disabled: true,
+                        },
                     ] : undefined}
-                    localization={{header: { actions: 'Actions'}}}
+                    localization={{ header: { actions: 'Actions' } }}
                 />
             </div>
         </>
