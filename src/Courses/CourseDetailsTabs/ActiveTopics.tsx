@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TopicObject, CourseObject } from '../CourseInterfaces';
 import AxiosRequest from '../../Hooks/AxiosRequest';
-import TopicsList from '../TopicsList';
+import TopicsList from './TopicsTab/TopicsList';
 import _ from 'lodash';
 import moment from 'moment';
 import { UserRole, getUserRole, getUserId } from '../../Enums/UserRole';

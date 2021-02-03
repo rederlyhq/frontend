@@ -1,6 +1,6 @@
 import React from 'react';
 import { ListGroup, ListGroupItem, Row, Col } from 'react-bootstrap';
-import { TopicObject, TopicOverride } from './CourseInterfaces';
+import { TopicObject, TopicOverride } from '../../CourseInterfaces';
 import { BsPencilSquare, BsTrash } from 'react-icons/bs';
 import { MdWarning } from 'react-icons/md';
 import _ from 'lodash';
@@ -8,11 +8,11 @@ import { Link } from 'react-router-dom';
 import MomentUtils from '@date-io/moment';
 import { DateTimePicker, MuiPickersUtilsProvider} from '@material-ui/pickers';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
-import { UserRole, getUserRole, getUserId } from '../Enums/UserRole';
+import { UserRole, getUserRole, getUserId } from '../../../Enums/UserRole';
 import moment from 'moment';
 import { Button } from '@material-ui/core';
 import './TopicList.css';
-import logger from '../Utilities/Logger';
+import logger from '../../../Utilities/Logger';
 
 interface TopicsListProps {
     listOfTopics: Array<TopicObject>;
