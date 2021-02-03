@@ -143,7 +143,7 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                                 {
                                     enumKeys(ButtonOptions).map((value) => {
                                         if (ButtonOptions[value] === ButtonOptions.DOWNLOAD  && loading !== LoadingState.SUCCESS) return null;
-                                        // if (ButtonOptions[value] === ButtonOptions.DOWNLOAD_ZIP && loading !== LoadingState.SUCCESS) return null;
+                                        if (ButtonOptions[value] === ButtonOptions.PRINT_SINGLE && _.isNil(userId)) return null;
 
                                         return <MenuItem
                                             key={value}
