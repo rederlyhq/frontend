@@ -70,3 +70,8 @@ export const STUDENT_STATISTICS_ATTEMPTS_HEADERS: Array<Column<any>> = [
         customSort: (a: any, b: any) => moment(b.time).diff(moment(a.time))
     },
 ];
+
+export const ENROLLMENT_TABLE_HEADERS: Array<Column<any>> = [
+    { title: 'First Name', field: 'firstName', customSort: (x: any, y: any) => collator.compare(x.firstName, y.firstName) },
+    { title: 'Last Name', field: 'lastName', customSort: (x: any, y: any) => collator.compare(x.lastName, y.lastName) },
+];
