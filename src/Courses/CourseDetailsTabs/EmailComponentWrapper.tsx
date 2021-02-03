@@ -15,6 +15,7 @@ import { courseContext } from '../CourseDetailsPage';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import logger from '../../Utilities/Logger';
 import { TablePagination } from '@material-ui/core';
+import { ENROLLMENT_TABLE_HEADERS } from './TableColumnHeaders';
 
 interface EmailComponentWrapperProps {
     users: Array<UserObject>;
@@ -96,10 +97,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                     key={users.length}
                     icons={MaterialIcons}
                     title={course.name}
-                    columns={[
-                        { title: 'First Name', field: 'firstName' },
-                        { title: 'Last Name', field: 'lastName' },
-                    ]}
+                    columns={ENROLLMENT_TABLE_HEADERS}
                     data={users}
                     // onRowClick={(e: any, user: any) => onClickStudent(user.id)}
                     onSelectionChange={(rows: UserObject[]) => setSelectedStudents(rows)}
