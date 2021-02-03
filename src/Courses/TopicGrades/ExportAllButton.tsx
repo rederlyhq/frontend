@@ -60,7 +60,7 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                 // If we're forcing the request, we're always in loading.
                 setLoading(LoadingState.LOADING);
                 if (_.isNil(intervalRef.current)) {
-                    intervalRef.current = setInterval(checkAndStatusUpdateExport, 5000);
+                    intervalRef.current = setInterval(checkAndStatusUpdateExport, 15000);
                 }
             } else {
                 clearInterval(intervalRef.current);
