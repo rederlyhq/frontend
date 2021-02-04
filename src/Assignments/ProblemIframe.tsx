@@ -1,15 +1,16 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
-import { Alert, Spinner } from 'react-bootstrap';
+import { Alert } from 'react-bootstrap';
 import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance, postPreviewQuestion, getQuestion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import moment from 'moment';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
-import { xRayVision } from '../Utilities/NakedPromise';
-import IframeResizer, { IFrameComponent } from 'iframe-resizer-react';
 import logger from '../Utilities/Logger';
 import BackendAPIError from '../APIInterfaces/BackendAPI/BackendAPIError';
 import useAlertState from '../Hooks/useAlertState';
+import { RendererIFrame } from './RendererIFrame';
+import { formDataToObject } from '../Utilities/FormHelper';
+import { Constants } from '../Utilities/Constants';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
@@ -46,71 +47,27 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     previewProblemSource,
     previewShowHints,
     previewShowSolutions,
-    setProblemStudentGrade = ()=>{},
+    setProblemStudentGrade = Constants.React.defaultStates.NOOP_FUNCTION,
     workbookId,
     readonly = false,
     userId,
     studentTopicAssessmentInfoId,
     propagateLoading,
 }) => {
-    const iframeRef = useRef<IFrameComponent>(null);
     const pendingReq = useRef<PendingRequest | null>(null);
-    const [renderedHTML, setRenderedHTML] = useState<string>('');
+    const [renderedHTML, setRenderedHTML] = useState<string>(Constants.React.defaultStates.EMPTY_STRING);
     const [loading, setLoading] = useState(true);
     const [alert, setAlert] = useAlertState();
-    const [lastSubmission, setLastSubmission] = useState({});
-    const height = '100vh';
-    const currentMutationObserver = useRef<MutationObserver> (null);
+    const [lastSubmission, setLastSubmission] = useState(Constants.React.defaultStates.EMPTY_OBJECT);
 
     const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
     // Propagates loading states to parent listeners.
     useEffect(()=>{
         propagateLoading?.(loading);
-    }, [loading]);
+    }, [loading, propagateLoading]);
 
-    useEffect(()=>{
-        const fetchHTML = async () => {
-            if (pendingReq.current !== null) {
-                logger.debug(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId} workbook #${pendingReq.current.workbookId}`);
-                pendingReq.current.cancelled = true;
-            }
-            const currentReq = {problemId: problem.id, workbookId} as PendingRequest;
-            pendingReq.current = currentReq;
-
-            const rendererHTML = await getHTML();
-
-            if (currentReq.cancelled) {
-                logger.debug(`Problem Iframe: The request for problem #${problem.id} and workbook #${workbookId} was cancelled early.`);
-                return;
-            } else if (!_.isNil(rendererHTML)) {
-                pendingReq.current = null;
-                // We need to reset the error state since a new call means no error
-                setAlert({
-                    variant: 'info',
-                    message: ''
-                });
-                setRenderedHTML(rendererHTML);
-            }
-
-        };
-
-        // If you don't reset the rendered html you won't get the load event
-        // Thus if you go to an error state and back to the success state
-        // The rendered html will never call load handler which will never stop loading
-        setRenderedHTML('');
-        // srcdoc='' triggers onLoad with setLoading(false) so setLoading(true) isn't effective until now
-        setLoading(true);
-
-        fetchHTML();
-
-        // when problem changes, reset lastsubmitted and lastsaved
-        setLastSubmittedAt?.(null);
-        setLastSavedAt?.(null);
-        setLastSubmission({});
-    }, [problem.id, problem.grades?.first?.randomSeed, workbookId, previewPath, previewProblemSource, previewSeed]);
-
-    const getHTML = async () => {
+    const getHTML = useCallback(async () => {
         logger.debug('ProblemIframe: Getting new renderedHTML.');
         try {
             let res;
@@ -145,15 +102,53 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
             setLoading(false);
         }
-    };
+    }, [previewPath, previewProblemSource, previewSeed, previewShowHints, previewShowSolutions, problem.id, readonly, setAlert, studentTopicAssessmentInfoId, userId, workbookId]);
+    
+    const fetchHTML = useCallback(async () => {
+        if (pendingReq.current !== null) {
+            logger.debug(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId} workbook #${pendingReq.current.workbookId}`);
+            pendingReq.current.cancelled = true;
+        }
+        const currentReq = {problemId: problem.id, workbookId} as PendingRequest;
+        pendingReq.current = currentReq;
+
+        const rendererHTML = await getHTML();
+
+        if (currentReq.cancelled) {
+            logger.debug(`Problem Iframe: The request for problem #${problem.id} and workbook #${workbookId} was cancelled early.`);
+            return;
+        } else if (!_.isNil(rendererHTML)) {
+            pendingReq.current = null;
+            // We need to reset the error state since a new call means no error
+            setAlert({
+                variant: 'info',
+                message: Constants.React.defaultStates.EMPTY_STRING
+            });
+            setRenderedHTML(rendererHTML);
+        }
+    }, [getHTML, problem.id, setAlert, workbookId]);
+    
+    useEffect(()=>{
+        // If you don't reset the rendered html you won't get the load event
+        // Thus if you go to an error state and back to the success state
+        // The rendered html will never call load handler which will never stop loading
+        setRenderedHTML(Constants.React.defaultStates.EMPTY_STRING);
+        // srcdoc='' triggers onLoad with setLoading(false) so setLoading(true) isn't effective until now
+        setLoading(true);
+
+        fetchHTML();
+
+        // when problem changes, reset lastsubmitted and lastsaved
+        setLastSubmittedAt?.(null);
+        setLastSavedAt?.(null);
+        setLastSubmission(Constants.React.defaultStates.EMPTY_OBJECT);
+    }, [fetchHTML, setLastSavedAt, setLastSubmittedAt]);
 
     const isPrevious = (_value: any, key: string): boolean => {
         return /^previous_/.test(key);
     };
 
-    const updateSubmitActive = _.throttle(() => {
-        const submitButtons = iframeRef.current?.contentWindow?.document.getElementsByName('submitAnswers') as NodeListOf<HTMLButtonElement>;
-        const problemForm = iframeRef.current?.contentWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
+    const updateSubmitActive = _.throttle((problemForm: HTMLFormElement, submitButtons: NodeListOf<HTMLButtonElement>) => {
         // called only onLoad or after interaction with already loaded srcdoc - so form will exist, unless bad problemPath
         // no logger.error because exam problems (and static problems) will not have 'submitAnswers'
         if (_.isNil(submitButtons) || _.isNil(problemForm)) {return;}
@@ -190,24 +185,19 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         });
     }, 100, {leading:true, trailing:true});
 
-    const formDataToObject = (formData: FormData) => {
-        const object:any = {};
-        // downstream iterator error
-        // @ts-ignore
-        for(const pair of formData.entries()) {
-            if (_.isUndefined(object[pair[0]])) {
-                object[pair[0]] = pair[1];
-            } else {
-                if(!_.isArray(object[pair[0]])) {
-                    object[pair[0]] = [object[pair[0]]];
-                }
-                object[pair[0]].push(pair[1]);
-            }
+    const prepareAndSubmit = useCallback(async function prepareAndSubmit(problemForm: HTMLFormElement, clickedButton?: HTMLButtonElement) {
+        // check that the submit url is accurate
+        const submitUrl = problemForm.getAttribute('action');
+        const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
+        if (checkId && parseInt(checkId[1],10) !== problem.id) {
+            // if this still happens, we have bigger problems
+            logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
+            setAlert({
+                variant: 'danger',
+                message: `This problem ID (${problem.id}) is out of sync.`
+            });
         }
-        return object;
-    };
 
-    async function prepareAndSubmit(problemForm: HTMLFormElement, clickedButton?: HTMLButtonElement) {
         const submitAction = (window as any).submitAction;
         if(typeof submitAction === 'function') submitAction(); // this is a global function from renderer - prepares form field for submit
 
@@ -219,6 +209,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             formData.set(clickedButton.name, clickedButton.value);
             try {
                 let result: any;
+                setLoading(true);
+                setRenderedHTML('');
                 if (_.isNil(previewPath) && _.isNil(previewProblemSource)) {
                     result = await postQuestionSubmission({
                         id: problem.id,
@@ -235,22 +227,12 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     });
                 }
 
-                if(_.isNil(iframeRef?.current)) {
-                    logger.error('Hijacker: Could not find the iframe ref');
-                    setAlert({
-                        variant: 'danger',
-                        message: 'There was an error rendering this problem.'
-                    });
-                    return;
-                }
-
-                setRenderedHTML(result.data.data.rendererData.renderedHTML);
-
                 if (clickedButton.name === 'submitAnswers'){
                     setProblemStudentGrade(problem.id, result.data.data.studentGrade);
                     setLastSubmission(saveMeLater);
                     setLastSubmittedAt?.(moment());
                 }
+                setRenderedHTML(result.data.data.rendererData.renderedHTML);
             } catch (e) {
                 setAlert({
                     variant: 'danger',
@@ -296,159 +278,43 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 return;
             }
         }
-    }
+    }, [previewPath, previewProblemSource, previewSeed, previewShowHints, previewShowSolutions, problem.grades, problem.id, setAlert, setLastSavedAt, setLastSubmittedAt, setProblemStudentGrade]);
 
-    function insertListeners(problemForm: HTMLFormElement) {
-        const iframeWindow = iframeRef?.current?.contentWindow as any | null | undefined;
-        if (iframeWindow.rederlyInsertedListeners) {
-            logger.warn('ProblemIframe: insertListeners: is attempting to load twice ... skipping!');
-            return;
-        }
-        logger.debug('ProblemIframe: insertListeners: is inserting listeners');
-        const debouncedSaveHandler = _.debounce(prepareAndSubmit, 2000, { leading: false, trailing: true });
-        const debouncedSubmitHandler = _.debounce(prepareAndSubmit, 300, { leading: true, trailing: false });
+    const debouncedSaveHandler = useMemo(() => _.debounce(prepareAndSubmit, 2000, { leading: false, trailing: true }), [prepareAndSubmit]);
+    const debouncedSubmitHandler = useMemo(() => _.debounce(prepareAndSubmit, 300, { leading: false, trailing: true }), [prepareAndSubmit]);
 
-        // submission of problems will trigger updateSubmitActive @onLoad
-        // because re-submission of identical answers is blocked, we expect srcdoc to change
-        problemForm.addEventListener('submit', (event: { preventDefault: () => void; }) => {
-            event.preventDefault();
-            const clickedButton = problemForm.querySelector('.btn-clicked') as HTMLButtonElement;
-            debouncedSubmitHandler(problemForm, clickedButton);
-        });
-
-        problemForm.addEventListener('input', () => {
-            // updating submit button is throttled - so don't worry onInput spam
-            updateSubmitActive();
-            // we don't want to save while edits are in progress, so debounce
-            debouncedSaveHandler(problemForm);
-        });
-
-        // TODO: remove once MathQuill events properly bubble
-        // solves two issues - backspace nor mq-menu buttons trigger input/update
-        // fires too often, onFocus etc - throttle handles it
-        currentMutationObserver.current?.disconnect();
-        (currentMutationObserver.current as any) = new MutationObserver(updateSubmitActive);
-        iframeWindow.jQuery('#problemMainForm span.mq-root-block').each( (_index: number, subElm: HTMLSpanElement) => {
-            currentMutationObserver.current?.observe(subElm, {
-                childList: true,
-                subtree: false,
-                attributes: false,
-                characterData: false
-            });
-        });
-        iframeWindow.rederlyInsertedListeners = true;
-    }
-
-    const onLoadHandlers = async () => {
-        logger.debug('onLoadHandlers called');
-        setRenderedHTML((renderedHTML): string => {
-            const iframeHTML = iframeRef.current?.attributes?.getNamedItem('srcdoc')?.nodeValue;
-            if (renderedHTML === '' || renderedHTML !== iframeHTML) {
-                logger.debug('onLoadHandlers bowing out since renderedHTML is empty string or does not match the current request');
-                return renderedHTML;
-            }
-
-            if (!_.isNull(pendingReq.current)) {
-                logger.debug('onLoadHandlers bowing out since another request is in progress');
-                return renderedHTML;
-            }
-
-            logger.debug('onLoadHandlers running');
-
-            const iframeDoc = iframeRef.current?.contentDocument;
-            const iframeWindow = iframeRef?.current?.contentWindow as any | null | undefined;
-
-            if (!iframeDoc) return renderedHTML; // this will prevent empty renderedHTML
-
-            const body = iframeDoc?.body;
-            if (body === undefined) {
-                logger.error('Couldn\'t access body of iframe');
-                return renderedHTML;
-            }
-
-            const problemForm = iframeWindow?.document.getElementById('problemMainForm') as HTMLFormElement;
-            if (!_.isNil(problemForm)) {
-                // check that the submit url is accurate
-                const submitUrl = problemForm.getAttribute('action');
-                const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
-                if (checkId && parseInt(checkId[1],10) !== problem.id) {
-                    // if this still happens, we have bigger problems
-                    logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
-                    setAlert({
-                        variant: 'danger',
-                        message: `This problem ID (${problem.id}) is out of sync.`
-                    });
-                }
-                insertListeners(problemForm);
-                updateSubmitActive();
-            } else {
-                if (renderedHTML !== '') {
-                    logger.error(`This problem has no problemMainForm: ${renderedHTML}`); // should NEVER happen when renderedHTML is non-empty
-                }
-            }
-
-            const ww_applet_list = iframeWindow?.ww_applet_list;
-            let loadingPromise: Promise<unknown> = Promise.resolve();
-            if (!_.isNil(ww_applet_list)) {
-                const promises = Object.keys(ww_applet_list).map( async (key: string) => {
-                    const initFunctionName = ww_applet_list[key].onInit;
-                    // stash original ggbOnInit, then spy on it with a Promise
-                    const onInitOriginal = iframeWindow?.[initFunctionName];
-                    const { dressedFunction: dressedInit, nakedPromise } = xRayVision(onInitOriginal);
-                    iframeWindow[initFunctionName] = dressedInit;
-
-                    // getApplet(key) will not resolve until after ggbOnInit runs
-                    await nakedPromise.promise;
-
-                    const {getApplet} = iframeWindow;
-                    getApplet(key).registerUpdateListener?.(_.throttle(()=>{
-                        ww_applet_list[key].submitAction();
-                        problemForm.dispatchEvent(new Event('input'));
-                    }, 100, {leading:true, trailing:true}));
-                });
-                loadingPromise = Promise.all(promises);
-            }
-
-            loadingPromise.then(() => {
-                setRenderedHTML((renderedHTML: string): string => {
-                    if (renderedHTML === iframeHTML) {
-                        iframeDoc?.dispatchEvent(new Event('Rederly Loaded'));
-                        setLoading(false);
-                    }
-                    return renderedHTML;
-                });
-            });
-            return renderedHTML;
-        });
-    };
 
     return (
         <>
-            { loading && <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>}
             <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message} -- Please refresh your page.</Alert>
-            <IframeResizer
-                // Using onInit instead of ref because:
-                // ref never get's set and a warning saying to use `forwardRef` comes up in the console
-                // Using forwardRef does not give you access to the iframe, rather it gives you access to 3 or 4 methods and properties (like `sendMessage`)
-                onInit={(iframe: IFrameComponent) => {
-                    if (iframeRef.current !== iframe) {
-                        // TODO do we need to unset the iframeref? As of right now it should not be required since it is always present within the component
-                        // If using dom elements the useRef is "Read Only", however I want control!
-                        (iframeRef as any).current = iframe;
-                        // On first load onLoadHandlers is called before the reference is set
-                        onLoadHandlers();
-                    } else {
-                        // TODO I would like a logging framework that stripped these
-                        // logger.debug('Reference did not change, do not call on load, that is a workaround for first load anyway');
+            <RendererIFrame
+                renderedHTML={renderedHTML}
+                loading={loading}
+                onLoad={(loadedRenderedHTML: string) => {
+                    setRenderedHTML(renderedHTML => {
+                        if(loadedRenderedHTML === renderedHTML) {
+                            setLoading(false);
+                        }
+                        return renderedHTML;
+                    });
+                }}
+                shouldStopLoading={() => {
+                    if (!_.isNull(pendingReq.current)) {
+                        logger.debug('onLoadHandlers bowing out since another request is in progress');
+                        return true;
+                    }
+                    return false;
+                }}
+                changeHandler={(initialLoad: boolean, problemForm: HTMLFormElement, submitButtons: NodeListOf<HTMLButtonElement>) => {
+                    // updating submit button is throttled - so don't worry onInput spam
+                    updateSubmitActive(problemForm, submitButtons);
+                    if (!initialLoad) {
+                        // we don't want to save while edits are in progress, so debounce
+                        debouncedSaveHandler(problemForm);
                     }
                 }}
-                title='Problem Frame'
-                style={{ width: '100%', height: height, border: 'none', minHeight: readonly ? '' : '350px', visibility: (loading || Boolean(alert.message)) ? 'hidden' : 'visible'}}
-                sandbox='allow-same-origin allow-forms allow-scripts allow-popups'
-                srcDoc={renderedHTML}
-                onLoad={onLoadHandlers}
-                checkOrigin={false}
-                scrolling={false}
+                submitHandler={debouncedSubmitHandler}
+                useReadonlyHeight={readonly}
             />
         </>
     );
