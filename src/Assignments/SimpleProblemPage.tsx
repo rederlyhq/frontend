@@ -511,9 +511,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     }
 
     // there's a serious problem if we get a topic, but no problems, and the topicType isn't an assessment
-    if (_.isEmpty(problems) &&
+    if (!_.isNil(problems) &&
+        _.isEmpty(problems) &&
         !_.isNil(topic) &&
-        topic.topicTypeId !== 2) return <div>There was an error loading this assignment.</div>;
+        topic.topicTypeId !== 2) return <div>This topic does not have any questions.</div>;
 
     if (problems === null || selectedProblemId === null) return (
         <>
