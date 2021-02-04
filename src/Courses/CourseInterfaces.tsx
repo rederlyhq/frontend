@@ -202,7 +202,7 @@ export class TopicObject {
 
         const activeExtensions: TopicOverride[] = this.studentTopicOverride.reduce((accum: TopicOverride[], extension) => {
             if ( now.isBetween(extension.startDate, extension.deadDate, 'day', '[]') &&
-               ( !_.isNil(userId) || extension.userId === userId )) {
+               ( _.isNil(userId) || extension.userId === userId )) {
                 accum.push(extension);
             }
             return accum;

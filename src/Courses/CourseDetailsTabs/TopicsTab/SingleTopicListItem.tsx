@@ -22,6 +22,12 @@ export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, 
     const userId: number = getUserId();
     const activeExtensions = topic.getActiveExtensions();
 
+    if (activeExtensions.length > 0) console.log(activeExtensions);
+
+    const startDateDisplay = userType === UserRole.STUDENT && !_.isNil(activeExtensions.first) ? activeExtensions.first.startDate : topic.startDate;
+    const endDateDisplay = userType === UserRole.STUDENT && !_.isNil(activeExtensions.first) ? activeExtensions.first.endDate : topic.endDate;
+    const deadDateDisplay = userType === UserRole.STUDENT && !_.isNil(activeExtensions.first) ? activeExtensions.first.deadDate : topic.deadDate;
+
     return (
         // This is the minimum size of the datepicker, hardcoded to prevent flickering between modes.
         <div className='d-flex' style={{minHeight: '56px'}}>
@@ -96,13 +102,11 @@ export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, 
                                     </Link>
                                 ) : (
                                     <>
-                                        { activeExtensions.length > 0 && (
-                                            <Col>
-                                                <p style={{color: 'black', fontStyle: 'italic'}}>
-                                                    You have an extension for this topic.
-                                                </p>
-                                            </Col>
-                                        )}
+                                        <Col>
+                                            <p style={{color: 'black', fontStyle: 'italic'}}>
+                                                You have an extension for this topic.
+                                            </p>
+                                        </Col>
                                     </>
                                 )}
                             </Row>
@@ -127,7 +131,7 @@ export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, 
                             variant='inline'
                             label='Start date'
                             name={'start'}
-                            value={topic.startDate}
+                            value={startDateDisplay}
                             onChange={()=>{}}
                             inputVariant='outlined'
                             disabled={true}
@@ -140,17 +144,17 @@ export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, 
                             variant='inline'
                             label='End date'
                             name={'end'}
-                            value={topic.endDate}
+                            value={endDateDisplay}
                             onChange={()=>{}}
                             inputVariant='outlined'
                             disabled={true}
                         />
                         {/* Show the Dead Date if != end, if student also now > end */}
                         {
-                            (!moment(topic.deadDate).isSame(moment(topic.endDate))) && 
+                            (!moment(deadDateDisplay).isSame(moment(endDateDisplay))) && 
                         (
                             userType !== UserRole.STUDENT || 
-                            moment().isSameOrAfter(moment(topic.endDate))
+                            moment().isSameOrAfter(moment(endDateDisplay))
                         ) &&
                         <DateTimePicker
                             style={{
@@ -159,7 +163,7 @@ export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, 
                             variant='inline'
                             label='Dead date'
                             name={'end'}
-                            value={topic.deadDate}
+                            value={deadDateDisplay}
                             onChange={()=>{}}
                             inputVariant='outlined'
                             disabled={true}
