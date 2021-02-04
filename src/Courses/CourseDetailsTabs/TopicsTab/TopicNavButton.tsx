@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { IconButton, ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper  } from '@material-ui/core';
+import { IconButton, ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper, Button  } from '@material-ui/core';
 import { Settings as SettingsIcon } from '@material-ui/icons';
 import { TopicObject } from '../../CourseInterfaces';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -34,13 +34,19 @@ export const TopicNavButton: React.FC<TopicNavButtonProps> = ({topic, onDelete})
                             <ClickAwayListener onClickAway={handleClose}>
                                 <MenuList autoFocusItem={open} id={`menu-list-${topic.id}`}>
                                     <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}/settings`)}>
-                                        <BsPencilSquare/> Edit
+                                        <Button fullWidth variant="text" color="primary" startIcon={<BsPencilSquare/>}>
+                                            Edit
+                                        </Button>
                                     </MenuItem>
                                     <MenuItem onClick={() => history.push(`${location.pathname}/settings`)}>
-                                        <MdLaunch /> Extensions
+                                        <Button fullWidth variant="text" color="default" startIcon={<MdLaunch />}>
+                                            Extensions
+                                        </Button>
                                     </MenuItem>
                                     <MenuItem onClick={onDelete}>
-                                        <BsTrash/> Delete
+                                        <Button fullWidth variant="text" color="secondary" startIcon={<BsTrash/>}>
+                                            Delete
+                                        </Button>
                                     </MenuItem>
                                 </MenuList>
                             </ClickAwayListener>
