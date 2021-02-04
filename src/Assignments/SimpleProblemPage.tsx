@@ -451,17 +451,13 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 logger.error(`No overall best score found for User ${getUserId()} + Problem #${problem.id}`);
             }
         } else if (numAttempts === 0 || topic?.topicAssessmentInfo?.showItemizedResults === false) {
-            if (grade?.hasBeenSaved === true) {
-                doneState = ProblemDoneState.SAVED;
-            }
+            // do nothing - and prevent any done state icon
         } else if (overallBestScore === 1) {
             doneState = ProblemDoneState.COMPLETE;
         } else if (overallBestScore === 0) {
-            doneState = ProblemDoneState.INCORRECT;
+            doneState = (grade?.hasBeenSaved === true) ? ProblemDoneState.SAVED : ProblemDoneState.INCORRECT;
         } else if (overallBestScore < 1) {
-            doneState = ProblemDoneState.PARTIAL;
-        } else if (grade?.hasBeenSaved === true) {
-            doneState = ProblemDoneState.SAVED;
+            doneState = (grade?.hasBeenSaved === true) ? ProblemDoneState.SAVED : ProblemDoneState.PARTIAL;
         }
 
         switch (doneState) {

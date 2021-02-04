@@ -128,6 +128,10 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                     <h1>Grading {topic && topic.name}</h1>
                 </Grid>
                 <Grid item>
+                    {/*  
+                        Not passing in the plain User ID because the PRINT_SINGLE technically does not fully work (excludes attachments and logs warnings)
+                        when printing a Homework Set. The legacy functionality continues to exist for Assessments.
+                    */}
                     {topic && <ExportAllButton topicId={topic.id} userId={selected.gradeInstance ? selected.user?.id : undefined}/>}
                 </Grid>
             </Grid>
