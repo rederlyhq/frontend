@@ -142,7 +142,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         setLastSubmittedAt?.(null);
         setLastSavedAt?.(null);
         setLastSubmission(Constants.React.defaultStates.EMPTY_OBJECT);
-    }, [fetchHTML, setLastSavedAt, setLastSubmittedAt]);
+    }, [fetchHTML, setLastSavedAt, setLastSubmittedAt, problem.grades?.first?.randomSeed]);
 
     const isPrevious = (_value: any, key: string): boolean => {
         return /^previous_/.test(key);
