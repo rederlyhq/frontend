@@ -1,6 +1,7 @@
 import { Backdrop, CircularProgress } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { getCourse } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { getUsersForCourse } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import { CourseObject, UserObject } from './CourseInterfaces';
@@ -38,7 +39,9 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
             setLoading(true);
             setError(null);
             try {
-                const courseRespPromise = AxiosRequest.get(`/courses/${courseId}`);
+                const courseRespPromise = getCourse({
+                    courseId: parseInt(courseId, 10)
+                });
                 const userRespPromise = getUsersForCourse({courseId: parseInt(courseId, 10)});
 
                 const [courseResp, userResp] = await Promise.all([courseRespPromise, userRespPromise]);
