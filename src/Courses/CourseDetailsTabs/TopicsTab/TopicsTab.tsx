@@ -597,7 +597,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                     <TopicsList
                                                                         flush
                                                                         listOfTopics={unit.topics}
-                                                                        removeTopic={inEditMode ? onTopicDeleteClickedWithUnitId : undefined}
+                                                                        removeTopic={userType !== UserRole.STUDENT ? onTopicDeleteClickedWithUnitId : undefined}
                                                                         unitUnique={unit.id}
                                                                     />
                                                                 </Card.Body>
