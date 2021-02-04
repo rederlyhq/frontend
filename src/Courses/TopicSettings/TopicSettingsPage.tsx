@@ -1,8 +1,6 @@
 import { Grid } from '@material-ui/core';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ProblemObject, TopicObject, ExamSettingsFields, ExamProblemSettingsFields } from '../CourseInterfaces';
-import MomentUtils from '@date-io/moment';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import TopicSettingsSidebar from './TopicSettingsSidebar';
 import { useCourseContext } from '../CourseProvider';
 import { useParams } from 'react-router-dom';
@@ -195,28 +193,26 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     }
 
     return (
-        <MuiPickersUtilsProvider utils={MomentUtils}>
-            <Grid container spacing={5} style={{maxWidth: '100%', marginLeft: '0px'}} {...getRootProps({refKey: 'innerRef'})}>
-                {/* Sidebar */}
-                <TopicSettingsSidebar
-                    topic={topic || new TopicObject()}
-                    selected={selected}
-                    setSelected={setSelected}
-                    addNewProblem={addNewProblem}
-                    handleDrag={handleDrag}
-                    isDragActive={isDragActive}
-                    getInputProps={getInputProps}
-                    open={open}
-                />
-                {/* Problem List */}
-                <SettingsForm
-                    selected={selected}
-                    setSelected={setSelected}
-                    setTopic={setTopic}
-                    topic={topic}
-                />
-            </Grid>
-        </MuiPickersUtilsProvider>
+        <Grid container spacing={5} style={{maxWidth: '100%', marginLeft: '0px'}} {...getRootProps({refKey: 'innerRef'})}>
+            {/* Sidebar */}
+            <TopicSettingsSidebar
+                topic={topic || new TopicObject()}
+                selected={selected}
+                setSelected={setSelected}
+                addNewProblem={addNewProblem}
+                handleDrag={handleDrag}
+                isDragActive={isDragActive}
+                getInputProps={getInputProps}
+                open={open}
+            />
+            {/* Problem List */}
+            <SettingsForm
+                selected={selected}
+                setSelected={setSelected}
+                setTopic={setTopic}
+                topic={topic}
+            />
+        </Grid>
     );
 };
 
