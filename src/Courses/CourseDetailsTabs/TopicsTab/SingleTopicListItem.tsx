@@ -1,0 +1,172 @@
+import React from 'react';
+import { Row, Col } from 'react-bootstrap';
+import { TopicObject, TopicOverride } from '../../CourseInterfaces';
+import { BsPencilSquare, BsTrash } from 'react-icons/bs';
+import { MdWarning } from 'react-icons/md';
+import _ from 'lodash';
+import { Link } from 'react-router-dom';
+import { DateTimePicker } from '@material-ui/pickers';
+import { UserRole, getUserRole, getUserId } from '../../../Enums/UserRole';
+import moment from 'moment';
+import { Button } from '@material-ui/core';
+import './TopicList.css';
+import logger from '../../../Utilities/Logger';
+
+interface SingleTopicListItemProps {
+    topic: TopicObject;
+    removeTopic?: _.CurriedFunction2<any, number, void>;
+}
+
+export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, removeTopic}) => {
+    const userType: UserRole = getUserRole();
+    const userId: number = getUserId();
+    const activeExtensions = topic.getActiveExtensions();
+
+    return (
+        // This is the minimum size of the datepicker, hardcoded to prevent flickering between modes.
+        <div className='d-flex' style={{minHeight: '56px'}}>
+            {/* If we're in edit mode, show the edit topic buttons. */}
+            {(removeTopic) ? (
+                <>
+                    <Col xs={8} md={8}>
+                        <Row>
+                            <Col>
+                                <Link to={loc => ({pathname: `${loc.pathname}/topic/${topic.id}/settings`})}>
+                                    <h5>
+                                        {topic.name}
+                                    </h5>
+                                </Link>
+                            </Col>
+                        </Row>
+                        <Row>
+                            {topic.errors > 0 && <Link to={loc => ({pathname: `${loc.pathname}/topic/${topic.id}/settings`})} style={{color: 'red'}}>
+                                <Col>
+                                    <MdWarning style={{fontSize: '1.2em'}} /> 
+                                    There {topic.errors === 1 ? 'is' : 'are'} {topic.errors} issue{topic.errors === 1 ? null : 's'} with this topic.
+                                </Col>
+                            </Link>  }                      
+                        </Row>
+                    </Col>
+                    <Col xs={4} md={4}>
+                        <Row style={{justifyContent: 'flex-end'}}>
+                            <Link to={loc =>({pathname: `${loc.pathname}/topic/${topic.id}/settings`})}>
+                                <Button 
+                                    style={{ margin: '0em 1em' }}
+                                    startIcon={<BsPencilSquare/>}
+                                    color='primary'
+                                    variant='outlined'
+                                >
+                                    Edit
+                                </Button>
+                            </Link>
+                            <Button
+                                style={{ margin: '0em 1em' }}
+                                onClick={(e: any) => removeTopic(e, topic.id)}
+                                startIcon={<BsTrash />}
+                                color='secondary'
+                                variant='outlined'
+                            >
+                                Delete
+                            </Button>
+                        </Row>
+                    </Col>
+                </>
+            ) : (
+                <>
+                    <Col>
+                        <Row>
+                            <Link to={loc =>(userType !== UserRole.STUDENT ?
+                                {pathname: `${loc.pathname}/topic/${topic.id}/grading`} :
+                                {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
+                            )}>
+                                <Col>
+                                    <h5>{topic.name}</h5>
+                                </Col>
+                            </Link>
+                        </Row>
+                        {activeExtensions.length > 0 && (
+                            <Row>
+                                { userType !== UserRole.STUDENT ? (
+                                    <Link to={loc =>({pathname: `${loc.pathname}/settings`, selectedTopic: topic.id})}>
+                                        <Col>
+                                            <p style={{color: 'black', fontStyle: 'italic'}}>
+                                                This topic has {activeExtensions.length} active extension{activeExtensions.length > 1 && 's'}
+                                            </p>
+                                        </Col>
+                                    </Link>
+                                ) : (
+                                    <>
+                                        { activeExtensions.length > 0 && (
+                                            <Col>
+                                                <p style={{color: 'black', fontStyle: 'italic'}}>
+                                                    You have an extension for this topic.
+                                                </p>
+                                            </Col>
+                                        )}
+                                    </>
+                                )}
+                            </Row>
+                        )}
+                        {topic.errors > 0 && (
+                            <Row>
+                                <Link to={loc => ({pathname: `${loc.pathname}/topic/${topic.id}/settings`})} style={{color: 'red'}}>
+                                    <Col>
+                                        <MdWarning style={{fontSize: '1.2em'}} /> 
+                                        There {topic.errors === 1 ? 'is' : 'are'} {topic.errors} issue{topic.errors === 1 ? null : 's'} with this topic.
+                                    </Col>
+                                </Link>
+                            </Row>
+                        )
+                        }
+                    </Col>
+                    <>
+                        <DateTimePicker
+                            style={{
+                                marginLeft: 'auto'
+                            }} 
+                            variant='inline'
+                            label='Start date'
+                            name={'start'}
+                            value={topic.startDate}
+                            onChange={()=>{}}
+                            inputVariant='outlined'
+                            disabled={true}
+                        />
+
+                        <DateTimePicker
+                            style={{
+                                marginLeft: '10px'
+                            }} 
+                            variant='inline'
+                            label='End date'
+                            name={'end'}
+                            value={topic.endDate}
+                            onChange={()=>{}}
+                            inputVariant='outlined'
+                            disabled={true}
+                        />
+                        {/* Show the Dead Date if != end, if student also now > end */}
+                        {
+                            (!moment(topic.deadDate).isSame(moment(topic.endDate))) && 
+                        (
+                            userType !== UserRole.STUDENT || 
+                            moment().isSameOrAfter(moment(topic.endDate))
+                        ) &&
+                        <DateTimePicker
+                            style={{
+                                marginLeft: '10px'
+                            }} 
+                            variant='inline'
+                            label='Dead date'
+                            name={'end'}
+                            value={topic.deadDate}
+                            onChange={()=>{}}
+                            inputVariant='outlined'
+                            disabled={true}
+                        />
+                        }
+                    </>
+                </>
+            )}
+        </div>
+    );};

@@ -4,7 +4,7 @@ import { Accordion, Card, Row, Col, Alert, Button } from 'react-bootstrap';
 import { CourseObject, TopicObject, UnitObject } from '../../CourseInterfaces';
 import { EditToggleButton } from '../../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../../Enums/UserRole';
-import { FaPlusCircle, FaTrash } from 'react-icons/fa';
+import { FaPlusCircle } from 'react-icons/fa';
 import _ from 'lodash';
 import { ConfirmationModal } from '../../../Components/ConfirmationModal';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
