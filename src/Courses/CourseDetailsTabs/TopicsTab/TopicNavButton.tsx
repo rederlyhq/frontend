@@ -43,7 +43,7 @@ export const TopicNavButton: React.FC<TopicNavButtonProps> = ({topic, onDelete})
                                             Extensions
                                         </Button>
                                     </MenuItem>
-                                    <MenuItem onClick={onDelete}>
+                                    <MenuItem onClick={(e) => onDelete(e, topic.id)}>
                                         <Button fullWidth variant="text" color="secondary" startIcon={<BsTrash/>}>
                                             Delete
                                         </Button>
