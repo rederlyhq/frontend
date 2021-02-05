@@ -150,7 +150,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                         setSoftReloadFlag(true);
                                     })();
                                 }}>
-                                    {session.userType === UserRole.STUDENT ? 'Professor' : 'Student'} View (BETA)
+                                    {session.userType === UserRole.STUDENT ? 'Professor' : 'Student'} View
                                 </NavDropdown.Item>
                             }
                             <NavDropdown.Item onClick={logoutClicked}>Log out</NavDropdown.Item>
