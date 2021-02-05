@@ -11,7 +11,6 @@ import NavbarCollapse from 'react-bootstrap/NavbarCollapse';
 import { getUserRole, unauthorizedRedirect, UserRole } from '../Enums/UserRole';
 import CourseCreationPage from '../Courses/CourseCreation/CourseCreationPage';
 import SimpleProblemPage from '../Assignments/SimpleProblemPage';
-import AdviserPage from '../Adviser/AdviserPage';
 import EnrollUserPage from '../Courses/EnrollUserPage';
 import { ProvideFeedback } from './ProvideFeedback';
 import AccountWrapper from '../Account/AccountWrapper';
@@ -117,10 +116,10 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                         <NavDropdown title={`Welcome, ${userName}`} id='account-dropdown'>
                             <NavDropdown.Item onClick={()=>{history.push(`${path}/account`);}}>My Account</NavDropdown.Item>
                             {getUserRole() !== UserRole.STUDENT &&
-                                <NavDropdown.Item onClick={()=>{history.push(`${path}/editor`);}}>Problem Editor</NavDropdown.Item>
-                            }
-                            {getUserRole() !== UserRole.STUDENT &&
-                                <NavDropdown.Item onClick={()=>{history.push(`${path}/problem-browser`);}}>Problem Browser</NavDropdown.Item>
+                                <>
+                                    <NavDropdown.Item onClick={()=>{history.push(`${path}/editor`);}}>Problem Editor</NavDropdown.Item>
+                                    <NavDropdown.Item onClick={()=>{history.push(`${path}/problem-browser`);}}>Problem Browser</NavDropdown.Item>
+                                </>
                             }
                             {(session.userType !== UserRole.STUDENT || ((session.actualUserType !== null) && session.actualUserType !== UserRole.STUDENT)) &&
                                 <NavDropdown.Item onClick={()=> {
@@ -165,29 +164,28 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                     <AnimatePresence initial={false}>
                         <URLBreadcrumb key='URLBreadcrumb' />
                         <Switch>
+                            {getUserRole() !== UserRole.STUDENT && [{
+                                path: `${path}/editor`,
+                                child: <ProblemEditor />
+                            }, {
+                                path: `${path}/problem-browser`,
+                                child: <ProblemBrowserSearchPage />
+                            }, {
+                                path: `${path}/problem-browser/search`,
+                                child: <ProblemBrowserResults />
+                            }, {
+                                path: `${path}/courses/new`,
+                                child: <CourseCreationPage />
+                            }].map(obj =>
+                                <Route exact path={obj.path} key={obj.path}>
+                                    {obj.child}
+                                </Route>)
+                            }
                             <Route exact path={`${path}/account`}>
                                 <AccountWrapper />
                             </Route>
-                            <Route exact path={`${path}/editor`}>
-                                <ProblemEditor />
-                            </Route>
-                            <Route exact path={`${path}/problem-browser`}>
-                                <ProblemBrowserSearchPage />
-                            </Route>
-                            <Route exact path={`${path}/problem-browser/search`}>
-                                <ProblemBrowserResults />
-                            </Route>
-                            <Route exact path={`${path}/adviser`}>
-                                <AdviserPage />
-                            </Route>
                             <Route exact path={`${path}/courses`}>
                                 <CoursePage />
-                            </Route>
-                            <Route exact path={`${path}/courses/new`}>
-                                <CourseCreationPage />
-                            </Route>
-                            <Route path={`${path}/courses/settings/:courseId`}>
-                                <SettingsPage />
                             </Route>
                             <Route path={`${path}/courses/enroll/:enrollCode`}>
                                 <EnrollUserPage />
@@ -195,25 +193,25 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             <Route path={`${path}/courses/:courseId`}>
                                 <CourseProvider>
                                     <Switch>
-                                        {getUserRole() !== UserRole.STUDENT &&
-                                        <Route path={`${path}/courses/:courseId/topic/:topicId/settings`}>
-                                            <TopicSettingsPage />
-                                        </Route>}
-                                        {getUserRole() !== UserRole.STUDENT &&
-                                        <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading/print/:userId`}>
-                                            <PrintLoadingProvider>
-                                                <PrintEverything />
-                                            </PrintLoadingProvider>
-                                        </Route>}
-                                        {getUserRole() !== UserRole.STUDENT &&
-                                        <Route exact path={`${path}/courses/:courseId/topic/:topicId/grading`}>
-                                            <TopicGradingPage />
-                                        </Route>}
+                                        {getUserRole() !== UserRole.STUDENT && [{
+                                            path: `${path}/courses/:courseId/topic/:topicId/settings`,
+                                            child: <TopicSettingsPage />
+                                        }, {
+                                            path: `${path}/courses/:courseId/topic/:topicId/grading/print/:userId`,
+                                            child: <PrintLoadingProvider><PrintEverything /></PrintLoadingProvider>
+                                        }, {
+                                            path: `${path}/courses/:courseId/topic/:topicId/grading`,
+                                            child: <TopicGradingPage />
+                                        }, {
+                                            path: `${path}/courses/:courseId/settings`,
+                                            child: <SettingsPage />
+                                        }].map(obj =>
+                                            <Route exact path={obj.path} key={obj.path}>
+                                                {obj.child}
+                                            </Route>)
+                                        }
                                         <Route exact path={`${path}/courses/:courseId/topic/:topicId`}>
                                             <SimpleProblemPage />
-                                        </Route>
-                                        <Route exact path={`${path}/courses/:courseId/settings`}>
-                                            <SettingsPage />
                                         </Route>
                                         <Route exact path={`${path}/courses/:courseId`}>
                                             <CourseDetailsPage />
@@ -221,9 +219,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                         <Route>
                                             {/* <NoPage/> */}
                                             <h1>Page not found.</h1>
-                                            <Redirect to={{
+                                            {/* <Redirect to={{
                                                 pathname: '/'
-                                            }} />
+                                            }} /> */}
                                         </Route>
                                     </Switch>
                                 </CourseProvider>
