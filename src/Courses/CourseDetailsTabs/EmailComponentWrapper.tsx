@@ -58,10 +58,19 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
         icon: function IconWrapper() {
             return <span><Email style={{color: '#007bff'}}/> Email</span>;
         },
-        // isFreeAction: true,
         tooltip: 'Email selected students',
         onClick: () => setShowModal(true),
         position: 'toolbarOnSelect'
+    };
+
+    const disabledEmailProfessorButtonOptions: Action<UserObject> = {
+        icon: function IconWrapper() {
+            return <span><Email /> Email</span>;
+        },
+        tooltip: 'Email selected students',
+        onClick: () => undefined,
+        position: 'toolbar',
+        disabled: true,
     };
 
     return (
@@ -124,15 +133,13 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                     }}
                     actions={userType !== UserRole.STUDENT ? [
                         {
-                            // eslint-disable-next-line react/display-name
-                            icon: () => <TiUserDelete style={{ color: 'red' }} />,
+                            icon: function IconWrapper() { return <TiUserDelete style={{ color: 'red' }} />; },
                             tooltip: 'Drop student from course',
                             onClick: (_event: any, user: any) => setShowConfirmDelete({ state: true, user }),
                             position: 'row'
                         },
                         {
-                            // eslint-disable-next-line react/display-name
-                            icon: () => <Link to={(loc: any) => ({ ...loc, pathname: `${loc.pathname}/settings` })}><MdLaunch style={{ color: 'black' }} /></Link>,
+                            icon: function IconWrapper() { return <Link to={(loc: any) => ({ ...loc, pathname: `${loc.pathname}/settings` })}><MdLaunch style={{ color: 'black' }} /></Link>; },
                             tooltip: 'Go to Extensions',
                             onClick: () => null,
                             position: 'row'
@@ -146,12 +153,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                             tooltip: 'Enroll student in course',
                         },
                         emailProfessorButtonOptions,
-                        {
-                            ...emailProfessorButtonOptions,
-                            position: 'toolbar',
-                            onClick: () => undefined,
-                            disabled: true,
-                        },
+                        disabledEmailProfessorButtonOptions,
                     ] : undefined}
                     localization={{ header: { actions: 'Actions' } }}
                 />
