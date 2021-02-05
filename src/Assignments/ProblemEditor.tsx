@@ -22,6 +22,7 @@ import { motion, useCycle } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import localPreferences from '../Utilities/LocalPreferences';
 import { ProblemEditorAssetUploadButton } from './ProblemEditorAssetUploadButton';
+import BackendAPIError from '../APIInterfaces/BackendAPI/BackendAPIError';
 const { session } = localPreferences;
 
 const defaultLoadPath = 'private/templates/barebones.pg';
@@ -137,7 +138,9 @@ export const ProblemEditor: React.FC = () => {
             problemEditorForm.setValue(nameof<ProblemEditorInputs>('userPath'), userPath);
             render();
         } catch(e) {
-            logger.error('problemEditor: load: ', e.message);
+            if (!BackendAPIError.isBackendAPIError(e) || e.status !== 400) {
+                logger.error('problemEditor: load: ', e.message);                
+            }
             setAlertState({
                 message: e.message,
                 variant: 'danger'
