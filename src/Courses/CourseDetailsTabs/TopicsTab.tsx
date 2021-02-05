@@ -4,7 +4,7 @@ import { Accordion, Card, Row, Col, Alert, Button } from 'react-bootstrap';
 import { CourseObject, TopicObject, UnitObject } from '../CourseInterfaces';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
-import { FaPlusCircle, FaTrash } from 'react-icons/fa';
+import { FaPlusCircle } from 'react-icons/fa';
 import _ from 'lodash';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
@@ -57,14 +57,19 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     };
 
     const {getCurrentQueryStrings, updateRoute} = useQuerystringHelper();
-    const [inEditMode, setInEditMode] = useState<boolean>(getCurrentQueryStrings()['edit'] === 'true');
+    const [inEditMode, setInEditMode] = useState<boolean>(getUserRole() !== UserRole.STUDENT && getCurrentQueryStrings()['edit'] === 'true');
     const [alert, setAlert] = useAlertState();
     const userType: UserRole = getUserRole();
 
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [loading, setLoading] = useState<boolean>(false);
 
-    const setInEditModeWrapper = (val: boolean) => {
+    const setInEditModeWrapper = (newEditMode: boolean) => {
+        let val = newEditMode;
+        if (getUserRole() === UserRole.STUDENT) {
+            val = false;
+        }
+
         setInEditMode(val);
         updateRoute({
             edit: {

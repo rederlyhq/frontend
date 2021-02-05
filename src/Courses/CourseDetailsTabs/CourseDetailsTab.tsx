@@ -13,6 +13,7 @@ import logger from '../../Utilities/Logger';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import { Link } from 'react-router-dom';
 import * as qs from 'querystring';
+import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystringHelper';
 
 interface CourseDetailsTabProps {
     course?: CourseObject;
@@ -22,9 +23,27 @@ interface CourseDetailsTabProps {
 }
 
 export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, loading, error, setCourse} ) => {
-    const [inEditMode, setInEditMode] = useState<boolean>(false);
+    const {getCurrentQueryStrings, updateRoute} = useQuerystringHelper();
+    const [inEditMode, setInEditMode] = useState<boolean>(getUserRole() !== UserRole.STUDENT && getCurrentQueryStrings()['edit'] === 'true');
     const [updateError, setUpdateError] = useState<string | null>(null);
     const userType: UserRole = getUserRole();
+
+
+
+    const setInEditModeWrapper = (newEditMode: boolean) => {
+        let val = newEditMode;
+        if (getUserRole() === UserRole.STUDENT) {
+            val = false;
+        }
+
+        setInEditMode(val);
+        updateRoute({
+            edit: {
+                val: val ? 'true' : null,
+                mode: QueryStringMode.OVERWRITE,
+            },
+        }, true);
+    };
 
     const onCourseDetailsBlur = async (field: keyof CourseObject, value: any) => {
         if(_.isNil(course)) {
@@ -96,7 +115,7 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
                     }
                     <EditToggleButton
                         selectedState={inEditMode}
-                        onClick={() => {setInEditMode(!inEditMode); }}
+                        onClick={() => {setInEditModeWrapper(!inEditMode); }}
                         style={{
                             marginLeft: 'auto',
                             padding: '2px'
