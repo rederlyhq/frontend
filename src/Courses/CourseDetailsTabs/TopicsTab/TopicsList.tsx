@@ -12,12 +12,13 @@ interface TopicsListProps {
     flush?: boolean;
     removeTopic?: _.CurriedFunction2<any, number, void>;
     unitUnique?: number;
+    inEditMode: boolean;
 }
 
 /**
  * Lists topics. Clicking into one will go to the problem sets.
  */
-export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, removeTopic, unitUnique}) => {
+export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, removeTopic, unitUnique, inEditMode}) => {
     const getDraggableTopic = (provided: any, snapshot: any, rubric: any) => {
         if (rubric.source.index >= listOfTopics.length) {
             logger.error(`Tried moving ${rubric.source.index} which exceed list length ${listOfTopics.length}`);
@@ -28,7 +29,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
 
         return (
             <ListGroupItem {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef} variant={topic.errors > 0 ? 'danger' : undefined}>
-                <SingleTopicListItem topic={topic} removeTopic={removeTopic} />
+                <SingleTopicListItem topic={topic} removeTopic={removeTopic} inEditMode={inEditMode}/>
             </ListGroupItem>
         );
     };

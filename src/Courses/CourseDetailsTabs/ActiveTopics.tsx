@@ -25,6 +25,7 @@ export const ActiveTopics: React.FC<ActiveTopicsProps> = ({course}) => {
     return (
         <TopicsList 
             listOfTopics={activeTopics}
+            inEditMode={false}
         />
     );
 };

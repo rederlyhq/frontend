@@ -10,13 +10,15 @@ import moment from 'moment';
 import './TopicList.css';
 import logger from '../../../Utilities/Logger';
 import { TopicNavButton } from './TopicNavButton';
+import { GrDrag } from 'react-icons/gr';
 
 interface SingleTopicListItemProps {
     topic: TopicObject;
     removeTopic?: _.CurriedFunction2<any, number, void>;
+    inEditMode: boolean;
 }
 
-export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, removeTopic}) => {
+export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, removeTopic, inEditMode}) => {
     const userType: UserRole = getUserRole();
     const userId: number = getUserId();
     const activeExtensions = topic.getActiveExtensions();
@@ -36,12 +38,15 @@ export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, 
     return (
         // This is the minimum size of the datepicker, hardcoded to prevent flickering between modes.
         <div className='d-flex' style={{minHeight: '56px'}}>
+            {inEditMode && <GrDrag style={{float: 'left', cursor: 'grab', position: 'absolute', left: '5px', top: '36%'}} />}
             <Col>
                 <Row>
-                    <Link to={loc =>(userType !== UserRole.STUDENT ?
-                        {pathname: `${loc.pathname}/topic/${topic.id}/grading`} :
-                        {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
-                    )}>
+                    <Link
+                        to={loc =>(userType !== UserRole.STUDENT ?
+                            {pathname: `${loc.pathname}/topic/${topic.id}/grading`} :
+                            {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
+                        )}
+                    >
                         <Col>
                             <h5>{topic.name}</h5>
                         </Col>

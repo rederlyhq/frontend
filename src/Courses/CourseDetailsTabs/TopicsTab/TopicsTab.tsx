@@ -599,6 +599,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                         listOfTopics={unit.topics}
                                                                         removeTopic={userType !== UserRole.STUDENT ? onTopicDeleteClickedWithUnitId : undefined}
                                                                         unitUnique={unit.id}
+                                                                        inEditMode={inEditMode}
                                                                     />
                                                                 </Card.Body>
                                                             </Accordion.Collapse>
