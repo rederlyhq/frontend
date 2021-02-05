@@ -24,27 +24,27 @@ export const TopicNavButton: React.FC<TopicNavButtonProps> = ({topic, onDelete})
             <IconButton innerRef={IconButtonRef} onClick={() => setOpen(true)} style={{float: 'right', left: '2%'}}>
                 <SettingsIcon />
             </IconButton>
-            <Popper open={open} anchorEl={IconButtonRef.current} role={undefined} transition>
+            <Popper open={open} anchorEl={IconButtonRef.current} role={undefined} transition placement='right-start'>
                 {({ TransitionProps, placement }) => (
                     <Grow
                         {...TransitionProps}
-                        style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}
+                        style={{ transformOrigin: 'left-top' }}
                     >
                         <Paper elevation={14}>
                             <ClickAwayListener onClickAway={handleClose}>
                                 <MenuList autoFocusItem={open} id={`menu-list-${topic.id}`}>
                                     <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}/settings`)}>
-                                        <Button fullWidth variant="text" color="primary" startIcon={<BsPencilSquare/>}>
+                                        <Button variant="text" color="primary" startIcon={<BsPencilSquare/>} >
                                             Edit
                                         </Button>
                                     </MenuItem>
                                     <MenuItem onClick={() => history.push(`${location.pathname}/settings`)}>
-                                        <Button fullWidth variant="text" color="default" startIcon={<MdLaunch />}>
+                                        <Button variant="text" color="default" startIcon={<MdLaunch />}>
                                             Extensions
                                         </Button>
                                     </MenuItem>
                                     <MenuItem onClick={(e) => onDelete(e, topic.id)}>
-                                        <Button fullWidth variant="text" color="secondary" startIcon={<BsTrash/>}>
+                                        <Button variant="text" color="secondary" startIcon={<BsTrash/>}>
                                             Delete
                                         </Button>
                                     </MenuItem>
