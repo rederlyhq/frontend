@@ -128,7 +128,7 @@ export const RendererIFrame: React.FC<RendererIFrameProps> = ({
                 width: '100%',
                 height: '100vh',
                 border: 'none',
-                minHeight: useReadonlyHeight ? '350px' : '',
+                minHeight: useReadonlyHeight ? '' : '350px',
                 // visibility: (loading || Boolean(alert.message)) ? 'hidden' : 'visible'
                 visibility: (loading) ? 'hidden' : 'visible'
             }}
