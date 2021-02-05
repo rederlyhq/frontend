@@ -15,6 +15,7 @@ import { courseContext } from '../CourseDetailsPage';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import logger from '../../Utilities/Logger';
 import { TablePagination } from '@material-ui/core';
+import { GrShift } from 'react-icons/gr';
 
 interface EmailComponentWrapperProps {
     users: Array<UserObject>;
@@ -134,7 +135,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                         },
                         {
                             // eslint-disable-next-line react/display-name
-                            icon: () => <Link to={(loc: any) => ({ ...loc, pathname: `${loc.pathname}/settings` })}><MdLaunch style={{ color: 'black' }} /></Link>,
+                            icon: () => <Link to={(loc: any) => ({ ...loc, pathname: `${loc.pathname}/settings` })}><GrShift style={{ color: 'black' }} /></Link>,
                             tooltip: 'Go to Extensions',
                             onClick: () => null,
                             position: 'row'
