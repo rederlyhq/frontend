@@ -430,6 +430,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         );
     };
 
+    const renderSavedStateIcon = (problem: ProblemObject) => ((problem.grades?.first?.hasBeenSaved === true) && <FaRegSave title='Recently saved' className='text-success' role='status' />);
+
     const renderDoneStateIcon = (problem: ProblemObject) => {
         let doneState: ProblemDoneState = ProblemDoneState.UNTOUCHED;
         const grade = problem.grades?.first;
@@ -455,9 +457,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         } else if (overallBestScore === 1) {
             doneState = ProblemDoneState.COMPLETE;
         } else if (overallBestScore === 0) {
-            doneState = (grade?.hasBeenSaved === true) ? ProblemDoneState.SAVED : ProblemDoneState.INCORRECT;
+            doneState = ProblemDoneState.INCORRECT;
         } else if (overallBestScore < 1) {
-            doneState = (grade?.hasBeenSaved === true) ? ProblemDoneState.SAVED : ProblemDoneState.PARTIAL;
+            doneState = ProblemDoneState.PARTIAL;
         }
 
         switch (doneState) {
@@ -467,8 +469,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             return (<> INCORRECT <BsXCircle className='text-danger' role='status' /></>);
         case ProblemDoneState.PARTIAL:
             return (<> PARTIAL <BsSlashCircle className='text-warning' role='status' /></>);
-        case ProblemDoneState.SAVED:
-            return (<> SAVED <FaRegSave className='text-success' role='status' /></>);
         case ProblemDoneState.UNTOUCHED:
         default:
             return;
@@ -613,7 +613,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                             }}
                                         >
                                             {`Problem ${prob.problemNumber} (${prob.weight} Point${prob.weight === 1 ? '' : 's'})`}
-                                            <span className='float-right'>{renderDoneStateIcon(prob)}</span>
+                                            <span className='float-right'>{renderDoneStateIcon(prob)} {renderSavedStateIcon(prob)}</span>
                                         </NavLink>
                                     );
                                 })
