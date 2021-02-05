@@ -80,30 +80,35 @@ export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, 
                 )
                 }
             </Col>
-            <DateTimePicker
-                style={{
-                    marginLeft: 'auto'
-                }} 
-                variant='inline'
-                label='Start date'
-                name={'start'}
-                value={startDateDisplay}
-                onChange={()=>{}}
-                inputVariant='outlined'
-                disabled={true}
-            />
-            <DateTimePicker
-                style={{
-                    marginLeft: '10px'
-                }} 
-                variant='inline'
-                label='End date'
-                name={'end'}
-                value={endDateDisplay}
-                onChange={()=>{}}
-                inputVariant='outlined'
-                disabled={true}
-            />
+            <Col>
+                <Row>
+                    <Col xs={12} lg={6}>
+                        <DateTimePicker
+                            style={{
+                                marginLeft: 'auto'
+                            }} 
+                            variant='inline'
+                            label='Start date'
+                            name={'start'}
+                            value={startDateDisplay}
+                            onChange={()=>{}}
+                            inputVariant='outlined'
+                            disabled={true}
+                        />
+                    </Col>
+                    <Col xs={12} lg={6}>
+                        <DateTimePicker
+                            variant='inline'
+                            label='End date'
+                            name={'end'}
+                            value={endDateDisplay}
+                            onChange={()=>{}}
+                            inputVariant='outlined'
+                            disabled={true}
+                        />
+                    </Col>
+                </Row>
+            </Col>
             {/* Show the Dead Date if != end, if student also now > end */}
             {
                 (!moment(deadDateDisplay).isSame(moment(endDateDisplay))) && 
