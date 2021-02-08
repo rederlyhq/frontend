@@ -9,6 +9,8 @@ import GlobalErrorBoundaryState from './Utilities/ErrorBoundaries/GlobalErrorBou
 import { VersionCheck } from './Utilities/VersionCheck';
 import axios from 'axios';
 import logger from './Utilities/Logger';
+import { MuiPickersUtilsProvider} from '@material-ui/pickers';
+import MomentUtils from '@date-io/moment';
 
 interface RederlyConfig {
     paymentURL: string;
@@ -39,7 +41,9 @@ ReactDOM.render(
     <React.StrictMode>
         <GlobalErrorBoundaryState>
             <VersionCheck>
-                <Router />
+                <MuiPickersUtilsProvider utils={MomentUtils}>
+                    <Router />
+                </MuiPickersUtilsProvider>
             </VersionCheck>
         </GlobalErrorBoundaryState>
     </React.StrictMode>,

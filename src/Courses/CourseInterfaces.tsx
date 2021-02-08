@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import moment from 'moment';
 
 export function* uniqueGen() {
     let index: number = 0;
@@ -160,6 +161,7 @@ export class StudentTopicAssessmentFields {
 
 export class TopicOverride {
     id?: number;
+    userId?: number;
     startDate?: Date;
     endDate?: Date;
     deadDate?: Date;
@@ -191,6 +193,23 @@ export class TopicObject {
             this.questions = init?.questions?.map(question => new ProblemObject(question)) || [];
         }
     }
+
+    // TODO: Topics should not return overrides when students are asking, which would allow
+    // us to remove this argument.
+    getActiveExtensions = (userId?: number): Array<TopicOverride> => {
+        const now = moment();
+        if (_.isEmpty(this.studentTopicOverride)) return [];
+
+        const activeExtensions: TopicOverride[] = this.studentTopicOverride.reduce((accum: TopicOverride[], extension) => {
+            if ( now.isBetween(extension.startDate, extension.deadDate, 'day', '[]') &&
+               ( _.isNil(userId) || extension.userId === userId )) {
+                accum.push(extension);
+            }
+            return accum;
+        }, []);
+
+        return activeExtensions;
+    };
 }
 
 const newUnitUniqueGen = uniqueGen();

@@ -1,8 +1,7 @@
 import { Grid, TextField, Button, CircularProgress } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
-import MomentUtils from '@date-io/moment';
+import { DateTimePicker } from '@material-ui/pickers';
 import moment, { Moment } from 'moment';
 import { extendQuestion, extendTopic, getQuestion, getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
@@ -228,79 +227,73 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
     const renderNormalTopicOverrideForm = (topic: TopicObject) => (
         <>
             <Grid item md={12}>
-                <MuiPickersUtilsProvider utils={MomentUtils}>
-                    <Controller
-                        as={<DateTimePicker value="" onChange={() => {}} />}
-                        name="startDate"
-                        control={control}
-                        defaultValue={moment(topic.startDate)}
-                        autoOk
-                        variant="inline"
-                        fullWidth={true}
-                        label='Start Date'
-                        InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
-                        inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                        maxDate={endDate || moment(topic.endDate)}
-                        rules={{
-                            required: true,
-                            validate: {
-                                isDate: (data: any) => moment(data).isValid() || 'Invalid date',
-                                isEarliest: (startDate: Moment) => {
-                                    const { endDate, deadDate } = getValues();
-                                    return startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate) || topic.topicTypeId === 2 || 'Start date cannot be after End or Dead dates';
-                                }
+                <Controller
+                    as={<DateTimePicker value="" onChange={() => {}} />}
+                    name="startDate"
+                    control={control}
+                    defaultValue={moment(topic.startDate)}
+                    autoOk
+                    variant="inline"
+                    fullWidth={true}
+                    label='Start Date'
+                    InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
+                    inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
+                    maxDate={endDate || moment(topic.endDate)}
+                    rules={{
+                        required: true,
+                        validate: {
+                            isDate: (data: any) => moment(data).isValid() || 'Invalid date',
+                            isEarliest: (startDate: Moment) => {
+                                const { endDate, deadDate } = getValues();
+                                return startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate) || topic.topicTypeId === 2 || 'Start date cannot be after End or Dead dates';
                             }
-                        }}
-                        onAccept={() => clearErrors()}
-                    />
-                </MuiPickersUtilsProvider>
+                        }
+                    }}
+                    onAccept={() => clearErrors()}
+                />
             </Grid>
 
             <Grid item md={12}>
-                <MuiPickersUtilsProvider utils={MomentUtils}>
-                    <Controller
-                        as={<DateTimePicker value="" onChange={() => {}} />}
-                        name="endDate"
-                        control={control}
-                        defaultValue={moment(topic.endDate)}
-                        autoOk
-                        variant="inline"
-                        fullWidth={true}
-                        label='End Date'
-                        InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
-                        inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                        minDate={moment.max([(startDate || moment(topic.startDate)), moment()])}
-                        maxDate={topic.topicTypeId === 1 ? (deadDate || moment(topic.deadDate)) : undefined}
-                        rules={{
-                            required: true,
-                            validate: {
-                                isDate: (data: any) => moment(data).isValid() || 'Invalid date',
-                            }
-                        }}
-                        onAccept={() => clearErrors()}
-                    />
-                </MuiPickersUtilsProvider>
+                <Controller
+                    as={<DateTimePicker value="" onChange={() => {}} />}
+                    name="endDate"
+                    control={control}
+                    defaultValue={moment(topic.endDate)}
+                    autoOk
+                    variant="inline"
+                    fullWidth={true}
+                    label='End Date'
+                    InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
+                    inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
+                    minDate={moment.max([(startDate || moment(topic.startDate)), moment()])}
+                    maxDate={topic.topicTypeId === 1 ? (deadDate || moment(topic.deadDate)) : undefined}
+                    rules={{
+                        required: true,
+                        validate: {
+                            isDate: (data: any) => moment(data).isValid() || 'Invalid date',
+                        }
+                    }}
+                    onAccept={() => clearErrors()}
+                />
             </Grid>
 
             {
                 topic.topicTypeId === 1 &&
                 <Grid item md={12}>
-                    <MuiPickersUtilsProvider utils={MomentUtils}>
-                        <Controller
-                            as={<DateTimePicker value="" onChange={() => {}} />}
-                            name="deadDate"
-                            control={control}
-                            defaultValue={moment(topic.deadDate)}
-                            autoOk
-                            variant="inline"
-                            fullWidth={true}
-                            label='Dead Date'
-                            InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
-                            inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                            minDate={moment.max([(endDate || moment(topic.endDate)), moment()])}
-                            onAccept={() => clearErrors()}
-                        />
-                    </MuiPickersUtilsProvider>
+                    <Controller
+                        as={<DateTimePicker value="" onChange={() => {}} />}
+                        name="deadDate"
+                        control={control}
+                        defaultValue={moment(topic.deadDate)}
+                        autoOk
+                        variant="inline"
+                        fullWidth={true}
+                        label='Dead Date'
+                        InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
+                        inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
+                        minDate={moment.max([(endDate || moment(topic.endDate)), moment()])}
+                        onAccept={() => clearErrors()}
+                    />
                 </Grid>
             }
         </>

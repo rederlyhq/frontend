@@ -16,6 +16,7 @@ import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import logger from '../../Utilities/Logger';
 import { TablePagination } from '@material-ui/core';
 import { ENROLLMENT_TABLE_HEADERS } from './TableColumnHeaders';
+import { GrShift } from 'react-icons/gr';
 
 interface EmailComponentWrapperProps {
     users: Array<UserObject>;
@@ -139,7 +140,7 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                             position: 'row'
                         },
                         {
-                            icon: function IconWrapper() { return <Link to={(loc: any) => ({ ...loc, pathname: `${loc.pathname}/settings` })}><MdLaunch style={{ color: 'black' }} /></Link>; },
+                            icon: function IconWrapper() { return <Link to={(loc: any) => ({ ...loc, pathname: `${loc.pathname}/settings` })}><GrShift style={{ color: 'black' }} /></Link>; },
                             tooltip: 'Go to Extensions',
                             onClick: () => null,
                             position: 'row'

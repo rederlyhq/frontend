@@ -1,8 +1,7 @@
 import React from 'react';
 import { Col, Row, FormControl, FormLabel, FormGroup } from 'react-bootstrap';
 import { CourseObject } from '../CourseInterfaces';
-import MomentUtils from '@date-io/moment';
-import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
+import { KeyboardDatePicker } from '@material-ui/pickers';
 import _ from 'lodash';
 
 import './Course.css';
@@ -72,50 +71,48 @@ export const CourseDetailsForm: React.FC<CourseDetailsProps> = ({ course, update
                     </Row>
                 </FormGroup>
                 <Row>
-                    <MuiPickersUtilsProvider utils={MomentUtils}>
-                        <Col>
-                            <h4>Start Date</h4>
-                            <KeyboardDatePicker
-                                autoOk
-                                disabled={disabled}
-                                variant="inline"
-                                format="MM/DD/yyyy"
-                                name={'start-date'}
-                                defaultValue={course.start}
-                                value={course.start}
-                                onChange={curriedOnDateChanged('start')}
-                                onAccept={curriedOnDatePicked('start')}
-                                onBlur={curriedOnTextInputBlurForCourseField('start')}
-                                KeyboardButtonProps={{
-                                    'aria-label': 'change date',
-                                }}
-                                fullWidth={true}
-                                InputLabelProps={{ shrink: false }}
-                                inputProps={{ style: { textAlign: 'center' } }}
-                            />
-                        </Col>
-                        <Col>
-                            <h4>End Date</h4>
-                            <KeyboardDatePicker
-                                autoOk
-                                disabled={disabled}
-                                variant="inline"
-                                format="MM/DD/yyyy"
-                                name={'end-date'}
-                                defaultValue={course.end}
-                                value={course.end}
-                                onChange={curriedOnDateChanged('end')}
-                                onAccept={curriedOnDatePicked('end')}
-                                onBlur={curriedOnTextInputBlurForCourseField('end')}
-                                KeyboardButtonProps={{
-                                    'aria-label': 'change date',
-                                }}
-                                fullWidth={true}
-                                InputLabelProps={{ shrink: false }}
-                                inputProps={{ style: { textAlign: 'center' } }}
-                            />
-                        </Col>
-                    </MuiPickersUtilsProvider>
+                    <Col>
+                        <h4>Start Date</h4>
+                        <KeyboardDatePicker
+                            autoOk
+                            disabled={disabled}
+                            variant="inline"
+                            format="MM/DD/yyyy"
+                            name={'start-date'}
+                            defaultValue={course.start}
+                            value={course.start}
+                            onChange={curriedOnDateChanged('start')}
+                            onAccept={curriedOnDatePicked('start')}
+                            onBlur={curriedOnTextInputBlurForCourseField('start')}
+                            KeyboardButtonProps={{
+                                'aria-label': 'change date',
+                            }}
+                            fullWidth={true}
+                            InputLabelProps={{ shrink: false }}
+                            inputProps={{ style: { textAlign: 'center' } }}
+                        />
+                    </Col>
+                    <Col>
+                        <h4>End Date</h4>
+                        <KeyboardDatePicker
+                            autoOk
+                            disabled={disabled}
+                            variant="inline"
+                            format="MM/DD/yyyy"
+                            name={'end-date'}
+                            defaultValue={course.end}
+                            value={course.end}
+                            onChange={curriedOnDateChanged('end')}
+                            onAccept={curriedOnDatePicked('end')}
+                            onBlur={curriedOnTextInputBlurForCourseField('end')}
+                            KeyboardButtonProps={{
+                                'aria-label': 'change date',
+                            }}
+                            fullWidth={true}
+                            InputLabelProps={{ shrink: false }}
+                            inputProps={{ style: { textAlign: 'center' } }}
+                        />
+                    </Col>
                 </Row>
                 <Row>
                     <Col md={6}>

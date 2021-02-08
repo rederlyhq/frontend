@@ -7,7 +7,7 @@ import { CourseDetailsTab } from './CourseDetailsTabs/CourseDetailsTab';
 import { useCourseContext } from './CourseProvider';
 import { useQuery } from '../Hooks/UseQuery';
 import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
-import TopicsTab from './CourseDetailsTabs/TopicsTab';
+import TopicsTab from './CourseDetailsTabs/TopicsTab/TopicsTab';
 import GradesTab from './CourseDetailsTabs/GradesTab';
 import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
 import { Alert } from '@material-ui/lab';
