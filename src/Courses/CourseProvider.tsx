@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getCourse } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { getUsersForCourse } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
+import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../Contexts/BreadcrumbContext';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import { CourseObject, UserObject } from './CourseInterfaces';
 
@@ -32,6 +33,7 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
     const [users, setUsers] = useState<UserObject[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const {setBreadcrumbLookup} = useBreadcrumbLookupContext();
 
     useEffect(() => {
         (async () => {
@@ -52,6 +54,7 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
                     usersArr.push(new UserObject(user));
                 }
 
+                setBreadcrumbLookup?.({[NamedBreadcrumbs.COURSE]: courseResp.data.data.name ?? 'Unnamed Course'});
                 setUsers(usersArr);
             } catch (e) {
                 setError(e.message);

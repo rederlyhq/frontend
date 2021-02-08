@@ -18,6 +18,7 @@ import { getUserId } from '../Enums/UserRole';
 import { Alert } from '@material-ui/lab';
 import { IMUIAlertModalState, useMUIAlertState } from '../Hooks/useAlertState';
 import { FaRegSave } from 'react-icons/fa';
+import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../Contexts/BreadcrumbContext';
 
 interface SimpleProblemPageProps {
 }
@@ -51,6 +52,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
     const [smaHasNoVersions, setSmaHasNoVersions] = useState<boolean>(false);
     const {course, users} = useCourseContext();
+    const {setBreadcrumbLookup} = useBreadcrumbLookupContext();
     const noAlert = useRef<IMUIAlertModalState>({severity: 'info', message: ''});
 
     useEffect(() => {
@@ -115,6 +117,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             currentTopic.topicAssessmentInfo.maxVersions =  override.maxVersions;
         }
         setTopic(currentTopic);
+        setBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: currentTopic.name ?? 'Unnamed Topic'});
 
         if (!_.isEmpty(problems)) {
             const problemDictionary = _.chain(problems)
