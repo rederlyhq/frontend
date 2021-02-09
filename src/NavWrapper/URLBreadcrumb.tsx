@@ -6,6 +6,7 @@ import _ from 'lodash';
 import useBreadcrumbs from 'use-react-router-breadcrumbs';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../Contexts/BreadcrumbContext';
 import { MdArrowDropDown } from 'react-icons/md';
+import { getUserRole, UserRole } from '../Enums/UserRole';
 
 interface URLBreadcrumbProps {
 
@@ -177,7 +178,7 @@ export const TopicBreadcrumbDropdowns: React.FC<{selectedBreadcrumb: keyof typeo
 };
 
 const ViewTopicBreadcrumbDropdown: React.FC<{match: any; location: any}> = ({match, location}) => {
-    return (match.url !== location.pathname) ?
+    return (match.url !== location.pathname || getUserRole() === UserRole.STUDENT) ?
         <NamedTopicBreadcrumbComponent /> :
         <TopicBreadcrumbDropdowns selectedBreadcrumb={'Assignment'} courseId={match.params.courseId} topicId={match.params.topicId} />;
 };
