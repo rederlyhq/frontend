@@ -15,8 +15,8 @@ import { courseContext } from '../CourseDetailsPage';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import logger from '../../Utilities/Logger';
 import { TablePagination } from '@material-ui/core';
-import { ENROLLMENT_TABLE_HEADERS } from './TableColumnHeaders';
 import { GrShift } from 'react-icons/gr';
+import { ENROLLMENT_TABLE_HEADERS } from './TableColumnHeaders';
 
 interface EmailComponentWrapperProps {
     users: Array<UserObject>;
