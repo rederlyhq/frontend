@@ -52,7 +52,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
     const [smaHasNoVersions, setSmaHasNoVersions] = useState<boolean>(false);
     const {course, users} = useCourseContext();
-    const {setBreadcrumbLookup} = useBreadcrumbLookupContext();
+    const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
     const noAlert = useRef<IMUIAlertModalState>({severity: 'info', message: ''});
 
     useEffect(() => {
@@ -117,7 +117,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             currentTopic.topicAssessmentInfo.maxVersions =  override.maxVersions;
         }
         setTopic(currentTopic);
-        setBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: currentTopic.name ?? 'Unnamed Topic'});
+        updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: currentTopic.name ?? 'Unnamed Topic'});
 
         if (!_.isEmpty(problems)) {
             const problemDictionary = _.chain(problems)

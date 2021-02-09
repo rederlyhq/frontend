@@ -38,7 +38,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     }>({});
     const { url } = useRouteMatch();
     const history = useHistory();
-    const {setBreadcrumbLookup} = useBreadcrumbLookupContext();
+    const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
 
     useEffect(() => {
         const queryString = qs.stringify(_({
@@ -72,7 +72,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
 
             const currentTopic = new TopicObject(res.data.data);
             setTopic(currentTopic);
-            setBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: currentTopic.name ?? 'Unnamed Topic'});
+            updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: currentTopic.name ?? 'Unnamed Topic'});
 
             const problemIdString = queryParams.get('problemId');
             let initialSelectedProblem: ProblemObject | undefined;

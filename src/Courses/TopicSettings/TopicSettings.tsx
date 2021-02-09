@@ -41,7 +41,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
     // lose all the user input that might be in the form.
     const [oldSelectedState, setOldSelectedState] = useState<TopicObject>(selected);
     const [saving, setSaving] = useState<boolean>(false);
-    const {setBreadcrumbLookup} = useBreadcrumbLookupContext();
+    const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
 
     useEffect(()=>{
         const selectedWithoutQuestions = _.omit(selected, ['questions']);
@@ -93,7 +93,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             // Overwrite fields from the original object. This resets the state object when clicking between options.
             const newTopic = new TopicObject({...selected, ...obj});
             setTopic(newTopic);
-            setBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
+            updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Error updating topic.', e);
             setUpdateAlert({message: e.message, severity: 'error'});

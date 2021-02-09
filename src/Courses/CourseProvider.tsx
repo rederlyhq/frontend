@@ -33,7 +33,7 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
     const [users, setUsers] = useState<UserObject[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const {setBreadcrumbLookup} = useBreadcrumbLookupContext();
+    const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
 
     useEffect(() => {
         (async () => {
@@ -54,7 +54,7 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
                     usersArr.push(new UserObject(user));
                 }
 
-                setBreadcrumbLookup?.({[NamedBreadcrumbs.COURSE]: courseResp.data.data.name ?? 'Unnamed Course'});
+                updateBreadcrumbLookup?.({[NamedBreadcrumbs.COURSE]: courseResp.data.data.name ?? 'Unnamed Course'});
                 setUsers(usersArr);
             } catch (e) {
                 setError(e.message);
