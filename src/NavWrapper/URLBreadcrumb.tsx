@@ -5,6 +5,7 @@ import { Link as MaterialLink, Breadcrumbs as MUIBreadcrumb, Menu, MenuItem } fr
 import _ from 'lodash';
 import useBreadcrumbs from 'use-react-router-breadcrumbs';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../Contexts/BreadcrumbContext';
+import { MdArrowDropDown } from 'react-icons/md';
 
 interface URLBreadcrumbProps {
 
@@ -117,10 +118,10 @@ export const NamedCourseBreadcrumbComponent: React.FC<void> = () => <NamedBreadc
 export const NamedTopicBreadcrumbComponent: React.FC<{}> = () => <NamedBreadcrumbComponent breadcrumb={NamedBreadcrumbs.TOPIC} />;
 
 const TopicDropdownOptions = {
-    View: (courseId: string, topicId: string) => `/common/courses/${courseId}/topic/${topicId}`,
+    Assignment: (courseId: string, topicId: string) => `/common/courses/${courseId}/topic/${topicId}`,
     Settings: (courseId: string, topicId: string) => `/common/courses/${courseId}/topic/${topicId}/settings`,
     Grading: (courseId: string, topicId: string) => `/common/courses/${courseId}/topic/${topicId}/grading`,
-    Extensions: (courseId: string, topicId: string) => `/common/courses/${courseId}/settings`,
+    // Extensions: (courseId: string, topicId: string) => `/common/courses/${courseId}/settings`,
 };
 
 export const TopicBreadcrumbDropdowns: React.FC<{selectedBreadcrumb: keyof typeof TopicDropdownOptions, courseId: string, topicId: string}> = ({selectedBreadcrumb, courseId, topicId}) => {
@@ -134,15 +135,18 @@ export const TopicBreadcrumbDropdowns: React.FC<{selectedBreadcrumb: keyof typeo
     return <>
         <span 
             ref={ref}
+            className={'MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary'}
+            style={{cursor: 'pointer'}}
             onClick={()=>setMenuOpen(true)}
             onKeyPress={(e) => (e.key === 'Enter') && setMenuOpen(true) }
             role='menu'
             tabIndex={0}
         >
-            {selected === 'View' ? 
+            {selected === 'Assignment' ? 
                 <NamedTopicBreadcrumbComponent /> :
                 selected
             }
+            <MdArrowDropDown />
         </span>
         <Menu
             id="simple-menu"
@@ -165,10 +169,7 @@ export const TopicBreadcrumbDropdowns: React.FC<{selectedBreadcrumb: keyof typeo
                         role='menuoption'
                         selected={selected === key}
                     >
-                        {key === 'View' ? 
-                            <NamedTopicBreadcrumbComponent /> :
-                            key
-                        }
+                        {key}
                     </MenuItem>
                 ))
             }
@@ -176,13 +177,11 @@ export const TopicBreadcrumbDropdowns: React.FC<{selectedBreadcrumb: keyof typeo
     </>;
 };
 
-// const ViewTopicBreadcrumbDropdown: React.FC<{match: any}> = ({match}) => <TopicBreadcrumbDropdowns selectedBreadcrumb={'View'} courseId={match.params.courseId} topicId={match.params.topicId} />;
 const ViewTopicBreadcrumbDropdown: React.FC<{match: any; location: any}> = ({match, location}) => {
     console.log(`comparing ${match.url} and ${location.pathname} and got ${match.url !== location.pathname}`);
     return (match.url !== location.pathname) ?
         <NamedTopicBreadcrumbComponent /> :
-        <TopicBreadcrumbDropdowns selectedBreadcrumb={'View'} courseId={match.params.courseId} topicId={match.params.topicId} />;
+        <TopicBreadcrumbDropdowns selectedBreadcrumb={'Assignment'} courseId={match.params.courseId} topicId={match.params.topicId} />;
 };
 const SettingsTopicBreadcrumbDropdown: React.FC<{match: any}> = ({match}) => <TopicBreadcrumbDropdowns selectedBreadcrumb={'Settings'} courseId={match.params.courseId} topicId={match.params.topicId} />;
 const GradingTopicBreadcrumbDropdown: React.FC<{match: any}> = ({match}) => <TopicBreadcrumbDropdowns selectedBreadcrumb={'Grading'} courseId={match.params.courseId} topicId={match.params.topicId} />;
-const ExtensionsTopicBreadcrumbDropdown: React.FC<{match: any}> = ({match}) => <TopicBreadcrumbDropdowns selectedBreadcrumb={'Extensions'} courseId={match.params.courseId} topicId={match.params.topicId} />;
