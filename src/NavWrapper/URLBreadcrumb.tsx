@@ -80,8 +80,9 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
                         );
                     }
                     
-                    if ((match as any).path === '/common/courses/:courseId/topic/:topicId' && index === breadcrumbs.length - 1) {
-                        // If this is the last breadcrumb, render the dropdown.
+                    // Render these breadcrumbs as is (without Links around them). This is useful for raw components or intentionally unlinked leaf pages.
+                    if (((match as any).path === '/common/courses/:courseId/topic/:topicId' && index === breadcrumbs.length - 1)
+                        || (match as any).path === '/common/problem-browser/search') {
                         return (
                             <>
                                 <span style={{padding: '0em 1em 0em 1em' }}>/</span>
