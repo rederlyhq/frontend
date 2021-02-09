@@ -1,33 +1,15 @@
-/* eslint-disable react/display-name */
-import React, {forwardRef} from 'react';
+import React from 'react';
 import _ from 'lodash';
 import MaterialTable from 'material-table';
-import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from '@material-ui/icons';
+import MaterialIcons from '../../Components/MaterialIcons';
+import { TablePagination } from '@material-ui/core';
+import { GRADES_SIMPLIFIED_HEADERS, GRADES_SIMPLIFIED_PROBLEM_HEADERS, GRADES_SIMPLIFIED_TOPICS_HEADERS } from './TableColumnHeaders';
 
 interface GradeTableProps {
     courseName: string;
     grades: Array<any>;
     onRowClick?: (event: any, rowData: any) => void;
 }
-const icons = {
-    // Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
-    // Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
-    // Delete: forwardRef((props, ref) => <DeleteOutline {...props} ref={ref} />),
-    // DetailPanel: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
-    // Edit: forwardRef((props, ref) => <Edit {...props} ref={ref} />),
-    Clear: forwardRef<any>((props, ref) => <Clear {...props} ref={ref} />),
-    Export: forwardRef<any>((props, ref) => <SaveAlt {...props} ref={ref} />),
-    Filter: forwardRef<any>((props, ref) => <FilterList {...props} ref={ref} />),
-    FirstPage: forwardRef<any>((props, ref) => <FirstPage {...props} ref={ref} />),
-    LastPage: forwardRef<any>((props, ref) => <LastPage {...props} ref={ref} />),
-    NextPage: forwardRef<any>((props, ref) => <ChevronRight {...props} ref={ref} />),
-    PreviousPage: forwardRef<any>((props, ref) => <ChevronLeft {...props} ref={ref} />),
-    ResetSearch: forwardRef<any>((props, ref) => <Clear {...props} ref={ref} />),
-    Search: forwardRef<any>((props, ref) => <Search {...props} ref={ref} />),
-    SortArrow: forwardRef<any>((props, ref) => <ArrowDownward {...props} ref={ref} />),
-    // ThirdStateCheck: forwardRef((props, ref) => <Remove {...props} ref={ref} />),
-    // ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
-};
 
 export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRowClick}) => {
     if (grades.length <= 0) return null;
@@ -35,26 +17,45 @@ export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRow
     // Material UI edits the object in-place, which causes problems.
     let safeGrades = grades.map(obj => ({
         ...obj,
+        ...(_.isUndefined(obj.average) ? undefined : {average: _.isNull(obj.average) ? '--' : obj.average.toPercentString()}),
+        ...(_.isUndefined(obj.openAverage) ? undefined : {openAverage: _.isNull(obj.openAverage) ? '--' : obj.openAverage.toPercentString()}),
+        ...(_.isUndefined(obj.deadAverage) ? undefined : {deadAverage: _.isNull(obj.deadAverage) ? '--' : obj.deadAverage.toPercentString()}),
+        ...(_.isUndefined(obj.effectiveScore) ? undefined : {effectiveScore: _.isNull(obj.effectiveScore) ? '--' : obj.effectiveScore.toPercentString()}),
+        ...(_.isUndefined(obj.systemScore) ? undefined : {systemScore: _.isNull(obj.systemScore) ? '--' : obj.systemScore.toPercentString()}),
     }));
-    const headers = _(safeGrades[0]).keys().filter(n => n !== 'id').value();
-    if(headers.indexOf('average') >= 0) {
-        // Would include this in above mapping, however using ternary operated resulted in an empty column in questions
-        safeGrades = safeGrades.map(obj => ({
-            ...obj,
-            average: obj.average.toFixed(2)
-        }));
-    }
+
+    const getHeaders = (grades: Array<any>) => {
+        if (_.has(grades.first, 'openAverage')) {
+            return GRADES_SIMPLIFIED_HEADERS;
+        } else if (_.has(grades.first, 'numAttempts')) {
+            return GRADES_SIMPLIFIED_PROBLEM_HEADERS;
+        } else {
+            return GRADES_SIMPLIFIED_TOPICS_HEADERS;
+        }
+    };
 
     return (
         <div style={{maxWidth: '100%'}}>
             <MaterialTable
-                icons={icons}
+                key={safeGrades.length}
+                icons={MaterialIcons}
                 title={courseName}
-                columns={headers.map(col => ({title: _.startCase(_.replace(col, 'ProblemCount', '')), field: col}))}
+                columns={getHeaders(safeGrades)}
                 data={safeGrades || []}
                 onRowClick={onRowClick}
                 options={{
-                    exportButton: true
+                    exportButton: true,
+                    exportAllData: true,
+                    pageSize: safeGrades.length,
+                    emptyRowsWhenPaging: false,
+                }}
+                components={{
+                    Pagination: function PaginationWrapper(props) {
+                        return <TablePagination
+                            {...props}
+                            rowsPerPageOptions={[..._.range(0, safeGrades.length, 5), { label: 'All', value: safeGrades.length }]}
+                        />;
+                    }
                 }}
             />
         </div>

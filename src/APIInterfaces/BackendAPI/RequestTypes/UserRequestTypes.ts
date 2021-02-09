@@ -21,3 +21,19 @@ export interface PostLoginOptions {
 export interface PostResendVerificationOptions {
     email: string;
 }
+
+export interface GetVerificationOptions {
+    verifyToken: string;
+    confirmEmail: string;
+}
+
+export interface GetUsersOptions {
+    courseId: number;
+}
+
+export interface RegisterUserOptions {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+}

@@ -3,6 +3,7 @@ import { Form, Button, Alert, Modal } from 'react-bootstrap';
 import useAlertState from '../Hooks/useAlertState';
 import _ from 'lodash';
 import { postForgotPassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
+import logger from '../Utilities/Logger';
 
 interface ForgotPasswordButtonAndModalProps {
     defaultEmail?: string;
@@ -55,7 +56,7 @@ export const ForgotPasswordButtonAndModal: React.FC<ForgotPasswordButtonAndModal
                 email: formState.email
             });
             setForgotPasswordAlertMsg({
-                message: 'Forgot password email sent successfully!',
+                message: 'Forgot password email sent successfully!  Please check your spam folder if you do not see it in your inbox.',
                 variant: 'success'
             });
             setTimeout(() => {
@@ -72,21 +73,21 @@ export const ForgotPasswordButtonAndModal: React.FC<ForgotPasswordButtonAndModal
 
     const handleNamedChange = (name: keyof ForgotPasswordFormData, event: any) => {
         if (name !== event.target.name) {
-            console.error(`Mismatched event, ${name} is on ${event.target.name}`);
+            logger.error(`Mismatched event, ${name} is on ${event.target.name}`);
         }
         const val = event.target.value;
         setFormState({ ...formState, [name]: val });
     };
 
     const handleSubmit = (event: any) => {
-        console.log(event);
+        logger.info(event);
         const form = event.currentTarget;
         event.preventDefault();
 
         if (form.checkValidity() === false) {
             event.stopPropagation();
         } else {
-            console.log(form);
+            logger.info(form);
             handleForgotPassword();
         }
 

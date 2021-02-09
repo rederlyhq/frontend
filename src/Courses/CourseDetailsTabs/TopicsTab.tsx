@@ -1,15 +1,48 @@
 import React, { useState } from 'react';
 import TopicsList from '../TopicsList';
-import { Accordion, Card, Row, Col, Modal, Alert, Button } from 'react-bootstrap';
-import { CourseObject, NewCourseTopicObj, UnitObject } from '../CourseInterfaces';
+import { Accordion, Card, Row, Col, Alert, Button } from 'react-bootstrap';
+import { CourseObject, TopicObject, UnitObject } from '../CourseInterfaces';
 import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
-import { FaPlusCircle, FaTrash } from 'react-icons/fa';
+import { FaPlusCircle } from 'react-icons/fa';
 import _ from 'lodash';
-import TopicCreationModal from '../CourseCreation/TopicCreationModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
 import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import logger from '../../Utilities/Logger';
+import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystringHelper';
+import { CourseTarballImportButton } from '../CourseCreation/CourseTarballImportButton';
+import { Backdrop, CircularProgress, Tooltip } from '@material-ui/core';
+import useAlertState from '../../Hooks/useAlertState';
+import BackendAPIError from '../../APIInterfaces/BackendAPI/BackendAPIError';
+import { IconButton } from '@material-ui/core';
+import { Delete, AddCircle } from '@material-ui/icons';
+
+interface CourseTarballImportWarningsProps {
+    message: string;
+    missingPGFileErrors: Array<string>;
+    missingAssetFileErrors: Array<string>;
+}
+
+export const CourseTarballImportWarnings: React.FC<CourseTarballImportWarningsProps> = ({message, missingPGFileErrors, missingAssetFileErrors}) => (
+    <div>
+        {message}<br/><br/>
+
+        {!_.isEmpty(missingPGFileErrors) && <div>
+            The following problem files are missing:
+            <ul>
+                {missingPGFileErrors.map(message => (<li key={message}>{message}</li>))}
+            </ul>
+        </div>}
+
+        {!_.isEmpty(missingAssetFileErrors) && <div>
+            The following image files are missing:
+            <ul>
+                {missingAssetFileErrors.map(message => (<li key={message}>{message}</li>))}
+            </ul>
+        </div>}
+    </div>
+);
 
 interface TopicsTabProps {
     course: CourseObject;
@@ -23,42 +56,44 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         identifierText: ''
     };
 
-    const [inEditMode, setInEditMode] = useState<boolean>(false);
-    const [error, setError] = useState<Error | null | undefined>(null);
+    const {getCurrentQueryStrings, updateRoute} = useQuerystringHelper();
+    const [inEditMode, setInEditMode] = useState<boolean>(getUserRole() !== UserRole.STUDENT && getCurrentQueryStrings()['edit'] === 'true');
+    const [alert, setAlert] = useAlertState();
     const userType: UserRole = getUserRole();
 
-    const [showTopicCreation, setShowTopicCreation] = useState<{ show: boolean, unitIndex: number, existingTopic?: NewCourseTopicObj | undefined }>({ show: false, unitIndex: -1 });
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
+    const [loading, setLoading] = useState<boolean>(false);
 
-    const showEditTopic = (e: any, unitIdentifier: number, topicIdentifier: number) => {
-        console.log(`Editing topic ${topicIdentifier} in unit ${unitIdentifier}`);
-        let unit = _.find(course.units, ['id', unitIdentifier]);
-        console.log(unit);
-        if (!unit) {
-            console.error(`Cannot find unit with identifier ${unitIdentifier}`);
-            return;
+    const setInEditModeWrapper = (newEditMode: boolean) => {
+        let val = newEditMode;
+        if (getUserRole() === UserRole.STUDENT) {
+            val = false;
         }
 
-        const topic = _.find(unit.topics, ['id', topicIdentifier]);
-        if (!topic) {
-            console.error(`Cannot find topic with id ${topicIdentifier} in unit with id ${unitIdentifier}`);
-            return;
-        }
-        setShowTopicCreation({ show: true, unitIndex: unitIdentifier, existingTopic: topic });
+        setInEditMode(val);
+        updateRoute({
+            edit: {
+                val: val ? 'true' : null,
+                mode: QueryStringMode.OVERWRITE,
+            },
+        }, true);
     };
 
     const removeTopic = async (unitId: number, topicId: number) => {
         try {
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
             await deleteTopic({
                 id: topicId
             });
 
-            let newCourse: CourseObject = { ...course };
-            let unit = _.find(newCourse.units, ['id', unitId]);
+            const newCourse: CourseObject = { ...course };
+            const unit = _.find(newCourse.units, ['id', unitId]);
 
             if (!unit) {
-                console.error(`Could not find a unit with id ${unitId}`);
+                logger.error(`Could not find a unit with id ${unitId}`);
                 return;
             }
 
@@ -71,7 +106,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             unit.topics = _.reject(unit.topics, ['id', topicId]);
             setCourse?.(newCourse);
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
         }
     };
 
@@ -86,25 +124,31 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const createTopic = async (courseUnitContentId: number) => {
         try {
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
             const result = await postTopic({
                 data: {
                     courseUnitContentId
                 }
             });
 
-            let newCourse: CourseObject = new CourseObject(course);
-            let unit = _.find(newCourse.units, ['id', courseUnitContentId]);
+            const newCourse: CourseObject = new CourseObject(course);
+            const unit = _.find(newCourse.units, ['id', courseUnitContentId]);
 
             if (!unit) {
-                console.error(`Could not find a unit with id ${courseUnitContentId}`);
+                logger.error(`Could not find a unit with id ${courseUnitContentId}`);
                 return;
             }
 
-            unit.topics.push(new NewCourseTopicObj(result.data.data));
+            unit.topics.push(new TopicObject(result.data.data));
             setCourse?.(newCourse);
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
         }
     };
 
@@ -113,19 +157,30 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         createTopic(courseUnitContentId);
     };
 
+    const setUnitInCourse = (unit: UnitObject) => {
+        const newCourse: CourseObject = new CourseObject(course);
+        newCourse.units.push(unit);
+        setCourse?.(newCourse);
+    };
+
     const addUnit = async (courseId: number) => {
         try {
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
             const result = await postUnit({
                 data: {
                     courseId
                 }
             });
-            let newCourse: CourseObject = new CourseObject(course);
-            newCourse.units.push(new UnitObject(result.data.data));
-            setCourse?.(newCourse);
+            const unit = new UnitObject(result.data.data);
+            setUnitInCourse(unit);    
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
         }
     };
 
@@ -135,11 +190,14 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const removeUnit = async (unitId: number) => {
         try {
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
             await deleteUnit({
                 id: unitId
             });
-            let newCourse: CourseObject = new CourseObject(course);
+            const newCourse: CourseObject = new CourseObject(course);
             const deletedUnit = _.find(newCourse.units, ['id', unitId]);
             // Decrement everything after
             if (!_.isNil(deletedUnit)) {
@@ -148,7 +206,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             newCourse.units = _.reject(newCourse.units, ['id', unitId]);
             setCourse?.(newCourse);
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
         }
     };
 
@@ -162,50 +223,16 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         });
     };
 
-    const addTopic = (unitIndex: number, existingTopic: NewCourseTopicObj | null | undefined, topic: NewCourseTopicObj) => {
-        console.log('Adding Topic', unitIndex, existingTopic, topic);
-        if (topic.questions.length <= 0) {
-            // TODO: Render validation!
-            console.error('Attempted to add a topic without questions!');
-            return;
-        }
-
-        let newCourse: CourseObject = new CourseObject(course);
-        let unit = _.find(newCourse.units, ['unique', unitIndex]);
-
-        if (!unit) {
-            console.error(`Could not find a unit with id ${unitIndex}`);
-            console.log(`Could not find a unit with id ${unitIndex}`);
-            return;
-        }
-
-        // If a topic already exists, update and overwrite it in the course object.
-        if (existingTopic) {
-            let oldTopic = _.find(unit.topics, ['unique', existingTopic.unique]);
-
-            if (!oldTopic) {
-                console.error(`Could not update topic ${existingTopic.id} in unit ${unitIndex}`);
-            }
-
-            _.assign(oldTopic, topic);
-        } else {
-            // Otherwise, concatenate this object onto the existing array.
-            // topic.contentOrder = unit.topics.length;
-            topic.contentOrder = Math.max(...unit.topics.map(topic => topic.contentOrder), 0) + 1;
-            unit.topics = _.concat(unit.topics, new NewCourseTopicObj(topic));
-        }
-
-        setCourse?.(newCourse);
-        setShowTopicCreation({ show: false, unitIndex: -1 });
-    };
-
     const onUnitBlur = async (event: React.FocusEvent<HTMLHeadingElement>, unitId: number) => {
         try {
-            setError(null);
-            let newCourse = _.cloneDeep(course);
-            let updatingUnit = _.find(newCourse.units, ['id', unitId]);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
+            const newCourse = _.cloneDeep(course);
+            const updatingUnit = _.find(newCourse.units, ['id', unitId]);
             if (!updatingUnit) {
-                console.error(`Could not find a unit with the unique identifier ${unitId}`);
+                logger.error(`Could not find a unit with the unique identifier ${unitId}`);
                 return;
             }
             updatingUnit.name = event.target.innerText;
@@ -217,7 +244,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             });
             setCourse?.(newCourse);
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
         }
     };
 
@@ -232,12 +262,15 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
         try {
             if (_.isNil(unitId)) {
                 // This should not be possible
-                console.error('unitId was nil when dropping');
+                logger.error('unitId was nil when dropping');
                 throw new Error('Something went wrong with drag and drop');
             }
 
             // TODO when should the error disappear
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
 
             const newCourse = _.cloneDeep(course);
             const [removed] = newCourse.units.splice(result.source.index, 1);
@@ -260,7 +293,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             });
             setCourse?.(new CourseObject(newCourse));
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
             setCourse?.(course);
         }
     };
@@ -278,7 +314,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             const sourceUnitDroppableId = result.source.droppableId;
             const destinationUnitDroppableId = result.destination.droppableId;
 
-            const updates: Partial<NewCourseTopicObj> = {
+            const updates: Partial<TopicObject> = {
                 contentOrder: newContentOrder
             };
             const unitIdRegex = /^topicList-(\d+)$/;
@@ -286,18 +322,18 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             const sourceUnitId = unitIdRegex.exec(sourceUnitDroppableId)?.[1];
 
             if (_.isNil(destinationUnitId)) {
-                console.error('Could not parse desintationUnitId');
+                logger.error('Could not parse desintationUnitId');
                 return;
             }
 
             if (_.isNil(sourceUnitId)) {
-                console.error('Could not parse sourceUnitId');
+                logger.error('Could not parse sourceUnitId');
                 return;
             }
 
             if (sourceUnitDroppableId !== destinationUnitDroppableId) {
                 if (_.isNil(destinationUnitId)) {
-                    console.error('destinationUnitId was somehow nil');
+                    logger.error('destinationUnitId was somehow nil');
                     throw new Error('Something went wrong with drag and drop');
                 }
                 updates.courseUnitContentId = parseInt(destinationUnitId, 10);
@@ -308,22 +344,25 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             const destinationUnit = sourceUnitId === destinationUnitId ? sourceUnit : _.find(newCourse.units, ['id', parseInt(destinationUnitId, 10)]);
 
             if (_.isNil(sourceUnit)) {
-                console.error('Could not find source unit');
+                logger.error('Could not find source unit');
                 return;
             }
 
             if (_.isNil(destinationUnit)) {
-                console.error('Could not find destination unit');
+                logger.error('Could not find destination unit');
                 return;
             }
             const [removed] = sourceUnit.topics.splice(result.source.index, 1);
             destinationUnit.topics.splice(result.destination.index, 0, removed);
 
             setCourse?.(newCourse);
-            setError(null);
+            setAlert({
+                variant: 'info',
+                message: ''
+            });
             if (_.isNil(topicId)) {
                 // This should not be possible
-                console.error('topicId was nil when dropping');
+                logger.error('topicId was nil when dropping');
                 throw new Error('Something went wrong with drag and drop');
             }
             const response = await putTopic({
@@ -331,10 +370,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 data: updates
             });
 
-            response.data.data.updatesResult.forEach((returnedTopic: Partial<NewCourseTopicObj>) => {
+            response.data.data.updatesResult.forEach((returnedTopic: Partial<TopicObject>) => {
                 const existingUnit = _.find(newCourse.units, ['id', returnedTopic.courseUnitContentId]);
                 if (_.isNil(existingUnit)) {
-                    console.error('Could not find topics unit');
+                    logger.error('Could not find topics unit');
                     throw new Error('Drag and drop encountered an unexpected error');
                 }
                 const existingTopic = _.find(existingUnit.topics, ['id', returnedTopic.id]);
@@ -342,7 +381,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             });
             setCourse?.(new CourseObject(newCourse));
         } catch (e) {
-            setError(e);
+            setAlert({
+                variant: 'danger',
+                message: e.message
+            });
             setCourse?.(course);
         }
     };
@@ -356,45 +398,20 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
             return;
         }
 
-        console.log('onDragEnd!', result);
+        logger.info('onDragEnd!', result);
 
         if (result.type === 'UNIT') {
             onUnitDragEnd(result);
         } else if (result.type === 'TOPIC') {
             onTopicDragEnd(result);
         } else {
-            console.error(`Invalid result.type "${result.type}"`);
+            logger.error(`Invalid result.type "${result.type}"`);
         }
     };
 
     return (
         <>
-            <Modal
-                show={showTopicCreation.show}
-                onHide={() => setShowTopicCreation({ show: false, unitIndex: -1 })}
-                dialogClassName="topicCreationModal"
-            >
-                <TopicCreationModal
-                    unitIndex={showTopicCreation.unitIndex}
-                    addTopic={addTopic}
-                    existingTopic={showTopicCreation.existingTopic}
-                    closeModal={_.partial(setShowTopicCreation, { show: false, unitIndex: -1 })}
-                    updateTopic={(topic: NewCourseTopicObj) => {
-                        const existingUnit = _.find(course.units, ['id', topic.courseUnitContentId]);
-                        if (_.isNil(existingUnit)) {
-                            console.error('Could not find unit');
-                            return;
-                        }
-                        const topicIndex = _.findIndex(existingUnit.topics, ['id', topic.id]);
-                        if (_.isNil(topicIndex)) {
-                            console.error('Could not find topic');
-                            return;
-                        }
-                        existingUnit.topics[topicIndex] = topic;
-                        setCourse?.(new CourseObject(course));
-                    }}
-                />
-            </Modal>
+            <Backdrop open={loading} style={{zIndex: 99999}}><CircularProgress/></Backdrop>
             <ConfirmationModal
                 onConfirm={() => {
                     confirmationParamters.onConfirm?.();
@@ -407,7 +424,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 headerContent={<h5>Confirm delete</h5>}
                 bodyContent={`Are you sure you want to remove ${confirmationParamters.identifierText}?`}
             />
-            {error && <Alert variant="danger">{error.message}</Alert>}
+            <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message}</Alert>
             <Row style={{padding: '0.5em'}}>
                 <Col xs={1} md={1}><h4>Units</h4></Col>
                 <Col>
@@ -416,17 +433,88 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                             {/* <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} > */}
                             {
                                 inEditMode &&
-                                <Button variant='outline-success'
-                                    tabIndex={0}
-                                    onClick={_.partial(addUnitClick, _, course.id)}
-                                    onKeyPress={_.partial(addUnitClick, _, course.id)}
-                                >
-                                    <FaPlusCircle /> New Unit
-                                </Button>
+                                <>
+                                    <CourseTarballImportButton 
+                                        style={{
+                                            marginLeft: '1em'
+                                        }}
+                                        courseId={course.id}
+                                        /* Can't deconstruct here because the type changes based on the status object (even though it has the same props) */
+                                        onEvent={(event) => {
+                                            // Grabbing this for error handling (see default below)
+                                            const { status } = event;
+                                            if (status !== 'error') {
+                                                setAlert({
+                                                    variant: 'info',
+                                                    message: ''
+                                                });
+                                            }
+                                            if (status !== 'loading') {
+                                                setLoading(false);
+                                            }
+                                            switch (event.status) {
+                                            case 'error':
+                                                if (event.data instanceof BackendAPIError) {
+                                                    const { missingPGFileErrors = [], missingAssetFileErrors = [] } = (event.data.data as {
+                                                        missingPGFileErrors?: Array<string>;
+                                                        missingAssetFileErrors?: Array<string>;                                                    
+                                                    } | undefined) ?? {};
+
+                                                    if (!_.isEmpty(missingPGFileErrors) || !_.isEmpty(missingAssetFileErrors)) {
+                                                        setAlert({
+                                                            variant: 'danger',
+                                                            message: CourseTarballImportWarnings({
+                                                                message: 'The course archive upload failed with the following errors:',
+                                                                missingAssetFileErrors: missingAssetFileErrors,
+                                                                missingPGFileErrors: missingPGFileErrors,
+                                                            })
+                                                        });
+                                                        break;
+                                                    }
+                                                }
+                                                setAlert({
+                                                    variant: 'danger',
+                                                    message: event.data.message
+                                                });
+                                                break;
+                                            case 'success': {
+                                                setUnitInCourse(event.data);
+                                                if (!_.isEmpty(event.warnings.missingAssetFileErrors) || !_.isEmpty(event.warnings.missingPGFileErrors)) {
+                                                    setAlert({
+                                                        variant: 'warning',
+                                                        message: CourseTarballImportWarnings({
+                                                            message: 'The course archive uploaded successfully with the following warnings:',
+                                                            missingAssetFileErrors: event.warnings.missingAssetFileErrors,
+                                                            missingPGFileErrors: event.warnings.missingPGFileErrors,
+                                                        })
+                                                    });
+                                                }
+                                                break;
+                                            }
+                                            case 'loading':
+                                                setLoading(true);
+                                                break;
+                                            default:
+                                                // Event is never in this case so can't use event.status
+                                                logger.error(`Unhandled case ${status} in tarball upload`);
+                                            }
+                                        }}
+                                    />
+                                    <Button variant='outline-success'
+                                        tabIndex={0}
+                                        onClick={_.partial(addUnitClick, _, course.id)}
+                                        onKeyPress={_.partial(addUnitClick, _, course.id)}
+                                        style={{
+                                            marginLeft: '1em'
+                                        }}
+                                    >
+                                        <FaPlusCircle /> New Unit
+                                    </Button>
+                                </>
                             }
                             <EditToggleButton
                                 selectedState={inEditMode}
-                                onClick={() => { setInEditMode(!inEditMode); }}
+                                onClick={() => { setInEditModeWrapper(!inEditMode); }}
                                 style={{
                                     padding: '0em 0em 0em 1em'
                                 }}
@@ -439,91 +527,95 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 <Droppable droppableId='unitsList' type='UNIT'>
                     {
                         (provided: any) => (
-                            <>
-                                <div ref={provided.innerRef} style={{ backgroundColor: 'white' }} {...provided.droppableProps}>
-                                    {course?.units?.map((unit: any, index) => {
-                                        const showEditWithUnitId = _.curry(showEditTopic)(_, unit.id);
-                                        const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
-
-                                        return (
-                                            <Draggable draggableId={`unitRow${unit.id}`} index={index} key={`problem-row-${unit.id}`} isDragDisabled={!inEditMode}>
-                                                {(provided) => (
-                                                    <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} key={unit.id}>
-                                                        <Accordion defaultActiveKey="1">
-                                                            <Card>
-                                                                <Accordion.Toggle as={Card.Header} eventKey="0">
-                                                                    <Row>
-                                                                        <Col>
-                                                                            {
-                                                                                // This is complaining because of the click event, however it is not a true click event, it is just stopping the accordion
-                                                                                // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-                                                                            } <h4
-                                                                                contentEditable={inEditMode}
-                                                                                suppressContentEditableWarning={true}
-                                                                                className='active-editable'
-                                                                                onClick={inEditMode ? ((event: React.MouseEvent<HTMLHeadingElement, MouseEvent>) => { event.stopPropagation(); }) : undefined}
-                                                                                onKeyDown={(e: any) => {
-                                                                                    if (e.keyCode === 13) {
-                                                                                        e.preventDefault();
-                                                                                        e.target.blur();
-                                                                                    }
-                                                                                }}
-                                                                                onBlur={_.partial(onUnitBlur, _, unit.id)}
-                                                                            >
-                                                                                {unit.name}
-                                                                            </h4>
-                                                                        </Col>
-                                                                        <Col />
+                            <div ref={provided.innerRef} style={{ backgroundColor: 'white' }} {...provided.droppableProps}>
+                                {course?.units?.map((unit: any, index) => {
+                                    const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
+                                    const expandedUnits = getCurrentQueryStrings()['unitId'];
+                                    const unitId: string = unit.id.toString();
+                                    return (
+                                        <Draggable draggableId={`unitRow${unit.id}`} index={index} key={`problem-row-${unit.id}`} isDragDisabled={!inEditMode}>
+                                            {(provided) => (
+                                                <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} key={unit.id}>
+                                                    {/* 0 is an actual reference, which opens this accordion. 1 or any other value keeps it closed. */}
+                                                    <Accordion 
+                                                        defaultActiveKey={_.includes(expandedUnits, unitId) ? '0' : ''} 
+                                                        onSelect={
+                                                            ()=>{
+                                                                updateRoute({
+                                                                    unitId: {
+                                                                        val: unitId, 
+                                                                        mode: QueryStringMode.APPEND_OR_REMOVE,
+                                                                    },
+                                                                }, true);
+                                                            }
+                                                        }
+                                                    >
+                                                        <Card>
+                                                            <Accordion.Toggle as={Card.Header} eventKey="0">
+                                                                <Row>
+                                                                    <Col xs={10} md={10} style={{alignSelf: 'center'}}>
                                                                         {
-                                                                            inEditMode &&
-                                                                            <div style={{ marginLeft: 'auto' }}>
-                                                                                <span
-                                                                                    role="button"
-                                                                                    tabIndex={0}
-                                                                                    style={{
-                                                                                        padding: '6px'
-                                                                                    }}
-                                                                                    onClick={_.partial(removeUnitClick, _, unit.id)}
-                                                                                    onKeyPress={_.partial(removeUnitClick, _, unit.id)}
-                                                                                >
-                                                                                    <FaTrash color='#AA0000' />
-                                                                                </span>
-                                                                                <span
-                                                                                    role="button"
-                                                                                    tabIndex={0}
-                                                                                    style={{
-                                                                                        padding: '6px'
-                                                                                    }}
-                                                                                    onClick={_.partial(addTopicClick, _, unit.id)}
-                                                                                    onKeyPress={_.partial(addTopicClick, _, unit.id)}
-                                                                                >
-                                                                                    <FaPlusCircle color='#00AA00' />
-                                                                                </span>
-                                                                            </div>
-                                                                        }
-                                                                    </Row>
-                                                                </Accordion.Toggle>
-                                                                <Accordion.Collapse eventKey="0">
-                                                                    <Card.Body>
-                                                                        <TopicsList
-                                                                            flush
-                                                                            listOfTopics={unit.topics}
-                                                                            showEditTopic={inEditMode ? showEditWithUnitId : undefined}
-                                                                            removeTopic={onTopicDeleteClickedWithUnitId}
-                                                                            unitUnique={unit.id}
-                                                                        />
-                                                                    </Card.Body>
-                                                                </Accordion.Collapse>
-                                                            </Card>
-                                                        </Accordion>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        );
-                                    })
-                                    }
-                                </div>
-                            </>
+                                                                            // This is complaining because of the click event, however it is not a true click event, it is just stopping the accordion
+                                                                            // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                                                                        } <h4
+                                                                            contentEditable={inEditMode}
+                                                                            suppressContentEditableWarning={true}
+                                                                            className='active-editable'
+                                                                            onClick={inEditMode ? ((event: React.MouseEvent<HTMLHeadingElement, MouseEvent>) => { event.stopPropagation(); }) : undefined}
+                                                                            onKeyDown={(e: any) => {
+                                                                                if (e.keyCode === 13) {
+                                                                                    e.preventDefault();
+                                                                                    e.target.blur();
+                                                                                }
+                                                                            }}
+                                                                            onBlur={_.partial(onUnitBlur, _, unit.id)}
+                                                                        >
+                                                                            {unit.name}
+                                                                        </h4>
+                                                                    </Col>
+                                                                    <Col xs={2} md={2} className='d-flex' style={{alignSelf: 'center', justifyContent: 'flex-end', visibility: !inEditMode ? 'hidden' : 'inherit'}}>
+                                                                        <Tooltip title='Delete Unit'>
+                                                                            <IconButton 
+                                                                                aria-label='Delete Unit'
+                                                                                tabIndex={0}
+                                                                                onClick={_.partial(removeUnitClick, _, unit.id)}
+                                                                                onKeyPress={_.partial(removeUnitClick, _, unit.id)}
+                                                                            >
+                                                                                <Delete color='error' />
+                                                                            </IconButton>
+                                                                        </Tooltip>    
+                                                                        <Tooltip title='New Topic'>
+                                                                            <IconButton
+                                                                                aria-label='New Topic'
+                                                                                tabIndex={0}
+                                                                                onClick={_.partial(addTopicClick, _, unit.id)}
+                                                                                onKeyPress={_.partial(addTopicClick, _, unit.id)}
+                                                                            >
+                                                                                <AddCircle htmlColor='#28a745' />
+                                                                            </IconButton>
+                                                                        </Tooltip>
+                                                                    </Col>
+                                                                </Row>
+                                                            </Accordion.Toggle>
+                                                            <Accordion.Collapse eventKey="0">
+                                                                <Card.Body>
+                                                                    <TopicsList
+                                                                        flush
+                                                                        listOfTopics={unit.topics}
+                                                                        removeTopic={inEditMode ? onTopicDeleteClickedWithUnitId : undefined}
+                                                                        unitUnique={unit.id}
+                                                                    />
+                                                                </Card.Body>
+                                                            </Accordion.Collapse>
+                                                        </Card>
+                                                    </Accordion>
+                                                </div>
+                                            )}
+                                        </Draggable>
+                                    );
+                                })
+                                }
+                            </div>
                         )
                     }
                 </ Droppable>

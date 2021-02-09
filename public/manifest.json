@@ -1,21 +1,13 @@
 {
   "short_name": "Rederly",
   "name": "Rederly",
+  "description": "Online, Webwork-Compatible homework & assessment platform",
+  "categories": ["education" ],
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
+      "src": "rederly-favicon.ico",
+      "sizes": "184x184 180x180 167x167 152x152 128x128 64x64 48x48 32x32 16x16",
       "type": "image/x-icon"
-    },
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
     }
   ],
   "start_url": ".",

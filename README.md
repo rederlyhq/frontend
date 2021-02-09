@@ -1,44 +1,33 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Rederly Frontend
 
-## Available Scripts
+![Version](https://img.shields.io/github/v/release/rederly/frontend?style=plastic)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/rederly/frontend?style=plastic)
+![License](https://img.shields.io/github/license/rederly/frontend?style=plastic)
+![Build Status](https://img.shields.io/github/workflow/status/rederly/frontend/Node.js%20CI?style=plastic)
+![Lines of code](https://img.shields.io/tokei/lines/github/rederly/frontend?style=plastic)
 
-In the project directory, you can run:
+The website component of the Rederly application is written in React and Typescript.
 
-### `npm start`
+Currently, the `PORT` to use is set inline in the `package.json` scripts.
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+To run a development server, use `npm start`.
+To generate an optimized bundle for production usage, use `npm run build`.
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+## Proxying
 
-### `npm test`
+The frontend requires the [Rederly Backend](https://github.com/rederly/backend) to run. To specify the ports to connect to, modify the values in `src/setupProxy.js` to match the location of your server.
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| Path | Description |
+| --- | --- |
+| backend-api | This is the path that's used to proxy requests to the backend via the AxiosRequest object. |
+| webwork2_files | This is the path that's used to proxy requests to the Renderer, or a webserver serving your WeBWorK assets. |
+| work | This is a path that's used to proxy requests to your S3 Bucket, or a server serving your attachments assets. |
 
-### `npm run build`
+## Environment Variables
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The frontend uses environment variables to configure some runtime settings. Currently, these are limited to development debugging tools and cannot be enabled in production.
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+| Variable | Example Values | Description |
+| --- | --- | --- |
+| REACT_APP_ENABLE_WDYR | REACT_APP_ENABLE_WDYR=true | This enables [WhyDidYouRender](https://github.com/welldone-software/why-did-you-render) functionality. This is useful for optimization debugging, or finding problems caused by unnecessary rerenders. |
+| REACT_APP_ENABLE_AXE | REACT_APP_ENABLE_AXE=true | This enables [React Axe](https://github.com/dequelabs/react-axe) functionality. This is useful for accessibility (a11y) auditing. |

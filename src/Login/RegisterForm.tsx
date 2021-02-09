@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import SimpleFormRow from '../Components/SimpleFormRow';
 import useAlertState from '../Hooks/useAlertState';
+import logger from '../Utilities/Logger';
+import { registerUser } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 
 interface RegisterFormProps {
 
@@ -38,7 +39,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
     const handleNamedChange = (name: keyof RegisterFormData) => {
         return (event: any) => {
             if (name !== event.target.name) { 
-                console.error(`Mismatched event, ${name} is on ${event.target.name}`);
+                logger.error(`Mismatched event, ${name} is on ${event.target.name}`);
             }
             const val = event.target.value;
             setFormState({...formState, [name]: val});
@@ -49,31 +50,26 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
 
     const handleRegister = async () => {
         try {
-            const resp = await AxiosRequest.post('/users/register', 
-                {
-                    email: formState.registerEmail,
-                    password: formState.registerPassword,
-                    firstName: formState.registerFirstName,
-                    lastName: formState.registerLastName,
-                });
-            console.log(resp);
+            const resp = await registerUser({
+                email: formState.registerEmail,
+                password: formState.registerPassword,
+                firstName: formState.registerFirstName,
+                lastName: formState.registerLastName,
+            });
 
-            if (resp.status === 201) {
-                let message = 'Registration succeeded!';
-                if (!resp.data.data.verificationBypass) {
-                    message =`${message} Please check your email to continue.`;
-                }
-                setRegistrationAlert({message, variant: 'success'});
-            } else {
-                setRegistrationAlert({message: 'Registration failed.', variant: 'danger'});
+            if (resp.status !== 201) {
+                logger.warn(`handleRegister: Registration succeeded however got unexpected status code ${resp.status} instead of 201`);
             }
+            let message = 'You have been successfully registered.';
+            if (!resp.data.data.verificationBypass) {
+                message =`${message} A verification email has been sent to you. Please check your spam folder if you do not see it in your inbox.`;
+            } else {
+                message =`${message} Please log in.`;
+            }
+            setRegistrationAlert({message, variant: 'success'});
 
-            // setLoginError(resp.data.msg);
-            
-            // TODO: Needs some indication that the operation was successful. Is an alert sufficient, or 
-            //       should we redirect to a new page? Or should we get a session token back and proceed as logged in?
         } catch (err) {
-            setRegistrationAlert({message: 'A network error occurred. Please try again later.', variant: 'danger'});
+            setRegistrationAlert({message: err.message, variant: 'danger'});
         }
     };
 

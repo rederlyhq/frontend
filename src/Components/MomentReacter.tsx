@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import moment from 'moment';
 import _ from 'lodash';
+import logger from '../Utilities/Logger';
+import { Constants } from '../Utilities/Constants';
 
 const FILE_LOG_TAG = 'MomentReacter';
 const MAX_TIMEOUT_TIME = 2147483647;
@@ -33,6 +35,7 @@ interface MomentReacterProps {
     offsetInMillis?: number;
     stop?: boolean;
     logTag?: string
+    log?: boolean;
 }
 
 export const MomentReacter: React.FC<MomentReacterProps> = ({
@@ -43,14 +46,17 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
     significantMoments,
     offsetInMillis,
     stop,
-    logTag = 'untagged'
+    logTag = 'untagged',
+    log = false
 }) => {
     const TAG = `${FILE_LOG_TAG}---${logTag}`;
     const [reactiveMoment, setReactiveMoment] = useState<moment.Moment>(moment());
     const currentTimeoutHandle = useRef<NodeJS.Timeout | null>(null);
+    const debugLog = log ? logger.debug : Constants.React.defaultStates.NOOP_FUNCTION;
     
     if(stop === true && !_.isNil(currentTimeoutHandle.current)) {
         clearTimeout(currentTimeoutHandle.current);
+        currentTimeoutHandle.current = null;
     }
     useEffect(() => {
         if(stop === true) {
@@ -61,7 +67,7 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
 
         if (absolute) {
             if(_.isNil(intervalInMillis)) {
-                console.error(`${TAG} Cannot use absolute if intervalInMillis is not provided, will use significantMoments if they are provided only`);
+                logger.error(`${TAG} Cannot use absolute if intervalInMillis is not provided, will use significantMoments if they are provided only`);
             } else {
                 // We need to mod by the intervalInMillis because this number can be greater
                 // For example let's say we want to run this every minute on the half minute
@@ -72,7 +78,7 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
             }
         } else {
             if(!_.isNil(offsetInMillis)) {
-                console.warn(`${TAG} offsetInMillis is only used with absolute time interval`);
+                logger.warn(`${TAG} offsetInMillis is only used with absolute time interval`);
             }
         }
 
@@ -88,22 +94,22 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
         }
 
         if(!_.isNil(stopMoment) && currentMoment.isAfter(stopMoment)) {
-            console.debug(`${TAG} Hit the stop moment`);
+            debugLog(`${TAG} Hit the stop moment`);
             return;
         }
 
         if(_.isNil(timeoutTime)) {
-            console.debug(`${TAG} No timeoutTime was calculated, this might mean that significant dates were used and they are all in the past`);
+            debugLog(`${TAG} No timeoutTime was calculated, this might mean that significant dates were used and they are all in the past`);
             return;
         }
 
         if (timeoutTime > MAX_TIMEOUT_TIME) {
-            console.debug(`${TAG} calculated timeout time too large, falling back to max value ${MAX_TIMEOUT_TIME}`);
+            debugLog(`${TAG} calculated timeout time too large, falling back to max value ${MAX_TIMEOUT_TIME}`);
             timeoutTime = MAX_TIMEOUT_TIME;
         }
 
-        console.debug(`${TAG} timeoutTime ${timeoutTime}`);
-        console.debug(`${TAG} should execute at ${moment().add(timeoutTime, 'milliseconds')}`);
+        debugLog(`${TAG} timeoutTime ${timeoutTime}`);
+        debugLog(`${TAG} should execute at ${moment().add(timeoutTime, 'milliseconds')}`);
         if(!_.isNil(currentTimeoutHandle.current)) {
             clearTimeout(currentTimeoutHandle.current);
         }
@@ -111,10 +117,20 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
         const newTimeoutHandle = setTimeout(() => setReactiveMoment(moment()), timeoutTime);
         currentTimeoutHandle.current = newTimeoutHandle;
     }, [reactiveMoment, TAG, absolute, intervalInMillis, logTag, offsetInMillis, significantMoments, stop, stopMoment]);
+
+    useEffect(() => {
+        return function cleanup() {
+            debugLog(`${TAG} moment reacter cleaning up`);
+            if(!_.isNil(currentTimeoutHandle.current)) {
+                clearTimeout(currentTimeoutHandle.current);
+                currentTimeoutHandle.current = null;
+            }    
+        };
+    }, []);
     
     // I don't use reactive moment here since there is no guarentee this was run immediately, it is more accurate to use a new moment
     const currentMoment = moment();
-    console.debug(`${TAG} currentMoment ${currentMoment}`);
+    debugLog(`${TAG} currentMoment ${currentMoment}`);
     // TODO renders twice, not sure why
     return children(currentMoment);
 };

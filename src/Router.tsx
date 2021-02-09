@@ -4,33 +4,46 @@ import HomePage from './Home/HomePage';
 import VerificationLandingPage from './Login/VerificationLandingPage';
 import NavWrapper from './NavWrapper/NavWrapper';
 import ForgotPasswordLandingPage from './Login/ForgotPasswordLandingPage';
+import { AuthorizationWrapper } from './NavWrapper/AuthorizationWrapper';
+import useTracking from './Hooks/useTracking';
 
 interface RouterProps {
 
 }
 
+const TrackingWrapper = ({children}: {children: React.ReactNode}) => {
+    useTracking();
+
+    return <>{children}</>;
+};
+
+
 export const Router: React.FC<RouterProps> = () => {
     return (
         <BrowserRouter>
-            <Switch>
-                <Route exact path="/">
-                    <HomePage/>
-                </Route>
-                <Route path="/common">
-                    <NavWrapper>
-                        {/* All authenticated routing happens in this component. */}
-                    </NavWrapper>
-                </Route>
-                <Route path="/verify/:uid">
-                    <VerificationLandingPage />
-                </Route>
-                <Route path="/forgot-password/:uid">
-                    <ForgotPasswordLandingPage />
-                </Route>
-                <Route path="/">
-                    <NoPage/>
-                </Route>
-            </Switch>
+            <TrackingWrapper>
+                <Switch>
+                    <Route exact path="/">
+                        <HomePage/>
+                    </Route>
+                    <Route path="/common">
+                        <AuthorizationWrapper>
+                            <NavWrapper>
+                                {/* All authenticated routing happens in this component. */}
+                            </NavWrapper>
+                        </AuthorizationWrapper>
+                    </Route>
+                    <Route path="/verify/:uid">
+                        <VerificationLandingPage />
+                    </Route>
+                    <Route path="/forgot-password/:uid">
+                        <ForgotPasswordLandingPage />
+                    </Route>
+                    <Route path="/">
+                        <NoPage/>
+                    </Route>
+                </Switch>
+            </TrackingWrapper>
         </BrowserRouter>
     );
 };

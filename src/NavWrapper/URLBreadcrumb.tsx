@@ -18,32 +18,39 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
         'topic': 'Topic',
         'new': 'New Course',
         'edit': 'Customize Curriculum',
+        'problem-browser': 'Problem Browser',
+        'search': 'Search',
+        'editor': 'Editor'
     };
+
+    const noIdFields = ['editor', 'search', 'problem-browser'];
 
     const genStatefulCrumbs = () => {
         const arr: JSX.Element[] = [];
         for (let i = 0; i < pathnames.length; ++i) {
-            let p: string = pathnames[i];
-            let m: string = mappings[p];
+            const p: string = pathnames[i];
+            const m: string = mappings[p];
 
             // The home page and any other unaccounted for pages should just be ignored for now.
             if (p === 'common' || _.isEmpty(m)) {
                 continue;
             }
-            
+
             // If the next part of the path isn't a number, ignore this path portion
             // and use the next one for the crumb.
             if (p === 'courses' && ((i === pathnames.length - 1) || isNaN(parseInt(pathnames[i+1], 10)))) {
                 continue;
             }
 
-            // Increment to get the ID in the URL.
-            ++i;
+            if (noIdFields.indexOf(p) < 0) {
+                // Increment to get the ID in the URL.
+                ++i;
+            }
 
             const to = `/${pathnames.slice(0, i + 1).join('/')}`;
-            arr.push((<span style={{padding: '0em 1em 0em 1em' }}>/</span>));
+            arr.push((<span key={`Span${to}`} style={{padding: '0em 1em 0em 1em' }}>/</span>));
             arr.push((
-                <MaterialLink component={Link} to={to}>
+                <MaterialLink key={`Link${to}`} component={Link} to={to}>
                     {/* {pathnames[i] ? `${m} ${pathnames[i]}` : m} */}
                     {m}
                 </MaterialLink>
@@ -54,7 +61,7 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
 
     return (
         <Breadcrumb aria-label='breadcrumb'>
-            <MaterialLink component={Link} to='/common/courses'>
+            <MaterialLink key='Link/common/courses' component={Link} to='/common/courses'>
                 My Courses
             </MaterialLink>
             { genStatefulCrumbs() }

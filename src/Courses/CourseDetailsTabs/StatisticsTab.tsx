@@ -1,9 +1,7 @@
-/* eslint-disable react/display-name */
-import React, { useState, forwardRef, useEffect } from 'react';
-import { Alert, Button, Col, Nav } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Alert, Button as BSButton, Col, Nav } from 'react-bootstrap';
 import MaterialTable, { Column } from 'material-table';
-// import { MdSearch, MdFirstPage, MdLastPage, MdClear, MdFilterList, MdChevronRight, MdChevronLeft, MdArrowDownward, MdFileDownload} from 'react-icons/md';
-import { Clear, SaveAlt, FilterList, FirstPage, LastPage, ChevronRight, ChevronLeft, Search, ArrowDownward } from '@material-ui/icons';
+import { ChevronRight } from '@material-ui/icons';
 import { ProblemObject, CourseObject, StudentGrade } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import _ from 'lodash';
@@ -14,9 +12,14 @@ import moment from 'moment';
 import { BsLock, BsPencilSquare, BsUnlock } from 'react-icons/bs';
 import { OverrideGradeModal } from './OverrideGradeModal';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
-import { IAlertModalState } from '../../Hooks/useAlertState';
+import { IAlertModalState, useMUIAlertState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
+import logger from '../../Utilities/Logger';
+import { CircularProgress, Chip, Grid, Tooltip, TablePagination } from '@material-ui/core';
+import { Alert as MUIAlert } from '@material-ui/lab';
+import MaterialIcons from '../../Components/MaterialIcons';
+import { STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_TOPIC_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_PROBLEM_HEADERS, STUDENT_STATISTICS_ATTEMPTS_HEADERS } from './TableColumnHeaders';
 
 const FILTERED_STRING = '_FILTERED';
 
@@ -48,51 +51,6 @@ const statisticsViewFromAllStatisticsViewFilter = (view: StatisticsViewAll): Sta
     return view as StatisticsView;
 };
 
-const gradeCols = [
-    { title: 'Name', field: 'name' },
-    { title: 'Average number of attempts', field: 'averageAttemptedCount' },
-    { title: 'Average grade', field: 'averageScore' },
-    { title: '% Completed', field: 'completionPercent' },
-];
-
-const attemptCols: Array<Column<any>> = [
-    { title: 'Result', field: 'result', defaultSort: 'asc' },
-    {
-        title: 'Attempt Time',
-        field: 'time',
-        // These options don't seem to work.
-        // defaultSort: 'desc',
-        // defaultGroupSort: 'desc',
-        // defaultGroupOrder: 1,
-        sorting: true,
-        type: 'datetime',
-        render: (datetime: any) => <span title={moment(datetime.time).toString()}>{moment(datetime.time).fromNow()}</span>,
-        customSort: (a: any, b: any) => moment(b.time).diff(moment(a.time))
-    },
-];
-
-
-const icons = {
-    // Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
-    // Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
-    // Delete: forwardRef((props, ref) => <DeleteOutline {...props} ref={ref} />),
-    // DetailPanel: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
-    // Edit: forwardRef((props, ref) => <Edit {...props} ref={ref} />),
-    Clear: forwardRef<any>((props, ref) => <Clear {...props} ref={ref} />),
-    Export: forwardRef<any>((props, ref) => <SaveAlt {...props} ref={ref} />),
-    Filter: forwardRef<any>((props, ref) => <FilterList {...props} ref={ref} />),
-    FirstPage: forwardRef<any>((props, ref) => <FirstPage {...props} ref={ref} />),
-    LastPage: forwardRef<any>((props, ref) => <LastPage {...props} ref={ref} />),
-    NextPage: forwardRef<any>((props, ref) => <ChevronRight {...props} ref={ref} />),
-    PreviousPage: forwardRef<any>((props, ref) => <ChevronLeft {...props} ref={ref} />),
-    ResetSearch: forwardRef<any>((props, ref) => <Clear {...props} ref={ref} />),
-    Search: forwardRef<any>((props, ref) => <Search {...props} ref={ref} />),
-    SortArrow: forwardRef<any>((props, ref) => <ArrowDownward {...props} ref={ref} />),
-    // ThirdStateCheck: forwardRef((props, ref) => <Remove {...props} ref={ref} />),
-    // ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
-};
-
-
 interface BreadCrumbFilter {
     id: number;
     displayName: string;
@@ -118,6 +76,18 @@ const defaultGradesState: GradesState = {
     rowData: undefined
 };
 
+// TitleData can be either the averages for all returned data, or the effective grade for
+// a specific problem.
+type TitleData = {
+    totalAverage: number;
+    totalOpenAverage: number;
+    totalDeadAverage: number;
+} | { 
+    effectiveScore: number;
+    systemScore: number;
+    bestScore: number;
+}
+
 /**
  * When a professor wishes to see a student's view, they pass in the student's userId.
  * When they wish to see overall course statistics, they do not pass any userId.
@@ -129,13 +99,18 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [rowData, setRowData] = useState<Array<any>>([]);
     const [gradesState, setGradesState] = useState<GradesState>(defaultGradesState);
     const [grade, setGrade] = useState<StudentGrade | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [statisticsAlert, setStatisticsAlert] = useMUIAlertState();
+    const [titleGrade, setTitleGrade] = useState<TitleData | null>(null);
     const userType: UserRole = getUserRole();
 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
 
     useEffect(() => {
-        console.log('Rerunning useEffect');
-        if (course?.id === 0) return;
+        logger.debug(`Stats tab: [useEffect] course.id ${course.id}, globalView ${globalView}, idFilter ${idFilter}, userId ${userId}, userType ${userType}`);
+        if (_.isNil(course)) return;
+
+        setStatisticsAlert(state => ({...state, message: ''}));
 
         let url = '/courses/statistics';
         let filterParam: string = '';
@@ -146,7 +121,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             url = `${url}/units?`;
             filterParam = '';
             if (idFilterLocal !== null) {
-                console.error('This should be null for units');
+                logger.error('This should be null for units');
                 idFilterLocal = null;
             }
             break;
@@ -163,11 +138,11 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         case StatisticsViewFilter.PROBLEMS_FILTERED:
         case StatisticsView.ATTEMPTS:
             url = `/users/${userId}?includeGrades=WITH_ATTEMPTS&`;
-            // TODO: This should be removed when a similar call as the others is supported.
+            // TODO: RED-345 This should be removed when a similar call as the others is supported.
             idFilterLocal = null;
             break;
         default:
-            console.error('You should not have a view that is not the views or filtered views');
+            logger.error('You should not have a view that is not the views or filtered views');
             break;
         }
 
@@ -185,25 +160,26 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 let data = res.data.data;
 
                 const formatNumberString = (val: string, percentage: boolean = false) => {
-                    if (_.isNil(val)) return null;
-                    if (percentage) return `${(parseFloat(val) * 100).toFixed(1)}%`;
+                    if (_.isNil(val)) return '--';
+                    if (percentage) return parseFloat(val).toPercentString();
 
                     return parseFloat(val).toFixed(2);
                 };
 
                 if (view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) {
-                    let grades = data.grades.filter((grade: any) => {
+                    const grades = data.grades.filter((grade: any) => {
                         const hasAttempts = grade.numAttempts > 0;
                         const satisfiesIdFilter = idFilter ? grade.courseWWTopicQuestionId === idFilter : true;
                         return hasAttempts && satisfiesIdFilter;
                     });
-
-                    setGrade(grades[0]);
+                    logger.debug('Stats tab: [useEffect] setting grade.');
+                    setGrade(grades.first);
+                    setTitleGrade(_.isNil(grades.first) ? null : {effectiveScore: grades.first?.effectiveScore, systemScore: grades.first?.partialCreditBestScore, bestScore: grades.first?.bestScore});
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
                             id: attempt.id,
                             submitted: attempt.submitted,
-                            result: `${(attempt.result * 100).toFixed(1)}%`,
+                            result: attempt.result.toPercentString(),
                             time: attempt.time,
                             problemId: grade.courseWWTopicQuestionId
                         }))
@@ -211,29 +187,64 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     data = _.flatten(data);
                     data = data.sort((a: any, b: any) => moment(b.time).diff(moment(a.time)));
                 } else {
+                    logger.debug('Stats tab: [useEffect] setting gradesstate and grade');
                     setGradesState(defaultGradesState);
                     setGrade(null);
-                    data = data.map((d: any) => ({
+                    setTitleGrade(
+                        {
+                            totalAverage: data.totalAverage as number,
+                            totalOpenAverage: data.totalOpenAverage as number,
+                            totalDeadAverage: data.totalDeadAverage as number,
+                        }
+                    );
+
+                    data = data.data.map((d: any) => ({
                         ...d,
                         averageAttemptedCount: formatNumberString(d.averageAttemptedCount),
                         averageScore: formatNumberString(d.averageScore, true),
+                        ...(_.isNil(d.systemScore) ? undefined : {systemScore: formatNumberString(d.systemScore, true)}),
+                        ...(_.isNil(d.openAverage) ? undefined : {openAverage: formatNumberString(d.openAverage, true)}),
+                        ...(_.isNil(d.deadAverage) ? undefined : {deadAverage: formatNumberString(d.deadAverage, true)}),
                         completionPercent: formatNumberString(d.completionPercent, true)
                     }));
                 }
+                logger.debug('Stats tab: [useEffect] setting rowData');
                 setRowData(data);
+                setLoading(false);
             } catch (e) {
-                console.error('Failed to get statistics.', e);
-                return;
+                logger.error('Failed to get statistics.', e);
+                setStatisticsAlert({
+                    message: `Failed to load statistics: ${e.message}`,
+                    severity: 'error',
+                });
+                setLoading(false);
             }
         })();
     }, [course.id, globalView, idFilter, userId, userType]);
 
     const renderProblemPreview = (rowData: any) => {
-        return <ProblemIframe problem={new ProblemObject({ id: rowData.problemId })} setProblemStudentGrade={() => { }} workbookId={rowData.id} readonly={true} />;
+        logger.debug('Stats tab: renderProblemPreview called');
+        switch (view) {
+        case StatisticsViewFilter.TOPICS_FILTERED:
+        case StatisticsView.PROBLEMS:
+            // Expand for problem
+            return <ProblemIframe problem={new ProblemObject({ id: rowData.id })} setProblemStudentGrade={() => { }} readonly={true} />;
+        case StatisticsViewFilter.PROBLEMS_FILTERED:
+        case StatisticsView.ATTEMPTS:
+            // Expand for attempt
+            if (_.isNil(rowData.problemId)) {
+                logger.error('rowData.problemId cannot be nil!');
+            }
+            return <ProblemIframe problem={new ProblemObject({ id: rowData.problemId })} setProblemStudentGrade={() => { }} workbookId={rowData.id} readonly={true} />;
+        default:
+            logger.error('Problem preview can only happen for problems or attempts');
+            return <>An application error has occurred</>;
+        }
     };
 
     const resetBreadCrumbs = (selectedKey: string, newBreadcrumb?: BreadCrumbFilter) => {
-        let globalSelectedKey: StatisticsView = statisticsViewFromAllStatisticsViewFilter(selectedKey as StatisticsViewAll);
+        logger.debug('Stats tab: resetting breadcrumbs');
+        const globalSelectedKey: StatisticsView = statisticsViewFromAllStatisticsViewFilter(selectedKey as StatisticsViewAll);
         let key: StatisticsView = StatisticsView.UNITS;
         let lastFilter: number | null = null;
         const newBreadcrumbFilter: EnumDictionary<StatisticsView, BreadCrumbFilter> = {};
@@ -254,6 +265,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 }
             }
         }
+        logger.debug('Stats tab: setting Breadcrumb Filter');
         setBreadcrumbFilters(newBreadcrumbFilter);
         return {
             lastFilter,
@@ -262,65 +274,114 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     };
 
     const nextView = (event: any, rowData: any, togglePanel: any) => {
+        logger.debug('Stats tab: [nextView] proceeding to next view.');
+        setLoading(true);
         const newBreadcrumb = {
             id: rowData.id,
             displayName: rowData.name
         };
         switch (view) {
         case StatisticsView.UNITS:
+            logger.debug('Stats tab: [nextView] setting IdFilter and View - switching to topics');
             setIdFilter(rowData.id);
             resetBreadCrumbs(StatisticsView.UNITS, newBreadcrumb);
             setView(StatisticsViewFilter.UNITS_FILTERED);
             break;
         case StatisticsViewFilter.UNITS_FILTERED:
         case StatisticsView.TOPICS:
+            logger.debug('Stats tab: [nextView] setting IdFilter and View - switching to problems');
             setIdFilter(rowData.id);
             resetBreadCrumbs(StatisticsView.TOPICS, newBreadcrumb);
             setView(StatisticsViewFilter.TOPICS_FILTERED);
             break;
         case StatisticsViewFilter.TOPICS_FILTERED:
         case StatisticsView.PROBLEMS:
-            console.log(userId);
             if (userId !== undefined) {
+                logger.debug('Stats tab: [nextView] setting IdFilter and View -- switching to attempts');
                 setIdFilter(rowData.id);
-                console.log('Switching to Attempts');
                 resetBreadCrumbs(StatisticsView.PROBLEMS, newBreadcrumb);
                 setView(StatisticsViewFilter.PROBLEMS_FILTERED);
             } else {
-                console.log('Showing a panel.');
+                logger.debug('Stats tab: no userId provided, showing a panel.');
                 togglePanel();
+                setLoading(false);
             }
             break;
         case StatisticsView.ATTEMPTS:
         case StatisticsViewFilter.PROBLEMS_FILTERED:
+            logger.debug('Stats tab: toggle panel');
             togglePanel();
+            setLoading(false);
             break;
         default:
             break;
         }
     };
 
-    const getTitle = (): string => {
-        let result = course.name;
-        Object.keys(StatisticsView).forEach((key: string) => {
-            result = breadcrumbFilter[key as StatisticsView]?.displayName ?? result;
-        });
-        return result;
+    const onConfirm = async () => {
+        try {
+            if (_.isNil(grade) || _.isNil(grade.id)) {
+                throw new Error('Application Error: Grade null');
+            }
+            setGradesState(defaultGradesState);
+            const newLockedValue = !grade.locked;
+            const result = await putQuestionGrade({
+                id: grade.id,
+                data: {
+                    locked: newLockedValue
+                }
+            });
+
+            if(!_.isNil(gradesState.rowData?.grades[0])) {
+                gradesState.rowData.grades[0].locked = newLockedValue;
+            }
+
+            setGradesState(defaultGradesState);
+            setGrade(result.data.data.updatesResult.updatedRecords[0] as StudentGrade);
+        } catch (e) {
+            setGradesState({
+                ...gradesState,
+                lockAlert: {
+                    message: e.message,
+                    variant: 'danger'
+                }
+            });
+        }
+    };
+
+    const getColumnHeaders = () => {
+        switch (view) {
+        case StatisticsView.UNITS:
+            return _.isNil(userId) ? STATISTICS_SIMPLIFIED_HEADERS : STUDENT_STATISTICS_SIMPLIFIED_HEADERS;
+        case StatisticsViewFilter.UNITS_FILTERED:
+        case StatisticsView.TOPICS:
+            return _.isNil(userId) ? STATISTICS_SIMPLIFIED_HEADERS : STUDENT_STATISTICS_SIMPLIFIED_TOPIC_HEADERS;
+        case StatisticsViewFilter.TOPICS_FILTERED:
+        case StatisticsView.PROBLEMS:
+            return _.isNil(userId) ? STATISTICS_SIMPLIFIED_HEADERS : STUDENT_STATISTICS_SIMPLIFIED_PROBLEM_HEADERS;
+        case StatisticsViewFilter.PROBLEMS_FILTERED:
+        case StatisticsView.ATTEMPTS:
+            return STUDENT_STATISTICS_ATTEMPTS_HEADERS;
+        default:
+            logger.error('You should not have a view that is not the views or filtered views');
+            return [];
+        }
     };
 
     const hasDetailPanel = userId !== undefined ?
         (view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED):
         (view === StatisticsView.PROBLEMS || view === StatisticsViewFilter.TOPICS_FILTERED);
-    
+
     let actions: Array<any> | undefined = [];
     if(!hasDetailPanel) {
         actions.push({
-            icon: () => <ChevronRight />,
+            icon: function IconWrapper() {return <ChevronRight />; },
             tooltip: 'See More',
             onClick: _.curryRight(nextView)(() => { }),
         });
     }
     if (!_.isNil(userId) && view === StatisticsViewFilter.TOPICS_FILTERED) {
+        logger.debug('Stats tab: [root] preparing table actions');
         if (userType === UserRole.PROFESSOR) {
             actions.push((rowData: any) => {
                 // Don't show until the override information is available
@@ -328,9 +389,10 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     return;
                 }
                 return {
-                    icon: () => <BsPencilSquare />,
+                    icon:  function IconWrapper() { return <BsPencilSquare />; },
                     tooltip: 'Override grade',
                     onClick: (_event: any, rowData: any) => {
+                        logger.debug('Stats tab: [root] setting grade and gradesstate');
                         setGrade(rowData.grades[0]);
                         setGradesState({
                             ...gradesState,
@@ -349,7 +411,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             }
 
             const { locked } = rowData.grades[0];
-            
+
             // Students only see if their grade is "locked"
             const unlockedIcon = userType === UserRole.PROFESSOR ? <BsUnlock/> : null;
             const icon = locked ? <BsLock/> : unlockedIcon;
@@ -362,6 +424,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             // Don't include the onclick event for non professors
             const onClick = userType === UserRole.PROFESSOR ?
                 () => {
+                    logger.debug('Stats tab: [rowData onClick] setting grade and gradesstate');
                     setGrade(rowData.grades[0]);
                     setGradesState({
                         ...gradesState,
@@ -382,11 +445,16 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
     if(_.isEmpty(actions)) {
         actions = undefined;
-    }    
+    }
 
     return (
         <>
-            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
+            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string | null) => {
+                logger.debug('Stats tab: [nav1] setting IdFilter and view');
+                if (_.isNil(selectedKey)) {
+                    logger.error('The selectedKey for the Statistics Tab is null. (TSNH)');
+                    return;
+                }
                 setView(selectedKey as StatisticsViewAll);
                 setBreadcrumbFilters({});
                 setIdFilter(null);
@@ -402,8 +470,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     </Col>
                 ))}
             </Nav>
-            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string) => {
-                const { nextKey, lastFilter } = resetBreadCrumbs(selectedKey);
+            <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string | null) => {
+                if (_.isNil(selectedKey)) {
+                    logger.error('The selectedKey for the Statistics Tab is null. (TSNH)');
+                    return;
+                }
+                const { lastFilter } = resetBreadCrumbs(selectedKey);
+                logger.info('Stats tab: [nav2] setting IdFilter and view');
                 setView(selectedKey as StatisticsViewFilter);
                 setIdFilter(lastFilter);
             }}>
@@ -422,7 +495,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 })}
             </Nav>
             <div style={{ maxWidth: '100%' }}>
-                {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) && 
+                {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) &&
                 <>
                     <OverrideGradeModal
                         show={gradesState.view === GradesStateView.OVERRIDE}
@@ -441,105 +514,164 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     <ConfirmationModal
                         show={gradesState.view === GradesStateView.LOCK}
                         onHide={() => setGradesState(defaultGradesState)}
-                        onConfirm={async () => {
-                            try {
-                                if (_.isNil(grade) || _.isNil(grade.id)) {
-                                    throw new Error('Application Error: Grade null');
-                                }
-                                setGradesState(defaultGradesState);
-                                const newLockedValue = !grade.locked;
-                                const result = await putQuestionGrade({
-                                    id: grade.id,
-                                    data: {
-                                        locked: newLockedValue
-                                    }
-                                });
-
-                                if(!_.isNil(gradesState.rowData?.grades[0])) {
-                                    gradesState.rowData.grades[0].locked = newLockedValue;
-                                }
-
-                                setGradesState(defaultGradesState);
-                                setGrade(result.data.data.updatesResult.updatedRecords[0] as StudentGrade);
-                            } catch (e) {
-                                setGradesState({
-                                    ...gradesState,
-                                    lockAlert: {
-                                        message: e.message,
-                                        variant: 'danger'
-                                    }
-                                });
-                            }
-                        }}
-                        confirmText="Confirm"
+                        onConfirm={onConfirm}
+                        confirmText='Confirm'
                         headerContent={<h6>{grade.locked ? 'Unlock' : 'Lock'} Grade</h6>}
-                        bodyContent={(<>
-                            {gradesState.lockAlert && <Alert variant={gradesState.lockAlert.variant}>{gradesState.lockAlert.message}</Alert>}
-                            <p>Are you sure you want to {grade.locked ? 'unlock' : 'lock'} this grade?</p>
-                            {grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
-                            {!grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
-                        </>)}
+                        bodyContent={(
+                            <>
+                                {gradesState.lockAlert && <Alert variant={gradesState.lockAlert.variant}>{gradesState.lockAlert.message}</Alert>}
+                                <p>Are you sure you want to {grade.locked ? 'unlock' : 'lock'} this grade?</p>
+                                {grade.locked && <p>Doing this might allow the student to get an updated score on this problem.</p>}
+                                {!grade.locked && <p>The student will no longer be able to get updates to their score for this problem.</p>}
+                            </>
+                        )}
                     />
                 </>}
-                <MaterialTable
-                    icons={icons}
-                    title={(
-                        <div className="d-flex">
-                            <h6
-                                style={{
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis'
-                                }}
-                                className="MuiTypography-root MuiTypography-h6"
-                            >
-                                {getTitle()}
-                            </h6>
-                            {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) && (view === StatisticsViewFilter.PROBLEMS_FILTERED) && 
-                            <>
-                                <Button
-                                    className="ml-3 mr-1"
-                                    onClick={() => setGradesState({
-                                        ...gradesState,
-                                        view: GradesStateView.OVERRIDE
-                                    })}
-                                >
-                                    <>
-                                        <BsPencilSquare/> Override
-                                    </>
-                                </Button>
-
-                                <Button
-                                    variant={grade.locked ? 'warning' : 'danger'}
-                                    className="ml-1 mr-1"
-                                    onClick={() => setGradesState({
-                                        ...gradesState,
-                                        view: GradesStateView.LOCK
-                                    })}
-                                >
-                                    {grade.locked ? <><BsLock/> Unlock</>: <><BsUnlock/> Lock</>}
-                                </Button>
-                            </>
+                { loading && <CircularProgress />}
+                { !loading && statisticsAlert.message !== '' && (
+                    <MUIAlert
+                        onClose={() => setStatisticsAlert(alertState => ({ ...alertState, message: '' }))}
+                        severity={statisticsAlert.severity}
+                        variant='filled'
+                        style={{ fontSize: '1.1em' }}
+                    >
+                        {statisticsAlert.message}
+                    </MUIAlert>
+                )}
+                {!loading && statisticsAlert.message === '' && rowData.length > 0 && (
+                    <MaterialTable
+                        key={rowData.length}
+                        icons={MaterialIcons}
+                        title={<TableTitleComponent
+                            userType={userType}
+                            view={view}
+                            userId={userId}
+                            grade={grade}
+                            course={course}
+                            breadcrumbFilter={breadcrumbFilter}
+                            setGradesState={setGradesState}
+                            gradesState={gradesState}
+                            titleGrade={titleGrade}
+                        />}
+                        columns={getColumnHeaders()}
+                        data={rowData}
+                        actions={actions}
+                        onRowClick={nextView}
+                        options={{
+                            exportButton: true,
+                            exportAllData: true,
+                            sorting: true,
+                            emptyRowsWhenPaging: false,
+                            pageSize: rowData.length ?? 0,
+                        }}
+                        detailPanel={hasDetailPanel ? [{
+                            icon:  function IconWrapper() { return <ChevronRight />; },
+                            render: renderProblemPreview
+                        }] : undefined}
+                        localization={{ header: { actions: '' } }}
+                        components={{
+                            Pagination: function PaginationWrapper(props) {
+                                return <TablePagination
+                                    {...props}
+                                    rowsPerPageOptions={[..._.range(0, rowData.length, 5), { label: 'All', value: rowData.length }]}
+                                />;
                             }
-                        </div>
-                    )}
-                    columns={(view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) ? attemptCols : gradeCols}
-                    data={rowData}
-                    actions={actions}
-                    onRowClick={nextView}
-                    options={{
-                        exportButton: true,
-                        sorting: true
-                    }}
-                    detailPanel={hasDetailPanel ? [{
-                        icon: () => <ChevronRight />,
-                        render: renderProblemPreview
-                    }] : undefined}
-                    localization={{ header: { actions: '' } }}
-                />
+                        }}
+                    />
+                )}
             </div>
         </>
     );
 };
+
+const TableTitleComponent = (
+    {userType, view, userId, grade, course, breadcrumbFilter, setGradesState, gradesState, titleGrade}: {
+        userType: UserRole,
+        view: StatisticsViewAll,
+        userId?: number,
+        grade: StudentGrade | null,
+        course: CourseObject,
+        breadcrumbFilter: EnumDictionary<StatisticsView, BreadCrumbFilter>,
+        setGradesState: React.Dispatch<React.SetStateAction<GradesState>>,
+        gradesState: GradesState,
+        titleGrade: TitleData | null,
+    }
+) => (
+    <Grid container spacing={1}>
+        <Grid item>
+            <h6
+                style={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                }}
+                className="MuiTypography-root MuiTypography-h6"
+            >
+                {
+                    Object.keys(StatisticsView).reduce((result: string, key: string) => {
+                        return breadcrumbFilter[key as StatisticsView]?.displayName ?? result;
+                    }, course.name)
+                }
+            </h6>
+        </Grid>
+        <Grid item>
+            {/* Requiring userId here hides this on the Professor's Statistics page. This may be removed in the future. */}
+            {userId && titleGrade &&
+                <Tooltip title={('totalOpenAverage' in titleGrade) ?
+                    <>
+                        {titleGrade.totalAverage && <>{titleGrade.totalAverage.toPercentString()} Overall <br/></>}
+                        {titleGrade.totalDeadAverage && <>{titleGrade.totalDeadAverage.toPercentString()} on Closed Topics</>}
+                    </> :
+                    <>
+                        {titleGrade.bestScore.toPercentString()} on time <br/>
+                        {titleGrade.systemScore.toPercentString()} overall
+                    </>}
+                >
+                    <Chip
+                        size='small'
+                        color={'primary'}
+                        label={ ('totalOpenAverage' in titleGrade) ?
+                            titleGrade.totalOpenAverage?.toPercentString() :
+                            titleGrade.effectiveScore?.toPercentString()
+                        }
+                    />
+                </Tooltip>
+            }
+        </Grid>
+        {
+            (userType === UserRole.PROFESSOR) &&
+            !_.isNil(userId) &&
+            !_.isNil(grade) &&
+            (view === StatisticsViewFilter.PROBLEMS_FILTERED) && (
+                <Grid item>
+                    <BSButton
+                        className="ml-3 mr-1"
+                        onClick={() => setGradesState({
+                            ...gradesState,
+                            view: GradesStateView.OVERRIDE
+                        })}
+                    >
+                        <>
+                            <BsPencilSquare/> Override
+                        </>
+                    </BSButton>
+
+                    <BSButton
+                        variant={grade.locked ? 'warning' : 'danger'}
+                        className="ml-1 mr-1"
+                        onClick={() => {
+                            logger.info('Stats tab: [table BSButton] setting gradesstate');
+                            setGradesState({
+                                ...gradesState,
+                                view: GradesStateView.LOCK
+                            });
+                        }}
+                    >
+                        {grade.locked ? <><BsLock/> Unlock</>: <><BsUnlock/> Lock</>}
+                    </BSButton>
+                </Grid>
+            )}
+    </Grid>
+);
 
 export default StatisticsTab;

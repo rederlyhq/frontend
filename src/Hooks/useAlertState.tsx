@@ -1,9 +1,16 @@
+import React from 'react';
 import { AlertProps } from 'react-bootstrap';
 import { useState } from 'react';
+import { Color } from '@material-ui/lab';
 
 export interface IAlertModalState {
-    message: string;
+    message: string | React.ReactNode;
     variant: AlertProps['variant'];
+}
+
+export interface IMUIAlertModalState {
+    message: string;
+    severity: Color;
 }
 
 /**
@@ -14,3 +21,7 @@ export const useAlertState = () => {
 };
 
 export default useAlertState;
+
+export const useMUIAlertState = () => {
+    return useState<IMUIAlertModalState>({message: '', severity: 'error'});
+};

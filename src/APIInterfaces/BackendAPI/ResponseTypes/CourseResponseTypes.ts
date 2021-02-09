@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, NewCourseTopicObj, ProblemObject, NewProblemObject, StudentGrade } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, TopicObject, ProblemObject, StudentGrade, StudentGradeInstance, ProblemAttachments, UserObject } from '../../../Courses/CourseInterfaces';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 
 /* *************** *************** */
@@ -6,11 +6,26 @@ import { BackendAPIResponse } from '../BackendAPIResponse';
 /* *************** *************** */
 export type CreateCourseResponse = BackendAPIResponse<Partial<CourseObject>>;
 
+interface PostImportCourseArchive {
+    unit: UnitObject;
+    missingFileErrors: {
+        missingPGFileErrors: Array<string>;
+        missingAssetFileErrors: Array<string>;
+    };
+}
+export type PostImportCourseArchiveResponse = BackendAPIResponse<PostImportCourseArchive>;
+
 interface PutCourseUpdates {
     updatesResult: Partial<CourseObject>[]
 }
 
 export type PutCourseUpdatesResponse = BackendAPIResponse<PutCourseUpdates>;
+
+interface SuccessResponse {
+    message: string;
+}
+
+export type PostEmailProfResponse = BackendAPIResponse<SuccessResponse>;
 
 /* *************** *************** */
 /* ************ Units ************ */
@@ -26,10 +41,12 @@ export type PutCourseUnitUpdatesResponse = BackendAPIResponse<PutCourseUnitUpdat
 /* *************** *************** */
 /* *********** Topics  *********** */
 /* *************** *************** */
-export type PostTopicResponse = BackendAPIResponse<Partial<NewCourseTopicObj>>;
+export type GetTopicResponse = BackendAPIResponse<Partial<TopicObject>>;
+
+export type PostTopicResponse = BackendAPIResponse<Partial<TopicObject>>;
 
 interface PutCourseTopicUpdates {
-    updatesResult: Partial<NewCourseTopicObj>[]
+    updatesResult: Partial<TopicObject>[]
 }
 
 export type PutCourseTopicUpdatesResponse = BackendAPIResponse<PutCourseTopicUpdates>;
@@ -37,7 +54,16 @@ export type PutCourseTopicUpdatesResponse = BackendAPIResponse<PutCourseTopicUpd
 /* *************** *************** */
 /* ********** Questions ********** */
 /* *************** *************** */
-export type CreateQuestionResponse = BackendAPIResponse<Partial<NewProblemObject>>;
+export type CreateQuestionResponse = BackendAPIResponse<Partial<ProblemObject>>;
+
+interface PostQuestionSubmission {
+    studentGrade: Partial<StudentGrade>;
+    rendererData: {
+        renderedHTML: string;
+    }
+}
+
+export type PostQuestionSubmissionResponse = BackendAPIResponse<PostQuestionSubmission>;
 
 interface PutCourseTopicQuestionUpdates {
     updatesResult: Partial<ProblemObject>[]
@@ -49,9 +75,19 @@ interface PutQuestionGrade {
     updatesResult: {
         updatedRecords: Partial<StudentGrade>[]
     }
+    updatesCount: number;
 }
 
 export type PutQuestionGradeResponse = BackendAPIResponse<PutQuestionGrade>;
+
+interface PutQuestionGradeInstance {
+    updatesResult: {
+        updatedRecords: Partial<StudentGradeInstance>[]
+    }
+    updatesCount: number;
+}
+
+export type PutQuestionGradeInstanceResponse = BackendAPIResponse<PutQuestionGradeInstance>;
 
 interface PostDefFile {
     newQuestions: ProblemObject[]
@@ -61,6 +97,127 @@ export type PostDefFileResponse = BackendAPIResponse<PostDefFile>;
 
 interface GetQuestions {
     questions: Array<ProblemObject>;
-    topic: NewCourseTopicObj
+    topic: TopicObject
 }
 export type GetQuestionsResponse = BackendAPIResponse<GetQuestions>;
+
+export type GetQuestionResponse = BackendAPIResponse<Partial<ProblemObject>>;
+
+/* *************** *************** */
+/* ********** Questions ********** */
+/* *************** *************** */
+
+interface GetUploadURL {
+    uploadURL: URL;
+    cloudFilename: string;
+}
+
+export type GetUploadURLResponse = BackendAPIResponse<GetUploadURL>;
+
+interface ListAttachmentsInterface {
+    attachments: ProblemAttachments[];
+    baseUrl: string;
+}
+
+export type ListAttachmentsResponse = BackendAPIResponse<ListAttachmentsInterface>;
+
+export interface GetAllVersionAttachmentsResponse {
+    baseUrl: string;
+    user: {
+        id: number;
+        firstName: string;
+        lastName: string;
+    },
+    topic: {
+        id: number;
+        name: string;
+        questions: {
+            id: number;
+            problemNumber: number;
+            grades: {
+                id: number;
+                lastInfluencingCreditedAttemptId: number;
+                lastInfluencingAttemptId: number;
+                webworkQuestionPath: string;
+                problemAttachments?: {
+                    id: number;
+                    cloudFilename: string;
+                    userLocalFilename: string;
+                    updatedAt: Date;
+                }[];
+            }[];
+        }[];
+    }
+}
+
+export type GetAllVersionDataResponse = BackendAPIResponse<GetAllVersionAttachmentsResponse>;
+
+// export interface 
+
+/* *************** *************** */
+/* *********** Editor  *********** */
+/* *************** *************** */
+interface ReadQuestion {
+    problemSource: string;
+}
+export type ReadQuestionResponse = BackendAPIResponse<ReadQuestion>;
+
+export interface SaveQuestion {
+    filePath: string;
+}
+export type SaveQuestionResponse = BackendAPIResponse<SaveQuestion>;
+
+export interface Catalog {
+    problems: Array<string>;
+}
+export type CatalogResponse = BackendAPIResponse<Catalog>;
+
+/* *************** *************** */
+/* *********** Grades  *********** */
+/* *************** *************** */
+type Grades = Array<{
+    average: number;
+}>
+export type GradesResponse = BackendAPIResponse<Grades>;
+
+/* *************** *************** */
+/* ********* Enrollment  ********* */
+/* *************** *************** */
+type EnrollByCode = {
+    courseId: number;
+};
+export type EnrollByCodeResponse = BackendAPIResponse<EnrollByCode>;
+
+type EnrollManually = {
+    user: UserObject;
+    enrollment: unknown;
+};
+export type EnrollManuallyResponse = BackendAPIResponse<EnrollManually>;
+
+/* *************** *************** */
+/* ****** Problem  Browsing ****** */
+/* *************** *************** */
+type GetBrowserProblemsListObject = {
+    name: string;
+    id: number;
+}
+
+type GetBrowseProblemsCourseList = {
+    courses: Array<GetBrowserProblemsListObject>;
+}
+export type GetBrowseProblemsCourseListResponse = BackendAPIResponse<GetBrowseProblemsCourseList>;
+
+type GetBrowseProblemsUnitList = {
+    units: Array<GetBrowserProblemsListObject>;
+}
+export type GetBrowseProblemsUnitListResponse = BackendAPIResponse<GetBrowseProblemsUnitList>;
+
+type GetBrowseProblemsTopicList = {
+    topics: Array<GetBrowserProblemsListObject>;
+}
+export type GetBrowseProblemsTopicListResponse = BackendAPIResponse<GetBrowseProblemsTopicList>;
+
+type GetProblemSearchResults = {
+    problems: Array<ProblemObject>
+}
+export type GetProblemSearchResultsResponse = BackendAPIResponse<GetProblemSearchResults>;

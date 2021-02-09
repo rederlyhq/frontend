@@ -6,6 +6,8 @@ import useAlertState from '../Hooks/useAlertState';
 import { putUpdateForgottonPassword } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
+import logger from '../Utilities/Logger';
+import LandingPageWrapper from '../Components/LandingPageWrapper';
 
 interface ForgotPasswordLandingPageProps {
 
@@ -19,7 +21,7 @@ type ForgotPasswordFormData = {
 
 // TODO: Use Axios.Request JSX to selectively render success or failure.
 export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps> = () => {
-    const { uid } = useParams();
+    const { uid } = useParams<{uid?: string}>();
     const [formState, setFormState] = useState<ForgotPasswordFormData>({
         email: '',
         password: '',
@@ -32,7 +34,7 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
     const handleForgotPassword = async () => {
         try {
             if(_.isNil(uid)) {
-                console.error('The router should not allow for null uid');
+                logger.error('The router should not allow for null uid');
                 throw new Error('Cannot reset password with token!');
             }
             await putUpdateForgottonPassword({
@@ -76,7 +78,7 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
     const handleNamedChange = (name: keyof ForgotPasswordFormData) => {
         return (event: any) => {
             if (name !== event.target.name) {
-                console.error(`Mismatched event, ${name} is on ${event.target.name}`);
+                logger.error(`Mismatched event, ${name} is on ${event.target.name}`);
             }
             const val = event.target.value;
             setFormState({
@@ -105,8 +107,8 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
     }
 
     return (
-        <Jumbotron>
-            <h3>Forgot Password</h3>
+        <LandingPageWrapper>
+            <h1>Forgot Password</h1>
             <Form noValidate validated={validated} onSubmit={handleSubmit} action='#'>
                 {(forgotPasswordAlertMsg !== '') && <Alert variant={forgotPasswordAlertType}>{forgotPasswordAlertMsg}</Alert>}
                 <SimpleFormRow
@@ -155,8 +157,8 @@ export const ForgotPasswordLandingPage: React.FC<ForgotPasswordLandingPageProps>
                     <Button type="submit" disabled={forgotPasswordAlertType === 'success'}>Submit</Button>
                 </Form.Group>
             </Form>
-        </Jumbotron>
+        </LandingPageWrapper>
     );
 };
-
+    
 export default ForgotPasswordLandingPage;

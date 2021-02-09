@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Button, Modal, FormControl, FormLabel, FormGroup, Spinner, Form, } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
+import logger from '../Utilities/Logger';
+import { version } from '../../package.json';
 
 export const ProvideFeedback: React.FC<any> = () => {
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -18,10 +20,12 @@ export const ProvideFeedback: React.FC<any> = () => {
             setMessage('');
             setSubmitting(true);
             setEnabled(false);
-            console.log(history);
+            logger.info(history);
             await AxiosRequest.post('/support', {
-                description: `${description} (Sent from: ${window.location.origin}${history.location.pathname})`,
-                summary,
+                description: description,
+                summary: summary,
+                url: `${window.location.origin}${history.location.pathname}`,
+                version: version,
             });
             setMessage('Thank you, your feedback has been submitted.');
             setSubmitting(false);
@@ -54,15 +58,15 @@ export const ProvideFeedback: React.FC<any> = () => {
         } else {
             submitFeedback();
         }
-  
+
         setValidated(true);
     };
     const cancel = reset;
-    
+
     return (
         <>
             <Button variant="outline-light" onClick={() => setShowFeedbackModal(true)}>
-                Provide feedback
+                Rederly Support
             </Button>
 
             <Modal
@@ -73,7 +77,7 @@ export const ProvideFeedback: React.FC<any> = () => {
                 <Form noValidate validated={validated} onSubmit={submit}>
                     <Modal.Header closeButton>
                         <Modal.Title>
-                        Provide Feedback
+                            Provide Feedback to Rederly Support
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
@@ -85,7 +89,7 @@ export const ProvideFeedback: React.FC<any> = () => {
                             </FormLabel>
                             <FormControl
                                 required
-                                defaultValue='' 
+                                defaultValue=''
                                 size='lg'
                                 readOnly={!enabled}
                                 onChange={(
@@ -100,9 +104,10 @@ export const ProvideFeedback: React.FC<any> = () => {
                             </FormLabel>
                             <FormControl
                                 required
-                                defaultValue='' 
+                                defaultValue=''
                                 size='lg'
-                                as="textarea" rows="3"
+                                as="textarea"
+                                rows={3}
                                 readOnly={!enabled}
                                 onChange={(
                                     ev: React.ChangeEvent<HTMLInputElement>,

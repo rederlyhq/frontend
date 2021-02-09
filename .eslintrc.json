@@ -7,8 +7,14 @@
         "eslint:recommended",
         "plugin:react/recommended",
         "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:jsx-a11y/recommended"
+        "plugin:jsx-a11y/recommended",
+        "react-app"
     ],
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
     "globals": {
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly"
@@ -45,6 +51,9 @@
         ],
         "react/prop-types": [0, {}],
         "no-unused-vars": "off",
-        "@typescript-eslint/no-unused-vars": "warn"
-    }
+        "@typescript-eslint/no-unused-vars": "warn",
+        "no-console": ["warn"],
+        "prefer-const": "warn"
+    },
+    "ignorePatterns": "**/*.min.js"
 }

@@ -1,11 +1,24 @@
 import Cookies from 'js-cookie';
 import { CookieEnum } from './CookieEnum';
+import localPreferences from '../Utilities/LocalPreferences';
+const { general, session } = localPreferences;
 
 export enum UserRole {
     STUDENT   = 'STUDENT',
     PROFESSOR = 'PROFESSOR',
     ADMIN     = 'ADMIN'
 }
+
+export const unauthorizedRedirect = (doRedirect: boolean = true) => {
+    // TODO: Generic redirect to handle clearing cookies.
+    general.loginRedirectURL = `${window.location.pathname}${window.location.search}`;
+    Cookies.remove(CookieEnum.SESSION);
+    session.nullifySession();
+
+    if (doRedirect) {
+        window.location.assign('/');        
+    }
+};
 
 export const getUserRoleFromServer = (roleFromServer: number): UserRole => {
     switch (roleFromServer) {
@@ -20,14 +33,14 @@ export const getUserRoleFromServer = (roleFromServer: number): UserRole => {
 };
 
 export const getUserRole = (): UserRole => {
-    const roleFromCookie = Cookies.get(CookieEnum.USERTYPE);
-    // eslint-disable-next-line eqeqeq
-    if (roleFromCookie == undefined) {
-        // TODO: Generic redirect to handle clearing cookies.
-        window.location.assign('/');
-        Cookies.remove(CookieEnum.USERTYPE);
-        Cookies.remove(CookieEnum.SESSION);
-        throw Error('Cookie is missing. Please return to Login.');
+    const roleFromCookie = session.userType;
+    if (roleFromCookie === null) {
+        unauthorizedRedirect();
+        // They should already be redirected
+        // But if they are not give them the lowest permission
+        return UserRole.STUDENT;
+    } else {
+        general.loginRedirectURL = null;
     }
 
     switch (roleFromCookie.toLocaleUpperCase()) {
@@ -42,16 +55,26 @@ export const getUserRole = (): UserRole => {
 };
 
 export const getUserId = () => {
-    const userId = Cookies.get(CookieEnum.USERID);
+    const userId = session.userId;
     let userIdValue = 0; 
 
-    if (userId === undefined || isNaN(userIdValue = parseInt(userId, 10))) {
-        // TODO: Generic redirect to handle clearing cookies.
-        window.location.assign('/');
-        Cookies.remove(CookieEnum.USERTYPE);
-        Cookies.remove(CookieEnum.SESSION);
-        throw Error('Cookie is missing. Please return to Login.');
+    if (userId === null || isNaN(userIdValue = parseInt(userId, 10))) {
+        unauthorizedRedirect();
+    } else {
+        general.loginRedirectURL = null;
     }
 
     return userIdValue;
+};
+
+/**
+ * TODO:
+ * This should be included in the above however pushing this out on a deadline I don't want to mess with it
+ */
+export const getUserIdNoRedirect = () => {
+    return session.userId;
+};
+
+export const getUserRoleNoRedirect = () => {
+    return session.userType;
 };

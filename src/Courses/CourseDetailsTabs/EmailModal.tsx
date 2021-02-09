@@ -1,18 +1,20 @@
+import _ from 'lodash';
 import React, { useState } from 'react';
 import { Modal, ModalTitle, ModalBody, Form, Button, ModalFooter, FormGroup, FormControl, FormLabel, Alert } from 'react-bootstrap';
 import ModalHeader from 'react-bootstrap/ModalHeader';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 import useAlertState from '../../Hooks/useAlertState';
+import { UserObject } from '../CourseInterfaces';
 
 interface EmailModalProps {
-    users: Set<number>;     // The number of users this message is going out to.
+    users: UserObject[];     // The number of users this message is going out to.
     show: boolean;
     setClose: () => void;
 }
 
 /**
- * This modal pops up with a form to email students. 
- * The users that are emailed are chosen on another screen. 
+ * This modal pops up with a form to email students.
+ * The users that are emailed are chosen on another screen.
  */
 export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) => {
     const [subject, setSubject] = useState('');
@@ -21,7 +23,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) =
 
     const onSendEmail = async () => {
         try {
-            const res = await AxiosRequest.post('/users/email', {subject, content: body, userIds: Array.from(users)});
+            const res = await AxiosRequest.post('/users/email', {subject, content: body, userIds: _.map(users, 'id')});
             const msg = res.data?.data?.msg || 'Success';
             setSendEmailRespMsg({message: msg, variant: 'success'});
         } catch (e) {
@@ -37,11 +39,11 @@ export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) =
             </ModalHeader>
             <ModalBody>
                 <Form>
-                    <Alert variant={sendEmailRespAlertType} show={sendEmailRespMsg.length > 0}>{sendEmailRespMsg}</Alert>
-                    <div>You are sending an email to {users.size} students.</div>
+                    <Alert variant={sendEmailRespAlertType} show={Boolean(sendEmailRespMsg)}>{sendEmailRespMsg}</Alert>
+                    <div>You are sending an email to {users.length} students.</div>
                     <FormGroup controlId='Subject'>
                         <FormLabel>Subject: </FormLabel>
-                        <FormControl 
+                        <FormControl
                             type='text'
                             autoComplete='off'
                             onChange={(e: any) => setSubject(e.target.value)}
@@ -49,8 +51,8 @@ export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) =
                     </FormGroup>
                     <FormGroup>
                         <FormLabel>Message Content:</FormLabel>
-                        <FormControl 
-                            as='textarea' 
+                        <FormControl
+                            as='textarea'
                             size='sm' style={{height: '200px'}}
                             autoComplete='off'
                             onChange={(e: any) => setBody(e.target.value)}
@@ -59,8 +61,8 @@ export const EmailModal: React.FC<EmailModalProps> = ({users, show, setClose}) =
                 </Form>
             </ModalBody>
             <ModalFooter>
-                <Button 
-                    variant="primary" 
+                <Button
+                    variant="primary"
                     onClick={onSendEmail}
                     disabled={sendEmailRespAlertType === 'success'}
                 >
