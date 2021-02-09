@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useHistory, Link } from 'react-router-dom';
 import { Breadcrumb } from 'react-bootstrap';
-import { Link as MaterialLink, Breadcrumbs as MUIBreadcrumb, Menu, MenuItem } from '@material-ui/core';
+import { Link as MaterialLink, Menu, MenuItem } from '@material-ui/core';
 import _ from 'lodash';
 import useBreadcrumbs from 'use-react-router-breadcrumbs';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../Contexts/BreadcrumbContext';
@@ -80,7 +80,6 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
                         );
                     }
                     
-                    console.log(breadcrumb, match, key, location);
                     if ((match as any).path === '/common/courses/:courseId/topic/:topicId' && index === breadcrumbs.length - 1) {
                         // If this is the last breadcrumb, render the dropdown.
                         return (
@@ -163,7 +162,6 @@ export const TopicBreadcrumbDropdowns: React.FC<{selectedBreadcrumb: keyof typeo
                             setSelected(key as keyof typeof TopicDropdownOptions); 
                             setMenuOpen(false);
                             const to = TopicDropdownOptions[key as keyof typeof TopicDropdownOptions]?.(courseId, topicId);
-                            console.log(`Got ${to} from ${courseId} + ${topicId}`);
                             history.push(to);
                         }}
                         role='menuoption'
@@ -178,7 +176,6 @@ export const TopicBreadcrumbDropdowns: React.FC<{selectedBreadcrumb: keyof typeo
 };
 
 const ViewTopicBreadcrumbDropdown: React.FC<{match: any; location: any}> = ({match, location}) => {
-    console.log(`comparing ${match.url} and ${location.pathname} and got ${match.url !== location.pathname}`);
     return (match.url !== location.pathname) ?
         <NamedTopicBreadcrumbComponent /> :
         <TopicBreadcrumbDropdowns selectedBreadcrumb={'Assignment'} courseId={match.params.courseId} topicId={match.params.topicId} />;
