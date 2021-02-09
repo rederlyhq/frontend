@@ -430,6 +430,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         );
     };
 
+    const renderSavedStateIcon = (problem: ProblemObject) => ((problem.grades?.first?.hasBeenSaved === true) && <FaRegSave title='Recently saved' className='text-success' role='status' />);
+
     const renderDoneStateIcon = (problem: ProblemObject) => {
         let doneState: ProblemDoneState = ProblemDoneState.UNTOUCHED;
         const grade = problem.grades?.first;
@@ -451,17 +453,13 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 logger.error(`No overall best score found for User ${getUserId()} + Problem #${problem.id}`);
             }
         } else if (numAttempts === 0 || topic?.topicAssessmentInfo?.showItemizedResults === false) {
-            if (grade?.hasBeenSaved === true) {
-                doneState = ProblemDoneState.SAVED;
-            }
+            // do nothing - and prevent any done state icon
         } else if (overallBestScore === 1) {
             doneState = ProblemDoneState.COMPLETE;
         } else if (overallBestScore === 0) {
             doneState = ProblemDoneState.INCORRECT;
         } else if (overallBestScore < 1) {
             doneState = ProblemDoneState.PARTIAL;
-        } else if (grade?.hasBeenSaved === true) {
-            doneState = ProblemDoneState.SAVED;
         }
 
         switch (doneState) {
@@ -471,8 +469,6 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             return (<> INCORRECT <BsXCircle className='text-danger' role='status' /></>);
         case ProblemDoneState.PARTIAL:
             return (<> PARTIAL <BsSlashCircle className='text-warning' role='status' /></>);
-        case ProblemDoneState.SAVED:
-            return (<> SAVED <FaRegSave className='text-success' role='status' /></>);
         case ProblemDoneState.UNTOUCHED:
         default:
             return;
@@ -515,9 +511,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     }
 
     // there's a serious problem if we get a topic, but no problems, and the topicType isn't an assessment
-    if (_.isEmpty(problems) &&
+    if (!_.isNil(problems) &&
+        _.isEmpty(problems) &&
         !_.isNil(topic) &&
-        topic.topicTypeId !== 2) return <div>There was an error loading this assignment.</div>;
+        topic.topicTypeId !== 2) return <div>This topic does not have any questions.</div>;
 
     if (problems === null || selectedProblemId === null) return (
         <>
@@ -616,7 +613,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                             }}
                                         >
                                             {`Problem ${prob.problemNumber} (${prob.weight} Point${prob.weight === 1 ? '' : 's'})`}
-                                            <span className='float-right'>{renderDoneStateIcon(prob)}</span>
+                                            <span className='float-right'>{renderDoneStateIcon(prob)} {renderSavedStateIcon(prob)}</span>
                                         </NavLink>
                                     );
                                 })

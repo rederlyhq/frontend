@@ -12,7 +12,8 @@ import { StudentTopicAssessmentFields } from '../../../Courses/CourseInterfaces'
 const urlJoin: (...args: string[]) => string = require('url-join');
 
 const COURSE_PATH = '/courses/';
-const COURSE_IMPORT_ARCHIVE = (courseId: number): string => urlJoin(COURSE_PATH, courseId.toString(), '/import-archive/');
+const COURSE_ID = (courseId: number): string => urlJoin(COURSE_PATH, courseId.toString());
+const COURSE_IMPORT_ARCHIVE = (courseId: number): string => urlJoin(COURSE_ID(courseId), '/import-archive/');
 const COURSE_UNIT_PATH = url.resolve(COURSE_PATH, 'unit/');
 const COURSE_TOPIC_PATH = url.resolve(COURSE_PATH, 'topic/');
 const COURSE_QUESTION_PATH = url.resolve(COURSE_PATH, 'question/');
@@ -40,6 +41,18 @@ const COURSE_BROWSE_PROBLEMS_SEARCH = urlJoin(COURSE_BROWSE_PROBLEMS, 'search/')
 /* *************** *************** */
 /* *********** Courses *********** */
 /* *************** *************** */
+export const getCourse = async ({
+    courseId
+}: {
+    courseId: number;
+}): Promise<AxiosResponse<CreateCourseResponse>> => {
+    try {
+        return await AxiosRequest.get(COURSE_ID(courseId));
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
 export const postCourse = async ({
     useCurriculum = true,
     data

@@ -57,14 +57,19 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
     };
 
     const {getCurrentQueryStrings, updateRoute} = useQuerystringHelper();
-    const [inEditMode, setInEditMode] = useState<boolean>(getCurrentQueryStrings()['edit'] === 'true');
+    const [inEditMode, setInEditMode] = useState<boolean>(getUserRole() !== UserRole.STUDENT && getCurrentQueryStrings()['edit'] === 'true');
     const [alert, setAlert] = useAlertState();
     const userType: UserRole = getUserRole();
 
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [loading, setLoading] = useState<boolean>(false);
 
-    const setInEditModeWrapper = (val: boolean) => {
+    const setInEditModeWrapper = (newEditMode: boolean) => {
+        let val = newEditMode;
+        if (getUserRole() === UserRole.STUDENT) {
+            val = false;
+        }
+
         setInEditMode(val);
         updateRoute({
             edit: {

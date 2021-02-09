@@ -10,6 +10,7 @@ import EnrollmentsTab from './CourseDetailsTabs/EnrollmentsTab';
 import TopicsTab from './CourseDetailsTabs/TopicsTab/TopicsTab';
 import GradesTab from './CourseDetailsTabs/GradesTab';
 import StatisticsTab from './CourseDetailsTabs/StatisticsTab';
+import { Alert } from '@material-ui/lab';
 
 // Lazy loading these components does not work well with React Bootstrap, potentially
 // because is uses a deprecated method of traversing the DOM. This might work better with MUI Tabs.
@@ -61,6 +62,7 @@ export const CourseDetailsPage: React.FC<CourseDetailsPageProps> = () => {
     };
 
 
+    if (course.id <= 0 && error !== null) return  <Alert severity={'error'}>{error}</Alert>;
     if (course.id <= 0) return <Container>Loading your course...</Container>;
 
     return (

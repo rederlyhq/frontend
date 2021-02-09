@@ -21,19 +21,28 @@ interface ParsedSessionCookie {
 }
 const parseSessionCookie = (): ParsedSessionCookie => {
     const sessionCookie = Cookies.get(CookieEnum.SESSION);
-    const splitToken = sessionCookie?.split('_');
-    if ((splitToken?.length ?? 0) > 2) {
-        logger.warn('More than one `_` was found in session cookie, expected format UUID_EXPIRATION');
+    if (_.isNil(sessionCookie)) {
+        return {
+            uuid: undefined,
+            expirationEpochTime: undefined    
+        };
+    }
+    const cookieTokens = sessionCookie.split('_');
+    const [ uuid, expirationToken ] = cookieTokens;
+    const expectedCookieTokensLength = 3;
+    if (cookieTokens.length > expectedCookieTokensLength) {
+        logger.warn(`sessionCookie broke into ${cookieTokens.length} pieces, expected less than ${expectedCookieTokensLength}`);
     }
     let expirationEpochTime = undefined;
-    if(!_.isNil(splitToken) && !_.isNil(splitToken[1])) {
-        expirationEpochTime = parseInt(splitToken[1], 10);
+    if(!_.isNil(expirationToken)) {
+        expirationEpochTime = parseInt(expirationToken, 10);
         if (_.isNaN(expirationEpochTime)) {
+            logger.warn('parseSessionCookie: second token was expected to be a number (expiration) but was not');
             expirationEpochTime = undefined;
         }
     }
     return {
-        uuid: splitToken?.[0],
+        uuid: uuid,
         expirationEpochTime: expirationEpochTime
     };
 };
