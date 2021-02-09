@@ -1,7 +1,7 @@
-import React from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import React, { useRef, useState } from 'react';
+import { useHistory, Link } from 'react-router-dom';
 import { Breadcrumb } from 'react-bootstrap';
-import {default as MaterialLink} from '@material-ui/core/Link';
+import { Link as MaterialLink, Breadcrumbs as MUIBreadcrumb, Menu, MenuItem } from '@material-ui/core';
 import _ from 'lodash';
 import useBreadcrumbs from 'use-react-router-breadcrumbs';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../Contexts/BreadcrumbContext';
@@ -11,7 +11,23 @@ interface URLBreadcrumbProps {
 }
 
 export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
+    const topicNavDropdownPaths = [
+        // {
+        //     path: '/common/courses/:courseId/topic/:topicId',
+        //     breadcrumb: ViewTopicBreadcrumbDropdown,
+        // },
+        {
+            path: '/common/courses/:courseId/topic/:topicId/settings',
+            breadcrumb: SettingsTopicBreadcrumbDropdown,
+        },
+        {
+            path: '/common/courses/:courseId/topic/:topicId/grading',
+            breadcrumb: GradingTopicBreadcrumbDropdown,
+        },
+    ];
+
     const breadcrumbs = useBreadcrumbs([
+        ...topicNavDropdownPaths,
         {
             path: '/common/problem-browser',
             breadcrumb: 'Problem Browser',
@@ -25,12 +41,12 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
             breadcrumb: 'Customize Curriculum',
         },
         {
-            path: '/common/courses/:courseId/settings',
+            path: '/common/courses/:id/settings',
             breadcrumb: 'Extensions',
         },
         {
-            path: '/common/courses/:id/topic/:topicId',
-            breadcrumb: NamedTopicBreadcrumbComponent,
+            path: '/common/courses/:courseId/topic/:topicId',
+            breadcrumb: ViewTopicBreadcrumbDropdown,
         },
         {
             path: '/common/courses/:id',
@@ -50,14 +66,38 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
             <MaterialLink key='Link/common/courses' component={Link} to='/common/courses'>
                 My Courses
             </MaterialLink>
-            {breadcrumbs.map(({ breadcrumb, match }) => (
-                <React.Fragment key={`Link${breadcrumb}`}>
-                    <span style={{padding: '0em 1em 0em 1em' }}>/</span>
-                    <MaterialLink component={Link} to={match.url}>
-                        {breadcrumb}
-                    </MaterialLink>
-                </React.Fragment >
-            ))}
+            {breadcrumbs.map(
+                ({ breadcrumb, match, key, location }, index) => {
+                    
+                    const isInDropdown = _.find(topicNavDropdownPaths, ['path', (match as any).path]);
+                    if (isInDropdown !== undefined) {
+                        return (
+                            <>
+                                <span style={{padding: '0em 1em 0em 1em' }}>/</span>
+                                {breadcrumb}
+                            </>
+                        );
+                    }
+                    
+                    console.log(breadcrumb, match, key, location);
+                    if ((match as any).path === '/common/courses/:courseId/topic/:topicId' && index === breadcrumbs.length - 1) {
+                        // If this is the last breadcrumb, render the dropdown.
+                        return (
+                            <>
+                                <span style={{padding: '0em 1em 0em 1em' }}>/</span>
+                                {breadcrumb}
+                            </>
+                        );
+                    }
+
+                    return <React.Fragment key={`Link${match.url}`}>
+                        <span style={{padding: '0em 1em 0em 1em' }}>/</span>
+                        <MaterialLink component={Link} to={match.url}>
+                            {breadcrumb}
+                        </MaterialLink>
+                    </React.Fragment>;
+                }
+            )}
         </Breadcrumb>
     );
 };
@@ -74,4 +114,75 @@ export const NamedBreadcrumbComponent: React.FC<{breadcrumb: NamedBreadcrumbs}> 
 
 
 export const NamedCourseBreadcrumbComponent: React.FC<void> = () => <NamedBreadcrumbComponent breadcrumb={NamedBreadcrumbs.COURSE} />;
-export const NamedTopicBreadcrumbComponent: React.FC<void> = () => <NamedBreadcrumbComponent breadcrumb={NamedBreadcrumbs.TOPIC} />;
+export const NamedTopicBreadcrumbComponent: React.FC<{}> = () => <NamedBreadcrumbComponent breadcrumb={NamedBreadcrumbs.TOPIC} />;
+
+const TopicDropdownOptions = {
+    View: (courseId: string, topicId: string) => `/common/courses/${courseId}/topic/${topicId}`,
+    Settings: (courseId: string, topicId: string) => `/common/courses/${courseId}/topic/${topicId}/settings`,
+    Grading: (courseId: string, topicId: string) => `/common/courses/${courseId}/topic/${topicId}/grading`,
+    Extensions: (courseId: string, topicId: string) => `/common/courses/${courseId}/settings`,
+};
+
+export const TopicBreadcrumbDropdowns: React.FC<{selectedBreadcrumb: keyof typeof TopicDropdownOptions, courseId: string, topicId: string}> = ({selectedBreadcrumb, courseId, topicId}) => {
+    const [menuOpen, setMenuOpen] = useState<boolean>(false);
+    const [selected, setSelected] = useState<keyof typeof TopicDropdownOptions>(selectedBreadcrumb);
+    const ref = useRef<HTMLSpanElement>(null);
+    const history = useHistory();
+
+    const handleClose = () => setMenuOpen(false);
+
+    return <>
+        <span 
+            ref={ref}
+            onClick={()=>setMenuOpen(true)}
+            onKeyPress={(e) => (e.key === 'Enter') && setMenuOpen(true) }
+            role='menu'
+            tabIndex={0}
+        >
+            {selected === 'View' ? 
+                <NamedTopicBreadcrumbComponent /> :
+                selected
+            }
+        </span>
+        <Menu
+            id="simple-menu"
+            anchorEl={ref.current}
+            keepMounted
+            open={menuOpen}
+            onClose={handleClose}
+        >
+            {
+                _.keys(TopicDropdownOptions).map((key) => (
+                    <MenuItem 
+                        key={key} 
+                        onClick={() => {
+                            setSelected(key as keyof typeof TopicDropdownOptions); 
+                            setMenuOpen(false);
+                            const to = TopicDropdownOptions[key as keyof typeof TopicDropdownOptions]?.(courseId, topicId);
+                            console.log(`Got ${to} from ${courseId} + ${topicId}`);
+                            history.push(to);
+                        }}
+                        role='menuoption'
+                        selected={selected === key}
+                    >
+                        {key === 'View' ? 
+                            <NamedTopicBreadcrumbComponent /> :
+                            key
+                        }
+                    </MenuItem>
+                ))
+            }
+        </Menu>
+    </>;
+};
+
+// const ViewTopicBreadcrumbDropdown: React.FC<{match: any}> = ({match}) => <TopicBreadcrumbDropdowns selectedBreadcrumb={'View'} courseId={match.params.courseId} topicId={match.params.topicId} />;
+const ViewTopicBreadcrumbDropdown: React.FC<{match: any; location: any}> = ({match, location}) => {
+    console.log(`comparing ${match.url} and ${location.pathname} and got ${match.url !== location.pathname}`);
+    return (match.url !== location.pathname) ?
+        <NamedTopicBreadcrumbComponent /> :
+        <TopicBreadcrumbDropdowns selectedBreadcrumb={'View'} courseId={match.params.courseId} topicId={match.params.topicId} />;
+};
+const SettingsTopicBreadcrumbDropdown: React.FC<{match: any}> = ({match}) => <TopicBreadcrumbDropdowns selectedBreadcrumb={'Settings'} courseId={match.params.courseId} topicId={match.params.topicId} />;
+const GradingTopicBreadcrumbDropdown: React.FC<{match: any}> = ({match}) => <TopicBreadcrumbDropdowns selectedBreadcrumb={'Grading'} courseId={match.params.courseId} topicId={match.params.topicId} />;
+const ExtensionsTopicBreadcrumbDropdown: React.FC<{match: any}> = ({match}) => <TopicBreadcrumbDropdowns selectedBreadcrumb={'Extensions'} courseId={match.params.courseId} topicId={match.params.topicId} />;
