@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import TopicsList from '../TopicsList';
+import TopicsList from './TopicsList';
 import { Accordion, Card, Row, Col, Alert, Button } from 'react-bootstrap';
-import { CourseObject, TopicObject, UnitObject } from '../CourseInterfaces';
-import { EditToggleButton } from '../../Components/EditToggleButton';
-import { UserRole, getUserRole } from '../../Enums/UserRole';
+import { CourseObject, TopicObject, UnitObject } from '../../CourseInterfaces';
+import { EditToggleButton } from '../../../Components/EditToggleButton';
+import { UserRole, getUserRole } from '../../../Enums/UserRole';
 import { FaPlusCircle } from 'react-icons/fa';
 import _ from 'lodash';
-import { ConfirmationModal } from '../../Components/ConfirmationModal';
+import { ConfirmationModal } from '../../../Components/ConfirmationModal';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
-import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
-import logger from '../../Utilities/Logger';
-import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystringHelper';
-import { CourseTarballImportButton } from '../CourseCreation/CourseTarballImportButton';
+import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import logger from '../../../Utilities/Logger';
+import useQuerystringHelper, { QueryStringMode } from '../../../Hooks/useQuerystringHelper';
+import { CourseTarballImportButton } from '../../CourseCreation/CourseTarballImportButton';
 import { Backdrop, CircularProgress, Tooltip } from '@material-ui/core';
-import useAlertState from '../../Hooks/useAlertState';
-import BackendAPIError from '../../APIInterfaces/BackendAPI/BackendAPIError';
+import useAlertState from '../../../Hooks/useAlertState';
+import BackendAPIError from '../../../APIInterfaces/BackendAPI/BackendAPIError';
 import { IconButton } from '@material-ui/core';
 import { Delete, AddCircle } from '@material-ui/icons';
 
@@ -602,8 +602,9 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                     <TopicsList
                                                                         flush
                                                                         listOfTopics={unit.topics}
-                                                                        removeTopic={inEditMode ? onTopicDeleteClickedWithUnitId : undefined}
+                                                                        removeTopic={userType !== UserRole.STUDENT ? onTopicDeleteClickedWithUnitId : undefined}
                                                                         unitUnique={unit.id}
+                                                                        inEditMode={inEditMode}
                                                                     />
                                                                 </Card.Body>
                                                             </Accordion.Collapse>
