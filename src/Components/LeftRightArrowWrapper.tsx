@@ -2,7 +2,6 @@ import _ from 'lodash';
 import React from 'react';
 import { ProblemObject } from '../Courses/CourseInterfaces';
 import logger from '../Utilities/Logger';
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from 'react-icons/md';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import './LeftRightArrow.css';
