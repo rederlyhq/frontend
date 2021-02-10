@@ -19,6 +19,10 @@ import { Alert } from '@material-ui/lab';
 import { IMUIAlertModalState, useMUIAlertState } from '../Hooks/useAlertState';
 import { FaRegSave } from 'react-icons/fa';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../Contexts/BreadcrumbContext';
+import '../Components/LayoutStyles.css';
+import '../Components/LeftRightArrow.css';
+import { LeftRightArrowWrapper } from '../Components/LeftRightArrowWrapper';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface SimpleProblemPageProps {
 }
@@ -552,9 +556,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     return (
         <>
             {alert.message !== '' && <Alert severity={alert.severity}>{alert.message}</Alert>}
-            <Container fluid>
-                <Row>
-                    <Col md={3}>
+            <Container fluid  className='fullheight-container'>
+                <Row className='fullheight-row'>
+                    <Col md={3} className='fullheight-col col-remove-scrollbar-padding'>
                         {
                             (topic?.topicTypeId === 2 && versionId) && (
                                 <div className='flex-column text-center'>
@@ -593,14 +597,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 </div>
                             )
                         }
-                        <ConfirmationModal
-                            {...confirmationParameters}
-                            bodyContent={(modalLoading) ? 'Processing...' : confirmationParameters.bodyContent}
-                            onHide={(modalLoading) ? () => { } : confirmationParameters.onHide}
-                            confirmDisabled={modalLoading || confirmationParameters.confirmDisabled}
-                            secondaryDisabled={modalLoading || confirmationParameters.secondaryDisabled}
-                        />
-                        <Nav variant='pills' className='flex-column' defaultActiveKey={selectedProblemId}>
+                        <Nav variant='pills' className='flex-column' defaultActiveKey={selectedProblemId} activeKey={selectedProblemId}>
                             {_.chain(problems)
                                 .values()
                                 .sortBy(['problemNumber'])
@@ -624,42 +621,60 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                             }
                         </Nav>
                     </Col>
-                    <Col md={9}>
-                        <ProblemStateProvider>
-                            <ProblemDetails
-                                problem={problems[selectedProblemId]}
-                                topic={topic}
-                                attemptsRemaining={attemptsRemaining}
-                                setAttemptsRemaining={setAttemptsRemaining}
-                                setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
-                            />
-                            {selectedProblemId && topic && topic.topicTypeId !== 2 && 
-                            (problems[selectedProblemId].smaEnabled && (problems[selectedProblemId].grades?.first?.overallBestScore === 1 || topic.deadDate.toMoment().isBefore(moment()))) &&
-                                <Button
-                                    className='float-right'
-                                    onClick={()=>requestShowMeAnother(selectedProblemId)}
-                                    disabled={smaHasNoVersions}
-                                >
-                                    Show Me Another
-                                </Button>
-                            }
-                            {selectedProblemId && course.canAskForHelp &&
-                                <Button 
-                                    className='float-right'
-                                    onClick={()=>clickedAskForHelp(selectedProblemId)}>
-                                    Ask for help
-                                </Button>
-                            }
-                            <ProblemIframe
-                                problem={problems[selectedProblemId]}
-                                setProblemStudentGrade={setProblemStudentGrade}
-                            />
-                        </ProblemStateProvider>
+                    <Col md={9} className='fullheight-col contains-lr-btn'>
+                        <LeftRightArrowWrapper list={problems} setSelected={setSelectedProblemId} selected={selectedProblemId}>
+                            <ProblemStateProvider>
+                                <ProblemDetails
+                                    problem={problems[selectedProblemId]}
+                                    topic={topic}
+                                    attemptsRemaining={attemptsRemaining}
+                                    setAttemptsRemaining={setAttemptsRemaining}
+                                    setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
+                                />
+                                {selectedProblemId && topic && topic.topicTypeId !== 2 && 
+                                (problems[selectedProblemId].smaEnabled && (problems[selectedProblemId].grades?.first?.overallBestScore === 1 || topic.deadDate.toMoment().isBefore(moment()))) &&
+                                    <Button
+                                        className='float-right'
+                                        onClick={()=>requestShowMeAnother(selectedProblemId)}
+                                        disabled={smaHasNoVersions}
+                                    >
+                                        Show Me Another
+                                    </Button>
+                                }
+                                {selectedProblemId && course.canAskForHelp &&
+                                    <Button 
+                                        className='float-right'
+                                        onClick={()=>clickedAskForHelp(selectedProblemId)}>
+                                        Ask for help
+                                    </Button>
+                                }
+                                <AnimatePresence>
+                                    <motion.div
+                                        key={selectedProblemId}
+                                        initial={{ x: 300, opacity: 0 }}
+                                        animate={{ x: 0, opacity: 1 }}
+                                        exit={{ x: -300, opacity: 0 }}
+                                    >
+                                        <ProblemIframe
+                                            problem={problems[selectedProblemId]}
+                                            setProblemStudentGrade={setProblemStudentGrade}
+                                        />
+                                    </motion.div>
+                                </AnimatePresence>
+                            </ProblemStateProvider>
+                        </LeftRightArrowWrapper>
                     </Col>
                 </Row>
                 {selectedGradeId &&
                     <AttachmentsSidebar topic={topic || new TopicObject()} openDrawer={openDrawer} setOpenDrawer={setOpenDrawer} gradeId={selectedGradeId} gradeInstanceId={selectedGradeInstanceId} />
                 }
+                <ConfirmationModal
+                    {...confirmationParameters}
+                    bodyContent={(modalLoading) ? 'Processing...' : confirmationParameters.bodyContent}
+                    onHide={(modalLoading) ? () => { } : confirmationParameters.onHide}
+                    confirmDisabled={modalLoading || confirmationParameters.confirmDisabled}
+                    secondaryDisabled={modalLoading || confirmationParameters.secondaryDisabled}
+                />
             </Container>
         </>
     );
