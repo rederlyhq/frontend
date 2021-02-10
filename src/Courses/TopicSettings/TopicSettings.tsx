@@ -12,6 +12,7 @@ import { putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests
 import _ from 'lodash';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
 import logger from '../../Utilities/Logger';
+import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
 
 interface TopicSettingsProps {
     selected: TopicObject;
@@ -40,6 +41,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
     // lose all the user input that might be in the form.
     const [oldSelectedState, setOldSelectedState] = useState<TopicObject>(selected);
     const [saving, setSaving] = useState<boolean>(false);
+    const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
 
     useEffect(()=>{
         const selectedWithoutQuestions = _.omit(selected, ['questions']);
@@ -89,7 +91,9 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             setUpdateAlert({message: 'Successfully updated', severity: 'success'});
 
             // Overwrite fields from the original object. This resets the state object when clicking between options.
-            setTopic(new TopicObject({...selected, ...obj}));
+            const newTopic = new TopicObject({...selected, ...obj});
+            setTopic(newTopic);
+            updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Error updating topic.', e);
             setUpdateAlert({message: e.message, severity: 'error'});

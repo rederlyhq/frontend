@@ -12,6 +12,7 @@ import { TopicTypeId } from '../../Enums/TopicType';
 import { useDropzone } from 'react-dropzone';
 import logger from '../../Utilities/Logger';
 import { useQuery } from '../../Hooks/UseQuery';
+import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
 
 interface TopicSettingsPageProps {
     topic?: TopicObject;
@@ -42,6 +43,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     const { topicId: topicIdStr } = useParams<{topicId?: string}>();
     const topicId = topicProp?.id || (topicIdStr ? parseInt(topicIdStr, 10) : null);
     const queryParams = useQuery();
+    const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
 
     useEffect(()=>{
         if (!topicId) {
@@ -54,6 +56,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 const res = await getTopic({id: topicId, includeQuestions: true});
                 const topicData = res.data.data;
                 setTopic(new TopicObject(topicData));
+                updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: topicData.name ?? 'Unnamed Topic'});
                 setSelected(new TopicObject(topicData));
             } catch (e) {
                 logger.error('Failed to load Topic', e);
@@ -93,6 +96,8 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             newTopic.questions.push(newProb);
 
             setTopic(newTopic);
+            // Name should never be updated here, so no need to cache.
+            // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Failed to create a new problem with default settings.', e);
         }
@@ -151,6 +156,8 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
 
             setTopic(newTopic);
             setSelected(selected => selected instanceof ProblemObject ? new ProblemObject({...selected}) : selected);
+            // Name should never be updated here, so no need to cache.
+            // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Drag/Drop error:', e);
         }
@@ -175,6 +182,8 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 const newTopic = new TopicObject(topic);
                 newTopic.questions = newProblems;
                 setTopic(newTopic);
+                // Name should never be updated here, so no need to cache.
+                // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
             } catch (e) {
                 // setError(e);
             }

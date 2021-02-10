@@ -60,6 +60,7 @@
     "react-window": "^1.8.6",
     "typescript": "^3.9.7",
     "url-join": "^4.0.1",
+    "use-react-router-breadcrumbs": "^2.0.0",
     "winston": "^3.3.3"
   },
   "scripts": {
