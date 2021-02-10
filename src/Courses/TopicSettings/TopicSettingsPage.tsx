@@ -96,7 +96,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             newTopic.questions.push(newProb);
 
             setTopic(newTopic);
-            // Name should enver be updated here, so no need to cache.
+            // Name should never be updated here, so no need to cache.
             // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Failed to create a new problem with default settings.', e);
@@ -156,7 +156,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
 
             setTopic(newTopic);
             setSelected(selected => selected instanceof ProblemObject ? new ProblemObject({...selected}) : selected);
-            // Name should enver be updated here, so no need to cache.
+            // Name should never be updated here, so no need to cache.
             // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Drag/Drop error:', e);
@@ -182,7 +182,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 const newTopic = new TopicObject(topic);
                 newTopic.questions = newProblems;
                 setTopic(newTopic);
-                // Name should enver be updated here, so no need to cache.
+                // Name should never be updated here, so no need to cache.
                 // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
             } catch (e) {
                 // setError(e);
