@@ -29,7 +29,7 @@ export const LeftRightArrowWrapper: React.FC<LeftRightArrowWrapperProps> = ({ li
 
     const length = Object.keys(list).length;
 
-    const setNewSelected = (incr: 1 | -1) => {
+    const setNewSelected = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, incr: 1 | -1) => {
         const currProb = list[selected];
         const newProbNumber = wrap(length, currProb.problemNumber + incr);
         const newProb = _.find(list, ['problemNumber', newProbNumber]);
@@ -40,16 +40,19 @@ export const LeftRightArrowWrapper: React.FC<LeftRightArrowWrapperProps> = ({ li
         }
 
         setSelected(newProb?.id);
+        if (e.target instanceof HTMLElement) {
+            e.target.blur();
+        }
     };
 
     return <>
-        <button className='left-right-btn left-right-btn-left' onClick={()=>setNewSelected(-1)}>
+        <button className='left-right-btn left-right-btn-left' onClick={(e)=>setNewSelected(e, -1)}>
             <ArrowBackIosIcon />
         </button>
         <div style={{width: '90%', display: 'inline-block', margin: '0px 3.5%'}}>
             {children}
         </div>
-        <button className='left-right-btn left-right-btn-right' onClick={()=>setNewSelected(1)}>
+        <button className='left-right-btn left-right-btn-right' onClick={(e)=>setNewSelected(e, 1)}>
             <ArrowForwardIosIcon />
         </button>
     </>;
