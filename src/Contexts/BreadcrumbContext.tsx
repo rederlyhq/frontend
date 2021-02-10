@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import _ from 'lodash';
 
 export enum NamedBreadcrumbs {
     COURSE = 'COURSE',
@@ -30,7 +29,6 @@ export const BreadcrumbLookupProvider: React.FC<Props>  = ({ children }) => {
 
     return (
         <BreadcrumbContext.Provider value={{
-            // TODO: rename to update
             breadcrumbLookup, updateBreadcrumbLookup: updateBreadcrumbLookupWrapper
         }}>
             {children}
