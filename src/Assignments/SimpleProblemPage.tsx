@@ -22,6 +22,7 @@ import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../Contexts/Breadc
 import '../Components/LayoutStyles.css';
 import '../Components/LeftRightArrow.css';
 import { LeftRightArrowWrapper } from '../Components/LeftRightArrowWrapper';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface SimpleProblemPageProps {
 }
@@ -647,10 +648,19 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                         Ask for help
                                     </Button>
                                 }
-                                <ProblemIframe
-                                    problem={problems[selectedProblemId]}
-                                    setProblemStudentGrade={setProblemStudentGrade}
-                                />
+                                <AnimatePresence>
+                                    <motion.div
+                                        key={selectedProblemId}
+                                        initial={{ x: 300, opacity: 0 }}
+                                        animate={{ x: 0, opacity: 1 }}
+                                        exit={{ x: -300, opacity: 0 }}
+                                    >
+                                        <ProblemIframe
+                                            problem={problems[selectedProblemId]}
+                                            setProblemStudentGrade={setProblemStudentGrade}
+                                        />
+                                    </motion.div>
+                                </AnimatePresence>
                             </ProblemStateProvider>
                         </LeftRightArrowWrapper>
                     </Col>
