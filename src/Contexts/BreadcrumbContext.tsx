@@ -35,5 +35,3 @@ export const BreadcrumbLookupProvider: React.FC<Props>  = ({ children }) => {
         </BreadcrumbContext.Provider>
     );
 };
-
-export const useCurrentProblemState = () => React.useContext(BreadcrumbContext);
