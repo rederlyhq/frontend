@@ -5,10 +5,9 @@ import { MdWarning } from 'react-icons/md';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
 import { DateTimePicker } from '@material-ui/pickers';
-import { UserRole, getUserRole, getUserId } from '../../../Enums/UserRole';
+import { UserRole, getUserRole } from '../../../Enums/UserRole';
 import moment from 'moment';
 import './TopicList.css';
-import logger from '../../../Utilities/Logger';
 import { TopicNavButton } from './TopicNavButton';
 import { GrDrag } from 'react-icons/gr';
 
@@ -20,20 +19,11 @@ interface SingleTopicListItemProps {
 
 export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, removeTopic, inEditMode}) => {
     const userType: UserRole = getUserRole();
-    const userId: number = getUserId();
     const activeExtensions = topic.getActiveExtensions();
-
-    if (activeExtensions.length > 0) console.log(activeExtensions);
 
     const startDateDisplay = userType === UserRole.STUDENT && !_.isNil(activeExtensions.first) ? activeExtensions.first.startDate : topic.startDate;
     const endDateDisplay = userType === UserRole.STUDENT && !_.isNil(activeExtensions.first) ? activeExtensions.first.endDate : topic.endDate;
     const deadDateDisplay = userType === UserRole.STUDENT && !_.isNil(activeExtensions.first) ? activeExtensions.first.deadDate : topic.deadDate;
-
-    
-    // onClick={(e: any) => removeTopic(e, topic.id)}
-    // startIcon={<BsTrash />}
-    // <Link to={loc =>({pathname: `${loc.pathname}/topic/${topic.id}/settings`})}>
-    // startIcon={<BsPencilSquare/>}
 
     return (
         // This is the minimum size of the datepicker, hardcoded to prevent flickering between modes.

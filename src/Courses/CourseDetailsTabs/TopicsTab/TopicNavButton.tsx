@@ -6,7 +6,7 @@ import { TopicObject } from '../../CourseInterfaces';
 import { useHistory, useLocation } from 'react-router-dom';
 import { GrShift } from 'react-icons/gr';
 import { MdLaunch, MdDelete, MdEdit, MdDoneAll } from 'react-icons/md';
-import { green, amber, red, blue, deepOrange, indigo } from '@material-ui/core/colors';
+import { green, red, deepOrange, indigo } from '@material-ui/core/colors';
 interface TopicNavButtonProps {
     topic: TopicObject;
     onDelete: _.CurriedFunction2<any, number, void>;

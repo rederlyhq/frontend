@@ -245,7 +245,7 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                             isDate: (data: any) => moment(data).isValid() || 'Invalid date',
                             isEarliest: (startDate: Moment) => {
                                 const { endDate, deadDate } = getValues();
-                                return startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate) || topic.topicTypeId === 2 || 'Start date cannot be after End or Dead dates';
+                                return (startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate)) || topic.topicTypeId === 2 || 'Start date cannot be after End or Dead dates';
                             }
                         }
                     }}
