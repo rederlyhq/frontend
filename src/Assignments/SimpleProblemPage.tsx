@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ProblemObject, TopicObject } from '../Courses/CourseInterfaces';
 import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
@@ -23,6 +23,7 @@ import '../Components/LayoutStyles.css';
 import '../Components/LeftRightArrow.css';
 import { LeftRightArrowWrapper } from '../Components/LeftRightArrowWrapper';
 import { AnimatePresence, motion } from 'framer-motion';
+import useQuerystringHelper, { QueryStringMode } from '../Hooks/useQuerystringHelper';
 
 interface SimpleProblemPageProps {
 }
@@ -43,13 +44,16 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const params = useParams<SimpleProblemPageLocationParams>();
+    const {getCurrentQueryStrings, updateRoute} = useQuerystringHelper();
+    const urlProblemIdQS = getCurrentQueryStrings()?.['problemId'];
+    const urlProblemId = (typeof urlProblemIdQS === 'string') ? parseInt(urlProblemIdQS, 10) : null;
     const [problems, setProblems] = useState<Record<number, ProblemObject> | null>(null);
     const [topic, setTopic] = useState<TopicObject | null>(null);
     const [versionId, setVersionId] = useState<number | null>(null);
     const [attemptsRemaining, setAttemptsRemaining] = useState<number | 'unlimited'>(1); // the only time these two are not set
     const [versionsRemaining, setVersionsRemaining] = useState<number | 'unlimited'>(1); // is when an exam hasn't been attempted at all
     const [modalLoading, setModalLoading] = useState<boolean>(false);
-    const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
+    const [selectedProblemId, setSelectedProblemId] = useState<number | null>(urlProblemId);
     const [loading, setLoading] = useState(true);
     const [alert, setAlert] = useMUIAlertState();
     const [confirmationParameters, setConfirmationParameters] = useState<ConfirmationModalProps>(DEFAULT_CONFIRMATION_PARAMETERS);
@@ -63,14 +67,20 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         setSmaHasNoVersions(false);
     }, [setSmaHasNoVersions, selectedProblemId]);
 
-    const resetAlert = (): void => {
+    const resetAlert = useCallback((): void => {
         setAlert(noAlert.current);
-    };
+    }, [setAlert]);
 
     useEffect(() => {
         logger.info('SimpleProblemPage: selected problem has changed');
         resetAlert();
-    }, [selectedProblemId]);
+        updateRoute({
+            problemId: {
+                mode: QueryStringMode.OVERWRITE,
+                val: selectedProblemId?.toString() ?? null,
+            }
+        });
+    }, [selectedProblemId, resetAlert, updateRoute]);
 
     useEffect(() => {
         logger.info('SimpleProblemPage: topic or version or attempts remaining has changed');
