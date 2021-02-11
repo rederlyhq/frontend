@@ -9,7 +9,7 @@ import { TopicObject, ProblemObject } from '../CourseInterfaces';
 import { Alert } from 'react-bootstrap';
 import logger from '../../Utilities/Logger';
 
-interface OverridesFormProps {
+interface ExtensionsFormProps {
     userId: number;
     topic?: TopicObject;
     problem?: ProblemObject;
@@ -32,7 +32,7 @@ type QuestionExtensions = {
 type Inputs = TopicExtensions & QuestionExtensions;
 
 
-export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, problem}) => {
+export const ExtensionsForm: React.FC<ExtensionsFormProps> = ({topic, userId, problem}) => {
     const formDefaultValues = {
         startDate: moment(),
         endDate: moment(),
@@ -389,7 +389,9 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
                 <Grid container item md={6} spacing={2}>
                     <Grid item md={12}>
                         {isSubmitSuccessful && <Alert variant='success'>Successfully updated</Alert>}
-                        {_.values(errors).map(data => <Alert variant='danger' key={(data as any)?.type}>{(data as any)?.message || 'Please enter an appropriate value'}</Alert>)}
+                        {_(errors).values().map(data => <Alert variant='danger' key={(data as any)?.type}>
+                            {(data as any)?.message || 'Please enter an appropriate value'}
+                        </Alert>).value()}
                     </Grid>
 
                     {/* TODO: Use AnimatePresence for a better UX than the flicker or delay. */}
@@ -434,4 +436,4 @@ export const OverridesForm: React.FC<OverridesFormProps> = ({topic, userId, prob
     );
 };
 
-export default OverridesForm;
+export default ExtensionsForm;
