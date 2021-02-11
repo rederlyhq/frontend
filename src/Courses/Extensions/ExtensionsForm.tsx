@@ -1,13 +1,14 @@
-import { Grid, TextField, Button, CircularProgress } from '@material-ui/core';
+import { Grid, Button, CircularProgress } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { DateTimePicker } from '@material-ui/pickers';
+import { useForm, FormProvider } from 'react-hook-form';
 import moment, { Moment } from 'moment';
 import { extendQuestion, extendTopic, getQuestion, getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
-import { TopicObject, ProblemObject } from '../CourseInterfaces';
+import { TopicObject, ProblemObject, TopicTypeId } from '../CourseInterfaces';
 import { Alert } from 'react-bootstrap';
 import logger from '../../Utilities/Logger';
+import { TopicOverrideForm } from './TopicOverrideForm';
+import { QuestionOverrideForm } from './QuestionOverrideForm';
 
 interface ExtensionsFormProps {
     userId: number;
@@ -39,16 +40,15 @@ export const ExtensionsForm: React.FC<ExtensionsFormProps> = ({topic, userId, pr
         deadDate: moment(),
         maxAttempts: -1,
     };
-    const { register, handleSubmit, getValues, errors, control, watch, formState, reset, setError, clearErrors } = useForm<Inputs>(
+    const formMethods = useForm<Inputs>(
         {
             mode: 'onSubmit',
             shouldFocusError: true,
             defaultValues: formDefaultValues
         }
     );
+    const { handleSubmit, errors, formState, reset, setError, clearErrors } = formMethods;
     const [formLoading, setFormLoading] = useState<boolean>(false);
-    const drawerFontSize = '1.4em';
-    const { startDate, endDate, deadDate } = watch();
     const [defaultTopic, setDefaultTopic] = useState<TopicObject | undefined>(topic);
     const [defaultProblem, setDefaultProblem] = useState<ProblemObject | undefined>(problem);
     const { isSubmitSuccessful, isSubmitting  } = formState;
@@ -201,238 +201,58 @@ export const ExtensionsForm: React.FC<ExtensionsFormProps> = ({topic, userId, pr
         }
     };
 
-    const renderQuestionOverrideForm = (question: ProblemObject) => {
-        // TODO enum
-        if (topic?.topicTypeId === 2) {
-            return (<p>You cannot give extensions on a per problem basis for assessments.</p>);
-        }
-        return (
-            <Grid item container md={12} alignItems='flex-start' justify="center">
-                <Grid item md={4}>
-                    <TextField
-                        name="maxAttempts"
-                        inputRef={register({
-                            required: true,
-                            min: -1
-                        })}
-                        defaultValue={question.maxAttempts}
-                        label='Max Attempts'
-                        type='number'
-                    />
-                </Grid>
-            </Grid>
-        );
-    };
-
-    const renderNormalTopicOverrideForm = (topic: TopicObject) => (
-        <>
-            <Grid item md={12}>
-                <Controller
-                    as={<DateTimePicker value="" onChange={() => {}} />}
-                    name="startDate"
-                    control={control}
-                    defaultValue={moment(topic.startDate)}
-                    autoOk
-                    variant="inline"
-                    fullWidth={true}
-                    label='Start Date'
-                    InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
-                    inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                    maxDate={endDate || moment(topic.endDate)}
-                    rules={{
-                        required: true,
-                        validate: {
-                            isDate: (data: any) => moment(data).isValid() || 'Invalid date',
-                            isEarliest: (startDate: Moment) => {
-                                const { endDate, deadDate } = getValues();
-                                return (startDate.isSameOrBefore(endDate) && startDate.isSameOrBefore(deadDate)) || topic.topicTypeId === 2 || 'Start date cannot be after End or Dead dates';
-                            }
-                        }
-                    }}
-                    onAccept={() => clearErrors()}
-                />
-            </Grid>
-
-            <Grid item md={12}>
-                <Controller
-                    as={<DateTimePicker value="" onChange={() => {}} />}
-                    name="endDate"
-                    control={control}
-                    defaultValue={moment(topic.endDate)}
-                    autoOk
-                    variant="inline"
-                    fullWidth={true}
-                    label='End Date'
-                    InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
-                    inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                    minDate={moment.max([(startDate || moment(topic.startDate)), moment()])}
-                    maxDate={topic.topicTypeId === 1 ? (deadDate || moment(topic.deadDate)) : undefined}
-                    rules={{
-                        required: true,
-                        validate: {
-                            isDate: (data: any) => moment(data).isValid() || 'Invalid date',
-                        }
-                    }}
-                    onAccept={() => clearErrors()}
-                />
-            </Grid>
-
-            {
-                topic.topicTypeId === 1 &&
-                <Grid item md={12}>
-                    <Controller
-                        as={<DateTimePicker value="" onChange={() => {}} />}
-                        name="deadDate"
-                        control={control}
-                        defaultValue={moment(topic.deadDate)}
-                        autoOk
-                        variant="inline"
-                        fullWidth={true}
-                        label='Dead Date'
-                        InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
-                        inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                        minDate={moment.max([(endDate || moment(topic.endDate)), moment()])}
-                        onAccept={() => clearErrors()}
-                    />
-                </Grid>
-            }
-        </>
-    );
-
-    const renderAssessmentTopicOverrideForm = (topic: TopicObject) => {
-        const { topicAssessmentInfo } = topic;
-        // Defensive code, should have already been checked
-        if (_.isNil(topicAssessmentInfo)) {
-            return null;
-        }
-
-        const md = 12;
-
-        return (
-            <>
-                <Grid item md={md}>
-                    <TextField
-                        name="maxGradedAttemptsPerVersion"
-                        inputRef={register({
-                            required: true,
-                            min: -1
-                        })}
-                        defaultValue={topicAssessmentInfo.maxGradedAttemptsPerVersion}
-                        label='Submissions Per Version'
-                        type='number'
-                        fullWidth={true}
-                    />
-                </Grid>
-                <Grid item md={md}>
-                    <TextField
-                        name="maxVersions"
-                        inputRef={register({
-                            required: true,
-                            min: -1
-                        })}
-                        defaultValue={topicAssessmentInfo.maxVersions}
-                        label='Available Versions'
-                        type='number'
-                        fullWidth={true}
-                    />
-                </Grid>
-                <Grid item md={md}>
-                    <TextField
-                        name="versionDelay"
-                        inputRef={register({
-                            required: true,
-                            min: 0 // TODO what should we make the min
-                        })}
-                        defaultValue={topicAssessmentInfo.versionDelay}
-                        label='Delay between Versions'
-                        type='number'
-                        fullWidth={true}
-                    />
-                </Grid>
-                <Grid item md={md}>
-                    <TextField
-                        name="duration"
-                        inputRef={register({
-                            required: true,
-                            min: 2
-                        })}
-                        defaultValue={topicAssessmentInfo.duration}
-                        label='Time Limit (minutes)'
-                        type='number'
-                        fullWidth={true}
-                    />
-                </Grid>
-            </>
-        );
-    };
-
-    const renderTopicOverrideForm = (topic: TopicObject) => {
-        const md = _.isNil(topic.topicAssessmentInfo) ? 12 : 6;
-        return (
-            <>
-                <Grid md={md} container item spacing={1}>
-                    {renderNormalTopicOverrideForm(topic)}
-                </Grid>
-                {
-                    _.isNil(topic.topicAssessmentInfo) === false &&
-                    <Grid md={md} container item spacing={1}>
-                        {renderAssessmentTopicOverrideForm(topic)}
-                    </Grid>
-                }
-            </>
-        );
-    };
-
     return (
-        <form onChange={() => clearErrors()} onSubmit={handleSubmit(onSubmit)} style={{width: '100%', marginTop: '1.5rem'}}>
-            <Grid container justify='center'>
-                <Grid container item md={6} spacing={2}>
-                    <Grid item md={12}>
-                        {isSubmitSuccessful && <Alert variant='success'>Successfully updated</Alert>}
-                        {_(errors).values().map(data => <Alert variant='danger' key={(data as any)?.type}>
-                            {(data as any)?.message || 'Please enter an appropriate value'}
-                        </Alert>).value()}
-                    </Grid>
+        <FormProvider {...formMethods}>
+            <form onChange={() => clearErrors()} onSubmit={handleSubmit(onSubmit)} style={{width: '100%', marginTop: '1.5rem'}}>
+                <Grid container justify='center'>
+                    <Grid container item md={6} spacing={2}>
+                        <Grid item md={12}>
+                            {isSubmitSuccessful && <Alert variant='success'>Successfully updated</Alert>}
+                            {_(errors).values().map(data => <Alert variant='danger' key={(data as any)?.type}>
+                                {(data as any)?.message || 'Please enter an appropriate value'}
+                            </Alert>).value()}
+                        </Grid>
 
-                    {/* TODO: Use AnimatePresence for a better UX than the flicker or delay. */}
-                    {formLoading ? (
-                        <CircularProgress />
-                    ) : (
-                        <>
-                            {defaultProblem ?
-                                renderQuestionOverrideForm(defaultProblem) :
-                                (defaultTopic && renderTopicOverrideForm(defaultTopic))
-                            }
-                        </>
-                    )
-                    }
+                        {/* TODO: Use AnimatePresence for a better UX than the flicker or delay. */}
+                        {(formLoading || _.isNil(topic) || _.isNil(defaultTopic)) ? (
+                            <CircularProgress />
+                        ) : (
+                            <>
+                                {defaultProblem ?
+                                    <QuestionOverrideForm question={defaultProblem} topic={topic ?? defaultTopic} /> :
+                                    (defaultTopic && <TopicOverrideForm topic={defaultTopic} />)
+                                }
+                            </>
+                        )
+                        }
 
-                    <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
-                        <Grid item>
-                            {isSubmitting ?
-                                (<Button
-                                    variant="contained"
-                                    color='secondary'
-                                    style={{fontSize: '1.2em'}}
-                                    disabled={true}
-                                >
+                        <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
+                            <Grid item>
+                                {isSubmitting ?
+                                    (<Button
+                                        variant="contained"
+                                        color='secondary'
+                                        style={{fontSize: '1.2em'}}
+                                        disabled={true}
+                                    >
                                     Submitting...
-                                </Button>) :
-                                (<Button
-                                    variant="contained"
-                                    color='primary'
-                                    type="submit"
-                                    style={{fontSize: '1.2em'}}
-                                    disabled={formLoading || (defaultProblem && defaultTopic?.topicTypeId === 2)}
-                                >
+                                    </Button>) :
+                                    (<Button
+                                        variant="contained"
+                                        color='primary'
+                                        type="submit"
+                                        style={{fontSize: '1.2em'}}
+                                        disabled={formLoading || (defaultProblem && defaultTopic?.topicTypeId === TopicTypeId.EXAM)}
+                                    >
                                     Confirm Extension
-                                </Button>)
-                            }
+                                    </Button>)
+                                }
+                            </Grid>
                         </Grid>
                     </Grid>
                 </Grid>
-            </Grid>
-        </form>
+            </form>
+        </FormProvider>
     );
 };
 
