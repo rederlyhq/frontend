@@ -94,7 +94,7 @@ export default class AxiosBatchTransport extends Transport {
             message: log.join(' '),
             time: new Date(),
             level: level,
-            meta: info.meta
+            meta: _.cloneDeep(info.meta)
         };
         this.logsToSend.push(logMessage);
         // Send it and forget about it

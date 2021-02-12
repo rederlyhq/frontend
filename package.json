@@ -78,8 +78,9 @@
     "lint": "eslint src/ --ext ts,tsx",
     "postbuild": "node postbuild.js",
     "modernizr": "modernizr -c modernizr-config.json -d public/modernizr.min.js",
-    "package": "node ./package.js",
-    "build:package": "npm run build && npm run package"
+    "package": "node ./utility-scripts/package.js",
+    "build:package": "npm run build && npm run package",
+    "clean": "node ./utility-scripts/clean.js"
   },
   "eslintConfig": {
     "extends": "react-app"

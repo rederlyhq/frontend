@@ -1,52 +1,70 @@
-import React, { useState } from 'react';
-import { Button, Modal, FormControl, FormLabel, FormGroup, Spinner, Form, } from 'react-bootstrap';
+import React, { useRef, useState } from 'react';
+import { Button, Modal, FormControl, FormLabel, FormGroup, Spinner, Form } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import logger from '../Utilities/Logger';
+import _ from 'lodash';
 import { version } from '../../package.json';
+import { createSupportTicket } from '../APIInterfaces/BackendAPI/Requests/SupportRequests';
 
+enum ProvideFeedbackState {
+    READY='READY',
+    SUBMITTING='SUBMITTING',
+    SUBMITTED='SUBMITTED'
+}
 export const ProvideFeedback: React.FC<any> = () => {
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
     const [summary, setSummary] = useState('');
     const [description, setDescription] = useState('');
     const [message, setMessage] = useState('');
-    const [submitting, setSubmitting] = useState(false);
-    const [enabled, setEnabled] = useState(true);
+    const [state, setState] = useState<ProvideFeedbackState>(ProvideFeedbackState.READY);
     const [validated, setValidated] = useState(false);
     const history = useHistory();
+    const resetTimeout = useRef<NodeJS.Timeout | null>(null);
+
+    const clearResetTimeout = () => {
+        if(!_.isNil(resetTimeout.current)) {
+            clearTimeout(resetTimeout.current);
+            resetTimeout.current = null;
+        }
+    };
 
     const submitFeedback = async () => {
         try {
             setMessage('');
-            setSubmitting(true);
-            setEnabled(false);
+            setState(ProvideFeedbackState.SUBMITTING);
             logger.info(history);
-            await AxiosRequest.post('/support', {
+            await createSupportTicket({
                 description: description,
                 summary: summary,
                 url: `${window.location.origin}${history.location.pathname}`,
                 version: version,
+                userAgent: window.navigator.userAgent
             });
             setMessage('Thank you, your feedback has been submitted.');
-            setSubmitting(false);
-            setTimeout(() => {
+            setState(ProvideFeedbackState.SUBMITTED);
+            clearResetTimeout();
+            resetTimeout.current = setTimeout(() => {
                 reset();
             }, 3000);
         } catch(e) {
-            setSubmitting(false);
-            setEnabled(true);
-            setMessage(e.response.data.message);
+            setState(ProvideFeedbackState.READY);
+            setMessage(e.message);
         }
     };
 
+    /**
+     * Since the component is not unmounted and visibility is only changed we use this reset function
+     * If it wasn't part of a modal it would be possible to use a useEffect to cleanup
+     */
     const reset = () => {
-        setEnabled(true);
-        setSubmitting(false);
+        setState(ProvideFeedbackState.READY);
         setMessage('');
         setDescription('');
         setSummary('');
         setShowFeedbackModal(false);
         setValidated(false);
+        clearResetTimeout();
     };
 
     const submit = (event: any) => {
@@ -75,57 +93,57 @@ export const ProvideFeedback: React.FC<any> = () => {
                 dialogClassName="modal-90w"
             >
                 <Form noValidate validated={validated} onSubmit={submit}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>
+                    <fieldset disabled={state !== ProvideFeedbackState.READY}>
+                        <Modal.Header closeButton>
+                            <Modal.Title>
                             Provide Feedback to Rederly Support
-                        </Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        {submitting && <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>}
-                        {message && <p>{message}</p>}
-                        <FormGroup controlId='provide-feedback-summary'>
-                            <FormLabel>
+                            </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            {state === ProvideFeedbackState.SUBMITTING && <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>}
+                            {message && <p>{message}</p>}
+                            <FormGroup controlId='provide-feedback-summary'>
+                                <FormLabel>
                                 Summary:
-                            </FormLabel>
-                            <FormControl
-                                required
-                                defaultValue=''
-                                size='lg'
-                                readOnly={!enabled}
-                                onChange={(
-                                    ev: React.ChangeEvent<HTMLInputElement>,
-                                ): void => setSummary(ev.target.value)}
-                            />
-                            <Form.Control.Feedback type="invalid">{<span>Feedback requires a summary.</span>}</Form.Control.Feedback>
-                        </FormGroup>
-                        <FormGroup controlId='provide-feedback-description'>
-                            <FormLabel>
+                                </FormLabel>
+                                <FormControl
+                                    required
+                                    defaultValue=''
+                                    size='lg'
+                                    onChange={(
+                                        ev: React.ChangeEvent<HTMLInputElement>,
+                                    ): void => setSummary(ev.target.value)}
+                                />
+                                <Form.Control.Feedback type="invalid">{<span>Feedback requires a summary.</span>}</Form.Control.Feedback>
+                            </FormGroup>
+                            <FormGroup controlId='provide-feedback-description'>
+                                <FormLabel>
                                 Description:
-                            </FormLabel>
-                            <FormControl
-                                required
-                                defaultValue=''
-                                size='lg'
-                                as="textarea"
-                                rows={3}
-                                readOnly={!enabled}
-                                onChange={(
-                                    ev: React.ChangeEvent<HTMLInputElement>,
-                                ): void => setDescription(ev.target.value)}
-                            />
-                            <Form.Control.Feedback type="invalid">{<span>Feedback requires a description.</span>}</Form.Control.Feedback>
-                        </FormGroup>
-                        <FormGroup controlId='provide-feedback-test'>
-                        </FormGroup>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={cancel}>
+                                </FormLabel>
+                                <FormControl
+                                    required
+                                    defaultValue=''
+                                    size='lg'
+                                    as="textarea"
+                                    rows={3}
+                                    onChange={(
+                                        ev: React.ChangeEvent<HTMLInputElement>,
+                                    ): void => setDescription(ev.target.value)}
+                                />
+                                <Form.Control.Feedback type="invalid">{<span>Feedback requires a description.</span>}</Form.Control.Feedback>
+                            </FormGroup>
+                            <FormGroup controlId='provide-feedback-test'>
+                            </FormGroup>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={cancel}>
                             Cancel
-                        </Button>
-                        <Button variant="primary" type="submit">
+                            </Button>
+                            <Button variant="primary" type="submit">
                             Submit
-                        </Button>
-                    </Modal.Footer>
+                            </Button>
+                        </Modal.Footer>
+                    </fieldset>
                 </Form>
             </Modal>
         </>
