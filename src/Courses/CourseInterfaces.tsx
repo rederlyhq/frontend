@@ -53,7 +53,7 @@ export class CourseObject {
     }
 
     findUnit = (unitId: number): UnitObject | undefined => _.find(this.units, ['id', unitId]);
-    findTopic = (topicId: number): TopicObject | undefined => _.reduce(this.units, (accum: TopicObject | undefined, unit) => _.find(unit.topics, ['id', topicId]), undefined);
+    findTopic = (topicId: number): TopicObject | undefined => _.reduce(this.units, (accum: TopicObject | undefined, unit) => accum || _.find(unit.topics, ['id', topicId]), undefined);
 }
 
 export class UserObject {

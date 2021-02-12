@@ -36,6 +36,7 @@ const getDefaultState = (course: CourseObject, users: UserObject[], queryStrings
             topic = unit.findTopic(topicId);
         } else {
             topic = course.findTopic(topicId);
+            unit = _.find(course.units, unit => undefined !== _.find(unit.topics, ['id', topic?.id]));
         }
     }
     
