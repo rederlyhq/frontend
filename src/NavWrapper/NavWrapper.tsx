@@ -16,7 +16,7 @@ import { ProvideFeedback } from './ProvideFeedback';
 import AccountWrapper from '../Account/AccountWrapper';
 import { CookieEnum } from '../Enums/CookieEnum';
 import URLBreadcrumb from './URLBreadcrumb';
-import SettingsPage from '../Courses/Settings/SettingsPage';
+import ExtensionsPage from '../Courses/Extensions/ExtensionsPage';
 import { version } from '../../package.json';
 import CourseProvider from '../Courses/CourseProvider';
 import TopicSettingsPage from '../Courses/TopicSettings/TopicSettingsPage';
@@ -206,7 +206,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                                 child: <TopicGradingPage />
                                             }, {
                                                 path: `${path}/courses/:courseId/settings`,
-                                                child: <SettingsPage />
+                                                child: <ExtensionsPage />
                                             }].map(obj =>
                                                 <Route exact path={obj.path} key={obj.path}>
                                                     {obj.child}

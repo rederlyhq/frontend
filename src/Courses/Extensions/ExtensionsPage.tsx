@@ -3,16 +3,16 @@ import React, { useState } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import MaterialTriSelect from '../../Components/MaterialTriSelect';
 import { useCourseContext } from '../CourseProvider';
-import { OverridesForm } from './OverridesForm';
+import { ExtensionsForm } from './ExtensionsForm';
 import { UnitObject, UserObject, TopicObject, ProblemObject } from '../CourseInterfaces';
 
-import './SettingsPage.css';
+import './ExtensionsPage.css';
 
-interface SettingsPageProps {
+interface ExtensionsPageProps {
 
 }
 
-export const SettingsPage: React.FC<SettingsPageProps> = () => {
+export const ExtensionsPage: React.FC<ExtensionsPageProps> = () => {
     const {course, users} = useCourseContext();
     const [selected, setSelected] = useState<{
         unit?: UnitObject, 
@@ -40,7 +40,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = () => {
                 <Grid container>
                     <Grid container item>
                         { selected.user && (
-                            <OverridesForm topic={selected?.topic} userId={selected.user.id} problem={selected?.problem} />
+                            <ExtensionsForm topic={selected?.topic} userId={selected.user.id} problem={selected?.problem} />
                         )}
                     </Grid>
                 </Grid>
@@ -49,4 +49,4 @@ export const SettingsPage: React.FC<SettingsPageProps> = () => {
     );
 };
 
-export default SettingsPage;
+export default ExtensionsPage;
