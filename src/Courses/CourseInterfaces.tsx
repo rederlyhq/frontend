@@ -51,6 +51,9 @@ export class CourseObject {
         // TODO: Fix naming for route, should be 'templateId'.
         return postObject;
     }
+
+    findUnit = (unitId: number): UnitObject | undefined => _.find(this.units, ['id', unitId]);
+    findTopic = (topicId: number): TopicObject | undefined => _.reduce(this.units, (accum: TopicObject | undefined, unit) => _.find(unit.topics, ['id', topicId]), undefined);
 }
 
 export class UserObject {
@@ -208,8 +211,11 @@ export class TopicObject {
             return accum;
         }, []);
 
-        return activeExtensions;
+        return _.sortBy(activeExtensions, ['endDate']);
     };
+
+    
+    findProblem = (problemId: number): ProblemObject | undefined => _.find(this.questions, ['id', problemId]);
 }
 
 const newUnitUniqueGen = uniqueGen();
@@ -230,6 +236,8 @@ export class UnitObject {
             this.topics = init?.topics?.map(topic => new TopicObject(topic)) || [];
         }
     }
+
+    findTopic = (topicId: number) => _.find(this.topics, ['id', topicId]);
 }
 
 export class NewCourseUnitObj extends UnitObject {
