@@ -111,32 +111,38 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
             >
                 <h2>Course Details</h2>
                 {userType !== UserRole.STUDENT &&
-                <div
-                    style={{
-                        marginLeft: 'auto'
-                    }}
-                >
-                    {hasErrors > 0 && 
-                        <Col>
-                            <Link to={`/common/courses/${course.id}?${qs.stringify({tab: 'Topics', unitId: unitsWithErrors})}`}>
-                                <MUIAlert severity='warning'>
-                                    There are <b>{hasErrors}</b> issues across <b>{unitsWithErrors.length}</b> units.
-                                </MUIAlert>
-                            </Link>
-                        </Col>
-                    }
-                    <EditToggleButton
-                        selectedState={inEditMode}
-                        onClick={() => {setInEditModeWrapper(!inEditMode); }}
+                    <div
                         style={{
-                            marginLeft: 'auto',
-                            padding: '2px'
+                            marginLeft: 'auto'
                         }}
-                    />
-                </div>
+                    >
+                        <EditToggleButton
+                            selectedState={inEditMode}
+                            onClick={() => {setInEditModeWrapper(!inEditMode); }}
+                            style={{
+                                marginLeft: 'auto',
+                                padding: '2px'
+                            }}
+                        />
+                    </div>
                 }
             </div>
 
+            {userType !== UserRole.STUDENT && hasErrors > 0 && 
+                <Row
+                    style={{
+                        paddingBottom: '20px',
+                    }}
+                >
+                    <Col>
+                        <Link to={`/common/courses/${course.id}?${qs.stringify({tab: 'Topics', unitId: unitsWithErrors})}`}>
+                            <MUIAlert severity='warning'>
+                                There are <b>{hasErrors}</b> issues across <b>{unitsWithErrors.length}</b> units.
+                            </MUIAlert>
+                        </Link>
+                    </Col>
+                </Row>
+            }
             {updateError && <Alert variant="danger">{updateError}</Alert>}
             <EditableCourseDetailsForm disabled={!inEditMode} course={course} onBlur={onCourseDetailsBlur} />
             <h5>Open Topics</h5>
