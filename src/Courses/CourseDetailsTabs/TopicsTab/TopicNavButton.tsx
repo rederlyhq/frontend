@@ -60,7 +60,7 @@ export const TopicNavButton: React.FC<TopicNavButtonProps> = ({topic, onDelete})
                                             </Button>
                                         </MenuItem>
                                         <ThemeProvider theme={altTheme}>
-                                            <MenuItem onClick={() => history.push(`${location.pathname}/settings`)}>
+                                            <MenuItem onClick={() => history.push(`${location.pathname}/settings?topicId=${topic.id}`)}>
                                                 <Button variant="text" color="secondary" startIcon={<GrShift />}>
                                                     Extensions
                                                 </Button>

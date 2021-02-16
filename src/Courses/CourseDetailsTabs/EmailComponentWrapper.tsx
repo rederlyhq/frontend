@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { UserObject } from '../CourseInterfaces';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useHistory } from 'react-router-dom';
 import EmailModal from './EmailModal';
 import { AddEnrollmentModal } from './AddEnrollmentModal';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
@@ -33,6 +33,8 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
     const [showConfirmDelete, setShowConfirmDelete] = useState<{ state: boolean, user: UserObject | null }>({ state: false, user: null });
     const userType: UserRole = getUserRole();
     const course = useContext(courseContext);
+    const history = useHistory();
+    const location = useLocation();
 
     useEffect(() => {
         setUsers(propUsers);
@@ -140,9 +142,9 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                             position: 'row'
                         },
                         {
-                            icon: function IconWrapper() { return <Link to={(loc: any) => ({ ...loc, pathname: `${loc.pathname}/settings` })}><GrShift style={{ color: 'black' }} /></Link>; },
+                            icon: function IconWrapper() { return <Link to='#'><GrShift style={{ color: 'black' }} /></Link>; },
                             tooltip: 'Go to Extensions',
-                            onClick: () => null,
+                            onClick: (_event: any, user: any) => history.push(`${location.pathname}/settings?userId=${user.id}`),
                             position: 'row'
                         },
                         {

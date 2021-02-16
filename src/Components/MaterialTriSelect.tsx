@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
 import { CourseObject, UnitObject, UserObject, ProblemObject, SettingsComponentType, TopicObject } from '../Courses/CourseInterfaces';
 import MultiSelectCardList from './MultiSelectCardList';
+import useQuerystringHelper, { QueryStringMode } from '../Hooks/useQuerystringHelper';
 
 interface MaterialTriSelectProps {
     course: CourseObject;
@@ -22,16 +23,28 @@ interface MaterialTriSelectProps {
 }
 
 export const MaterialTriSelect: React.FC<MaterialTriSelectProps> = ({course, users, selected, setSelected}) => {
+    const {updateRoute} = useQuerystringHelper();
     const onItemClick = (type: SettingsComponentType) => {
+        let routeKey = '';
+
         if (type instanceof UnitObject) {
             setSelected(selected => ({unit: type, user: selected.user}));
+            routeKey = 'unitId';
         } else if (type instanceof TopicObject) {
             setSelected(selected => ({unit: selected.unit, topic: type, user: selected.user}));
+            routeKey = 'topicId';
         } else if (type instanceof ProblemObject) {
             setSelected(selected => ({unit: selected.unit, topic: selected.topic, problem: type, user: selected.user}));
+            routeKey = 'problemId';
         } else if (type instanceof UserObject) {
             setSelected(selected => ({unit: selected.unit, topic: selected.topic, problem: selected.problem, user: type}));
+            routeKey = 'userId';
         }
+        
+        updateRoute({[routeKey]: {
+            mode: QueryStringMode.OVERWRITE,
+            val: type.id.toString(),
+        }}, true);
     };
 
     return (
