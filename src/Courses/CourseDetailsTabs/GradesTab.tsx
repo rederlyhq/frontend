@@ -31,6 +31,13 @@ interface IDropdownCascade {
     problem?: ProblemObject
 }
 
+enum CSVMainColumns {
+    NAME='name',
+    TOTAL_PROBLEM_WEIGHT='totalProblemWeight',
+    REQUIRED_PROBLEM_WEIGHT='requiredProblemWeight'
+}
+
+
 /**
  * This tab conditionally shows grades for either:
  *  1. A student, showing detailed grades for each topic, or:
@@ -140,8 +147,13 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
                             const result = await getTopicGradesForCourse({
                                 courseId: course.id
                             });
-
-                            const csvString = parse(result.data.data.topics);
+                            const topics = result.data.data.topics.map(topic => _.mapKeys(topic, (value, key) => {
+                                if (Object.values<string>(CSVMainColumns).includes(key)) {
+                                    return _.startCase(key);
+                                }
+                                return key;
+                            }));
+                            const csvString = parse(topics);
                             const csvBlob = new Blob([csvString], {type: 'text/plain;charset=utf-8'});
                             saveAs(csvBlob, `${course.name}.topic-grades.csv`);
                         } catch(e) {
@@ -151,7 +163,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
                     }}
                 >
                     <AssignmentReturnedOutlinedIcon />
-                    Grades By Topic
+                    Scores By Topic
                 </Button>
             </div>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string | null) => handleChangedView(selectedKey)}>
