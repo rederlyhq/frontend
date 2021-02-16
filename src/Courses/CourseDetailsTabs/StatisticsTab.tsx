@@ -563,6 +563,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                             sorting: true,
                             emptyRowsWhenPaging: false,
                             pageSize: rowData.length ?? 0,
+                            exportFileName: course.name
                         }}
                         detailPanel={hasDetailPanel ? [{
                             icon:  function IconWrapper() { return <ChevronRight />; },
