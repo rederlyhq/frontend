@@ -32,10 +32,13 @@ export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, 
             <Col>
                 <Row>
                     <Link
-                        to={loc =>(userType !== UserRole.STUDENT ?
-                            {pathname: `${loc.pathname}/topic/${topic.id}/grading`} :
+                        to={loc =>userType !== UserRole.STUDENT ?
+                            (inEditMode ? 
+                                {pathname: `${loc.pathname}/topic/${topic.id}/settings`} :
+                                {pathname: `${loc.pathname}/topic/${topic.id}/grading`}
+                            ) :
                             {pathname: `${loc.pathname}/topic/${topic.id}`, state: {problems: topic.questions}}
-                        )}
+                        }
                     >
                         <Col>
                             <h5>{topic.name}</h5>
