@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Nav } from 'react-bootstrap';
+import { Button, Nav, Row } from 'react-bootstrap';
 import GradeTable from './GradeTable';
 import _ from 'lodash';
 import SubObjectDropdown from '../../Components/SubObjectDropdown';
@@ -7,8 +7,11 @@ import { UnitObject, TopicObject, ProblemObject, CourseObject } from '../CourseI
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import logger from '../../Utilities/Logger';
 import localPreferences from '../../Utilities/LocalPreferences';
-import { getGrades } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { getGrades, getTopicGradesForCourse } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { GetGradesOptions } from '../../APIInterfaces/BackendAPI/RequestTypes/CourseRequestTypes';
+import AssignmentReturnedOutlinedIcon from '@material-ui/icons/AssignmentReturnedOutlined';
+import { saveAs } from 'file-saver';
+import { parse } from 'json2csv';
 
 interface GradesTabProps {
     course: CourseObject;
@@ -113,6 +116,18 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
 
     return (
         <>
+            <div
+                style={{
+                    width: '100%',
+                    display: 'flex',
+                    paddingTop:'20px',
+                    paddingBottom:'20px',
+                }}
+            >
+                <h2>
+                    Grades
+                </h2>
+            </div>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string | null) => handleChangedView(selectedKey)}>
                 <Nav.Item>
                     <Nav.Link eventKey={GradesView.OVERVIEW}>

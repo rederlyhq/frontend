@@ -449,6 +449,28 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
     return (
         <>
+            <div
+                style={{
+                    width: '100%',
+                    display: 'flex',
+                    paddingTop:'20px',
+                    paddingBottom:'20px',
+                }}
+            >
+                <h2>
+                    {(() => {
+                        if (getUserRole() === UserRole.STUDENT) {
+                            return 'Your grades';
+                        } else {
+                            if (_.isNil(userId)) {
+                                return 'Statistics'; 
+                            } else {
+                                return 'Student\'s Grades';
+                            }
+                        }
+                    })()}
+                </h2>
+            </div>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string | null) => {
                 logger.debug('Stats tab: [nav1] setting IdFilter and view');
                 if (_.isNil(selectedKey)) {
