@@ -49,11 +49,14 @@ export const EnrollmentsTab: React.FC<EnrollmentsTabProps> = () => {
 
     return (
         <>
-            <Row>
-                <Col md={10}>
-                    <h2>Current Enrollments</h2>
-                </Col>
-            </Row>
+            <div
+                style={{
+                    padding:'20px',
+                    paddingLeft:'0px',
+                }}
+            >
+                <h2>Current Enrollments</h2>
+            </div>
             {userType !== UserRole.STUDENT && (
                 <>
                     <FormLabel>Enrollment Link:</FormLabel>

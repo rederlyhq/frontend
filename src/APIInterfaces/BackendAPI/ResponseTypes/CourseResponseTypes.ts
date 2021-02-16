@@ -51,6 +51,20 @@ interface PutCourseTopicUpdates {
 
 export type PutCourseTopicUpdatesResponse = BackendAPIResponse<PutCourseTopicUpdates>;
 
+export type TopicGradeForCourse = {
+    name: string;
+    'total problem weight': string;
+    'required problem weight': string;
+} & {
+    [key: string]: string
+};
+
+interface TopicGradesForCourseResponse {
+    topics: Array<TopicGradeForCourse>;
+}
+export type GetTopicGradesForCourseResponse = BackendAPIResponse<TopicGradesForCourseResponse>;
+
+
 /* *************** *************** */
 /* ********** Questions ********** */
 /* *************** *************** */

@@ -425,11 +425,21 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 bodyContent={`Are you sure you want to remove ${confirmationParamters.identifierText}?`}
             />
             <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message}</Alert>
-            <Row style={{padding: '0.5em'}}>
-                <Col xs={1} md={1}><h4>Units</h4></Col>
-                <Col>
+            <div
+                style={{
+                    paddingTop: '20px',
+                    paddingBottom: '20px',
+                    display: 'flex',
+                }}
+            >
+                <h2>Units</h2>
+                <div
+                    style={{
+                        marginLeft: 'auto'
+                    }}
+                >
                     {userType !== UserRole.STUDENT && (
-                        <Row style={{justifyContent: 'flex-end', paddingRight: '1em'}}>
+                        <div style={{justifyContent: 'flex-end'}}>
                             {/* <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} > */}
                             {
                                 inEditMode &&
@@ -519,10 +529,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                     padding: '0em 0em 0em 1em'
                                 }}
                             />
-                        </Row>
+                        </div>
                     )}
-                </Col>
-            </Row>
+                </div>
+            </div>
             <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId='unitsList' type='UNIT'>
                     {

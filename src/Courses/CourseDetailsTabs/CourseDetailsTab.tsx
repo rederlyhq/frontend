@@ -102,8 +102,20 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
 
     return (
         <>
-            {userType !== UserRole.STUDENT && (
-                <Row style={{padding: '20px'}}>
+            <div
+                style={{
+                    paddingTop: '20px',
+                    paddingBottom: '20px',
+                    display: 'flex',
+                }}
+            >
+                <h2>Course Details</h2>
+                {userType !== UserRole.STUDENT &&
+                <div
+                    style={{
+                        marginLeft: 'auto'
+                    }}
+                >
                     {hasErrors > 0 && 
                         <Col>
                             <Link to={`/common/courses/${course.id}?${qs.stringify({tab: 'Topics', unitId: unitsWithErrors})}`}>
@@ -121,8 +133,9 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
                             padding: '2px'
                         }}
                     />
-                </Row>
-            )}
+                </div>
+                }
+            </div>
 
             {updateError && <Alert variant="danger">{updateError}</Alert>}
             <EditableCourseDetailsForm disabled={!inEditMode} course={course} onBlur={onCourseDetailsBlur} />
