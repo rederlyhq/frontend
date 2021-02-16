@@ -127,6 +127,32 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
                 <h2>
                     Grades
                 </h2>
+                <Button
+                    style={{
+                        marginLeft: 'auto',
+                        marginTop: 'auto',
+                    }}
+                    onClick={async () => {
+                        try {
+                            if(!Blob) {
+                                throw new Error('Saving files is not supported by your browser');
+                            }
+                            const result = await getTopicGradesForCourse({
+                                courseId: course.id
+                            });
+
+                            const csvString = parse(result.data.data.topics);
+                            const csvBlob = new Blob([csvString], {type: 'text/plain;charset=utf-8'});
+                            saveAs(csvBlob, `${course.name}.topic-grades.csv`);
+                        } catch(e) {
+                            logger.error(e);
+                        }
+            
+                    }}
+                >
+                    <AssignmentReturnedOutlinedIcon />
+                    Grades By Topic
+                </Button>
             </div>
             <Nav fill variant='pills' activeKey={view} onSelect={(selectedKey: string | null) => handleChangedView(selectedKey)}>
                 <Nav.Item>
