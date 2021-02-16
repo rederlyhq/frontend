@@ -211,7 +211,7 @@ export class TopicObject {
             return accum;
         }, []);
 
-        return _.sortBy(activeExtensions, ['endDate']);
+        return _.sortBy(activeExtensions, ['endDate', 'startDate']);
     };
 
     
