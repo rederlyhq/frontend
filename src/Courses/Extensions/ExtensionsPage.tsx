@@ -5,7 +5,6 @@ import MaterialTriSelect from '../../Components/MaterialTriSelect';
 import { useCourseContext } from '../CourseProvider';
 import { ExtensionsForm } from './ExtensionsForm';
 import { UnitObject, UserObject, TopicObject, ProblemObject, CourseObject } from '../CourseInterfaces';
-import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystringHelper';
 import * as qs from 'querystring';
 
 import './ExtensionsPage.css';
