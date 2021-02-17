@@ -109,7 +109,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                             const { cloudFilename, userLocalFilename, updatedAt } = attachment;
                             if (!cloudFilename) {
                                 logger.error('No cloud filename was found for an attachment. TSNH.');
-                                return;
+                                return null;
                             }
                             const cloudUrl = url.resolve(baseUrl.toString(), cloudFilename);
                             const timestamp = `${userLocalFilename} was uploaded on ${updatedAt.toMoment().formattedMonthDateTime()}`;
