@@ -30,6 +30,7 @@ import { PrintLoadingProvider } from '../Contexts/PrintLoadingContext';
 import localPreferences from '../Utilities/LocalPreferences';
 import { impersonate, logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { BreadcrumbLookupProvider } from '../Contexts/BreadcrumbContext';
+import PrintBlankTopic from '../Courses/TopicGrades/PrintBlankTopic';
 const { session } = localPreferences;
 
 
@@ -201,6 +202,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                             }, {
                                                 path: `${path}/courses/:courseId/topic/:topicId/grading/print/:userId`,
                                                 child: <PrintLoadingProvider><PrintEverything /></PrintLoadingProvider>
+                                            }, {
+                                                path: `${path}/courses/:courseId/topic/:topicId/grading/print/`,
+                                                child: <PrintLoadingProvider><PrintBlankTopic /></PrintLoadingProvider>
                                             }, {
                                                 path: `${path}/courses/:courseId/topic/:topicId/grading`,
                                                 child: <TopicGradingPage />
