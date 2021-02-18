@@ -214,6 +214,12 @@ export class TopicObject {
         return _.sortBy(activeExtensions, ['endDate', 'startDate']);
     };
 
+    hasEverBeenActive = (): boolean => {
+        if (moment().isAfter(moment(this.startDate))) return true;
+        return _.some(this.studentTopicOverride, extension => moment().isAfter(moment(extension.startDate)));
+    }
+
+    isExam = (): boolean => this.topicTypeId === TopicTypeId.EXAM;
     
     findProblem = (problemId: number): ProblemObject | undefined => _.find(this.questions, ['id', problemId]);
 }
