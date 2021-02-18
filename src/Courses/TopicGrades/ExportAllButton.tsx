@@ -5,6 +5,8 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import _ from 'lodash';
 import { useRouteMatch } from 'react-router-dom';
 import { ExportAllButtonSuboptions } from './ExportAllButtonSuboptions';
+import logger from '../../Utilities/Logger';
+import * as qs from 'querystring';
 
 interface ExportAllButtonProps {
     topicId: number;
@@ -25,12 +27,8 @@ export enum ButtonOptions {
     EXPORT_ALL_NO_SOLUTIONS = 'Build Student Grade PDFs Without Solutions (.zip)',
     PRINT_SINGLE = 'Download Selected Student\'s Grades (.pdf)',
     PRINT_SINGLE_NO_SOLUTIONS = 'Download Selected Student\'s Grades Without Solutions (.pdf)',
-    PRINT_BLANK = 'Download a Blank Topic Answer Key (.pdf)',
-    PRINT_BLANK_NO_SOLUTIONS = 'Download a Blank Topic Without Solutions (.pdf)',
-}
-
-function enumKeys<O extends object, K extends keyof O = keyof O>(obj: O): K[] {
-    return Object.keys(obj).filter(k => Number.isNaN(+k)) as K[];
+    PRINT_BLANK = 'Download Worksheet Answer Key (.pdf)',
+    PRINT_BLANK_NO_SOLUTIONS = 'Download as Blank Worksheet (.pdf)',
 }
 
 export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId}) => {
@@ -86,6 +84,33 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
         }
     };
 
+    const allOnClickActions = () => {
+        switch(buttonState) {
+        case ButtonOptions.DOWNLOAD:
+            if (!url) {
+                logger.warn('Download option should not appear if no url is present.');
+                return;
+            }
+            window.open(`/${url}`, '_blank');
+            break;
+        case ButtonOptions.PRINT_SINGLE:
+        case ButtonOptions.PRINT_SINGLE_NO_SOLUTIONS:
+            if (!userId) {
+                logger.warn('Print Single option should not appear if no userId is selected.');
+                return;
+            }
+            
+            window.open(`${path}/print/${userId}?${qs.stringify({showSolutions: buttonState === ButtonOptions.PRINT_SINGLE})}`, '_blank');
+            break;
+        case ButtonOptions.PRINT_BLANK:
+        case ButtonOptions.PRINT_BLANK_NO_SOLUTIONS:
+            window.open(`${path}/print/?${qs.stringify({showSolutions: buttonState === ButtonOptions.PRINT_BLANK})}`, '_blank');
+            break;
+        default:
+            checkAndStatusUpdateExport(true);
+        }
+    };
+
     return <>
         <ButtonGroup 
             variant="contained" 
@@ -94,21 +119,7 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
             aria-label="download all grades as pdfs" 
             disabled={loading === LoadingState.UNINITIALIZED || loading === LoadingState.LOADING}
         >
-            <Button onClick={
-                () => {
-                    if (userId && buttonState === ButtonOptions.PRINT_SINGLE) {
-                        window.open(`${path}/print/${userId}`, '_blank');
-                        return;
-                    }
-
-                    if (url && buttonState === ButtonOptions.DOWNLOAD) {
-                        window.open(`/${url}`, '_blank');
-                        return;
-                    }
-
-                    checkAndStatusUpdateExport(true);
-                }
-            }>{buttonState}</Button>
+            <Button onClick={allOnClickActions}>{buttonState}</Button>
             <Button
                 color="primary"
                 size="small"
@@ -169,7 +180,7 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                                 }
                                 <ListSubheader>Print Blank Worksheets</ListSubheader>
                                 {
-                                    [ButtonOptions.PRINT_BLANK, ButtonOptions.PRINT_BLANK_NO_SOLUTIONS].map((value) => (
+                                    [ButtonOptions.PRINT_BLANK_NO_SOLUTIONS, ButtonOptions.PRINT_BLANK].map((value) => (
                                         <ExportAllButtonSuboptions 
                                             key={value}
                                             value={value}

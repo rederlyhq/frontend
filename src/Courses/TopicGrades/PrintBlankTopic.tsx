@@ -4,12 +4,14 @@ import { useParams, Link } from 'react-router-dom';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import { ProblemObject, TopicObject } from '../CourseInterfaces';
 import logger from '../../Utilities/Logger';
-import './PrintEverything.css';
 import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
 import OnLoadProblemIframeWrapper from './OnLoadProblemIframeWrapper';
 import { Alert } from '@material-ui/lab';
 import { useCourseContext } from '../CourseProvider';
+import useQuerystringHelper from '../../Hooks/useQuerystringHelper';
 
+import './Bootstrap2.3.2Overrides.css';
+import './PrintEverything.css';
 interface PrintBlankTopicProps {
 }
 
@@ -18,6 +20,7 @@ export const PrintBlankTopic: React.FC<PrintBlankTopicProps> = () => {
     const {dispatch} = usePrintLoadingContext();
     const params = useParams<{topicId?: string}>();
     const {course} = useCourseContext();
+    const {getCurrentQueryStrings} = useQuerystringHelper();
 
     let topicId: number | null = null;
     if (params.topicId)
@@ -69,20 +72,20 @@ export const PrintBlankTopic: React.FC<PrintBlankTopicProps> = () => {
             <h1>{gradeData.name} Worksheet</h1>
             <Alert severity='info' className='dont-print'>Printing will begin after all problems and attachments have finished loading. If the print dialog does not appear after the page has finished loading, you can <button onClick={()=>window.print()} className='link-button'>click here</button>.</Alert>
             <Alert severity='warning' className='dont-print'>Some browsers have trouble printing embedded images, even if they render on-screen. If the print preview does not include images, try using <Link to='https://www.google.com/chrome/'>Google Chrome</Link>.</Alert>
+            <br/>
             {gradeData.questions.map((problem)=>{
                 const problemPath = problem.webworkQuestionPath;
 
                 return (
-                    <div key={problem.id}>
+                    <div key={problem.id} className='blankTopicIframe'>
                         <h4>Problem {problem.problemNumber}</h4>
                         <OnLoadProblemIframeWrapper>
                             <ProblemIframe
                                 problem={new ProblemObject({id: problem.id, path: problemPath})}
                                 previewPath={problemPath}
                                 previewSeed={1}
-                                previewShowHints={true}
-                                previewShowSolutions={true}
                                 readonly={true}
+                                previewShowSolutions={getCurrentQueryStrings()?.showSolutions === 'true'}
                             />
                         </OnLoadProblemIframeWrapper>
                     </div>

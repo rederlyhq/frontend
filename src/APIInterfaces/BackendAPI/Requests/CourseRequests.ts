@@ -424,6 +424,7 @@ export const postPreviewQuestion = async ({
                 params: {
                     webworkQuestionPath,
                     problemSeed,
+                    showAnswersUpfront: showSolutions,
                 }
             });
     } catch (e) {
@@ -453,6 +454,7 @@ export const getQuestion = async ({
     readonly,
     workbookId,
     studentTopicAssessmentInfoId,
+    showCorrectAnswers,
 }: GetQuestionOptions): Promise<AxiosResponse<GetQuestionResponse>> => {
     try {
         return await AxiosRequest.get(
@@ -462,6 +464,7 @@ export const getQuestion = async ({
                     readonly,
                     workbookId,
                     studentTopicAssessmentInfoId,
+                    showCorrectAnswers,
                 }
             });
     } catch (e) {

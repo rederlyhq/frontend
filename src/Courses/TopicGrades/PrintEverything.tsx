@@ -1,12 +1,11 @@
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import { ProblemObject } from '../CourseInterfaces';
 import url from 'url';
 import { getAllContentForVersion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
-import './PrintEverything.css';
 import { GetAllVersionAttachmentsResponse } from '../../APIInterfaces/BackendAPI/ResponseTypes/CourseResponseTypes';
 import PDFInlineRender from './PDFInlineRender';
 import { usePrintLoadingContext, PrintLoadingActions } from '../../Contexts/PrintLoadingContext';
@@ -14,7 +13,10 @@ import OnLoadDispatchWrapper from './onLoadDispatchWrapper';
 import OnLoadProblemIframeWrapper from './OnLoadProblemIframeWrapper';
 import Heic from '../../Components/Heic';
 import { Alert } from '@material-ui/lab';
+import useQuerystringHelper from '../../Hooks/useQuerystringHelper';
 
+import './Bootstrap2.3.2Overrides.css';
+import './PrintEverything.css';
 interface PrintEverythingProps {
 }
 
@@ -22,6 +24,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
     const [gradeData, setGradeData] = useState<GetAllVersionAttachmentsResponse | null>(null);
     const {dispatch} = usePrintLoadingContext();
     const params = useParams<{userId?: string, topicId?: string}>();
+    const {getCurrentQueryStrings} = useQuerystringHelper();
 
     let userId: number | null = null;
     let topicId: number | null = null;
@@ -84,10 +87,12 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
         <>
             <h1>{gradeData.topic.name} -- {gradeData.user.firstName} {gradeData.user.lastName}</h1>
             <Alert severity='info' className='dont-print'>Printing will begin after all problems and attachments have finished loading. If the print dialog does not appear after the page has finished loading, you can <button onClick={()=>window.print()} className='link-button'>click here</button>.</Alert>
+            <Alert severity='warning' className='dont-print'>Some browsers have trouble printing embedded images, even if they render on-screen. If the print preview does not include images, try using <Link to='https://www.google.com/chrome/'>Google Chrome</Link>.</Alert>
+            <br/>
             {gradeData.topic.questions.map((problem)=>{
                 if (problem.grades.length > 1) {
                     logger.warn('More grades were found for a problem at a specific version.');
-                    return;
+                    return null;
                 }
                 const bestAttemptWorkbook = problem.grades.first?.lastInfluencingCreditedAttemptId ?? problem.grades.first?.lastInfluencingAttemptId;
                 const problemPath = problem.grades.first?.webworkQuestionPath;
@@ -102,6 +107,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                                 problem={new ProblemObject({id: problem.id, path: problemPath})}
                                 workbookId={bestAttemptWorkbook}
                                 readonly={true}
+                                showCorrectAnswers={getCurrentQueryStrings()?.showSolutions === 'true'}
                             />
                         </OnLoadProblemIframeWrapper>
                         {attachments && attachments.length > 0 ? <h5>Problem {problem.problemNumber} Attachments</h5> : <h5>Problem {problem.problemNumber} has no attachments</h5>}
