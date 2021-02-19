@@ -91,6 +91,7 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                 logger.warn('Download option should not appear if no url is present.');
                 return;
             }
+
             window.open(`/${url}`, '_blank');
             break;
         case ButtonOptions.PRINT_SINGLE:
@@ -106,8 +107,12 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
         case ButtonOptions.PRINT_BLANK_NO_SOLUTIONS:
             window.open(`${path}/print/?${qs.stringify({showSolutions: buttonState === ButtonOptions.PRINT_BLANK})}`, '_blank');
             break;
-        default:
+        case ButtonOptions.EXPORT_ALL:
+        case ButtonOptions.EXPORT_ALL_NO_SOLUTIONS:
             checkAndStatusUpdateExport(true);
+            break;
+        default:
+            logger.error('Unknown option for ExportAllButton.', buttonState);
         }
     };
 
