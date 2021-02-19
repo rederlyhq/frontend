@@ -600,6 +600,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                             style={{
                                                                                 display: 'inline',
                                                                                 cursor: 'text',
+                                                                                wordBreak: 'break-all',
                                                                             }}
                                                                         >
                                                                             {unit.name}

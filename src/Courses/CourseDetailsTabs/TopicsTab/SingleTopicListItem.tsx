@@ -30,7 +30,7 @@ export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, 
         <div className='d-flex' style={{minHeight: '56px'}}>
             {inEditMode && <GrDrag style={{float: 'left', cursor: 'grab', position: 'absolute', left: '5px', top: '36%'}} />}
             <Col>
-                <Row>
+                <Row style={{margin: 'auto 0'}}>
                     <Link
                         to={loc =>userType !== UserRole.STUDENT ?
                             (inEditMode ? 
@@ -41,7 +41,7 @@ export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, 
                         }
                     >
                         <Col>
-                            <h5>{topic.name}</h5>
+                            <h5 style={{wordBreak: 'break-all'}}>{topic.name}</h5>
                         </Col>
                     </Link>
                 </Row>
