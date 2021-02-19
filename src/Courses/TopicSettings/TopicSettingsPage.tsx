@@ -191,7 +191,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     }, [topic]);
 
     const { getRootProps, getInputProps, open, isDragActive } = useDropzone({ onDrop,
-        accept: '.def',
+        accept: ['.def', '.rdef'],
         noClick: true,
         noKeyboard: true
     });
