@@ -152,7 +152,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
             // If a selectedProblemId hasn't been set by the query parameter or is invalid, set it to the first id.
             if (_.isNil(selectedProblemId) || !_.some(problems, ['id', selectedProblemId])) {
-                setSelectedProblemId(_.sortBy(problems, ['problemNumber'])[0].id);
+                setSelectedProblemId(_.sortBy(problems, ['problemNumber']).first?.id ?? null);
             }
 
             if (!_.isNil(currentTopic.topicAssessmentInfo) &&
