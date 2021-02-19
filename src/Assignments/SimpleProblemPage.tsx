@@ -74,13 +74,16 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     useEffect(() => {
         logger.info('SimpleProblemPage: selected problem has changed');
         resetAlert();
+    }, [selectedProblemId, resetAlert]);
+
+    useEffect(() => {
         updateRoute({
             problemId: {
                 mode: QueryStringMode.OVERWRITE,
                 val: selectedProblemId?.toString() ?? null,
             }
         });
-    }, [selectedProblemId, resetAlert, updateRoute]);
+    }, [selectedProblemId, updateRoute]);
 
     useEffect(() => {
         logger.info('SimpleProblemPage: topic or version or attempts remaining has changed');
@@ -146,7 +149,12 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 .keyBy('id')
                 .value();
             setProblems(problemDictionary);
-            setSelectedProblemId(_.sortBy(problems, ['problemNumber'])[0].id);
+
+            // If a selectedProblemId hasn't been set by the query parameter or is invalid, set it to the first id.
+            if (_.isNil(selectedProblemId) || !_.some(problems, ['id', selectedProblemId])) {
+                setSelectedProblemId(_.sortBy(problems, ['problemNumber']).first?.id ?? null);
+            }
+
             if (!_.isNil(currentTopic.topicAssessmentInfo) &&
                 !_.isNil(currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo) &&
                 currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo.length > 0 // student has generated at least one version already
