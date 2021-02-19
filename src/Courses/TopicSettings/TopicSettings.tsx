@@ -128,6 +128,13 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                             {updateAlertMsg}
                         </MUIAlert>
                     </Snackbar>
+                    {selected.hasEverBeenActive && selected.isExam() && 
+                        <MUIAlert severity='warning' variant='standard'>
+                            This Assessment is currently available to students. 
+                            Any changes to an active exam can distort scores for students who have already taken or are taking the exam, 
+                            so please make sure you are comfortable with this before you confirm this change.
+                        </MUIAlert>
+                    }
                     <CommonSettings formObject={topicForm} setUpdateAlert={setUpdateAlert} />
                     {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end">
