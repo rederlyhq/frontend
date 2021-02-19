@@ -43,8 +43,15 @@ export const PrintLoadingProvider: React.FC<Props>  = ({ children }) => {
         switch(action.type) {
         case PrintLoadingActions.RESET_EXPECTED_COUNT:
             logger.debug('PrintLoadingContext: Printing state reset.', state.expected, state.arr.length);
+            // If a promise was added and there's already a timeout waiting to be evaluated, remove it.
+            if (!_.isNull(timeout.current)) {
+                clearTimeout(timeout.current);
+                timeout.current = null;
+            }
+
             state.expected = 1;
             state.arr = [];
+            
             break;
         case PrintLoadingActions.ADD_EXPECTED_PROMISE_COUNT:
             state.expected = state.expected + action.expected;

@@ -25,6 +25,8 @@ interface ProblemIframeProps {
     userId?: number;
     studentTopicAssessmentInfoId?: number;
     propagateLoading?: (loading: boolean)=>void;
+    // This was added for professors printing versions with/without exams.
+    showCorrectAnswers?: boolean;
 }
 
 interface PendingRequest {
@@ -53,6 +55,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     userId,
     studentTopicAssessmentInfoId,
     propagateLoading,
+    showCorrectAnswers
 }) => {
     const pendingReq = useRef<PendingRequest | null>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>(Constants.React.defaultStates.EMPTY_STRING);
@@ -86,7 +89,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     userId,
                     workbookId,
                     studentTopicAssessmentInfoId,
-                    readonly
+                    readonly,
+                    showCorrectAnswers
                 });
             }
             return res.data.data.rendererData.renderedHTML as string;

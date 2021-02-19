@@ -3,7 +3,7 @@ import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse, ListAttachmentsResponse, ReadQuestionResponse, SaveQuestionResponse, CatalogResponse, GradesResponse, EnrollByCodeResponse, PostImportCourseArchiveResponse, GetBrowseProblemsUnitListResponse, GetBrowseProblemsTopicListResponse, GetBrowseProblemsCourseListResponse, GetProblemSearchResultsResponse, EnrollManuallyResponse, GetTopicGradesForCourseResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse, ListAttachmentsResponse, ReadQuestionResponse, SaveQuestionResponse, CatalogResponse, GradesResponse, EnrollByCodeResponse, PostImportCourseArchiveResponse, GetBrowseProblemsUnitListResponse, GetBrowseProblemsTopicListResponse, GetBrowseProblemsCourseListResponse, GetProblemSearchResultsResponse, EnrollManuallyResponse, GetTopicGradesForCourseResponse, GetAllVersionDataResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 import _ from 'lodash';
@@ -424,6 +424,7 @@ export const postPreviewQuestion = async ({
                 params: {
                     webworkQuestionPath,
                     problemSeed,
+                    showAnswersUpfront: showSolutions,
                 }
             });
     } catch (e) {
@@ -453,6 +454,7 @@ export const getQuestion = async ({
     readonly,
     workbookId,
     studentTopicAssessmentInfoId,
+    showCorrectAnswers,
 }: GetQuestionOptions): Promise<AxiosResponse<GetQuestionResponse>> => {
     try {
         return await AxiosRequest.get(
@@ -462,6 +464,7 @@ export const getQuestion = async ({
                     readonly,
                     workbookId,
                     studentTopicAssessmentInfoId,
+                    showCorrectAnswers,
                 }
             });
     } catch (e) {
@@ -777,7 +780,7 @@ export const startExportOfTopic = async ({
 export const getAllContentForVersion = async ({
     userId,
     topicId
-}: {userId: number, topicId: number}): Promise<AxiosResponse<any>> => {
+}: {userId: number, topicId: number}): Promise<AxiosResponse<GetAllVersionDataResponse>> => {
     try {
         return await AxiosRequest.get(url.resolve(COURSE_TOPIC_PATH, `${topicId}/version/${userId}`));
     } catch (e) {
