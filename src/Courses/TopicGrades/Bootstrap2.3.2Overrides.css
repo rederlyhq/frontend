@@ -1,0 +1,56 @@
+/* This is custom CSS that overrides the default styling provided by Bootstrap 2.3.2 for printing. */
+@media print {
+    * {
+        color:inherit !important;
+        text-shadow:inherit !important;
+        background:inherit !important;
+        box-shadow:inherit !important;
+    }
+    
+    a,a:visited {
+        text-decoration:inherit !important;
+    }
+    
+    a[href]:after {
+        content:inherit !important;
+    }
+    
+    abbr[title]:after {
+        content:inherit !important;
+    }
+    
+    .ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after {
+        content:inherit !important;
+    }
+    
+    pre,blockquote {
+        border:inherit !important;
+        page-break-inside:inherit !important;
+    }
+    
+    thead {
+        display:inherit !important;
+    }
+    
+    tr,img {
+        page-break-inside:inherit !important;
+    }
+    
+    img {
+        max-width:inherit !important;
+    }
+    
+    @page {
+        margin:inherit !important;
+    }
+    
+    p,h2,h3 {
+        orphans:inherit !important;
+        widows:inherit !important;
+    }
+    
+    h2,h3 {
+        page-break-after:inherit !important;
+    }
+}
+
