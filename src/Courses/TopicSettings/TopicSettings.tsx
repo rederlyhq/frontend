@@ -13,6 +13,7 @@ import _ from 'lodash';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
 import logger from '../../Utilities/Logger';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
+import emptyRTDF from './EmptyRTDF.json';
 
 interface TopicSettingsProps {
     selected: TopicObject;
@@ -209,6 +210,13 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
 
                             const defBlob = new Blob([fileContent], {type: 'text/plain;charset=utf-8'});
                             saveAs(defBlob, `${selected.name}.rdef`);
+                        }}
+                        exportTopicClick={() => {
+                            const deepKeys = _.deepKeys(emptyRTDF);
+                            const adjustedKeys = _.removeArrayIndexesFromDeepKeys(deepKeys);
+                            const result = _.pickWithArrays(selected, ...adjustedKeys) as Partial<typeof emptyRTDF>;
+                            const rtdfBlob = new Blob([JSON.stringify(result, null, 2)], {type: 'text/plain;charset=utf-8'});
+                            saveAs(rtdfBlob, `${selected.name}.rtdf`);
                         }}
                     />
                     {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}

@@ -13,13 +13,14 @@ interface CommonSettingsProps {
     formObject: any;
     setUpdateAlert: React.Dispatch<React.SetStateAction<IMUIAlertModalState>>;
     downloadDefFileClick: () => void
+    exportTopicClick: () => void
 }
 
 /**
  * This component renders settings that are common to all Topic objects.
  *
  */
-export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUpdateAlert, downloadDefFileClick}) => {
+export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUpdateAlert, downloadDefFileClick, exportTopicClick}) => {
     const { register, getValues, control, setValue, watch } = formObject;
     const { topicTypeId, partialExtend, startDate, endDate, deadDate } = watch();
 
@@ -49,19 +50,30 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         marginBottom: 'auto',
                     }}
                 >
-
+                    <Button
+                        variant='outlined'
+                        color='primary'
+                        startIcon={<GetAppOutlinedIcon />}
+                        onClick={exportTopicClick}
+                        style={{
+                            // Making invisible for now since there is no where to upload
+                            display: 'none'
+                        }}
+                    >
+                        Export Rederly Topic (Beta)
+                    </Button>
+                    <Button
+                        variant='outlined'
+                        color='primary'
+                        startIcon={<GetAppOutlinedIcon />}
+                        onClick={downloadDefFileClick}
+                        style={{
+                            marginLeft: '0.5em'
+                        }}
+                    >
+                        Def File (Beta)
+                    </Button>
                 </div>
-                <Button
-                    variant='outlined'
-                    color='primary'
-                    startIcon={<GetAppOutlinedIcon />}
-                    onClick={downloadDefFileClick}
-                    style={{
-                        marginLeft: '0.5em'
-                    }}
-                >
-                    Def File (Beta)
-                </Button>
             </Grid>
             {/* This is a workaround because setValue doesn't seem to cause a UI rerender. */}
             <Grid item md={12} style={{display: topicTypeId === TopicTypeId.EXAM ? 'none' : undefined}}>
