@@ -1,23 +1,25 @@
 import React, { useEffect } from 'react';
-import { FormControl, FormControlLabel, FormLabel, Grid, Radio, RadioGroup, Switch, TextField } from '@material-ui/core';
+import { FormControl, FormControlLabel, FormLabel, Grid, Radio, RadioGroup, Switch, TextField, Button } from '@material-ui/core';
 import { KeyboardDateTimePicker } from '@material-ui/pickers';
 import moment, { Moment } from 'moment';
 import { Controller } from 'react-hook-form';
 import { TopicTypeId } from '../../Enums/TopicType';
 import _ from 'lodash';
 import { IMUIAlertModalState } from '../../Hooks/useAlertState';
+import GetAppOutlinedIcon from '@material-ui/icons/GetAppOutlined';
 
 interface CommonSettingsProps {
     // This is the register function from react-hook-forms.
     formObject: any;
     setUpdateAlert: React.Dispatch<React.SetStateAction<IMUIAlertModalState>>;
+    downloadDefFileClick: () => void
 }
 
 /**
  * This component renders settings that are common to all Topic objects.
  *
  */
-export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUpdateAlert}) => {
+export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUpdateAlert, downloadDefFileClick}) => {
     const { register, getValues, control, setValue, watch } = formObject;
     const { topicTypeId, partialExtend, startDate, endDate, deadDate } = watch();
 
@@ -39,7 +41,28 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                     inputProps={{style: {fontSize: '2.5rem'}}}
                 />
             </Grid>
-            <Grid item container md={12}><h2>Topic Settings</h2></Grid>
+            <Grid item container md={12}>
+                <h2>Topic Settings</h2>
+                <div
+                    style={{
+                        marginLeft: 'auto',
+                        marginBottom: 'auto',
+                    }}
+                >
+
+                </div>
+                <Button
+                    variant='outlined'
+                    color='primary'
+                    startIcon={<GetAppOutlinedIcon />}
+                    onClick={downloadDefFileClick}
+                    style={{
+                        marginLeft: '0.5em'
+                    }}
+                >
+                    Def File (Beta)
+                </Button>
+            </Grid>
             {/* This is a workaround because setValue doesn't seem to cause a UI rerender. */}
             <Grid item md={12} style={{display: topicTypeId === TopicTypeId.EXAM ? 'none' : undefined}}>
                 {/* ${partialCreditScore} = ((${gradeCandidate}- ${legalScore}) * ${topicLateScalar}) + ${legalScore} */}
