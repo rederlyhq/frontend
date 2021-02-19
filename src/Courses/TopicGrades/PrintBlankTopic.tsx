@@ -75,6 +75,7 @@ export const PrintBlankTopic: React.FC<PrintBlankTopicProps> = () => {
             <br/>
             {gradeData.questions.map((problem)=>{
                 const problemPath = problem.webworkQuestionPath;
+                const firstRandomSeed = gradeData.isExam() ? problem.courseQuestionAssessmentInfo?.randomSeedSet?.first : 1;
 
                 return (
                     <div key={problem.id} className='blankTopicIframe'>
@@ -83,7 +84,7 @@ export const PrintBlankTopic: React.FC<PrintBlankTopicProps> = () => {
                             <ProblemIframe
                                 problem={new ProblemObject({id: problem.id, path: problemPath})}
                                 previewPath={problemPath}
-                                previewSeed={1}
+                                previewSeed={firstRandomSeed ?? 1}
                                 readonly={true}
                                 previewShowSolutions={getCurrentQueryStrings()?.showSolutions === 'true'}
                             />
@@ -96,7 +97,3 @@ export const PrintBlankTopic: React.FC<PrintBlankTopicProps> = () => {
 };
 
 export default PrintBlankTopic;
-
-PrintBlankTopic.whyDidYouRender = {
-    logOnDifferentValues: true
-};
