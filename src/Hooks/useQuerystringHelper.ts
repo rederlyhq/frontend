@@ -1,4 +1,4 @@
-import { useRouteMatch } from 'react-router-dom';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 import * as qs from 'querystring';
 import _ from 'lodash';
 import logger from '../Utilities/Logger';
@@ -22,12 +22,13 @@ type QuerystringObject = {[key: string]: {
  */
 export const useQuerystringHelper = () => {
     const { url } = useRouteMatch();
+    const history = useHistory();
 
     /* @param append -  This copies the existing query string to an object and then adds tabs on top of it.
                         This is specifically to reduce boilerplate when only updating one part of an otherwise static querystring.
                         If you only mean to append to an array, use the QueryStringMode.ARRAY instead.
     */
-    const updateRoute = (tabs: QuerystringObject, append: boolean = false): void => {
+    const updateRoute = (tabs: QuerystringObject, append: boolean = false, forceRefresh: boolean = false): void => {
         const currentQuerystrings = qs.parse(window.location.search.substring(1));
 
         const newQueryObject: qs.ParsedUrlQuery = append ? currentQuerystrings : {};
@@ -72,10 +73,12 @@ export const useQuerystringHelper = () => {
 
         // Updating the state on the page should be a replace. It prevents us
         // from having to hit the back button multiple times.
-        window.history.replaceState(null, 'React', `${url}?${queryString}`);
-
-        // TODO: Conditionally allow re-rendering using the following alternative to replaceState.
-        // history.replace(`${url}?${queryString}`);
+        if (forceRefresh) {
+            // TODO: Conditionally allow re-rendering using the following alternative to replaceState.
+            history.replace(`${url}?${queryString}`);
+        } else {
+            window.history.replaceState(null, 'React', `${url}?${queryString}`);
+        }
     };
 
     // qs doesn't like the ? in the beginning of the search string.

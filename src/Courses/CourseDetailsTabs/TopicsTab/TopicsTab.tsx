@@ -17,6 +17,7 @@ import useAlertState from '../../../Hooks/useAlertState';
 import BackendAPIError from '../../../APIInterfaces/BackendAPI/BackendAPIError';
 import { IconButton } from '@material-ui/core';
 import { Delete, AddCircle } from '@material-ui/icons';
+import { useHistory, useLocation } from 'react-router-dom';
 
 interface CourseTarballImportWarningsProps {
     message: string;
@@ -63,6 +64,9 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [loading, setLoading] = useState<boolean>(false);
+    const history = useHistory();
+    const location = useLocation();
+    const expandedUnits = getCurrentQueryStrings()['unitId'];
 
     const setInEditModeWrapper = (newEditMode: boolean) => {
         let val = newEditMode;
@@ -144,6 +148,13 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
             unit.topics.push(new TopicObject(result.data.data));
             setCourse?.(newCourse);
+            updateRoute({
+                unitId: {
+                    val: unit.id.toString(),
+                    mode: QueryStringMode.APPEND_OR_IGNORE,
+                },
+            }, true);
+            history.push(`${location.pathname}/topic/${result.data.data.id}/settings`);
         } catch (e) {
             setAlert({
                 variant: 'danger',
@@ -175,7 +186,14 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 }
             });
             const unit = new UnitObject(result.data.data);
-            setUnitInCourse(unit);    
+            setUnitInCourse(unit);
+            // Force unit open on creation.
+            updateRoute({
+                unitId: {
+                    val: unit.id.toString(),
+                    mode: QueryStringMode.APPEND_OR_IGNORE,
+                },
+            }, true, true);
         } catch (e) {
             setAlert({
                 variant: 'danger',
@@ -540,7 +558,6 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                             <div ref={provided.innerRef} style={{ backgroundColor: 'white' }} {...provided.droppableProps}>
                                 {course?.units?.map((unit: any, index) => {
                                     const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
-                                    const expandedUnits = getCurrentQueryStrings()['unitId'];
                                     const unitId: string = unit.id.toString();
                                     return (
                                         <Draggable draggableId={`unitRow${unit.id}`} index={index} key={`problem-row-${unit.id}`} isDragDisabled={!inEditMode}>
@@ -548,7 +565,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                 <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} key={unit.id}>
                                                     {/* 0 is an actual reference, which opens this accordion. 1 or any other value keeps it closed. */}
                                                     <Accordion 
-                                                        defaultActiveKey={_.includes(expandedUnits, unitId) ? '0' : ''} 
+                                                        defaultActiveKey={_.includes(expandedUnits, unitId) ? '0' : ''}
+                                                        activeKey={_.includes(expandedUnits, unitId) ? '0' : ''}
                                                         onSelect={
                                                             ()=>{
                                                                 updateRoute({
@@ -556,7 +574,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                         val: unitId, 
                                                                         mode: QueryStringMode.APPEND_OR_REMOVE,
                                                                     },
-                                                                }, true);
+                                                                }, true, true);
                                                             }
                                                         }
                                                     >
@@ -579,6 +597,11 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                                 }
                                                                             }}
                                                                             onBlur={_.partial(onUnitBlur, _, unit.id)}
+                                                                            style={{
+                                                                                display: 'inline',
+                                                                                cursor: 'text',
+                                                                                wordBreak: 'break-all',
+                                                                            }}
                                                                         >
                                                                             {unit.name}
                                                                         </h4>
