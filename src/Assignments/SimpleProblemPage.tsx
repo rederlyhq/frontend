@@ -502,9 +502,16 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     const clickedAskForHelp = async (questionId: number) => {
         logger.info('SimpleProblemPage: user clicked "Ask for Help"');
-        const res = await askForHelp({questionId});
-        const newTab = window.open(undefined, 'openlab');
-        newTab?.document.write(res.data.data);
+        try {
+            const res = await askForHelp({questionId});
+            const newTab = window.open(undefined, 'openlab');
+            newTab?.document.write(res.data.data);
+        } catch (e) {
+            setAlert({
+                severity: 'error',
+                message: e.message ?? 'Failed to access OpenLabs.'
+            });
+        }
     };
 
     const requestShowMeAnother = async (questionId: number) => {
@@ -659,7 +666,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                         Show Me Another
                                     </Button>
                                 }
-                                {selectedProblemId && course.canAskForHelp &&
+                                {selectedProblemId && course.canAskForHelp && topic?.topicTypeId !== 2 &&
                                     <Button 
                                         className='float-right'
                                         onClick={()=>clickedAskForHelp(selectedProblemId)}>
