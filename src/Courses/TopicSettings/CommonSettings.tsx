@@ -71,7 +71,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                             marginLeft: '0.5em'
                         }}
                     >
-                        Def File (Beta)
+                        Rederly-Def File (Beta)
                     </Button>
                 </div>
             </Grid>

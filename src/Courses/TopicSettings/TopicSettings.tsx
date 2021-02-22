@@ -129,7 +129,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                             {updateAlertMsg}
                         </MUIAlert>
                     </Snackbar>
-                    {selected.hasEverBeenActive && selected.isExam() && 
+                    {selected.hasEverBeenActive() && selected.isExam() && 
                         <MUIAlert severity='warning' variant='standard'>
                             This Assessment is currently available to students. 
                             Any changes to an active exam can distort scores for students who have already taken or are taking the exam, 
@@ -140,76 +140,81 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                         formObject={topicForm}
                         setUpdateAlert={setUpdateAlert}
                         downloadDefFileClick={() => {
-                            // TODO share this function with backend
-                            // TODO share this constant with backend
-                            const webworkDateFormat = 'MM/DD/YYYY [at] hh:mma';
-                            const isExam = selected.topicTypeId === 2;
-                            let fileContent = `
-                            assignmentType = ${isExam ? 'gateway' : 'default'}
+                            try {
+                                // TODO share this function with backend
+                                // TODO share this constant with backend
+                                const webworkDateFormat = 'MM/DD/YYYY [at] hh:mma';
+                                const isExam = selected.topicTypeId === 2;
+                                let fileContent = `
+                                assignmentType = ${isExam ? 'gateway' : 'default'}
 
-                            # Dates don't have timezones due to limitations
-                            openDate = ${selected.startDate.toMoment().format(webworkDateFormat)}
-                            dueDate = ${selected.endDate.toMoment().format(webworkDateFormat)}
-                            reducedScoringDate = ${selected.deadDate.toMoment().format(webworkDateFormat)}
+                                # Dates don't have timezones due to limitations
+                                openDate = ${moment(selected.startDate).format(webworkDateFormat)}
+                                dueDate = ${moment(selected.endDate).format(webworkDateFormat)}
+                                reducedScoringDate = ${moment(selected.deadDate).format(webworkDateFormat)}
 
-                            answerDate = ${selected.deadDate.toMoment().format(webworkDateFormat)}
-                            enableReducedScoring = ${selected.partialExtend ? 'Y' : 'N'}
+                                answerDate = ${moment(selected.deadDate).format(webworkDateFormat)}
+                                enableReducedScoring = ${selected.partialExtend ? 'Y' : 'N'}
 
-                            # Not supported
-                            paperHeaderFile   = 
-                            # Not supported
-                            screenHeaderFile  = 
-
-                            ${(isExam && _.isSomething(selected.topicAssessmentInfo)) ? `
-                            attemptsPerVersion  = ${selected.topicAssessmentInfo.maxGradedAttemptsPerVersion}
-                            timeInterval        = ${(selected.topicAssessmentInfo.versionDelay ?? 0) * 60}
-                            versionsPerInterval = ${selected.topicAssessmentInfo.maxVersions}
-                            versionTimeLimit    = ${selected.topicAssessmentInfo.duration}
-                            problemRandOrder    = ${Number(selected.topicAssessmentInfo.randomizeOrder)}
-                            # Not supported
-                            problemsPerPage     = 0
-                            hideScore           = ${selected.topicAssessmentInfo.showTotalGradeImmediately ? 'N': 'Y'}
-                            hideScoreByProblem  = ${selected.topicAssessmentInfo.showItemizedResults ? 'N' : 'Y'}
-                            hideWork            = ${selected.topicAssessmentInfo.hideProblemsAfterFinish ? 'Y' : 'N'}
-                            capTimeLimit        = ${Number(selected.topicAssessmentInfo.hardCutoff)}
-                            ` : ''}
-                            
-                            # Not supported
-                            description       = 
-                            # Not supported
-                            restrictProbProgression = 0
-                            # Not supported
-                            emailInstructor   = 0
-
-                            problemListV2
-                            `;
-                            selected.questions.forEach((question) => {
-                                fileContent += `
-                                problem_start
-                                problem_id = ${question.id}
-                                source_file = ${question.webworkQuestionPath}
-                                value = ${question.weight}
-                                max_attempts = ${question.maxAttempts}
-                                # showMeAnother in webwork is number of attempts before but rederly does not support that
-                                showMeAnother = -1
                                 # Not supported
-                                prPeriod = -1
+                                paperHeaderFile   = 
                                 # Not supported
-                                counts_parent_grade = 0
+                                screenHeaderFile  = 
+
+                                ${(isExam && _.isSomething(selected.topicAssessmentInfo)) ? `
+                                attemptsPerVersion  = ${selected.topicAssessmentInfo.maxGradedAttemptsPerVersion}
+                                timeInterval        = ${(selected.topicAssessmentInfo.versionDelay ?? 0) * 60}
+                                versionsPerInterval = ${selected.topicAssessmentInfo.maxVersions}
+                                versionTimeLimit    = ${selected.topicAssessmentInfo.duration}
+                                problemRandOrder    = ${Number(selected.topicAssessmentInfo.randomizeOrder)}
                                 # Not supported
-                                att_to_open_children = 0
-                                ${(isExam && _.isSomething(question.courseQuestionAssessmentInfo)) ? `
-                                rederlyAdditionalPaths = ${JSON.stringify(question.courseQuestionAssessmentInfo.additionalProblemPaths)}
-                                rederlyRandomSeedRestrictions = ${JSON.stringify(question.courseQuestionAssessmentInfo.randomSeedSet)}
-                                ` : '' }
-                                problem_end
+                                problemsPerPage     = 0
+                                hideScore           = ${selected.topicAssessmentInfo.showTotalGradeImmediately ? 'N': 'Y'}
+                                hideScoreByProblem  = ${selected.topicAssessmentInfo.showItemizedResults ? 'N' : 'Y'}
+                                hideWork            = ${selected.topicAssessmentInfo.hideProblemsAfterFinish ? 'Y' : 'N'}
+                                capTimeLimit        = ${Number(selected.topicAssessmentInfo.hardCutoff)}
+                                ` : ''}
+                                
+                                # Not supported
+                                description       = 
+                                # Not supported
+                                restrictProbProgression = 0
+                                # Not supported
+                                emailInstructor   = 0
+
+                                problemListV2
                                 `;
-                            });
+                                selected.questions.forEach((question) => {
+                                    fileContent += `
+                                    problem_start
+                                    problem_id = ${question.id}
+                                    source_file = ${question.webworkQuestionPath}
+                                    value = ${question.weight}
+                                    max_attempts = ${question.maxAttempts}
+                                    # showMeAnother in webwork is number of attempts before but rederly does not support that
+                                    showMeAnother = -1
+                                    # Not supported
+                                    prPeriod = -1
+                                    # Not supported
+                                    counts_parent_grade = 0
+                                    # Not supported
+                                    att_to_open_children = 0
+                                    ${(isExam && _.isSomething(question.courseQuestionAssessmentInfo)) ? `
+                                    rederlyAdditionalPaths = ${JSON.stringify(question.courseQuestionAssessmentInfo.additionalProblemPaths)}
+                                    rederlyRandomSeedRestrictions = ${JSON.stringify(question.courseQuestionAssessmentInfo.randomSeedSet)}
+                                    ` : '' }
+                                    problem_end
+                                    `;
+                                });
 
-                            fileContent = fileContent.replace(/^\s*/gm, '').replace('problemListV2', '\nproblemListV2');
+                                fileContent = fileContent.replace(/^\s*/gm, '').replace('problemListV2', '\nproblemListV2');
 
-                            const defBlob = new Blob([fileContent], {type: 'text/plain;charset=utf-8'});
-                            saveAs(defBlob, `${selected.name}.rdef`);
+                                const defBlob = new Blob([fileContent], {type: 'text/plain;charset=utf-8'});
+                                saveAs(defBlob, `${selected.name}.rdef`);
+                            } catch (e) {
+                                setUpdateAlert({message: 'Could not export Rederly-DEF file', severity: 'error'});
+                                logger.error('Could not export Rederly-DEF file', e);
+                            }
                         }}
                         exportTopicClick={() => {
                             const deepKeys = _.deepKeys(emptyRTDF);

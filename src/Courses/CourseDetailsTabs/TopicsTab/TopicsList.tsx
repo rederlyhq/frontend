@@ -6,6 +6,7 @@ import { Droppable, Draggable } from 'react-beautiful-dnd';
 import './TopicList.css';
 import logger from '../../../Utilities/Logger';
 import { SingleTopicListItem } from './SingleTopicListItem';
+import { getUserRole, UserRole } from '../../../Enums/UserRole';
 
 interface TopicsListProps {
     listOfTopics: Array<TopicObject>;
@@ -28,7 +29,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
         const topic = listOfTopics[rubric.source.index];
 
         return (
-            <ListGroupItem {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef} variant={topic.errors > 0 ? 'danger' : undefined}>
+            <ListGroupItem {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef} variant={(getUserRole() !== UserRole.STUDENT && topic.errors > 0) ? 'danger' : undefined}>
                 <SingleTopicListItem topic={topic} removeTopic={removeTopic} inEditMode={inEditMode}/>
             </ListGroupItem>
         );

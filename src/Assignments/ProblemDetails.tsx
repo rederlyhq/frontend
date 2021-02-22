@@ -225,7 +225,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                             >
                                 {(currentMoment) => {
                                     // TODO move this logic to a utility function that is shared between the backend and front end
-                                    // initally I was thinking the backend would send it, however it has to react to the current time so it probably would be better in a shared module
+                                    // initially I was thinking the backend would send it, however it has to react to the current time so it probably would be better in a shared module
                                     const applicationError = 'An unknown error has occurred and it is unclear if your submissions will be graded.';
                                     let message = null;
                                     if (_.isNil(problem)) {
