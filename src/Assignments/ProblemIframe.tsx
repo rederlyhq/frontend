@@ -107,10 +107,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             setLoading(false);
         }
     }, [previewPath, previewProblemSource, previewSeed, previewShowHints, previewShowSolutions, problem.id, readonly, setAlert, studentTopicAssessmentInfoId, userId, workbookId]);
-    
+
     const fetchHTML = useCallback(async () => {
         if (pendingReq.current !== null) {
-            logger.debug(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId} workbook #${pendingReq.current.workbookId}`);
+            logger.debug(`Problem Iframe: Canceling request for problem #${pendingReq.current.problemId} workbook #${pendingReq.current.workbookId}`);
             pendingReq.current.cancelled = true;
         }
         const currentReq = {problemId: problem.id, workbookId} as PendingRequest;
@@ -131,7 +131,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             setRenderedHTML(rendererHTML);
         }
     }, [getHTML, problem.id, setAlert, workbookId]);
-    
+
     useEffect(()=>{
         // If you don't reset the rendered html you won't get the load event
         // Thus if you go to an error state and back to the success state

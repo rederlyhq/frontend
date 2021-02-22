@@ -75,7 +75,7 @@ export interface ExtendCourseTopicForUser {
             startDate?: Moment;
             endDate?: Moment;
             deadDate?: Moment;
-        };    
+        };
         studentTopicAssessmentOverride?: {
             versionDelay?: number;
             duration?: number;
