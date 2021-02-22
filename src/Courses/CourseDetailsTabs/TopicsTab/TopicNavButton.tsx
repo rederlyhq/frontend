@@ -49,25 +49,25 @@ export const TopicNavButton: React.FC<TopicNavButtonProps> = ({topic, onDelete})
                             <ClickAwayListener onClickAway={handleClose}>
                                 <MenuList autoFocusItem={open} id={`menu-list-${topic.id}`}>
                                     <ThemeProvider theme={theme}>
-                                        <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}`)}>
-                                            <Button variant="text" color="default" startIcon={<MdLaunch />} >
-                                                View
-                                            </Button>
-                                        </MenuItem>
                                         <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}/settings`)}>
                                             <Button variant="text" color="primary" startIcon={<MdEdit />} >
-                                                Edit
+                                                Edit / View
+                                            </Button>
+                                        </MenuItem>
+                                        <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}/grading`)}>
+                                            <Button variant="text" color="default" startIcon={<MdDoneAll />}>
+                                                Grading
                                             </Button>
                                         </MenuItem>
                                         <ThemeProvider theme={altTheme}>
+                                            <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}`)}>
+                                                <Button variant="text" color="primary" startIcon={<MdLaunch />} >
+                                                    Try Assignment
+                                                </Button>
+                                            </MenuItem>
                                             <MenuItem onClick={() => history.push(`${location.pathname}/settings?topicId=${topic.id}`)}>
                                                 <Button variant="text" color="secondary" startIcon={<GrShift />}>
                                                     Extensions
-                                                </Button>
-                                            </MenuItem>
-                                            <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}/grading`)}>
-                                                <Button variant="text" color="primary" startIcon={<MdDoneAll />}>
-                                                    Grading
                                                 </Button>
                                             </MenuItem>
                                         </ThemeProvider>

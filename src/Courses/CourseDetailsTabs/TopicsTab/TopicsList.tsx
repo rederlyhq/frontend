@@ -29,7 +29,7 @@ export const TopicsList: React.FC<TopicsListProps> = ({listOfTopics, flush, remo
         const topic = listOfTopics[rubric.source.index];
 
         return (
-            <ListGroupItem {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef} variant={(getUserRole() !== UserRole.STUDENT && topic.errors) > 0 ? 'danger' : undefined}>
+            <ListGroupItem {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef} variant={(getUserRole() !== UserRole.STUDENT && topic.errors > 0) ? 'danger' : undefined}>
                 <SingleTopicListItem topic={topic} removeTopic={removeTopic} inEditMode={inEditMode}/>
             </ListGroupItem>
         );

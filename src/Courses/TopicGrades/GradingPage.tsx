@@ -1,8 +1,8 @@
 import { Grid, Snackbar } from '@material-ui/core';
-import { Alert as MUIAlert } from '@material-ui/lab';
+import { Alert as MUIAlert, Alert } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
-import { useHistory, useParams, useRouteMatch } from 'react-router-dom';
+import { useHistory, useParams, useRouteMatch, Link } from 'react-router-dom';
 import logger from '../../Utilities/Logger';
 import MaterialBiSelect from '../../Components/MaterialBiSelect';
 import { useCourseContext } from '../CourseProvider';
@@ -138,9 +138,15 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                     {topic && <ExportAllButton topicId={topic.id} userId={selected.user?.id} />}
                 </Grid>
             </Grid>
+            {_.isEmpty(users) && <Alert color='error'>
+                There are no students enrolled in this course. 
+                If you want to view your Assignment, <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}`}>click here to visit the Assignment page</Link>.
+                Otherwise, you can <Link to={`/common/courses/${params.courseId}?tab=Enrollments`}>enroll students in the enrollments tab</Link>.
+            </Alert>}
+            {_.isEmpty(problems) && <Alert color='error'>There are no problems in this topic. You can add problems <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}/settings`}>here</Link>. </Alert>}
             <Grid container spacing={1}>
                 <Grid container item md={4}>
-                    {problems && users &&
+                    {problems && !_.isEmpty(problems) && !_.isEmpty(users) &&
                         <MaterialBiSelect problems={problems} users={users} selected={selected} setSelected={setSelected} />
                     }
                 </Grid>
