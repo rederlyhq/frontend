@@ -76,7 +76,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 return _.find(topic?.questions, ['id', problemId]) ?? selected;
             });
         }
-    }, [topic]);
+    }, [topic, queryParams]);
 
     const addNewProblem = async () => {
         if (_.isNil(topicId) || _.isNil(topic)) {
