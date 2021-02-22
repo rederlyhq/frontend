@@ -98,7 +98,7 @@ export const TopicSettingsSidebar: React.FC<TopicSettingsSidebarProps> = ({topic
                                                                         eventKey={prob.id}
                                                                         key={`problemNavLink${prob.id}`}
                                                                         onSelect={() => {
-                                                                            setSelected(prob);
+                                                                            // setSelected(prob);
                                                                             history.push(`${url}?problemId=${prob.id}`);
                                                                         }}
                                                                         role='link'
