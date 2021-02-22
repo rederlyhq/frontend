@@ -117,9 +117,6 @@ export const EmailComponentWrapper: React.FC<EmailComponentWrapperProps> = ({ us
                         exportButton: userType !== UserRole.STUDENT,
                         exportAllData: true,
                         actionsColumnIndex: -1,
-                        rowStyle: unit => ({
-                            backgroundColor: _.includes(selectedStudents, unit.id) ? '#EEE' : '#FFF'
-                        }),
                         pageSize: users.length,
                         selection: userType !== UserRole.STUDENT,
                         showTextRowsSelected: false,
