@@ -129,7 +129,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                             {updateAlertMsg}
                         </MUIAlert>
                     </Snackbar>
-                    {selected.hasEverBeenActive && selected.isExam() && 
+                    {selected.hasEverBeenActive() && selected.isExam() && 
                         <MUIAlert severity='warning' variant='standard'>
                             This Assessment is currently available to students. 
                             Any changes to an active exam can distort scores for students who have already taken or are taking the exam, 

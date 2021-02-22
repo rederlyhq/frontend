@@ -580,8 +580,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     return (
         <>
-            {alert.message !== '' && <Alert severity={alert.severity}>{alert.message}</Alert>}
-            <Container fluid  className='fullheight-container'>
+            <Container fluid className='fullheight-container'>
                 <Row className='fullheight-row'>
                     <Col md={3} className='fullheight-col col-remove-scrollbar-padding'>
                         {
@@ -649,6 +648,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     <Col md={9} className='fullheight-col contains-lr-btn'>
                         <LeftRightArrowWrapper list={problems} setSelected={setSelectedProblemId} selected={selectedProblemId}>
                             <ProblemStateProvider>
+                                {alert.message !== '' && <Alert severity={alert.severity}>{alert.message}</Alert>}
                                 <ProblemDetails
                                     problem={problems[selectedProblemId]}
                                     topic={topic}
