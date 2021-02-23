@@ -15,6 +15,7 @@ import { DevTool } from '@hookform/devtools';
 import './TopicSettings.css';
 import logger from '../../Utilities/Logger';
 import RendererPreview from './RendererPreview';
+import { HasEverBeenActiveWarning } from './HasEverBeenActiveWarning';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
@@ -225,6 +226,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
     return (
         <FormProvider {...topicForm}>
+            <HasEverBeenActiveWarning topic={topic} />
             <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', severity: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
                 <DevTool control={control} />
                 <Grid container item md={12} spacing={3}>

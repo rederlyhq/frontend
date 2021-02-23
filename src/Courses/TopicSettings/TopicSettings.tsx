@@ -14,6 +14,7 @@ import { useMUIAlertState } from '../../Hooks/useAlertState';
 import logger from '../../Utilities/Logger';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
 import emptyRTDF from './EmptyRTDF.json';
+import { HasEverBeenActiveWarning } from './HasEverBeenActiveWarning';
 
 interface TopicSettingsProps {
     selected: TopicObject;
@@ -129,13 +130,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                             {updateAlertMsg}
                         </MUIAlert>
                     </Snackbar>
-                    {selected.hasEverBeenActive() && selected.isExam() && 
-                        <MUIAlert severity='warning' variant='standard'>
-                            This Assessment is currently available to students. 
-                            Any changes to an active exam can distort scores for students who have already taken or are taking the exam, 
-                            so please make sure you are comfortable with this before you confirm this change.
-                        </MUIAlert>
-                    }
+                    <HasEverBeenActiveWarning topic={selected} />
                     <CommonSettings
                         formObject={topicForm}
                         setUpdateAlert={setUpdateAlert}
