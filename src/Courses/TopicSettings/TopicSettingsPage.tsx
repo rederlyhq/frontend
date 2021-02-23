@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ProblemObject, TopicObject, ExamSettingsFields, ExamProblemSettingsFields } from '../CourseInterfaces';
 import TopicSettingsSidebar from './TopicSettingsSidebar';
 import { useCourseContext } from '../CourseProvider';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import _ from 'lodash';
 import SettingsForm from './SettingsForm';
 import { getTopic, postDefFile, postQuestion, putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
@@ -44,6 +44,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     const topicId = topicProp?.id || (topicIdStr ? parseInt(topicIdStr, 10) : null);
     const queryParams = useQuery();
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
+    const history = useHistory();
 
     useEffect(()=>{
         if (!topicId) {
@@ -94,6 +95,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
 
             setTopic(newTopic);
             // Name should never be updated here, so no need to cache.
+            history.push(`?problemId=${newProb.id}`);
             // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Failed to create a new problem with default settings.', e);

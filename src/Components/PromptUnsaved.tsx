@@ -1,6 +1,6 @@
 import React from 'react';
 import { Prompt } from 'react-router-dom';
-import { useBeforeunload, Beforeunload } from 'react-beforeunload';
+import { Beforeunload } from 'react-beforeunload';
 
 interface PromptUnsavedProps {
     message: string;
