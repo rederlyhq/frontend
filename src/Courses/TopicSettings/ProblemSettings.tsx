@@ -15,6 +15,7 @@ import { DevTool } from '@hookform/devtools';
 import './TopicSettings.css';
 import logger from '../../Utilities/Logger';
 import RendererPreview from './RendererPreview';
+import { PromptUnsaved } from '../../Components/PromptUnsaved';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
@@ -49,7 +50,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
     const topicForm = useForm<ProblemSettingsInputs>(formSettings);
 
-    const { handleSubmit, control, watch, reset, setError, clearErrors } = topicForm;
+    const { handleSubmit, control, watch, reset, setError, clearErrors, formState } = topicForm;
     const { optional, smaEnabled, webworkQuestionPath } = watch();
 
     const additionalProblemPaths = watch('courseQuestionAssessmentInfo.additionalProblemPaths', [{path: ''}]);
@@ -225,6 +226,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
 
     return (
         <FormProvider {...topicForm}>
+            <PromptUnsaved message='You have unsaved changes. Are you sure you want to leave the page?' when={formState.isDirty} />
             <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', severity: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
                 <DevTool control={control} />
                 <Grid container item md={12} spacing={3}>
