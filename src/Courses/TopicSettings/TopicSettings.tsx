@@ -14,7 +14,6 @@ import { useMUIAlertState } from '../../Hooks/useAlertState';
 import logger from '../../Utilities/Logger';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
 import emptyRTDF from './EmptyRTDF.json';
-import { Prompt } from 'react-router-dom';
 import { PromptUnsaved } from '../../Components/PromptUnsaved';
 
 interface TopicSettingsProps {

@@ -44,7 +44,6 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     const topicId = topicProp?.id || (topicIdStr ? parseInt(topicIdStr, 10) : null);
     const queryParams = useQuery();
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
-    const test = queryParams.get('problemId');
 
     useEffect(()=>{
         if (!topicId) {
@@ -67,7 +66,6 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
 
     // Sets the selected state when the topic is loaded to the problemId in the URL.
     useEffect(()=>{
-        console.log(test);
         const problemIdStr = queryParams.get('problemId');
         if (!_.isNil(problemIdStr)) {
             const problemId = parseInt(problemIdStr, 10);
@@ -75,7 +73,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 return _.find(topic?.questions, ['id', problemId]) ?? selected;
             });
         }
-    }, [topic, queryParams, test]);
+    }, [topic, queryParams]);
 
     const addNewProblem = async () => {
         if (_.isNil(topicId) || _.isNil(topic)) {
