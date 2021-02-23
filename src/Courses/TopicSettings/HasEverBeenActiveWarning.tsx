@@ -7,13 +7,13 @@ interface HasEverBeenActiveWarningProps {
 }
 
 export const HasEverBeenActiveWarning: React.FC<HasEverBeenActiveWarningProps> = ({topic}) => {
-    if (topic.hasEverBeenActive() && topic.isExam()) return null;
+    if (topic.isExam() && topic.hasEverBeenActive()) return null;
 
     return (
         <Alert severity='warning' variant='standard'>
             This Assessment is currently available to students. 
             Any changes to an active exam can distort scores for students who have already taken or are taking the exam, 
-            so please make sure you are comfortable with this before you confirm this change.
+            so please make sure you are comfortable with this before you make any changes.
         </Alert>
     );
 };
