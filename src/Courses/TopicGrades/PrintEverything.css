@@ -17,6 +17,15 @@
         /* Using !important to override Material styles. */
         display: none !important;
     }
+
+    h4 {
+        break-before: page;
+        break-after: avoid;
+}
+
+    iframe {
+        break-inside: avoid;
+    }
 }
 
 /* This is used to create an a11y-compliant button that looks like an <a> tag. */

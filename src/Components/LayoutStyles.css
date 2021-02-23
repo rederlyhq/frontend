@@ -1,0 +1,39 @@
+.fullheight-container {
+    position: absolute;
+    top: 137px;
+    bottom: 35px;
+    left: 0;
+    right: 0;
+    overflow: auto;
+}
+
+.fullheight-col {
+    height: 100%;
+    overflow-y: auto;
+}
+
+.col-remove-scrollbar-padding {
+    padding-right: 0px;
+    /* Only supported on Firefox */
+    scrollbar-width: thin;
+}
+
+.fullheight-row {
+    height: 100%;
+}
+
+.col-remove-scrollbar-padding::-webkit-scrollbar {
+    width: 5px;
+}
+  
+.col-remove-scrollbar-padding::-webkit-scrollbar-thumb:vertical {
+    margin: 5px;
+    background-color: #999;
+    -webkit-border-radius: 5px;
+}
+  
+.col-remove-scrollbar-padding::-webkit-scrollbar-button:start:decrement,
+.col-remove-scrollbar-padding::-webkit-scrollbar-button:end:increment {
+    height: 5px;
+    display: block;
+}

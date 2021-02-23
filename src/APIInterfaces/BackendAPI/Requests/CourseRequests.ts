@@ -3,7 +3,7 @@ import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse, ListAttachmentsResponse, ReadQuestionResponse, SaveQuestionResponse, CatalogResponse, GradesResponse, EnrollByCodeResponse, PostImportCourseArchiveResponse, GetBrowseProblemsUnitListResponse, GetBrowseProblemsTopicListResponse, GetBrowseProblemsCourseListResponse, GetProblemSearchResultsResponse, EnrollManuallyResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse, ListAttachmentsResponse, ReadQuestionResponse, SaveQuestionResponse, CatalogResponse, GradesResponse, EnrollByCodeResponse, PostImportCourseArchiveResponse, GetBrowseProblemsUnitListResponse, GetBrowseProblemsTopicListResponse, GetBrowseProblemsCourseListResponse, GetProblemSearchResultsResponse, EnrollManuallyResponse, GetTopicGradesForCourseResponse, GetAllVersionDataResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 import _ from 'lodash';
@@ -14,6 +14,7 @@ const urlJoin: (...args: string[]) => string = require('url-join');
 const COURSE_PATH = '/courses/';
 const COURSE_ID = (courseId: number): string => urlJoin(COURSE_PATH, courseId.toString());
 const COURSE_IMPORT_ARCHIVE = (courseId: number): string => urlJoin(COURSE_ID(courseId), '/import-archive/');
+const COURSE_TOPIC_GRADES = (courseId: number): string => urlJoin(COURSE_ID(courseId), '/topic-grades/');
 const COURSE_UNIT_PATH = url.resolve(COURSE_PATH, 'unit/');
 const COURSE_TOPIC_PATH = url.resolve(COURSE_PATH, 'topic/');
 const COURSE_QUESTION_PATH = url.resolve(COURSE_PATH, 'question/');
@@ -423,6 +424,7 @@ export const postPreviewQuestion = async ({
                 params: {
                     webworkQuestionPath,
                     problemSeed,
+                    showAnswersUpfront: showSolutions,
                 }
             });
     } catch (e) {
@@ -452,6 +454,7 @@ export const getQuestion = async ({
     readonly,
     workbookId,
     studentTopicAssessmentInfoId,
+    showCorrectAnswers,
 }: GetQuestionOptions): Promise<AxiosResponse<GetQuestionResponse>> => {
     try {
         return await AxiosRequest.get(
@@ -461,6 +464,7 @@ export const getQuestion = async ({
                     readonly,
                     workbookId,
                     studentTopicAssessmentInfoId,
+                    showCorrectAnswers,
                 }
             });
     } catch (e) {
@@ -776,7 +780,7 @@ export const startExportOfTopic = async ({
 export const getAllContentForVersion = async ({
     userId,
     topicId
-}: {userId: number, topicId: number}): Promise<AxiosResponse<any>> => {
+}: {userId: number, topicId: number}): Promise<AxiosResponse<GetAllVersionDataResponse>> => {
     try {
         return await AxiosRequest.get(url.resolve(COURSE_TOPIC_PATH, `${topicId}/version/${userId}`));
     } catch (e) {
@@ -897,6 +901,18 @@ export const getProblemSearchResults = async ({
                 instructorId: instructorId,
             }, _.isUndefined)
         });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getTopicGradesForCourse = async ({
+    courseId
+}: {
+    courseId: number;
+}): Promise<AxiosResponse<GetTopicGradesForCourseResponse>> => {
+    try {
+        return await AxiosRequest.get(COURSE_TOPIC_GRADES(courseId));
     } catch (e) {
         throw new BackendAPIError(e);
     }

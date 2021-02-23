@@ -1,8 +1,8 @@
 import { Grid, Snackbar } from '@material-ui/core';
-import { Alert as MUIAlert } from '@material-ui/lab';
+import { Alert as MUIAlert, Alert } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
-import { useHistory, useParams, useRouteMatch } from 'react-router-dom';
+import { useHistory, useParams, useRouteMatch, Link } from 'react-router-dom';
 import logger from '../../Utilities/Logger';
 import MaterialBiSelect from '../../Components/MaterialBiSelect';
 import { useCourseContext } from '../CourseProvider';
@@ -15,6 +15,7 @@ import { useQuery } from '../../Hooks/UseQuery';
 import AttachmentsPreview from './AttachmentsPreview';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
 import * as qs from 'querystring';
+import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
 
 interface TopicGradingPageProps {
     topicId?: string;
@@ -37,6 +38,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
     }>({});
     const { url } = useRouteMatch();
     const history = useHistory();
+    const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
 
     useEffect(() => {
         const queryString = qs.stringify(_({
@@ -70,6 +72,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
 
             const currentTopic = new TopicObject(res.data.data);
             setTopic(currentTopic);
+            updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: currentTopic.name ?? 'Unnamed Topic'});
 
             const problemIdString = queryParams.get('problemId');
             let initialSelectedProblem: ProblemObject | undefined;
@@ -132,12 +135,18 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                         Not passing in the plain User ID because the PRINT_SINGLE technically does not fully work (excludes attachments and logs warnings)
                         when printing a Homework Set. The legacy functionality continues to exist for Assessments.
                     */}
-                    {topic && <ExportAllButton topicId={topic.id} userId={selected.gradeInstance ? selected.user?.id : undefined}/>}
+                    {topic && <ExportAllButton topicId={topic.id} userId={selected.user?.id} />}
                 </Grid>
             </Grid>
+            {_.isEmpty(users) && <Alert color='error'>
+                There are no students enrolled in this course. 
+                If you want to view your Assignment, <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}`}>click here to visit the Assignment page</Link>.
+                Otherwise, you can <Link to={`/common/courses/${params.courseId}?tab=Enrollments`}>enroll students in the enrollments tab</Link>.
+            </Alert>}
+            {_.isEmpty(problems) && <Alert color='error'>There are no problems in this topic. You can add problems <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}/settings`}>here</Link>. </Alert>}
             <Grid container spacing={1}>
                 <Grid container item md={4}>
-                    {problems && users &&
+                    {problems && !_.isEmpty(problems) && !_.isEmpty(users) &&
                         <MaterialBiSelect problems={problems} users={users} selected={selected} setSelected={setSelected} />
                     }
                 </Grid>

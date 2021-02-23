@@ -1,0 +1,31 @@
+{
+  "name": "Topic #1",
+  "questions": [
+    {
+      "problemNumber": 1,
+      "webworkQuestionPath": "private/my/57fde7a4-0bc9-4f92-be1d-79d6dcb1a621/tom.pg",
+      "weight": 1,
+      "maxAttempts": -1,
+      "hidden": false,
+      "optional": false,
+      "smaEnabled": true,
+      "studentTopicQuestionOverride": [],
+      "courseQuestionAssessmentInfo": null,
+      "errors": null,
+      "active": true,
+      "curriculumQuestionId": null
+    }
+  ],
+  "curriculumUnitContentId": 0,
+  "topicTypeId": 1,
+  "contentOrder": 1,
+  "courseUnitContentId": 742,
+  "startDate": "2021-01-28T18:24:00.000Z",
+  "endDate": "2021-02-18T04:24:00.000Z",
+  "deadDate": "2021-02-18T04:24:00.000Z",
+  "partialExtend": false,
+  "studentTopicOverride": [],
+  "topicAssessmentInfo": null,
+  "curriculumTopicContentId": null,
+  "active": true
+}

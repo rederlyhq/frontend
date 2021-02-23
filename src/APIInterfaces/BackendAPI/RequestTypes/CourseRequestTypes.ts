@@ -75,7 +75,7 @@ export interface ExtendCourseTopicForUser {
             startDate?: Moment;
             endDate?: Moment;
             deadDate?: Moment;
-        };    
+        };
         studentTopicAssessmentOverride?: {
             versionDelay?: number;
             duration?: number;
@@ -141,6 +141,7 @@ export interface GetQuestionOptions {
     workbookId?: number,
     readonly?: boolean,
     studentTopicAssessmentInfoId?: number,
+    showCorrectAnswers?: boolean,
 }
 
 export interface GetQuestionsOptions {

@@ -1,9 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, ButtonGroup, CircularProgress, ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper } from '@material-ui/core';
+import { Button, ButtonGroup, CircularProgress, ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper, ListSubheader } from '@material-ui/core';
 import { startExportOfTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import _ from 'lodash';
 import { useRouteMatch } from 'react-router-dom';
+import { ExportAllButtonSuboptions } from './ExportAllButtonSuboptions';
+import logger from '../../Utilities/Logger';
+import * as qs from 'querystring';
 
 interface ExportAllButtonProps {
     topicId: number;
@@ -18,16 +21,14 @@ enum LoadingState {
     ERROR
 }
 
-enum ButtonOptions {
+export enum ButtonOptions {
     DOWNLOAD = 'Download PDFs (.zip)',
     EXPORT_ALL = 'Build Student Grade PDFs (.zip)',
-    EXPORT_ALL_NO_SOLUTIONS = 'Build Student Grade PDFs without Solutions (.zip)',
-    // RECALCULATE = 'Recreate Archive',
+    EXPORT_ALL_NO_SOLUTIONS = 'Build Student Grade PDFs Without Solutions (.zip)',
     PRINT_SINGLE = 'Download Selected Student\'s Grades (.pdf)',
-}
-
-function enumKeys<O extends object, K extends keyof O = keyof O>(obj: O): K[] {
-    return Object.keys(obj).filter(k => Number.isNaN(+k)) as K[];
+    PRINT_SINGLE_NO_SOLUTIONS = 'Download Selected Student\'s Grades Without Solutions (.pdf)',
+    PRINT_BLANK = 'Download Worksheet Answer Key (.pdf)',
+    PRINT_BLANK_NO_SOLUTIONS = 'Download as Blank Worksheet (.pdf)',
 }
 
 export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId}) => {
@@ -83,6 +84,38 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
         }
     };
 
+    const allOnClickActions = () => {
+        switch(buttonState) {
+        case ButtonOptions.DOWNLOAD:
+            if (!url) {
+                logger.warn('Download option should not appear if no url is present.');
+                return;
+            }
+
+            window.open(`/${url}`, '_blank');
+            break;
+        case ButtonOptions.PRINT_SINGLE:
+        case ButtonOptions.PRINT_SINGLE_NO_SOLUTIONS:
+            if (!userId) {
+                logger.warn('Print Single option should not appear if no userId is selected.');
+                return;
+            }
+            
+            window.open(`${path}/print/${userId}?${qs.stringify({showSolutions: buttonState === ButtonOptions.PRINT_SINGLE})}`, '_blank');
+            break;
+        case ButtonOptions.PRINT_BLANK:
+        case ButtonOptions.PRINT_BLANK_NO_SOLUTIONS:
+            window.open(`${path}/print/?${qs.stringify({showSolutions: buttonState === ButtonOptions.PRINT_BLANK})}`, '_blank');
+            break;
+        case ButtonOptions.EXPORT_ALL:
+        case ButtonOptions.EXPORT_ALL_NO_SOLUTIONS:
+            checkAndStatusUpdateExport(true);
+            break;
+        default:
+            logger.error('Unknown option for ExportAllButton.', buttonState);
+        }
+    };
+
     return <>
         <ButtonGroup 
             variant="contained" 
@@ -91,21 +124,7 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
             aria-label="download all grades as pdfs" 
             disabled={loading === LoadingState.UNINITIALIZED || loading === LoadingState.LOADING}
         >
-            <Button onClick={
-                () => {
-                    if (userId && buttonState === ButtonOptions.PRINT_SINGLE) {
-                        window.open(`${path}/print/${userId}`, '_blank');
-                        return;
-                    }
-
-                    if (url && buttonState === ButtonOptions.DOWNLOAD) {
-                        window.open(`/${url}`, '_blank');
-                        return;
-                    }
-
-                    checkAndStatusUpdateExport(true);
-                }
-            }>{buttonState}</Button>
+            <Button onClick={allOnClickActions}>{buttonState}</Button>
             <Button
                 color="primary"
                 size="small"
@@ -140,20 +159,41 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                             }
                         }>
                             <MenuList id="split-button-menu">
+                                <ListSubheader>Bulk PDFs</ListSubheader>
                                 {
-                                    enumKeys(ButtonOptions).map((value) => {
-                                        if (ButtonOptions[value] === ButtonOptions.DOWNLOAD  && loading !== LoadingState.SUCCESS) return null;
-                                        if (ButtonOptions[value] === ButtonOptions.PRINT_SINGLE && _.isNil(userId)) return null;
-
-                                        return <MenuItem
+                                    [ButtonOptions.DOWNLOAD, ButtonOptions.EXPORT_ALL, ButtonOptions.EXPORT_ALL_NO_SOLUTIONS].map((value) => (
+                                        <ExportAllButtonSuboptions 
                                             key={value}
-                                            disabled={false}
-                                            selected={ButtonOptions[value] === buttonState}
-                                            onClick={() => {setButtonState(ButtonOptions[value]); setOpen(false);}}
-                                        >
-                                            {ButtonOptions[value]}
-                                        </MenuItem>;
-                                    })
+                                            value={value}
+                                            buttonState={buttonState}
+                                            setOpen={setOpen}
+                                            setButtonState={setButtonState}
+                                        />
+                                    ))
+                                }
+                                <ListSubheader>Print Single Topics</ListSubheader>
+                                {
+                                    [ButtonOptions.PRINT_SINGLE, ButtonOptions.PRINT_SINGLE_NO_SOLUTIONS].map((value) => (
+                                        <ExportAllButtonSuboptions 
+                                            key={value}
+                                            value={value}
+                                            buttonState={buttonState}
+                                            setOpen={setOpen}
+                                            setButtonState={setButtonState}
+                                        />
+                                    ))
+                                }
+                                <ListSubheader>Print Blank Worksheets</ListSubheader>
+                                {
+                                    [ButtonOptions.PRINT_BLANK_NO_SOLUTIONS, ButtonOptions.PRINT_BLANK].map((value) => (
+                                        <ExportAllButtonSuboptions 
+                                            key={value}
+                                            value={value}
+                                            buttonState={buttonState}
+                                            setOpen={setOpen}
+                                            setButtonState={setButtonState}
+                                        />
+                                    ))
                                 }
                             </MenuList>
                         </ClickAwayListener>

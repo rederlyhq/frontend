@@ -1,8 +1,6 @@
 import { Grid } from '@material-ui/core';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ProblemObject, TopicObject, ExamSettingsFields, ExamProblemSettingsFields } from '../CourseInterfaces';
-import MomentUtils from '@date-io/moment';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import TopicSettingsSidebar from './TopicSettingsSidebar';
 import { useCourseContext } from '../CourseProvider';
 import { useParams } from 'react-router-dom';
@@ -14,6 +12,7 @@ import { TopicTypeId } from '../../Enums/TopicType';
 import { useDropzone } from 'react-dropzone';
 import logger from '../../Utilities/Logger';
 import { useQuery } from '../../Hooks/UseQuery';
+import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
 
 interface TopicSettingsPageProps {
     topic?: TopicObject;
@@ -44,6 +43,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     const { topicId: topicIdStr } = useParams<{topicId?: string}>();
     const topicId = topicProp?.id || (topicIdStr ? parseInt(topicIdStr, 10) : null);
     const queryParams = useQuery();
+    const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
 
     useEffect(()=>{
         if (!topicId) {
@@ -56,6 +56,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 const res = await getTopic({id: topicId, includeQuestions: true});
                 const topicData = res.data.data;
                 setTopic(new TopicObject(topicData));
+                updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: topicData.name ?? 'Unnamed Topic'});
                 setSelected(new TopicObject(topicData));
             } catch (e) {
                 logger.error('Failed to load Topic', e);
@@ -95,6 +96,8 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             newTopic.questions.push(newProb);
 
             setTopic(newTopic);
+            // Name should never be updated here, so no need to cache.
+            // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Failed to create a new problem with default settings.', e);
         }
@@ -153,6 +156,8 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
 
             setTopic(newTopic);
             setSelected(selected => selected instanceof ProblemObject ? new ProblemObject({...selected}) : selected);
+            // Name should never be updated here, so no need to cache.
+            // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Drag/Drop error:', e);
         }
@@ -177,6 +182,8 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 const newTopic = new TopicObject(topic);
                 newTopic.questions = newProblems;
                 setTopic(newTopic);
+                // Name should never be updated here, so no need to cache.
+                // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
             } catch (e) {
                 // setError(e);
             }
@@ -184,7 +191,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     }, [topic]);
 
     const { getRootProps, getInputProps, open, isDragActive } = useDropzone({ onDrop,
-        accept: '.def',
+        accept: ['.def', '.rdef'],
         noClick: true,
         noKeyboard: true
     });
@@ -195,28 +202,26 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     }
 
     return (
-        <MuiPickersUtilsProvider utils={MomentUtils}>
-            <Grid container spacing={5} style={{maxWidth: '100%', marginLeft: '0px'}} {...getRootProps({refKey: 'innerRef'})}>
-                {/* Sidebar */}
-                <TopicSettingsSidebar
-                    topic={topic || new TopicObject()}
-                    selected={selected}
-                    setSelected={setSelected}
-                    addNewProblem={addNewProblem}
-                    handleDrag={handleDrag}
-                    isDragActive={isDragActive}
-                    getInputProps={getInputProps}
-                    open={open}
-                />
-                {/* Problem List */}
-                <SettingsForm
-                    selected={selected}
-                    setSelected={setSelected}
-                    setTopic={setTopic}
-                    topic={topic}
-                />
-            </Grid>
-        </MuiPickersUtilsProvider>
+        <Grid container spacing={5} style={{maxWidth: '100%', marginLeft: '0px'}} {...getRootProps({refKey: 'innerRef'})}>
+            {/* Sidebar */}
+            <TopicSettingsSidebar
+                topic={topic || new TopicObject()}
+                selected={selected}
+                setSelected={setSelected}
+                addNewProblem={addNewProblem}
+                handleDrag={handleDrag}
+                isDragActive={isDragActive}
+                getInputProps={getInputProps}
+                open={open}
+            />
+            {/* Problem List */}
+            <SettingsForm
+                selected={selected}
+                setSelected={setSelected}
+                setTopic={setTopic}
+                topic={topic}
+            />
+        </Grid>
     );
 };
 

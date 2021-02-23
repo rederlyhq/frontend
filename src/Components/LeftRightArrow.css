@@ -1,0 +1,26 @@
+.contains-lr-btn {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.left-right-btn {
+    background-color: white;
+    width: 3%;
+    height: 100%;
+    position: absolute;
+    opacity: 0.5;
+    border: none;
+}
+
+.left-right-btn:hover, .left-right-btn:focus {
+    opacity: 0.5;
+    border: none;
+    outline: none;
+}
+
+.left-right-btn-right:hover, .left-right-btn-right:focus {
+    background: linear-gradient(to right,rgba(0,0,0,.0001) 0,rgba(0,0,0,.5) 100%);
+}
+.left-right-btn-left:hover, .left-right-btn-left:focus {
+    background: linear-gradient(to left,rgba(0,0,0,.0001) 0,rgba(0,0,0,.5) 100%);
+}

@@ -25,6 +25,8 @@ interface ProblemIframeProps {
     userId?: number;
     studentTopicAssessmentInfoId?: number;
     propagateLoading?: (loading: boolean)=>void;
+    // This was added for professors printing versions with/without exams.
+    showCorrectAnswers?: boolean;
 }
 
 interface PendingRequest {
@@ -53,6 +55,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     userId,
     studentTopicAssessmentInfoId,
     propagateLoading,
+    showCorrectAnswers
 }) => {
     const pendingReq = useRef<PendingRequest | null>(null);
     const [renderedHTML, setRenderedHTML] = useState<string>(Constants.React.defaultStates.EMPTY_STRING);
@@ -86,7 +89,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     userId,
                     workbookId,
                     studentTopicAssessmentInfoId,
-                    readonly
+                    readonly,
+                    showCorrectAnswers
                 });
             }
             return res.data.data.rendererData.renderedHTML as string;
@@ -103,10 +107,10 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             setLoading(false);
         }
     }, [previewPath, previewProblemSource, previewSeed, previewShowHints, previewShowSolutions, problem.id, readonly, setAlert, studentTopicAssessmentInfoId, userId, workbookId]);
-    
+
     const fetchHTML = useCallback(async () => {
         if (pendingReq.current !== null) {
-            logger.debug(`Problem Iframe: Cancelling request for problem #${pendingReq.current.problemId} workbook #${pendingReq.current.workbookId}`);
+            logger.debug(`Problem Iframe: Canceling request for problem #${pendingReq.current.problemId} workbook #${pendingReq.current.workbookId}`);
             pendingReq.current.cancelled = true;
         }
         const currentReq = {problemId: problem.id, workbookId} as PendingRequest;
@@ -127,7 +131,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             setRenderedHTML(rendererHTML);
         }
     }, [getHTML, problem.id, setAlert, workbookId]);
-    
+
     useEffect(()=>{
         // If you don't reset the rendered html you won't get the load event
         // Thus if you go to an error state and back to the success state

@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import moment from 'moment';
 
 export function* uniqueGen() {
     let index: number = 0;
@@ -50,6 +51,9 @@ export class CourseObject {
         // TODO: Fix naming for route, should be 'templateId'.
         return postObject;
     }
+
+    findUnit = (unitId: number): UnitObject | undefined => _.find(this.units, ['id', unitId]);
+    findTopic = (topicId: number): TopicObject | undefined => _.reduce(this.units, (accum: TopicObject | undefined, unit) => accum || _.find(unit.topics, ['id', topicId]), undefined);
 }
 
 export class UserObject {
@@ -160,6 +164,7 @@ export class StudentTopicAssessmentFields {
 
 export class TopicOverride {
     id?: number;
+    userId?: number;
     startDate?: Date;
     endDate?: Date;
     deadDate?: Date;
@@ -191,6 +196,32 @@ export class TopicObject {
             this.questions = init?.questions?.map(question => new ProblemObject(question)) || [];
         }
     }
+
+    // TODO: Topics should not return overrides when students are asking, which would allow
+    // us to remove this argument.
+    getActiveExtensions = (userId?: number): Array<TopicOverride> => {
+        const now = moment();
+        if (_.isEmpty(this.studentTopicOverride)) return [];
+
+        const activeExtensions: TopicOverride[] = this.studentTopicOverride.reduce((accum: TopicOverride[], extension) => {
+            if ( now.isBetween(extension.startDate, extension.deadDate, 'day', '[]') &&
+               ( _.isNil(userId) || extension.userId === userId )) {
+                accum.push(extension);
+            }
+            return accum;
+        }, []);
+
+        return _.sortBy(activeExtensions, ['endDate', 'startDate']);
+    };
+
+    hasEverBeenActive = (): boolean => {
+        if (moment().isAfter(moment(this.startDate))) return true;
+        return _.some(this.studentTopicOverride, extension => moment().isAfter(moment(extension.startDate)));
+    }
+
+    isExam = (): boolean => this.topicTypeId === TopicTypeId.EXAM;
+    
+    findProblem = (problemId: number): ProblemObject | undefined => _.find(this.questions, ['id', problemId]);
 }
 
 const newUnitUniqueGen = uniqueGen();
@@ -211,6 +242,8 @@ export class UnitObject {
             this.topics = init?.topics?.map(topic => new TopicObject(topic)) || [];
         }
     }
+
+    findTopic = (topicId: number) => _.find(this.topics, ['id', topicId]);
 }
 
 export class NewCourseUnitObj extends UnitObject {

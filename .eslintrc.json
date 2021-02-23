@@ -25,7 +25,8 @@
             "jsx": true
         },
         "ecmaVersion": 2018,
-        "sourceType": "module"
+        "sourceType": "module",
+        "project": "tsconfig.json"
     },
     "plugins": [
         "react",
@@ -53,7 +54,8 @@
         "no-unused-vars": "off",
         "@typescript-eslint/no-unused-vars": "warn",
         "no-console": ["warn"],
-        "prefer-const": "warn"
+        "prefer-const": "warn",
+        "@typescript-eslint/no-unnecessary-condition": "warn"
     },
     "ignorePatterns": "**/*.min.js"
 }

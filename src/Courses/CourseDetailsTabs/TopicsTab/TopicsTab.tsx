@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
-import TopicsList from '../TopicsList';
+import TopicsList from './TopicsList';
 import { Accordion, Card, Row, Col, Alert, Button } from 'react-bootstrap';
-import { CourseObject, TopicObject, UnitObject } from '../CourseInterfaces';
-import { EditToggleButton } from '../../Components/EditToggleButton';
-import { UserRole, getUserRole } from '../../Enums/UserRole';
+import { CourseObject, TopicObject, UnitObject } from '../../CourseInterfaces';
+import { EditToggleButton } from '../../../Components/EditToggleButton';
+import { UserRole, getUserRole } from '../../../Enums/UserRole';
 import { FaPlusCircle } from 'react-icons/fa';
 import _ from 'lodash';
-import { ConfirmationModal } from '../../Components/ConfirmationModal';
+import { ConfirmationModal } from '../../../Components/ConfirmationModal';
 import { Droppable, Draggable, DragDropContext } from 'react-beautiful-dnd';
-import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
-import logger from '../../Utilities/Logger';
-import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystringHelper';
-import { CourseTarballImportButton } from '../CourseCreation/CourseTarballImportButton';
+import { putUnit, putTopic, deleteTopic, deleteUnit, postUnit, postTopic } from '../../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import logger from '../../../Utilities/Logger';
+import useQuerystringHelper, { QueryStringMode } from '../../../Hooks/useQuerystringHelper';
+import { CourseTarballImportButton } from '../../CourseCreation/CourseTarballImportButton';
 import { Backdrop, CircularProgress, Tooltip } from '@material-ui/core';
-import useAlertState from '../../Hooks/useAlertState';
-import BackendAPIError from '../../APIInterfaces/BackendAPI/BackendAPIError';
+import useAlertState from '../../../Hooks/useAlertState';
+import BackendAPIError from '../../../APIInterfaces/BackendAPI/BackendAPIError';
 import { IconButton } from '@material-ui/core';
 import { Delete, AddCircle } from '@material-ui/icons';
+import { useHistory, useLocation } from 'react-router-dom';
 
 interface CourseTarballImportWarningsProps {
     message: string;
@@ -63,6 +64,9 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
     const [confirmationParamters, setConfirmationParamters] = useState<{ show: boolean, identifierText: string, onConfirm?: (() => unknown) | null }>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [loading, setLoading] = useState<boolean>(false);
+    const history = useHistory();
+    const location = useLocation();
+    const expandedUnits = getCurrentQueryStrings()['unitId'];
 
     const setInEditModeWrapper = (newEditMode: boolean) => {
         let val = newEditMode;
@@ -144,6 +148,13 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
 
             unit.topics.push(new TopicObject(result.data.data));
             setCourse?.(newCourse);
+            updateRoute({
+                unitId: {
+                    val: unit.id.toString(),
+                    mode: QueryStringMode.APPEND_OR_IGNORE,
+                },
+            }, true);
+            history.push(`${location.pathname}/topic/${result.data.data.id}/settings`);
         } catch (e) {
             setAlert({
                 variant: 'danger',
@@ -175,7 +186,14 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 }
             });
             const unit = new UnitObject(result.data.data);
-            setUnitInCourse(unit);    
+            setUnitInCourse(unit);
+            // Force unit open on creation.
+            updateRoute({
+                unitId: {
+                    val: unit.id.toString(),
+                    mode: QueryStringMode.APPEND_OR_IGNORE,
+                },
+            }, true, true);
         } catch (e) {
             setAlert({
                 variant: 'danger',
@@ -425,11 +443,21 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                 bodyContent={`Are you sure you want to remove ${confirmationParamters.identifierText}?`}
             />
             <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message}</Alert>
-            <Row style={{padding: '0.5em'}}>
-                <Col xs={1} md={1}><h4>Units</h4></Col>
-                <Col>
+            <div
+                style={{
+                    paddingTop: '20px',
+                    paddingBottom: '20px',
+                    display: 'flex',
+                }}
+            >
+                <h2>Units</h2>
+                <div
+                    style={{
+                        marginLeft: 'auto'
+                    }}
+                >
                     {userType !== UserRole.STUDENT && (
-                        <Row style={{justifyContent: 'flex-end', paddingRight: '1em'}}>
+                        <div style={{justifyContent: 'flex-end'}}>
                             {/* <span style={style} onClick={onClick} role="button" tabIndex={0} onKeyPress={onClick} > */}
                             {
                                 inEditMode &&
@@ -519,10 +547,10 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                     padding: '0em 0em 0em 1em'
                                 }}
                             />
-                        </Row>
+                        </div>
                     )}
-                </Col>
-            </Row>
+                </div>
+            </div>
             <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId='unitsList' type='UNIT'>
                     {
@@ -530,7 +558,6 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                             <div ref={provided.innerRef} style={{ backgroundColor: 'white' }} {...provided.droppableProps}>
                                 {course?.units?.map((unit: any, index) => {
                                     const onTopicDeleteClickedWithUnitId = _.curry(onTopicDeleteClicked)(_, unit.id);
-                                    const expandedUnits = getCurrentQueryStrings()['unitId'];
                                     const unitId: string = unit.id.toString();
                                     return (
                                         <Draggable draggableId={`unitRow${unit.id}`} index={index} key={`problem-row-${unit.id}`} isDragDisabled={!inEditMode}>
@@ -538,7 +565,8 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                 <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} key={unit.id}>
                                                     {/* 0 is an actual reference, which opens this accordion. 1 or any other value keeps it closed. */}
                                                     <Accordion 
-                                                        defaultActiveKey={_.includes(expandedUnits, unitId) ? '0' : ''} 
+                                                        defaultActiveKey={_.includes(expandedUnits, unitId) ? '0' : ''}
+                                                        activeKey={_.includes(expandedUnits, unitId) ? '0' : ''}
                                                         onSelect={
                                                             ()=>{
                                                                 updateRoute({
@@ -546,7 +574,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                         val: unitId, 
                                                                         mode: QueryStringMode.APPEND_OR_REMOVE,
                                                                     },
-                                                                }, true);
+                                                                }, true, true);
                                                             }
                                                         }
                                                     >
@@ -569,6 +597,11 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                                 }
                                                                             }}
                                                                             onBlur={_.partial(onUnitBlur, _, unit.id)}
+                                                                            style={{
+                                                                                display: 'inline',
+                                                                                cursor: 'text',
+                                                                                wordBreak: 'break-all',
+                                                                            }}
                                                                         >
                                                                             {unit.name}
                                                                         </h4>
@@ -602,8 +635,9 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                     <TopicsList
                                                                         flush
                                                                         listOfTopics={unit.topics}
-                                                                        removeTopic={inEditMode ? onTopicDeleteClickedWithUnitId : undefined}
+                                                                        removeTopic={userType !== UserRole.STUDENT ? onTopicDeleteClickedWithUnitId : undefined}
                                                                         unitUnique={unit.id}
+                                                                        inEditMode={inEditMode}
                                                                     />
                                                                 </Card.Body>
                                                             </Accordion.Collapse>

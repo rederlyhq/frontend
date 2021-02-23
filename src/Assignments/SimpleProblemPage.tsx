@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ProblemObject, TopicObject } from '../Courses/CourseInterfaces';
 import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
@@ -18,6 +18,12 @@ import { getUserId } from '../Enums/UserRole';
 import { Alert } from '@material-ui/lab';
 import { IMUIAlertModalState, useMUIAlertState } from '../Hooks/useAlertState';
 import { FaRegSave } from 'react-icons/fa';
+import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../Contexts/BreadcrumbContext';
+import '../Components/LayoutStyles.css';
+import '../Components/LeftRightArrow.css';
+import { LeftRightArrowWrapper } from '../Components/LeftRightArrowWrapper';
+import { AnimatePresence, motion } from 'framer-motion';
+import useQuerystringHelper, { QueryStringMode } from '../Hooks/useQuerystringHelper';
 
 interface SimpleProblemPageProps {
 }
@@ -38,33 +44,46 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     const params = useParams<SimpleProblemPageLocationParams>();
+    const {getCurrentQueryStrings, updateRoute} = useQuerystringHelper();
+    const urlProblemIdQS = getCurrentQueryStrings()?.['problemId'];
+    const urlProblemId = (typeof urlProblemIdQS === 'string') ? parseInt(urlProblemIdQS, 10) : null;
     const [problems, setProblems] = useState<Record<number, ProblemObject> | null>(null);
     const [topic, setTopic] = useState<TopicObject | null>(null);
     const [versionId, setVersionId] = useState<number | null>(null);
     const [attemptsRemaining, setAttemptsRemaining] = useState<number | 'unlimited'>(1); // the only time these two are not set
     const [versionsRemaining, setVersionsRemaining] = useState<number | 'unlimited'>(1); // is when an exam hasn't been attempted at all
     const [modalLoading, setModalLoading] = useState<boolean>(false);
-    const [selectedProblemId, setSelectedProblemId] = useState<number | null>(null);
+    const [selectedProblemId, setSelectedProblemId] = useState<number | null>(urlProblemId);
     const [loading, setLoading] = useState(true);
     const [alert, setAlert] = useMUIAlertState();
     const [confirmationParameters, setConfirmationParameters] = useState<ConfirmationModalProps>(DEFAULT_CONFIRMATION_PARAMETERS);
     const [openDrawer, setOpenDrawer] = useState<boolean>(false);
     const [smaHasNoVersions, setSmaHasNoVersions] = useState<boolean>(false);
     const {course, users} = useCourseContext();
+    const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
     const noAlert = useRef<IMUIAlertModalState>({severity: 'info', message: ''});
 
     useEffect(() => {
         setSmaHasNoVersions(false);
     }, [setSmaHasNoVersions, selectedProblemId]);
 
-    const resetAlert = (): void => {
+    const resetAlert = useCallback((): void => {
         setAlert(noAlert.current);
-    };
+    }, [setAlert]);
 
     useEffect(() => {
         logger.info('SimpleProblemPage: selected problem has changed');
         resetAlert();
-    }, [selectedProblemId]);
+    }, [selectedProblemId, resetAlert]);
+
+    useEffect(() => {
+        updateRoute({
+            problemId: {
+                mode: QueryStringMode.OVERWRITE,
+                val: selectedProblemId?.toString() ?? null,
+            }
+        });
+    }, [selectedProblemId, updateRoute]);
 
     useEffect(() => {
         logger.info('SimpleProblemPage: topic or version or attempts remaining has changed');
@@ -115,6 +134,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             currentTopic.topicAssessmentInfo.maxVersions =  override.maxVersions;
         }
         setTopic(currentTopic);
+        updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: currentTopic.name ?? 'Unnamed Topic'});
 
         if (!_.isEmpty(problems)) {
             const problemDictionary = _.chain(problems)
@@ -129,7 +149,12 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 .keyBy('id')
                 .value();
             setProblems(problemDictionary);
-            setSelectedProblemId(_.sortBy(problems, ['problemNumber'])[0].id);
+
+            // If a selectedProblemId hasn't been set by the query parameter or is invalid, set it to the first id.
+            if (_.isNil(selectedProblemId) || !_.some(problems, ['id', selectedProblemId])) {
+                setSelectedProblemId(_.sortBy(problems, ['problemNumber']).first?.id ?? null);
+            }
+
             if (!_.isNil(currentTopic.topicAssessmentInfo) &&
                 !_.isNil(currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo) &&
                 currentTopic.topicAssessmentInfo.studentTopicAssessmentInfo.length > 0 // student has generated at least one version already
@@ -477,9 +502,16 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     const clickedAskForHelp = async (questionId: number) => {
         logger.info('SimpleProblemPage: user clicked "Ask for Help"');
-        const res = await askForHelp({questionId});
-        const newTab = window.open(undefined, 'openlab');
-        newTab?.document.write(res.data.data);
+        try {
+            const res = await askForHelp({questionId});
+            const newTab = window.open(undefined, 'openlab');
+            newTab?.document.write(res.data.data);
+        } catch (e) {
+            setAlert({
+                severity: 'error',
+                message: e.message ?? 'Failed to access OpenLabs.'
+            });
+        }
     };
 
     const requestShowMeAnother = async (questionId: number) => {
@@ -548,10 +580,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     return (
         <>
-            {alert.message !== '' && <Alert severity={alert.severity}>{alert.message}</Alert>}
-            <Container fluid>
-                <Row>
-                    <Col md={3}>
+            <Container fluid className='fullheight-container'>
+                <Row className='fullheight-row'>
+                    <Col md={3} className='fullheight-col col-remove-scrollbar-padding'>
                         {
                             (topic?.topicTypeId === 2 && versionId) && (
                                 <div className='flex-column text-center'>
@@ -590,14 +621,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 </div>
                             )
                         }
-                        <ConfirmationModal
-                            {...confirmationParameters}
-                            bodyContent={(modalLoading) ? 'Processing...' : confirmationParameters.bodyContent}
-                            onHide={(modalLoading) ? () => { } : confirmationParameters.onHide}
-                            confirmDisabled={modalLoading || confirmationParameters.confirmDisabled}
-                            secondaryDisabled={modalLoading || confirmationParameters.secondaryDisabled}
-                        />
-                        <Nav variant='pills' className='flex-column' defaultActiveKey={selectedProblemId}>
+                        <Nav variant='pills' className='flex-column' defaultActiveKey={selectedProblemId} activeKey={selectedProblemId}>
                             {_.chain(problems)
                                 .values()
                                 .sortBy(['problemNumber'])
@@ -621,42 +645,61 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                             }
                         </Nav>
                     </Col>
-                    <Col md={9}>
-                        <ProblemStateProvider>
-                            <ProblemDetails
-                                problem={problems[selectedProblemId]}
-                                topic={topic}
-                                attemptsRemaining={attemptsRemaining}
-                                setAttemptsRemaining={setAttemptsRemaining}
-                                setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
-                            />
-                            {selectedProblemId && topic && topic.topicTypeId !== 2 && 
-                            (problems[selectedProblemId].smaEnabled && (problems[selectedProblemId].grades?.first?.overallBestScore === 1 || topic.deadDate.toMoment().isBefore(moment()))) &&
-                                <Button
-                                    className='float-right'
-                                    onClick={()=>requestShowMeAnother(selectedProblemId)}
-                                    disabled={smaHasNoVersions}
-                                >
-                                    Show Me Another
-                                </Button>
-                            }
-                            {selectedProblemId && course.canAskForHelp &&
-                                <Button 
-                                    className='float-right'
-                                    onClick={()=>clickedAskForHelp(selectedProblemId)}>
-                                    Ask for help
-                                </Button>
-                            }
-                            <ProblemIframe
-                                problem={problems[selectedProblemId]}
-                                setProblemStudentGrade={setProblemStudentGrade}
-                            />
-                        </ProblemStateProvider>
+                    <Col md={9} className='fullheight-col contains-lr-btn'>
+                        <LeftRightArrowWrapper list={problems} setSelected={setSelectedProblemId} selected={selectedProblemId}>
+                            <ProblemStateProvider>
+                                {alert.message !== '' && <Alert severity={alert.severity}>{alert.message}</Alert>}
+                                <ProblemDetails
+                                    problem={problems[selectedProblemId]}
+                                    topic={topic}
+                                    attemptsRemaining={attemptsRemaining}
+                                    setAttemptsRemaining={setAttemptsRemaining}
+                                    setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
+                                />
+                                {selectedProblemId && topic && topic.topicTypeId !== 2 && 
+                                (problems[selectedProblemId].smaEnabled && (problems[selectedProblemId].grades?.first?.overallBestScore === 1 || topic.deadDate.toMoment().isBefore(moment()))) &&
+                                    <Button
+                                        className='float-right'
+                                        onClick={()=>requestShowMeAnother(selectedProblemId)}
+                                        disabled={smaHasNoVersions}
+                                    >
+                                        Show Me Another
+                                    </Button>
+                                }
+                                {selectedProblemId && course.canAskForHelp && topic?.topicTypeId !== 2 &&
+                                    <Button 
+                                        className='float-right'
+                                        onClick={()=>clickedAskForHelp(selectedProblemId)}>
+                                        Ask for help
+                                    </Button>
+                                }
+                                <AnimatePresence>
+                                    <motion.div
+                                        key={selectedProblemId}
+                                        initial={{ x: 300, opacity: 0 }}
+                                        animate={{ x: 0, opacity: 1 }}
+                                        exit={{ x: -300, opacity: 0 }}
+                                    >
+                                        <ProblemIframe
+                                            problem={problems[selectedProblemId]}
+                                            setProblemStudentGrade={setProblemStudentGrade}
+                                        />
+                                    </motion.div>
+                                </AnimatePresence>
+                            </ProblemStateProvider>
+                        </LeftRightArrowWrapper>
                     </Col>
                 </Row>
                 {selectedGradeId &&
                     <AttachmentsSidebar topic={topic || new TopicObject()} openDrawer={openDrawer} setOpenDrawer={setOpenDrawer} gradeId={selectedGradeId} gradeInstanceId={selectedGradeInstanceId} />
                 }
+                <ConfirmationModal
+                    {...confirmationParameters}
+                    bodyContent={(modalLoading) ? 'Processing...' : confirmationParameters.bodyContent}
+                    onHide={(modalLoading) ? () => { } : confirmationParameters.onHide}
+                    confirmDisabled={modalLoading || confirmationParameters.confirmDisabled}
+                    secondaryDisabled={modalLoading || confirmationParameters.secondaryDisabled}
+                />
             </Container>
         </>
     );
