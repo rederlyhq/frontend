@@ -15,6 +15,7 @@ import logger from '../../Utilities/Logger';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
 import emptyRTDF from './EmptyRTDF.json';
 import { HasEverBeenActiveWarning } from './HasEverBeenActiveWarning';
+import { PromptUnsaved } from '../../Components/PromptUnsaved';
 
 interface TopicSettingsProps {
     selected: TopicObject;
@@ -37,7 +38,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
             }),
         }
     });
-    const { register, handleSubmit, control, watch, reset } = topicForm;
+    const { register, handleSubmit, control, watch, reset, formState } = topicForm;
     const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
     // This is a hack to allow us to update the selected TopicObject with DEF file information but not
     // lose all the user input that might be in the form.
@@ -108,6 +109,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
 
     return (
         <FormProvider {...topicForm}>
+            <PromptUnsaved message='You have unsaved changes. Are you sure you want to leave the page?' when={formState.isDirty} />
             <form
                 onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', severity: 'warning'});}}
                 onSubmit={handleSubmit(onSubmit)}
