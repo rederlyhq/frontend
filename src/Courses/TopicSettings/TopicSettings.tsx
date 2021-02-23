@@ -184,7 +184,9 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
 
                                 problemListV2
                                 `;
-                                selected.questions.forEach((question) => {
+                                // TODO sort upstream
+                                const questions = selected.questions.sort((a, b) => a.problemNumber - b.problemNumber);
+                                questions.forEach((question) => {
                                     fileContent += `
                                     problem_start
                                     problem_id = ${question.id}
