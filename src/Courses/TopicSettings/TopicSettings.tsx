@@ -15,6 +15,7 @@ import logger from '../../Utilities/Logger';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
 import emptyRTDF from './EmptyRTDF.json';
 import { Prompt } from 'react-router-dom';
+import { PromptUnsaved } from '../../Components/PromptUnsaved';
 
 interface TopicSettingsProps {
     selected: TopicObject;
@@ -108,7 +109,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
 
     return (
         <FormProvider {...topicForm}>
-            <Prompt message='You have unsaved changes. Are you sure you want to leave the page?' when={formState.isDirty} />
+            <PromptUnsaved message='You have unsaved changes. Are you sure you want to leave the page?' when={formState.isDirty} />
             <form
                 onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', severity: 'warning'});}}
                 onSubmit={handleSubmit(onSubmit)}
