@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AppBar, Tab, Tabs } from '@material-ui/core';
-import { TabPanel, TabContext, TabList } from '@material-ui/lab';
+import { TabPanel, TabContext } from '@material-ui/lab';
 import ProblemSettings from './ProblemSettings';
 import { ProblemObject, TopicObject } from '../CourseInterfaces';
 import RendererPreview from './RendererPreview';
