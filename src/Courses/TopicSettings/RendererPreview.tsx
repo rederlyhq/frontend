@@ -1,4 +1,4 @@
-import { Accordion, AccordionSummary, AccordionDetails, Grid, TextField, InputAdornment, IconButton, Tooltip, Button, Select, MenuItem } from '@material-ui/core';
+import { Accordion, AccordionSummary, AccordionDetails, Grid, TextField, InputAdornment, IconButton, Tooltip, Button } from '@material-ui/core';
 import { ExpandMore, Refresh } from '@material-ui/icons';
 import { motion, useAnimation, useCycle } from 'framer-motion';
 import _ from 'lodash';
@@ -10,6 +10,7 @@ import { ProblemObject } from '../CourseInterfaces';
 import * as qs from 'querystring';
 import { Constants } from '../../Utilities/Constants';
 import { Autocomplete } from '@material-ui/lab';
+import logger from '../../Utilities/Logger';
 
 interface RendererPreviewProps {
     defaultPath?: string;
@@ -51,21 +52,36 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath, dr
             <AccordionDetails>
                 <Grid container xs={12}>
                     <Grid item xs={10}>
-                        {true && <Autocomplete
+                        {dropdownPaths ? <Autocomplete
                             id="combo-box-demo"
-                            options={dropdownPaths ?? []}
+                            options={dropdownPaths}
                             getOptionLabel={(option) => option.replace(/(my|our)\/([a-zA-Z0-9-]{4})[a-zA-Z0-9-]*\//g, '$1/$2.../')}
                             selectOnFocus
+                            disableClearable
                             style={{ width: '100%' }}
-                            key={dropdownPaths?.first}
-                            defaultValue={dropdownPaths?.first}
+                            key={dropdownPaths.first}
+                            defaultValue={dropdownPaths.first}
+                            onChange={(event, value, reason) => {
+                                switch (reason) {
+                                case 'select-option':
+                                case 'remove-option':
+                                case 'blur':
+                                    logger.info(reason);
+                                    setPreviewSettings(settings => ({...settings, path: value}));
+                                    break;
+                                case 'clear':
+                                case 'create-option':
+                                    break;
+                                default:
+                                    logger.error('Unpredicted Autocomplete-Select behavior - Check MUI docs for ', reason);
+                                }
+                            }}
                             renderInput={(params) => (
                                 <TextField {...params} label="Combo box" variant="outlined"
                                     inputProps={{
                                         ...params.inputProps,
                                         onCopy: (event) => {
                                             event.preventDefault();
-                                            console.log('Setting ', previewSettings.path);
                                             event.clipboardData.setData('text/plain', previewSettings.path);
                                         }
                                     }}
@@ -86,23 +102,7 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath, dr
                                     }}
                                 />
                             )}
-                        />}
-                        {false && <Select
-                            variant='outlined'
-                            value={previewSettings.path}
-                            onChange={(e) => setPreviewSettings(settings => ({...settings, path: e.target.value as string}))}
-                            displayEmpty
-                            // className={classes.selectEmpty}
-                            inputProps={{ 'aria-label': 'Without label',
-                            }}
-                            style={{width: '100%'}}
-                        >
-                            <MenuItem value="" disabled>
-                                Placeholder
-                            </MenuItem>
-                            {dropdownPaths?.map(path => <MenuItem key={path} value={path}>{path}</MenuItem>)}
-                        </Select>}
-                        {false && <TextField
+                        /> : <TextField
                             fullWidth
                             aria-label='Problem Path'
                             variant='outlined'
