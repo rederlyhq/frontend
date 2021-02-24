@@ -162,7 +162,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                 }
             });
 
-            const dataFromBackend = res.data.data.updatesResult?.[0];
+            const dataFromBackend = res.data.data.updatesResult.first;
 
             // Overwrite fields from the original object. This resets the state object when clicking between options.
             const newTopic = new TopicObject(topic);
