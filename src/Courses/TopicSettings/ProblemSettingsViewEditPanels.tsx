@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppBar, Tab, Tabs } from '@material-ui/core';
 import { TabPanel, TabContext, TabList } from '@material-ui/lab';
-import SwipeableViews from 'react-swipeable-views';
 import ProblemSettings from './ProblemSettings';
 import { ProblemObject, TopicObject } from '../CourseInterfaces';
 import RendererPreview from './RendererPreview';
 import _ from 'lodash';
+import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystringHelper';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
@@ -28,7 +28,18 @@ enum ProblemSettingsTabs {
 }
 
 export const ProblemSettingsViewEditPanels: React.FC<ProblemSettingsProps> = (props) => {
-    const [value, setValue] = useState<ProblemSettingsTabs>(ProblemSettingsTabs.VIEW_PROBLEM);
+    const {getCurrentQueryStrings, updateRoute} = useQuerystringHelper();
+    const preselectedTabTypeUnsafe = getCurrentQueryStrings().problemView;
+    const preselectedTabStr = _.isArray(preselectedTabTypeUnsafe) ? preselectedTabTypeUnsafe.first : preselectedTabTypeUnsafe;
+    const preselectedTab = preselectedTabStr ? parseInt(preselectedTabStr, 10) : null;
+    const [value, setValue] = useState<ProblemSettingsTabs>((preselectedTab as ProblemSettingsTabs | undefined) ?? ProblemSettingsTabs.VIEW_PROBLEM);
+
+    useEffect(()=>{
+        updateRoute({problemView: {
+            val: value.toString(),
+            mode: QueryStringMode.OVERWRITE,
+        }}, true);
+    }, [updateRoute, value]);
   
     const handleChange = (event: React.ChangeEvent<{}>, newValue: ProblemSettingsTabs) => {
         setValue(newValue);
