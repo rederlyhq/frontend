@@ -31,7 +31,7 @@ _.mixin({
                 } else {
                     result.push(newKeyPath);
                 }
-            });    
+            });
         }
         return _.flatten(results);
     },
@@ -55,7 +55,7 @@ _.mixin({
                 const arrLength = arr.length;
                 while (++arrIndexIterator < arrLength) {
                     // This only replaces the first one
-                    // If there are multiple they will get handled on future interations
+                    // If there are multiple they will get handled on future iterations
                     paths.push(path.replace('[]', `[${arrIndexIterator}]`));
                 }
                 paths.splice(index, 1);

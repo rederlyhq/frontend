@@ -44,7 +44,7 @@ export const ExamSettings: React.FC<ExamSettingsProps> = () => {
                 <Grid md={12} item><h4>Student Grade View</h4></Grid>
                 <Grid md={12} item>
                     <p>
-                        These setttings control how students can interact with the exam after they&apos;ve submitted their attempt.
+                        These settings control how students can interact with the exam after they&apos;ve submitted their attempt.
                     </p>
                 </Grid>
                 {/* <Grid md={3} item><GenerateSwitchField fieldName='hideHints' label='Hide Hints' /></Grid> */}
