@@ -64,12 +64,11 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath, dr
                             onChange={(event, value, reason) => {
                                 switch (reason) {
                                 case 'select-option':
-                                case 'remove-option':
                                 case 'blur':
-                                    logger.info(reason);
                                     setPreviewSettings(settings => ({...settings, path: value}));
                                     break;
                                 case 'clear':
+                                case 'remove-option':
                                 case 'create-option':
                                     break;
                                 default:
