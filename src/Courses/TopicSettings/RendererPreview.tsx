@@ -9,12 +9,16 @@ import ProblemIframe from '../../Assignments/ProblemIframe';
 import { ProblemObject } from '../CourseInterfaces';
 import * as qs from 'querystring';
 import { Constants } from '../../Utilities/Constants';
+import { Autocomplete } from '@material-ui/lab';
+import logger from '../../Utilities/Logger';
 
 interface RendererPreviewProps {
     defaultPath?: string;
+    dropdownPaths?: string[];
+    opened?: boolean;
 }
 
-export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) => {
+export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath, dropdownPaths}) => {
     const navigateToEditor = (problemPath: string) => {
         // We use useRouteMatch().path elsewhere but that didn't give desired results
         // TODO is this safe if it is hosted under an endpoints and not at root
@@ -33,10 +37,10 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
             setPreviewSettings(settings => ({...settings, path: defaultPath}));
             forceUpdate();
         }
-    }, [defaultPath]);
+    }, [defaultPath, forceUpdate]);
 
     return (
-        <Accordion TransitionProps={{ mountOnEnter: true, unmountOnExit: true }} elevation={5}>
+        <Accordion TransitionProps={{ mountOnEnter: true, unmountOnExit: true }} elevation={5} defaultExpanded={true} expanded={dropdownPaths ? true : undefined}>
             <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-label="Expand"
@@ -48,7 +52,57 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
             <AccordionDetails>
                 <Grid container xs={12}>
                     <Grid item xs={10}>
-                        <TextField
+                        {dropdownPaths ? <Autocomplete
+                            id="combo-box-demo"
+                            options={dropdownPaths}
+                            getOptionLabel={(option) => option.replace(/(my|our)\/([a-zA-Z0-9-]{4})[a-zA-Z0-9-]*\//g, '$1/$2.../')}
+                            selectOnFocus
+                            disableClearable
+                            style={{ width: '100%' }}
+                            key={dropdownPaths.first}
+                            defaultValue={dropdownPaths.first}
+                            onChange={(event, value, reason) => {
+                                switch (reason) {
+                                case 'select-option':
+                                case 'remove-option':
+                                case 'blur':
+                                    logger.info(reason);
+                                    setPreviewSettings(settings => ({...settings, path: value}));
+                                    break;
+                                case 'clear':
+                                case 'create-option':
+                                    break;
+                                default:
+                                    logger.error('Unpredicted Autocomplete-Select behavior - Check MUI docs for ', reason);
+                                }
+                            }}
+                            renderInput={(params) => (
+                                <TextField {...params} label="Combo box" variant="outlined"
+                                    inputProps={{
+                                        ...params.inputProps,
+                                        onCopy: (event) => {
+                                            event.preventDefault();
+                                            event.clipboardData.setData('text/plain', previewSettings.path);
+                                        }
+                                    }}
+                                    InputProps={{
+                                        ...params.InputProps,
+                                        endAdornment: <>
+                                            {params.InputProps.endAdornment}
+                                            <InputAdornment position="end">
+                                                <Button variant='text'
+                                                    tabIndex={0}
+                                                    onClick={() => navigateToEditor(previewSettings.path)}
+                                                    onKeyPress={() => navigateToEditor(previewSettings.path)}
+                                                >
+                                                    <FaFile /> Edit
+                                                </Button>
+                                            </InputAdornment>
+                                        </>
+                                    }}
+                                />
+                            )}
+                        /> : <TextField
                             fullWidth
                             aria-label='Problem Path'
                             variant='outlined'
@@ -87,7 +141,7 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath}) =
                                     </Button>
                                 </InputAdornment>
                             }}
-                        />
+                        />}
                     </Grid>
                     <Grid item xs={2}>
                         <TextField

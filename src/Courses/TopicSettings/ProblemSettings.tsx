@@ -136,9 +136,9 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
         }
 
         // React Hook Forms only supports nested field array structures, so we have to flatten it ourselves.
-        const fieldArray = _.compact(data.courseQuestionAssessmentInfo?.additionalProblemPaths?.map?.(f => f.path));
+        const fieldArray = _.compact(data.courseQuestionAssessmentInfo?.additionalProblemPaths?.map(f => f.path));
         // The first path should be set to the Webwork Question path.
-        const firstPath = fieldArray?.shift();
+        const firstPath = fieldArray.shift();
         const updateAssessmentInfo = (data.courseQuestionAssessmentInfo && {
             courseQuestionAssessmentInfo: {
                 ...(data.courseQuestionAssessmentInfo.additionalProblemPaths && {additionalProblemPaths: fieldArray}),
@@ -162,7 +162,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                 }
             });
 
-            const dataFromBackend = res.data.data.updatesResult?.[0];
+            const dataFromBackend = res.data.data.updatesResult.first;
 
             // Overwrite fields from the original object. This resets the state object when clicking between options.
             const newTopic = new TopicObject(topic);
@@ -296,7 +296,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                     </Grid><Grid item xs={12}>
                         <RendererPreview
                             defaultPath={topic.topicTypeId === TopicTypeId.EXAM ?
-                                additionalProblemPaths?.[0].path || '' :
+                                additionalProblemPaths.first?.path || '' :
                                 webworkQuestionPath}
                         />
                     </Grid>
