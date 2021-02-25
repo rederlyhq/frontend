@@ -1,6 +1,5 @@
 import React from 'react';
 import { Grid } from '@material-ui/core';
-import ProblemSettings from './ProblemSettings';
 import { TopicObject, ProblemObject } from '../CourseInterfaces';
 import TopicSettings from './TopicSettings';
 import { ProblemSettingsViewEditPanels } from './ProblemSettingsViewEditPanels';
