@@ -1,4 +1,4 @@
-import { Grid } from '@material-ui/core';
+import { Grid, Snackbar } from '@material-ui/core';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ProblemObject, TopicObject, ExamSettingsFields, ExamProblemSettingsFields } from '../CourseInterfaces';
 import TopicSettingsSidebar from './TopicSettingsSidebar';
@@ -18,6 +18,8 @@ import { readFileAsText } from '../../Utilities/FileHelper';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { getTopicSettingsFromDefFile, DefFileTopicAssessmentInfo } from '@rederly/rederly-utils';
 import { isKeyOf } from '../../Utilities/TypescriptUtils';
+import { useMUIAlertState } from '../../Hooks/useAlertState';
+import { Alert as MUIAlert } from '@material-ui/lab';
 
 interface TopicSettingsPageProps {
     topic?: TopicObject;
@@ -86,6 +88,7 @@ const translateTopicSettings = (examSettings: any): {[key: string]: string} => {
 };
 
 export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topicProp}) => {
+    const [ updateAlert, setUpdateAlert] = useMUIAlertState();
     const [topicSettingsOverwriteModalOptions, setTopicSettingsOverwriteModalOptions] = useState<TopicSettingsOverwriteModalOptions | null>(null);
     const [selected, setSelected] = useState<ProblemObject | TopicObject>(new TopicObject());
     const [topic, setTopic] = useState<TopicObject | null>(null);
@@ -111,6 +114,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 setSelected(new TopicObject(topicData));
             } catch (e) {
                 logger.error('Failed to load Topic', e);
+                setUpdateAlert({message: e.message, severity: 'error'});
             }
         })();
     }, [course]);
@@ -149,6 +153,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Failed to create a new problem with default settings.', e);
+            setUpdateAlert({message: e.message, severity: 'error'});
         }
     };
 
@@ -209,6 +214,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Drag/Drop error:', e);
+            setUpdateAlert({message: e.message, severity: 'error'});
         }
     };
 
@@ -219,27 +225,24 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
         topicId: number;
         defFile: File;
     }) => {
-        try {
-            if (_.isNil(topic)) {
-                throw new Error('Topic disappeared before pushing the def file');
-            }
-            const res = await postDefFile({
-                defFile: defFile,
-                courseTopicId: topicId,
-            });
-            const newProblems = [
-                ...topic.questions,
-                ...res.data.data.newQuestions.map((question: ProblemObject) => new ProblemObject(question))
-            ];
-            const newTopic = new TopicObject(topic);
-            newTopic.questions = newProblems;
-            setTopic(newTopic);
-            // Name should never be updated here, so no need to cache.
-            // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});    
-        } catch (e) {
-            logger.debug(e);
+        if (_.isNil(topic)) {
+            throw new Error('Topic disappeared before pushing the def file');
         }
+        const res = await postDefFile({
+            defFile: defFile,
+            courseTopicId: topicId,
+        });
+        const newProblems = [
+            ...topic.questions,
+            ...res.data.data.newQuestions.map((question: ProblemObject) => new ProblemObject(question))
+        ];
+        const newTopic = new TopicObject(topic);
+        newTopic.questions = newProblems;
+        setTopic(newTopic);
+        // Name should never be updated here, so no need to cache.
+        // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});    
     };
+
     const onDrop = useCallback((acceptedFiles: File[]) => {
         (async () => {
             try {
@@ -274,8 +277,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                     });
                 }
             } catch (e) {
-                // setError(e);
-                logger.debug(e);
+                setUpdateAlert({message: e.message, severity: 'error'});
             }
         })();
     }, [topic]);
@@ -293,6 +295,17 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
 
     return (
         <Grid container spacing={5} style={{maxWidth: '100%', marginLeft: '0px'}} {...getRootProps({refKey: 'innerRef'})}>
+            <Snackbar
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                open={updateAlert.message !== ''}
+                autoHideDuration={6000}
+                onClose={() => setUpdateAlert({message: '', severity: 'info'})}
+                style={{ maxWidth: '50vw' }}
+            >
+                <MUIAlert severity={updateAlert.severity}>
+                    {updateAlert.message}
+                </MUIAlert>
+            </Snackbar>
             <ConfirmationModal
                 headerContent={<h4>Overwrite settings</h4>}
                 cancelText="No"
@@ -309,24 +322,29 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                     </ul>
                 </>}
                 onConfirm={async ()=>{
-                    if (_.isNil(topicSettingsOverwriteModalOptions)) {
-                        const error = new Error('Options were missing, could not update topic');
-                        logger.error(error);
-                        throw error;
+                    try {
+                        if (_.isNil(topicSettingsOverwriteModalOptions)) {
+                            const error = new Error('Options were missing, could not update topic');
+                            logger.error(error);
+                            throw error;
+                        }
+                        const result = await putTopic({
+                            data: {
+                                topicAssessmentInfo: topicSettingsOverwriteModalOptions.examSettings,
+                                topicTypeId: 2
+                            },
+                            id: topicSettingsOverwriteModalOptions.topicId
+                        });
+    
+                        setTopic(currentTopic => new TopicObject({
+                            ...result.data.data.updatesResult.first,
+                            questions: currentTopic?.questions
+                        }));
+                    } catch (e) {
+                        setUpdateAlert({message: e.message, severity: 'error'});
+                    } finally {
+                        setTopicSettingsOverwriteModalOptions(null);
                     }
-                    const result = await putTopic({
-                        data: {
-                            topicAssessmentInfo: topicSettingsOverwriteModalOptions.examSettings,
-                            topicTypeId: 2
-                        },
-                        id: topicSettingsOverwriteModalOptions.topicId
-                    });
-
-                    setTopic(currentTopic => new TopicObject({
-                        ...result.data.data.updatesResult.first,
-                        questions: currentTopic?.questions
-                    }));
-                    setTopicSettingsOverwriteModalOptions(null);
                 }}
                 onSecondary={() => setTopicSettingsOverwriteModalOptions(null)}
                 onHide={() => setTopicSettingsOverwriteModalOptions(null)}
