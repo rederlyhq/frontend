@@ -437,7 +437,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     Object.keys(problemScores).map(key => {
                         return (
                             <div className="d-flex flex-row" key={key}>
-                                <div className="d-flex flex-column flex-grow-1">{(key === 'total') ? 'Total for this attempt' : `Problem #${key}`}</div>
+                                <div className="d-flex flex-column flex-grow-1">
+                                    {(key === 'total') && 'Total points (this attempt)'} 
+                                    {(key === 'totalPossiblePoints') && 'Total possible points'} 
+                                    {(key !== 'total' && key !== 'totalPossiblePoints') && `Problem #${key}`}</div>
                                 <div className="d-flex flex-column justify-content-end">{problemScores[key]}</div>
                             </div>
                         );
@@ -445,11 +448,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 }
                 < div className="d-flex flex-row text-success">
                     <div className="d-flex flex-column flex-grow-1">Best Version Score</div>
-                    <div className="d-flex flex-column justify-content-end">{bestVersionScore}</div>
+                    <div className="d-flex flex-column justify-content-end">{bestVersionScore.toPercentString()}</div>
                 </div>
                 < div className="d-flex flex-row text-success font-weight-bold">
                     <div className="d-flex flex-column flex-grow-1">Best Overall Score</div>
-                    <div className="d-flex flex-column justify-content-end">{bestOverallVersion}</div>
+                    <div className="d-flex flex-column justify-content-end">{bestOverallVersion.toPercentString()}</div>
                 </div>
             </div>
         );
