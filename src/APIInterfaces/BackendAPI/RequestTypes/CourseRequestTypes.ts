@@ -117,7 +117,7 @@ export interface PostQuestionSubmissionOptions {
 }
 
 export interface PostDefFileOptions {
-    acceptedFiles: any;
+    defFile: File;
     courseTopicId: number;
 }
 
