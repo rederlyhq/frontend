@@ -314,13 +314,18 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                         logger.error(error);
                         throw error;
                     }
-                    await putTopic({
+                    const result = await putTopic({
                         data: {
                             topicAssessmentInfo: topicSettingsOverwriteModalOptions.examSettings,
                             topicTypeId: 2
                         },
                         id: topicSettingsOverwriteModalOptions.topicId
                     });
+
+                    setTopic(currentTopic => new TopicObject({
+                        ...result.data.data.updatesResult.first,
+                        questions: currentTopic?.questions
+                    }));
                     setTopicSettingsOverwriteModalOptions(null);
                 }}
                 onSecondary={() => setTopicSettingsOverwriteModalOptions(null)}
