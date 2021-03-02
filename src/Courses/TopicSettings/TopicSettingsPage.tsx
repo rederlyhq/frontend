@@ -1,6 +1,6 @@
 import { Grid, Snackbar } from '@material-ui/core';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ProblemObject, TopicObject, ExamSettingsFields, ExamProblemSettingsFields } from '../CourseInterfaces';
+import { ProblemObject, TopicObject, ExamSettingsFields, ExamProblemSettingsFields, TopicTypeId as TopicTypeIdNumber } from '../CourseInterfaces';
 import TopicSettingsSidebar from './TopicSettingsSidebar';
 import { useCourseContext } from '../CourseProvider';
 import { useParams, useHistory } from 'react-router-dom';
@@ -20,6 +20,7 @@ import { getTopicSettingsFromDefFile, DefFileTopicAssessmentInfo } from '@rederl
 import { isKeyOf } from '../../Utilities/TypescriptUtils';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
 import { Alert as MUIAlert } from '@material-ui/lab';
+import BackendAPIError from '../../APIInterfaces/BackendAPI/BackendAPIError';
 
 interface TopicSettingsPageProps {
     topic?: TopicObject;
@@ -314,7 +315,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                     <h6>Do you want to overwrite the following settings:</h6>
                     <ul>
                         {Object.entries(translateTopicSettings(topicSettingsOverwriteModalOptions?.examSettings)).map((setting) => (
-                            // <li key={Math.random()}>TOMTOM</li>
+                            // setting is a touple where 0 is the key and 1 is the value
                             <li key={`${setting[0]}-${setting[1]}`}>
                                 <strong>{setting[0]}:</strong> {setting[1]}
                             </li>
@@ -324,14 +325,12 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 onConfirm={async ()=>{
                     try {
                         if (_.isNil(topicSettingsOverwriteModalOptions)) {
-                            const error = new Error('Options were missing, could not update topic');
-                            logger.error(error);
-                            throw error;
+                            throw new Error('Options were missing, could not update topic');
                         }
                         const result = await putTopic({
                             data: {
                                 topicAssessmentInfo: topicSettingsOverwriteModalOptions.examSettings,
-                                topicTypeId: 2
+                                topicTypeId: TopicTypeIdNumber.EXAM
                             },
                             id: topicSettingsOverwriteModalOptions.topicId
                         });
@@ -341,6 +340,9 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                             questions: currentTopic?.questions
                         }));
                     } catch (e) {
+                        if (!BackendAPIError.isBackendAPIError(e) || ((e.status ?? Number.MAX_SAFE_INTEGER) > 400)) {
+                            logger.error('Error overwriting settings', e);
+                        }
                         setUpdateAlert({message: e.message, severity: 'error'});
                     } finally {
                         setTopicSettingsOverwriteModalOptions(null);
