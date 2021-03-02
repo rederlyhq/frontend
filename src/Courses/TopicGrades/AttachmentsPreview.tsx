@@ -62,7 +62,7 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
                             <CardActionArea>
                                 <CardMedia style={{height: '140px'}}>
                                     {
-                                        (_.endsWith(attachment.userLocalFilename, '.heic') || _.endsWith(attachment.userLocalFilename, '.heif')) ? 
+                                        (_.endsWith(attachment.userLocalFilename?.toLowerCase(), '.heic') || _.endsWith(attachment.userLocalFilename?.toLowerCase(), '.heif')) ? 
                                             <Heic
                                                 title={attachment.cloudFilename ?? 'No Filename'}
                                                 url={(baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404'}
