@@ -89,8 +89,11 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                 const onUploadProgress = _.partial(updateIndexProgress, index);
                 const res = await getUploadURL();
 
+                // TODO: Remove in next release!
+                logger.warn(`Got Upload URL: ${res.data.data.uploadURL} for index ${index}`);
+                
                 updateIndexProgressWithPartial(index, {progress: 10});
-
+                
                 await putUploadWork({
                     presignedUrl: res.data.data.uploadURL,
                     file: file.file,

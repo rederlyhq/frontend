@@ -653,7 +653,7 @@ export const requestNewProblemVersion = async ({
 
 export const getUploadURL = async (): Promise<AxiosResponse<GetUploadURLResponse>> => {
     try {
-        return await AxiosRequest.get(COURSE_ATTACHMENTS_GET_UPLOAD_PATH);
+        return await AxiosRequest.post(COURSE_ATTACHMENTS_GET_UPLOAD_PATH);
     } catch (e) {
         throw new BackendAPIError(e);
     }
