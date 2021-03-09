@@ -197,21 +197,24 @@ export class TopicObject {
         }
     }
 
+    getExtensions = (filterCondition: (extension: TopicOverride) => boolean) => {
+        if (_.isEmpty(this.studentTopicOverride)) return [];
+    
+        const activeExtensions: TopicOverride[] = this.studentTopicOverride.filter(filterCondition);
+    
+        return _.sortBy(activeExtensions, ['endDate', 'startDate']);
+    }
+
+    getAllExtensions = (userId?: number) => {
+        return this.getExtensions((extension)=>userId === undefined || extension.userId === userId);
+    }
+
     // TODO: Topics should not return overrides when students are asking, which would allow
     // us to remove this argument.
     getActiveExtensions = (userId?: number): Array<TopicOverride> => {
-        const now = moment();
-        if (_.isEmpty(this.studentTopicOverride)) return [];
-
-        const activeExtensions: TopicOverride[] = this.studentTopicOverride.reduce((accum: TopicOverride[], extension) => {
-            if ( now.isBetween(extension.startDate, extension.deadDate, 'day', '[]') &&
-               ( _.isNil(userId) || extension.userId === userId )) {
-                accum.push(extension);
-            }
-            return accum;
-        }, []);
-
-        return _.sortBy(activeExtensions, ['endDate', 'startDate']);
+        return this.getExtensions((extension) => {
+            return moment().isBetween(extension.startDate, extension.deadDate, 'day', '[]') && ( _.isNil(userId) || extension.userId === userId );
+        });
     };
 
     hasEverBeenActive = (): boolean => {
