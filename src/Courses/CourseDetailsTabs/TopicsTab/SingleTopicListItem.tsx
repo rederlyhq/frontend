@@ -5,7 +5,7 @@ import { MdWarning } from 'react-icons/md';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
 import { DateTimePicker } from '@material-ui/pickers';
-import { UserRole, getUserRole } from '../../../Enums/UserRole';
+import { UserRole, getUserRole, getUserId } from '../../../Enums/UserRole';
 import moment from 'moment';
 import './TopicList.css';
 import { TopicNavButton } from './TopicNavButton';
@@ -19,7 +19,8 @@ interface SingleTopicListItemProps {
 
 export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, removeTopic, inEditMode}) => {
     const userType: UserRole = getUserRole();
-    const activeExtensions = topic.getActiveExtensions();
+    const userId: number = getUserId();
+    const activeExtensions = topic.getAllExtensions(userType === UserRole.STUDENT ? userId : undefined);
 
     const startDateDisplay = userType === UserRole.STUDENT && !_.isNil(activeExtensions.first) ? activeExtensions.first.startDate : topic.startDate;
     const endDateDisplay = userType === UserRole.STUDENT && !_.isNil(activeExtensions.first) ? activeExtensions.first.endDate : topic.endDate;
