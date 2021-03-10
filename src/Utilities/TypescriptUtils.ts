@@ -17,3 +17,7 @@ export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {}
 export type DeepReadonlyObject<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
+
+export const isKeyOf = <T>(key: any, obj: T): key is keyof T => {
+    return key in obj;
+};

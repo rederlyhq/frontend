@@ -53,7 +53,7 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
     const [reactiveMoment, setReactiveMoment] = useState<moment.Moment>(moment());
     const currentTimeoutHandle = useRef<NodeJS.Timeout | null>(null);
     const debugLog = log ? logger.debug : Constants.React.defaultStates.NOOP_FUNCTION;
-    
+
     if(stop === true && !_.isNil(currentTimeoutHandle.current)) {
         clearTimeout(currentTimeoutHandle.current);
         currentTimeoutHandle.current = null;
@@ -113,7 +113,7 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
         if(!_.isNil(currentTimeoutHandle.current)) {
             clearTimeout(currentTimeoutHandle.current);
         }
-        
+
         const newTimeoutHandle = setTimeout(() => setReactiveMoment(moment()), timeoutTime);
         currentTimeoutHandle.current = newTimeoutHandle;
     }, [reactiveMoment, TAG, absolute, intervalInMillis, logTag, offsetInMillis, significantMoments, stop, stopMoment]);
@@ -124,11 +124,11 @@ export const MomentReacter: React.FC<MomentReacterProps> = ({
             if(!_.isNil(currentTimeoutHandle.current)) {
                 clearTimeout(currentTimeoutHandle.current);
                 currentTimeoutHandle.current = null;
-            }    
+            }
         };
     }, []);
-    
-    // I don't use reactive moment here since there is no guarentee this was run immediately, it is more accurate to use a new moment
+
+    // I don't use reactive moment here since there is no guarantee this was run immediately, it is more accurate to use a new moment
     const currentMoment = moment();
     debugLog(`${TAG} currentMoment ${currentMoment}`);
     // TODO renders twice, not sure why

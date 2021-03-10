@@ -3,6 +3,7 @@ import { AxiosError } from 'axios';
 
 // https://www.reddit.com/r/typescript/comments/f91zlt/how_do_i_check_that_a_caught_error_matches_a/
 export function isAxiosError(error: any): error is AxiosError {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     return (error as AxiosError).isAxiosError !== undefined;
 }
 

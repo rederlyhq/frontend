@@ -1,8 +1,8 @@
 import React from 'react';
 import { Grid } from '@material-ui/core';
-import ProblemSettings from './ProblemSettings';
 import { TopicObject, ProblemObject } from '../CourseInterfaces';
 import TopicSettings from './TopicSettings';
+import { ProblemSettingsViewEditPanels } from './ProblemSettingsViewEditPanels';
 
 interface SettingsFormProps {
     selected: TopicObject | ProblemObject;
@@ -23,7 +23,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({selected, setTopic, t
                     setTopic={setTopic}
                 />
             ) : (
-                <ProblemSettings 
+                <ProblemSettingsViewEditPanels
                     selected={selected}
                     setSelected={setSelected}
                     setTopic={setTopic}

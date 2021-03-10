@@ -42,7 +42,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
         if (!show) {
             setNewScorePercentInput('');
         } else if(!_.isNil(displayCurrentScore.current)) {
-            setNewScorePercentInput(displayCurrentScore.current);            
+            setNewScorePercentInput(displayCurrentScore.current);
         }
     }, [displayCurrentScore.current, show]);
 
@@ -141,10 +141,10 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
         } else {
             overrideGradeSubmit();
         }
-  
+
         setValidated(true);
     };
-    
+
     return (
         <Modal
             show={show}
@@ -178,7 +178,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                                             max={100}
                                             onChange={onNewScoreChange}
                                         />
-                                        <Form.Control.Feedback type="invalid">{<span>The new score must be a postive number between 0 and 100</span>}</Form.Control.Feedback>
+                                        <Form.Control.Feedback type="invalid">{<span>The new score must be a positive number between 0 and 100</span>}</Form.Control.Feedback>
                                     </FormGroup>
                                 </>
                             );
@@ -229,7 +229,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                             return (
                                 <Button variant="primary" type="submit">
                                         Submit
-                                </Button>        
+                                </Button>
                             );
                         case OverrideGradePhase.CONFIRM:
                             return (

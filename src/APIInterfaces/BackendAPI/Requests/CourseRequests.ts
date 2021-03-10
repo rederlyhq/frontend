@@ -367,10 +367,10 @@ export const deleteQuestion = async ({
 
 export const postDefFile = async ({
     courseTopicId,
-    acceptedFiles
+    defFile,
 }: PostDefFileOptions): Promise<AxiosResponse<PostDefFileResponse>> => {
     const data = new FormData();
-    data.append('def-file', acceptedFiles[0]);
+    data.append('def-file', defFile);
 
     try {
         return await AxiosRequest.post(
@@ -384,7 +384,7 @@ export const postDefFile = async ({
             {
                 headers: {
                     'Content-Type': 'multipart/form-data'
-                }
+                },
             }
         );
     } catch (e) {

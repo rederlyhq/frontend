@@ -86,7 +86,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                 } else {
                     const initialSelectedProblemId = parseInt(problemIdString, 10);
                     initialSelectedProblem = _.find(currentProblems, ['id', initialSelectedProblemId]);
-                    logger.debug(`GP: attempting to set intial user #${initialSelectedProblemId}`);
+                    logger.debug(`GP: attempting to set initial user #${initialSelectedProblemId}`);
                 }
             }
             if (!_.isEmpty(users)) {
@@ -96,7 +96,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                 } else {
                     const initialSelectedUserId = parseInt(userIdString, 10);
                     initialSelectedUser = _.find(users, { 'id': initialSelectedUserId });
-                    logger.debug(`GP: attempting to set intial user #${initialSelectedUserId}`);
+                    logger.debug(`GP: attempting to set initial user #${initialSelectedUserId}`);
                 }
             }
             setSelected({ user: initialSelectedUser, problem: initialSelectedProblem });
@@ -131,7 +131,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                     <h1>Grading {topic && topic.name}</h1>
                 </Grid>
                 <Grid item>
-                    {/*  
+                    {/*
                         Not passing in the plain User ID because the PRINT_SINGLE technically does not fully work (excludes attachments and logs warnings)
                         when printing a Homework Set. The legacy functionality continues to exist for Assessments.
                     */}
@@ -139,7 +139,7 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                 </Grid>
             </Grid>
             {_.isEmpty(users) && <Alert color='error'>
-                There are no students enrolled in this course. 
+                There are no students enrolled in this course.
                 If you want to view your Assignment, <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}`}>click here to visit the Assignment page</Link>.
                 Otherwise, you can <Link to={`/common/courses/${params.courseId}?tab=Enrollments`}>enroll students in the enrollments tab</Link>.
             </Alert>}
