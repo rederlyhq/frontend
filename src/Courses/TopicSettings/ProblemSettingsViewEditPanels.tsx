@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Tab, Tabs } from '@material-ui/core';
+import { AppBar, Tab, Tabs, withStyles } from '@material-ui/core';
 import { TabPanel, TabContext } from '@material-ui/lab';
 import ProblemSettings from './ProblemSettings';
 import { ProblemObject, TopicObject } from '../CourseInterfaces';
@@ -34,6 +34,21 @@ export const ProblemSettingsViewEditPanels: React.FC<ProblemSettingsProps> = (pr
     const preselectedTab = preselectedTabStr ? parseInt(preselectedTabStr, 10) : null;
     const [value, setValue] = useState<ProblemSettingsTabs>((preselectedTab as ProblemSettingsTabs | undefined) ?? ProblemSettingsTabs.VIEW_PROBLEM);
 
+    const TabWithBorder = withStyles({
+        selected: {
+            '&:not(:last-child)': {
+                borderRightColor: 'rgb(63, 81, 181)',
+                borderRightStyle: 'solid',
+                borderRightWidth: '2px'
+            },
+            '&:not(:first-child)': {
+                borderLeftColor: 'rgb(63, 81, 181)',
+                borderLeftStyle: 'solid',
+                borderLeftWidth: '2px'
+            },
+        }
+    })(Tab);
+
     useEffect(()=>{
         updateRoute({problemView: {
             val: value.toString(),
@@ -57,8 +72,8 @@ export const ProblemSettingsViewEditPanels: React.FC<ProblemSettingsProps> = (pr
                     centered
                     value={value}
                 >
-                    <Tab label='View' {...a11yProps(0)} />
-                    <Tab label='Settings' {...a11yProps(1)} />
+                    <TabWithBorder label='View' {...a11yProps(0)} />
+                    <TabWithBorder label='Settings' {...a11yProps(1)} />
                 </Tabs >
             </AppBar>
             <TabPanel value={ProblemSettingsTabs.EDIT_PROBLEM.toString()}>
