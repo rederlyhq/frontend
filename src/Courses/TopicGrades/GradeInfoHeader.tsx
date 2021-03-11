@@ -129,7 +129,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 
                     // In this case, the latest version has not been submitted yet.
                     const currentVersionMapKeys = _.keys(currentVersionMap);
-                    if (grade.gradeInstances && currentVersionMapKeys.length === grade.gradeInstances.length - 1) {
+                    if (grade.gradeInstances && currentVersionMapKeys.length >= grade.gradeInstances.length - 1) {
                         _.forEach(grade.gradeInstances, gradeInstance => {
                             // This is a necessary condition, the type that is explicitly asserted is incorrect.
                             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
