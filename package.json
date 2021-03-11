@@ -70,8 +70,8 @@
     "winston": "^3.3.3"
   },
   "scripts": {
-    "start": "PORT=3002 react-scripts start",
-    "start-https": "PORT=3002 HTTPS=true react-scripts start",
+    "start": "cross-env PORT=3002 react-scripts start",
+    "start-https": "cross-env PORT=3002 HTTPS=true react-scripts start",
     "server": "npm run start:watch --prefix ../backend/",
     "renderer": "(cd ../renderer && sudo morbo ./script/render_app)",
     "renderer-docker": "(cd ../renderer-docker && ./start_docker.sh)",
@@ -115,6 +115,7 @@
     "@typescript-eslint/parser": "^4.9.1",
     "archiver": "^5.1.0",
     "create-polyfill-service-url": "^2.2.4",
+    "cross-env": "^7.0.3",
     "eslint": "^7.11.0",
     "eslint-plugin-jsx-a11y": "^6.4.1",
     "eslint-plugin-react": "^7.21.5",
