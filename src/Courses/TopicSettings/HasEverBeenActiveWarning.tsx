@@ -7,7 +7,7 @@ interface HasEverBeenActiveWarningProps {
 }
 
 export const HasEverBeenActiveWarning: React.FC<HasEverBeenActiveWarningProps> = ({topic}) => {
-    if (topic.isExam() && topic.hasEverBeenActive()) return null;
+    if (!topic.isExam() || !topic.hasEverBeenActive()) return null;
 
     return (
         <Alert severity='warning' variant='standard'>
