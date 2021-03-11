@@ -8,7 +8,11 @@ const sequentialHeic2any = (blob: Blob): Promise<Blob | Blob[]> => {
     // With this fix they lazy load in; so if it tiems out before all resourses are done you get some
     // return heic2any({ blob });
     const result = (async () => {
-        await currentHEICPromise;
+        try {
+            await currentHEICPromise;
+        } catch (e) {
+            logger.warn('heic promise failed', e);
+        }
         return heic2any({ blob });
     })();
     currentHEICPromise = result;
@@ -23,7 +27,7 @@ interface HeicProps {
 
 export const Heic = forwardRef<HTMLImageElement, HeicProps>(
     function Heic({url, title, ...props}, ref) {
-        const [dataUrl, setDataUrl] = useState<string>();
+        const [dataUrl, setDataUrl] = useState<string>('/heic-loading.png');
 
         useEffect(()=>{
             (async () => {
@@ -36,6 +40,7 @@ export const Heic = forwardRef<HTMLImageElement, HeicProps>(
                     setDataUrl(dataUrl);
                 } catch (e) {
                     logger.warn(`HEIC file failed to load: ${e.message}`);
+                    setDataUrl('/heic-failed-load.png');
                 }
             })();
         }, [url]);
