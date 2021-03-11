@@ -653,7 +653,11 @@ export const requestNewProblemVersion = async ({
 
 export const getUploadURL = async (): Promise<AxiosResponse<GetUploadURLResponse>> => {
     try {
-        return await AxiosRequest.post(COURSE_ATTACHMENTS_GET_UPLOAD_PATH);
+        return await AxiosRequest.post(COURSE_ATTACHMENTS_GET_UPLOAD_PATH, undefined, {
+            params: {
+                cacheBuster: Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
+            }
+        });
     } catch (e) {
         throw new BackendAPIError(e);
     }
