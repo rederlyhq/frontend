@@ -23,4 +23,10 @@ module.exports =  function(app) {
     //     changeOrigin: true,
     //     secure: true,
     // }));
+
+    // app.use(createProxyMiddleware('/exports', {
+    //     target: '',
+    //     changeOrigin: true,
+    //     secure: true,
+    // }));
 };

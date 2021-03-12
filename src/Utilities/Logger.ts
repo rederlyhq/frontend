@@ -42,6 +42,12 @@ const logger = winston.createLogger({
 
 });
 
+// This is an intentional any. I could extend the Global interface to have this fit in
+// However I don't want internal use of this attribute
+// The intention here is to share this with npm modules that need to use the logger
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(global as any).logger = logger;
+
 declare global {
     interface Window {
         logger: winston.Logger;
@@ -49,7 +55,8 @@ declare global {
     }
 }
 
-
+// it appears global and window are the same thing on the frontend, on the backend there is global but not window
+// including both anyway ¯\_(ツ)_/¯
 window.logger = logger;
 window.setLogLevel = (level: string) => {
     const availableLoggingLevels = Object.keys(logger.levels);

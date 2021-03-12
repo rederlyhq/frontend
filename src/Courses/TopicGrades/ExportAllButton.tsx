@@ -161,7 +161,7 @@ export const ExportAllButton: React.FC<ExportAllButtonProps> = ({topicId, userId
                             <MenuList id="split-button-menu">
                                 <ListSubheader>Bulk PDFs</ListSubheader>
                                 {
-                                    [ButtonOptions.DOWNLOAD, ButtonOptions.EXPORT_ALL, ButtonOptions.EXPORT_ALL_NO_SOLUTIONS].map((value) => (
+                                    [...(url ? [ButtonOptions.DOWNLOAD] : []), ButtonOptions.EXPORT_ALL, ButtonOptions.EXPORT_ALL_NO_SOLUTIONS].map((value) => (
                                         <ExportAllButtonSuboptions 
                                             key={value}
                                             value={value}

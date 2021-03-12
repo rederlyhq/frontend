@@ -120,7 +120,7 @@ export const PrintEverything: React.FC<PrintEverythingProps> = () => {
                             const cloudUrl = url.resolve(baseUrl.toString(), cloudFilename);
                             const timestamp = `${userLocalFilename} was uploaded on ${updatedAt.toMoment().formattedMonthDateTime()}`;
 
-                            if (_.endsWith(userLocalFilename, '.heic') || _.endsWith(userLocalFilename, '.heif')) {
+                            if (_.endsWith(userLocalFilename.toLowerCase(), '.heic') || _.endsWith(userLocalFilename.toLowerCase(), '.heif')) {
                                 return (
                                     <>
                                         {timestamp}
