@@ -58,9 +58,9 @@ export const ProblemSettingsViewEditPanels: React.FC<ProblemSettingsProps> = (pr
                     centered
                     value={value}
                 >
-                    <Tab label='View' {...a11yProps(0)} />
+                    <Tab label='View' {...a11yProps(ProblemSettingsTabs.VIEW_PROBLEM)} />
                     <VerticalDivider orientation='vertical' variant='middle' flexItem />
-                    <Tab label='Settings' {...a11yProps(1)} />
+                    <Tab label='Settings' {...a11yProps(ProblemSettingsTabs.EDIT_PROBLEM)} />
                 </Tabs >
             </AppBar>
             <TabPanel value={ProblemSettingsTabs.EDIT_PROBLEM.toString()}>
