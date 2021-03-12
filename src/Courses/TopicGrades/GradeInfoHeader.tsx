@@ -120,10 +120,22 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                         } else {
                             // there should only be one studentGradeId in this case...
                             (map[wb.studentGradeId] || (map[wb.studentGradeId] = [])).push(parseInt(id, 10));
-                            if (wb.studentGradeId !== grade.id) logger.error(`Workbooks for grade ${grade.id} are out of sync with the corresponding grade object.`);
+                            if (wb.studentGradeId !== grade.id) {
+                                logger.error(`Workbooks for grade ${grade.id} are out of sync with the corresponding grade object.`);
+                            }
                         }
                         return map;
                     }, {} as { [k: number]: number[] });
+
+                    // In this case, the latest version has not been submitted yet.
+                    const currentVersionMapKeys = _.keys(currentVersionMap);
+                    if (grade.gradeInstances && currentVersionMapKeys.length >= grade.gradeInstances.length - 1) {
+                        _.forEach(grade.gradeInstances, gradeInstance => {
+                            // This is a necessary condition, the type that is explicitly asserted is incorrect.
+                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                            currentVersionMap[gradeInstance.id] = currentVersionMap[gradeInstance.id] ?? [];
+                        });
+                    }
                 } else {
                     logger.error(`User ${grade.userId} has non-empty workbooks for grade ${grade.id} but none of them have ids.`);
                 }
@@ -235,6 +247,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     const versionList = (vMap: Record<number, Array<number>>) => {
         const versions: WorkbookOption[] = [];
         const versionKeys = _.keys(vMap).map((v) =>  { return parseInt(v, 10); }).sort();
+
         versionKeys.forEach((key, i) => {
             versions.push({ label: `Version #${i+1}`, value: key});
         });
