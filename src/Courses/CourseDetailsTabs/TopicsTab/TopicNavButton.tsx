@@ -51,7 +51,7 @@ export const TopicNavButton: React.FC<TopicNavButtonProps> = ({topic, onDelete})
                                     <ThemeProvider theme={theme}>
                                         <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}/settings`)}>
                                             <Button variant="text" color="primary" startIcon={<MdEdit />} >
-                                                Edit / View
+                                                View / Settings
                                             </Button>
                                         </MenuItem>
                                         <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}/grading`)}>
