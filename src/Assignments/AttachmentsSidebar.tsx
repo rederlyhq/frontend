@@ -1,17 +1,13 @@
-import { Card, CardContent, Drawer, Grid, IconButton, LinearProgress } from '@material-ui/core';
+import { Drawer, Grid } from '@material-ui/core';
 import { Button } from 'react-bootstrap';
 import React, { useCallback, useEffect, useState } from 'react';
 import { DropEvent, FileRejection, useDropzone } from 'react-dropzone';
 import { ProblemAttachments, TopicObject } from '../Courses/CourseInterfaces';
 import { FaFileUpload } from 'react-icons/fa';
-import { MdError } from 'react-icons/md';
-import { BsBoxArrowUpRight } from 'react-icons/bs';
-import { DeleteOutlined } from '@material-ui/icons';
-import { getUploadURL, postConfirmAttachmentUpload, getAttachments, deleteAttachments } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { getAttachments, deleteAttachments } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../Utilities/Logger';
 import _ from 'lodash';
-import { putUploadWork } from '../APIInterfaces/AWS/Requests/StudentUpload';
-import url from 'url';
+import AttachmentsSidebarItem from './AttachmentsSidebarItem';
 
 import './AttachmentsSidebar.css';
 
@@ -47,78 +43,6 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
             }
         })();
     }, [topic, gradeId, gradeInstanceId]);
-
-    // Whenever the length changes, rerun uploads for everything in state.
-    // If delete, everything should have progress 100.
-    useEffect(() => {
-        uploadFilesWithProgress();
-    }, [attachedFiles.length]);
-
-    const updateIndexProgressWithPartial = (index: number, partial: Partial<ProblemAttachments>) => {
-        setAttachedFiles(attachedFiles => {
-            if (index >= attachedFiles.length) {
-                logger.error('Attempted to update (with partial) progress beyond array bounds. (TSNH)', index);
-                return attachedFiles;
-            }
-
-            const localAttachedFiles = [...attachedFiles];
-            localAttachedFiles[index] = {...attachedFiles[index], ...partial};
-            return localAttachedFiles;
-        });
-    };
-
-    const updateIndexProgress = (index: number, progressEvent: any) => {
-        setAttachedFiles(attachedFiles => {
-            if (index >= attachedFiles.length) {
-                logger.error('Attempted to update progress beyond array bounds. (TSNH)', index);
-                return attachedFiles;
-            }
-            const progressPercent = Math.round((progressEvent.loaded / progressEvent.total) * 70);
-            const localAttachedFiles = [...attachedFiles];
-            localAttachedFiles[index] = new ProblemAttachments({...attachedFiles[index], progress: 10 + progressPercent});
-            return localAttachedFiles;
-        });
-    };
-
-    const uploadFilesWithProgress = async () => {
-        attachedFiles.forEach(async (file, index) => {
-            // Skip in-progress files or files that failed to upload correctly..
-            if (file.progress > 0 || _.isNil(file.file)) return;
-
-            try {
-                const onUploadProgress = _.partial(updateIndexProgress, index);
-                const res = await getUploadURL();
-
-                // TODO: Remove in next release!
-                logger.warn(`Got Upload URL: ${res.data.data.uploadURL} for index ${index}`);
-                
-                updateIndexProgressWithPartial(index, {progress: 10});
-                
-                await putUploadWork({
-                    presignedUrl: res.data.data.uploadURL,
-                    file: file.file,
-                    onUploadProgress: onUploadProgress
-                });
-
-                const confirmRes = await postConfirmAttachmentUpload({
-                    attachment: {
-                        cloudFilename: res.data.data.cloudFilename,
-                        userLocalFilename: file.file.name,
-                    },
-                    ...(gradeInstanceId ?
-                        {studentGradeInstanceId: gradeInstanceId} :
-                        {studentGradeId: gradeId}
-                    ),
-                });
-                const attachmentData = confirmRes.data.data;
-                updateIndexProgressWithPartial(index, {...attachmentData, progress: 100, cloudFilename: res.data.data.cloudFilename});
-            } catch (e) {
-                // Catch on an individual file basis
-                updateIndexProgressWithPartial(index, {progress: -1});
-                logger.error('A user encountered an error during attachment upload.', e.message);
-            }
-        });
-    };
 
     const onDrop: <T extends File>(acceptedFiles: T[], fileRejections: FileRejection[], event: DropEvent) => void = useCallback(
         // TODO: Nicer UI for file rejections.
@@ -192,51 +116,19 @@ export const AttachmentsSidebar: React.FC<AttachmentsSidebarProps> = ({topic, op
                         height: '83vh',
                         overflowY: 'auto',
                     }}>
-                        {attachedFiles.map((attachment: ProblemAttachments, i: number) => {
-                            const isInError = attachment.progress < 0;
-                            const errorStyle = {
-                                color: 'red',
-                                backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                            };
-                            const successStyle = {
-                                color: 'green',
-                                backgroundColor: 'rgba(0, 255, 0, 0.1)',
-                            };
-
-                            if (_.isNil(attachment.file) && _.isNil(attachment.id)) {
-                                logger.error('An Attachment in state has neither file nor id. (TSNH).');
-                                return (
-                                    <Card key={`error-${i}`} style={errorStyle}>
-                                        <CardContent>
-                                            There was an error loading this attachment.
-                                        </CardContent>
-                                    </Card>
-                                );
-                            }
-
-                            const cardStyle = isInError ? errorStyle : (
-                                attachment.file && attachment.progress >= 100 ? successStyle : {}
-                            );
-
-                            return (
-                                <Card key={attachment.file?.name ?? attachment.id} style={cardStyle}>
-                                    <CardContent>
-                                        {isInError && <MdError />} {attachment.file?.name ?? attachment.userLocalFilename}
-                                        <IconButton color="secondary" aria-label="delete" onClick={()=>deleteAttachment(attachment)} style={{float: 'right'}} disabled={attachment.progress < 100}>
-                                            <DeleteOutlined />
-                                        </IconButton>
-
-                                        <a href={(baseUrl && attachment.cloudFilename) ? url.resolve(baseUrl.toString(), attachment.cloudFilename) : '/404'} target="_blank" rel='noopener noreferrer'>
-                                            <IconButton color="primary" aria-label="preview" style={{float: 'right'}}>
-                                                <BsBoxArrowUpRight />
-                                            </IconButton>
-                                        </a>
-
-                                        {attachment.file && <LinearProgress variant="determinate" value={attachment.progress} />}
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
+                        {attachedFiles.map((attachment: ProblemAttachments, i: number) => 
+                            <AttachmentsSidebarItem
+                                key={attachment.key} 
+                                baseUrl={baseUrl} 
+                                attachment={attachment} 
+                                deleteAttachment={deleteAttachment}
+                                i={i}
+                                gradeIds={{
+                                    gradeId: gradeId,
+                                    gradeInstanceId: gradeInstanceId,
+                                    workbookId: undefined,
+                                }}
+                            />)}
                     </Grid>
                     <div
                         style={{position: 'absolute', width: '100%', margin: '0 auto', bottom: '0px', fontSize: '2em'}}

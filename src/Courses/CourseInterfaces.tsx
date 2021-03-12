@@ -432,15 +432,12 @@ export class ProblemAttachments {
 
     // When created on the frontend, the File object contains the file that was uploaded.
     file?: File;
-    progress!: number;
+    key?: string;
 
     public constructor(init?:Partial<ProblemAttachments>) {
         Object.assign(this, init);
 
-        // If Backend-specific properties are filled, treat as already uploaded.
-        if (_.isNil(init?.progress)) {
-            this.progress = _.isNil(init?.id) ? 0 : 100;
-        }
+        this.key = this.id ? this.id.toString() : `${this.file?.name}${Math.random()}`;
     }
 }
 
