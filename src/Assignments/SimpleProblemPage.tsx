@@ -448,11 +448,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 }
                 < div className="d-flex flex-row text-success">
                     <div className="d-flex flex-column flex-grow-1">Best Version Score</div>
-                    <div className="d-flex flex-column justify-content-end">{bestVersionScore.toPercentString()}</div>
+                    <div className="d-flex flex-column justify-content-end">{bestVersionScore.toPercentString()} ({bestVersionScore})</div>
                 </div>
                 < div className="d-flex flex-row text-success font-weight-bold">
                     <div className="d-flex flex-column flex-grow-1">Best Overall Score</div>
-                    <div className="d-flex flex-column justify-content-end">{bestOverallVersion.toPercentString()}</div>
+                    <div className="d-flex flex-column justify-content-end">{bestOverallVersion.toPercentString()} ({bestOverallVersion})</div>
                 </div>
             </div>
         );
