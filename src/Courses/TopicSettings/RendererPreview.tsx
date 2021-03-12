@@ -78,12 +78,14 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath, dr
                             }}
                             renderInput={(params) => (
                                 <TextField {...params} label="Combo box" variant="outlined"
+                                    disabled
                                     inputProps={{
                                         ...params.inputProps,
                                         onCopy: (event) => {
                                             event.preventDefault();
                                             event.clipboardData.setData('text/plain', previewSettings.path);
-                                        }
+                                        },
+                                        readonly: 'readonly'
                                     }}
                                     InputProps={{
                                         ...params.InputProps,
