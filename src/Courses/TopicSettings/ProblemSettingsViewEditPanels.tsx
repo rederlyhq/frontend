@@ -6,6 +6,7 @@ import { ProblemObject, TopicObject } from '../CourseInterfaces';
 import RendererPreview from './RendererPreview';
 import _ from 'lodash';
 import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystringHelper';
+import { VerticalDivider } from '../../Components/VerticalDivider';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
@@ -24,7 +25,7 @@ function a11yProps(index: any) {
 
 enum ProblemSettingsTabs {
     VIEW_PROBLEM = 0,
-    EDIT_PROBLEM = 1,
+    EDIT_PROBLEM = 2,
 }
 
 export const ProblemSettingsViewEditPanels: React.FC<ProblemSettingsProps> = (props) => {
@@ -57,8 +58,9 @@ export const ProblemSettingsViewEditPanels: React.FC<ProblemSettingsProps> = (pr
                     centered
                     value={value}
                 >
-                    <Tab label='View' {...a11yProps(0)} />
-                    <Tab label='Settings' {...a11yProps(1)} />
+                    <Tab label='View' {...a11yProps(ProblemSettingsTabs.VIEW_PROBLEM)} />
+                    <VerticalDivider orientation='vertical' variant='middle' flexItem />
+                    <Tab label='Settings' {...a11yProps(ProblemSettingsTabs.EDIT_PROBLEM)} />
                 </Tabs >
             </AppBar>
             <TabPanel value={ProblemSettingsTabs.EDIT_PROBLEM.toString()}>
