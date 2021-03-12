@@ -6,6 +6,7 @@ import { ProblemObject, TopicObject } from '../CourseInterfaces';
 import RendererPreview from './RendererPreview';
 import _ from 'lodash';
 import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystringHelper';
+import { VerticalDivider } from '../../Components/VerticalDivider';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
@@ -58,6 +59,7 @@ export const ProblemSettingsViewEditPanels: React.FC<ProblemSettingsProps> = (pr
                     value={value}
                 >
                     <Tab label='View' {...a11yProps(0)} />
+                    <VerticalDivider orientation='vertical' variant='middle' flexItem />
                     <Tab label='Settings' {...a11yProps(1)} />
                 </Tabs >
             </AppBar>
