@@ -295,6 +295,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                         )}
                     </Grid><Grid item xs={12}>
                         <RendererPreview
+                            opened={false}
                             defaultPath={topic.topicTypeId === TopicTypeId.EXAM ?
                                 additionalProblemPaths.first?.path || '' :
                                 webworkQuestionPath}

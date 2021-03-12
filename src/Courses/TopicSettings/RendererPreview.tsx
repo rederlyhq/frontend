@@ -18,7 +18,7 @@ interface RendererPreviewProps {
     opened?: boolean;
 }
 
-export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath, dropdownPaths}) => {
+export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath, dropdownPaths, opened}) => {
     const navigateToEditor = (problemPath: string) => {
         // We use useRouteMatch().path elsewhere but that didn't give desired results
         // TODO is this safe if it is hosted under an endpoints and not at root
@@ -40,7 +40,7 @@ export const RendererPreview: React.FC<RendererPreviewProps> = ({defaultPath, dr
     }, [defaultPath, forceUpdate]);
 
     return (
-        <Accordion TransitionProps={{ mountOnEnter: true, unmountOnExit: true }} elevation={5} defaultExpanded={true} expanded={dropdownPaths ? true : undefined}>
+        <Accordion TransitionProps={{ mountOnEnter: true, unmountOnExit: true }} elevation={5} defaultExpanded={opened ?? true} expanded={dropdownPaths ? true : undefined}>
             <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-label="Expand"
