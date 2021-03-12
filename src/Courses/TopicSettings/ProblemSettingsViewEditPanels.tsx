@@ -25,7 +25,7 @@ function a11yProps(index: any) {
 
 enum ProblemSettingsTabs {
     VIEW_PROBLEM = 0,
-    EDIT_PROBLEM = 1,
+    EDIT_PROBLEM = 2,
 }
 
 export const ProblemSettingsViewEditPanels: React.FC<ProblemSettingsProps> = (props) => {
