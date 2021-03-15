@@ -207,6 +207,18 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         ...(_.isNil(d.deadAverage) ? undefined : {deadAverage: formatNumberString(d.deadAverage, true)}),
                         completionPercent: formatNumberString(d.completionPercent, true)
                     }));
+
+                    if (view === StatisticsView.TOPICS) console.log('Do it here too!');
+                    if (view === StatisticsViewFilter.UNITS_FILTERED && !_.isNil(idFilter)) {
+                        const unit = course.findUnit(idFilter);
+                        const diffs = _.differenceWith(unit?.topics, data, (a, b: any)=>a.id === b.id);
+
+                        data = _.concat(data, diffs.map((diff) => ({
+                            name: diff.name,
+                            averageScore: 'Grade Withheld',
+                            systemScore: 'Grade Withheld',
+                        })));
+                    }
                 }
                 logger.debug('Stats tab: [useEffect] setting rowData');
                 setRowData(data);
@@ -275,6 +287,11 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
     const nextView = (event: any, rowData: any, togglePanel: any) => {
         logger.debug('Stats tab: [nextView] proceeding to next view.');
+        if (rowData.averageScore === 'Grade Withheld') {
+            logger.debug('Skipping nextview on disabled row.');
+            return;
+        }
+
         setLoading(true);
         const newBreadcrumb = {
             id: rowData.id,
@@ -374,11 +391,12 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
     let actions: Array<any> | undefined = [];
     if(!hasDetailPanel) {
-        actions.push({
+        actions.push((rowData: any) => ({
+            disabled: rowData.averageScore === 'Grade Withheld',
             icon: function IconWrapper() {return <ChevronRight />; },
             tooltip: 'See More',
             onClick: _.curryRight(nextView)(() => { }),
-        });
+        }));
     }
     if (!_.isNil(userId) && view === StatisticsViewFilter.TOPICS_FILTERED) {
         logger.debug('Stats tab: [root] preparing table actions');
