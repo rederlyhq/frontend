@@ -74,10 +74,10 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
                     const isInDropdown = _.find(topicNavDropdownPaths, ['path', (match as any).path]);
                     if (isInDropdown !== undefined) {
                         return (
-                            <>
+                            <React.Fragment key={`Link${match.url}`}>
                                 <span style={{padding: '0em 1em 0em 1em' }}>/</span>
                                 {breadcrumb}
-                            </>
+                            </React.Fragment>
                         );
                     }
                     
@@ -85,10 +85,10 @@ export const URLBreadcrumb: React.FC<URLBreadcrumbProps> = () => {
                     if (((match as any).path === '/common/courses/:courseId/topic/:topicId' && index === breadcrumbs.length - 1)
                         || (match as any).path === '/common/problem-browser/search') {
                         return (
-                            <>
+                            <React.Fragment key={`Link${match.url}`}>
                                 <span style={{padding: '0em 1em 0em 1em' }}>/</span>
                                 {breadcrumb}
-                            </>
+                            </React.Fragment>
                         );
                     }
 
