@@ -13,7 +13,7 @@ import './GradeFeedback.css';
 // Load Katex with this module
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
-import AxiosRequest from '../../Hooks/AxiosRequest';
+
 window.katex = katex;
 
 interface GradeFeedbackProps {
@@ -42,33 +42,24 @@ export const GradeFeedback: React.FC<GradeFeedbackProps> = () => {
         });
     }, []);
 
-    const onSave = async () => {
-        AxiosRequest.post('/feedback', {
-            body: quill.current?.getEditorContents()
-        });
-    };
-
     return <Grid container item md={12}>
-        <Grid item id='quillgrid' md={12}>
+        <Grid item id='quillgrid-readonly' md={12}>
             <ReactQuill
-                scrollingContainer={'#quillgrid'}
-                bounds={'#quillgrid'}
+                readOnly
+                scrollingContainer={'#quillgrid-readonly'}
+                bounds={'#quillgrid-readonly'}
                 style={{
+                    height: '30vh',
                     width: '100%',
+                    zIndex: 999
                 }}
                 ref={r => quill.current = r}
                 // theme={'snow'} 
                 modules={{
-                    formula: true,
-                    toolbar: [                  
-                        ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-                        ['blockquote', 'code-block'],
-                        [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-                        [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-                        ['formula']]
+                    toolbar: false
                 }}
             />
         </Grid>
-        <Button onClick={onSave}>Submit</Button>
+        <Button onClick={()=>{}}>Insert Text</Button>
     </Grid>;
 };

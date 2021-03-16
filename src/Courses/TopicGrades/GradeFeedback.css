@@ -1,0 +1,9 @@
+/* These styles mostly focus on overriding the Quill styles to achieve reasonable behaviors within the flexboxes. */
+
+.ql-container {
+    min-height: 25vh;
+}
+
+.ql-tooltip {
+    z-index: 2;
+}
