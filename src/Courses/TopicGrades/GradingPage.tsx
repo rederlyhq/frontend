@@ -16,6 +16,9 @@ import AttachmentsPreview from './AttachmentsPreview';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
 import * as qs from 'querystring';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
+import { GradeFeedback } from './GradeFeedback';
+
+import 'react-quill/dist/quill.snow.css';
 
 interface TopicGradingPageProps {
     topicId?: string;
@@ -172,6 +175,9 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                                 previewSeed={selected.problemState?.previewSeed}
                             />
                         }
+                    </Grid>
+                    <Grid container item md={12}>
+                        <GradeFeedback />
                     </Grid>
                     {(selected.grade || selected.gradeInstance) &&
                         <Grid container item md={12}>
