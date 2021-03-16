@@ -79,13 +79,13 @@ const defaultGradesState: GradesState = {
 // TitleData can be either the averages for all returned data, or the effective grade for
 // a specific problem.
 type TitleData = {
-    totalAverage: number;
-    totalOpenAverage: number;
-    totalDeadAverage: number;
+    totalAverage: number | null;
+    totalOpenAverage: number | null;
+    totalDeadAverage: number | null;
 } | { 
-    effectiveScore: number;
-    systemScore: number;
-    bestScore: number;
+    effectiveScore: number | null;
+    systemScore: number | null;
+    bestScore: number | null;
 }
 
 /**
@@ -174,7 +174,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     });
                     logger.debug('Stats tab: [useEffect] setting grade.');
                     setGrade(grades.first);
-                    setTitleGrade(_.isNil(grades.first) ? null : {effectiveScore: grades.first?.effectiveScore, systemScore: grades.first?.partialCreditBestScore, bestScore: grades.first?.bestScore});
+                    setTitleGrade((_.isNil(grades.first) || _.isNil(grades.first.effectiveScore)) ? null : {effectiveScore: grades.first.effectiveScore, systemScore: grades.first.partialCreditBestScore, bestScore: grades.first.bestScore});
                     data = grades.map((grade: any) => (
                         grade.workbooks.map((attempt: any) => ({
                             id: attempt.id,
@@ -191,11 +191,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     setGradesState(defaultGradesState);
                     setGrade(null);
                     setTitleGrade(
-                        {
-                            totalAverage: data.totalAverage as number,
-                            totalOpenAverage: data.totalOpenAverage as number,
-                            totalDeadAverage: data.totalDeadAverage as number,
-                        }
+                        _.isNil(data.totalOpenAverage) ?
+                            null : 
+                            {
+                                totalAverage: data.totalAverage as number,
+                                totalOpenAverage: data.totalOpenAverage as number,
+                                totalDeadAverage: data.totalDeadAverage as number,
+                            }
                     );
 
                     data = data.data.map((d: any) => ({
@@ -208,15 +210,27 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         completionPercent: formatNumberString(d.completionPercent, true)
                     }));
 
-                    if (view === StatisticsView.TOPICS) console.log('Do it here too!');
+                    if (view === StatisticsView.TOPICS) {
+                        const allTopics = _.flatMap(course.units, unit => unit.topics);
+                        const diffs = _.differenceWith(allTopics, data, (a, b: any)=>a.id === b.id);
+
+                        data = _.concat(data, diffs.map((diff) => ({
+                            id: diff.id,
+                            name: diff.name,
+                            averageScore: diff.topicAssessmentInfo?.showTotalGradeImmediately === false ? 'Grade Withheld' : '--',
+                            systemScore: diff.topicAssessmentInfo?.showTotalGradeImmediately === false ? 'Grade Withheld' : '--',
+                        })));
+                    }
+
                     if (view === StatisticsViewFilter.UNITS_FILTERED && !_.isNil(idFilter)) {
                         const unit = course.findUnit(idFilter);
                         const diffs = _.differenceWith(unit?.topics, data, (a, b: any)=>a.id === b.id);
 
                         data = _.concat(data, diffs.map((diff) => ({
+                            id: diff.id,
                             name: diff.name,
-                            averageScore: 'Grade Withheld',
-                            systemScore: 'Grade Withheld',
+                            averageScore: diff.topicAssessmentInfo?.showTotalGradeImmediately === false ? 'Grade Withheld' : '--',
+                            systemScore: diff.topicAssessmentInfo?.showTotalGradeImmediately === false ? 'Grade Withheld' : '--',
                         })));
                     }
                 }
@@ -578,7 +592,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         {statisticsAlert.message}
                     </MUIAlert>
                 )}
-                {!loading && statisticsAlert.message === '' && rowData.length > 0 && (
+                {!loading && statisticsAlert.message === '' && (
                     <MaterialTable
                         key={rowData.length}
                         icons={MaterialIcons}
@@ -603,13 +617,24 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                             sorting: true,
                             emptyRowsWhenPaging: false,
                             pageSize: rowData.length ?? 0,
-                            exportFileName: course.name
+                            exportFileName: course.name,
                         }}
                         detailPanel={hasDetailPanel ? [{
                             icon:  function IconWrapper() { return <ChevronRight />; },
                             render: renderProblemPreview
                         }] : undefined}
-                        localization={{ header: { actions: '' } }}
+                        localization={{
+                            header: { actions: '' },
+                            body: { 
+                                emptyDataSourceMessage: (
+                                    idFilter &&
+                                    view === StatisticsViewFilter.TOPICS_FILTERED &&
+                                    course.findTopic(idFilter)?.topicAssessmentInfo?.showItemizedResults === false
+                                ) ? 
+                                    'The per-problem grades for this topic have been withheld by your instructor.' : 
+                                    'There is no data for this view.' 
+                            }
+                        }}
                         components={{
                             Pagination: function PaginationWrapper(props) {
                                 return <TablePagination
@@ -664,8 +689,8 @@ const TableTitleComponent = (
                         {titleGrade.totalDeadAverage && <>{titleGrade.totalDeadAverage.toPercentString()} on Closed Topics</>}
                     </> :
                     <>
-                        {titleGrade.bestScore.toPercentString()} on time <br/>
-                        {titleGrade.systemScore.toPercentString()} overall
+                        {titleGrade.bestScore?.toPercentString()} on time <br/>
+                        {titleGrade.systemScore?.toPercentString()} overall
                     </>}
                 >
                     <Chip
