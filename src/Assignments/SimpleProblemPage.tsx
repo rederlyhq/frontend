@@ -24,6 +24,8 @@ import '../Components/LeftRightArrow.css';
 import { LeftRightArrowWrapper } from '../Components/LeftRightArrowWrapper';
 import { AnimatePresence, motion } from 'framer-motion';
 import useQuerystringHelper, { QueryStringMode } from '../Hooks/useQuerystringHelper';
+import { Grid } from '@material-ui/core';
+import { QuillReadonlyDisplay } from '../Components/QuillReadonlyDisplay';
 
 interface SimpleProblemPageProps {
 }
@@ -676,6 +678,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                         Ask for help
                                     </Button>
                                 }
+                                <Grid md={12}>
+                                    {/* This is a workaround until we update this componento to use the centralized Topic object. */}
+                                    {(topic?.description && !_.isEmpty(topic.description)) && <QuillReadonlyDisplay content={typeof topic.description === 'string' ? JSON.parse(topic.description) : topic.description} />}
+                                </Grid>
                                 <AnimatePresence>
                                     <motion.div
                                         key={selectedProblemId}

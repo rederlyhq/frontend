@@ -18,6 +18,7 @@ import { HasEverBeenActiveWarning } from './HasEverBeenActiveWarning';
 import { PromptUnsaved } from '../../Components/PromptUnsaved';
 import { getDefObjectFromTopic } from '@rederly/rederly-utils';
 import { isKeyOf } from '../../Utilities/TypescriptUtils';
+import { DevTool } from '@hookform/devtools';
 
 interface TopicSettingsProps {
     selected: TopicObject;
@@ -116,7 +117,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                 onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', severity: 'warning'});}}
                 onSubmit={handleSubmit(onSubmit)}
             >
-                {/* <DevTool control={control} /> */}
+                <DevTool control={control} />
                 <Grid container item md={12} spacing={3}>
                     <Snackbar
                         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}

@@ -188,12 +188,17 @@ export class TopicObject {
     topicAssessmentInfo?: TopicAssessmentFields = new TopicAssessmentFields();
     errors: number = 0;
     unit?: UnitObject;
+    description: any = {};
 
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
 
         if (!_.isNull(init?.questions)) {
             this.questions = init?.questions?.map(question => new ProblemObject(question)) || [];
+        }
+
+        if (typeof init?.description === 'string') {
+            this.description = JSON.parse(init.description);
         }
     }
 
