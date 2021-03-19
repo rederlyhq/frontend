@@ -69,6 +69,7 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                 bounds={'#quillgrid'}
                 style={{
                     width: '100%',
+                    padding: '0% 1%',
                 }}
                 ref={r => quill.current = r}
                 // theme={'snow'} 
@@ -85,6 +86,7 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                 onBlur={onBlur}
                 value={value}
                 defaultValue={defaultValue}
+                placeholder='Descriptions or instructions for this Topic can be added here. They will be displayed on top of every problem in this topic.'
             />
         </Grid>
         {onSave && <Button fullWidth variant='contained' onClick={onClickedSave}>Submit</Button>}

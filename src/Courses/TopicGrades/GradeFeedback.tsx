@@ -7,7 +7,6 @@ import mathquill4quill from 'mathquill4quill';
 import 'mathquill4quill/mathquill4quill.css';
 import _ from 'lodash';
 import logger from '../../Utilities/Logger';
-import { Collapse } from '@material-ui/core';
 
 import '../../Components/Quill/QuillOverrides.css';
 

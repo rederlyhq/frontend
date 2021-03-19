@@ -176,9 +176,6 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                             />
                         }
                     </Grid>
-                    <Grid container item md={12}>
-                        <GradeFeedback />
-                    </Grid>
                     {(selected.grade || selected.gradeInstance) &&
                         <Grid container item md={12}>
                             <AttachmentsPreview
