@@ -53,7 +53,6 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
 
     const onClickedSave = () => {
         const delta = quill.current?.getEditor().getContents();
-        console.log(delta);
         onSave?.(delta ?? {});
     };
 

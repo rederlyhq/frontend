@@ -681,7 +681,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                 }
                                 <Grid md={12}>
                                     {/* This is a workaround until we update this component to use the centralized Topic object. */}
-                                    {(topic?.description && !_.isEmpty(topic.description)) && <CollapsibleQuillReadOnlyDisplay content={typeof topic.description === 'string' ? JSON.parse(topic.description) : topic.description} />}
+                                    {(topic?.description && !_.isEmpty(topic.description)) && <CollapsibleQuillReadOnlyDisplay 
+                                        content={typeof topic.description === 'string' ? JSON.parse(topic.description) : topic.description} 
+                                        infoTitle='Expand description'    
+                                    />}
                                 </Grid>
                                 <AnimatePresence>
                                     <motion.div

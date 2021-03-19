@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Collapse, IconButton, Grid } from '@material-ui/core';
+import React, { useState } from 'react';
+import { Collapse, IconButton, Tooltip } from '@material-ui/core';
 import { QuillReadonlyDisplay } from './QuillReadonlyDisplay';
 import { ReactQuillProps } from 'react-quill';
 import { Info, Close } from '@material-ui/icons';
-import ReactDOM from 'react-dom';
 
 interface CollapsibleQuillReadOnlyDisplayProps {
     content: ReactQuillProps['value'];
-    infoTitle?: string;
+    infoTitle: string;
 }
 
 export const CollapsibleQuillReadOnlyDisplay: React.FC<CollapsibleQuillReadOnlyDisplayProps> = ({content, infoTitle}) => {
@@ -16,9 +15,11 @@ export const CollapsibleQuillReadOnlyDisplay: React.FC<CollapsibleQuillReadOnlyD
     return <div className='QuillReadonlyScrollingContainer'>
         {show ? 
             <>
-                <IconButton onClick={()=>setShow(x => !x)} title={infoTitle} style={{position: 'absolute', right: '1%', top: '2%', zIndex: 3}}> 
-                    <Close />
-                </IconButton>
+                <Tooltip title={infoTitle}>
+                    <IconButton onClick={()=>setShow(x => !x)} style={{position: 'absolute', right: '1%', top: '2%', zIndex: 3}}> 
+                        <Close />
+                    </IconButton>
+                </Tooltip>
                 <Collapse in={show}>
                     <QuillReadonlyDisplay 
                         content={content}
