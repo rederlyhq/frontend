@@ -25,7 +25,7 @@ import { LeftRightArrowWrapper } from '../Components/LeftRightArrowWrapper';
 import { AnimatePresence, motion } from 'framer-motion';
 import useQuerystringHelper, { QueryStringMode } from '../Hooks/useQuerystringHelper';
 import { Grid } from '@material-ui/core';
-import { QuillReadonlyDisplay } from '../Components/QuillReadonlyDisplay';
+import { QuillReadonlyDisplay } from '../Components/Quill/QuillReadonlyDisplay';
 
 interface SimpleProblemPageProps {
 }

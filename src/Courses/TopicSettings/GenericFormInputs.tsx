@@ -5,7 +5,7 @@ import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import ChipInput from 'material-ui-chip-input';
 import { ErrorMessage } from '@hookform/error-message';
 import { Constants } from '../../Utilities/Constants';
-import QuillControlledEditor from '../../Components/QuillControlledEditor';
+import QuillControlledEditor from '../../Components/Quill/QuillControlledEditor';
 
 /* PROBLEM SETTINGS */
 export const ProblemMaxAttempts: React.FC<{}> = () => {

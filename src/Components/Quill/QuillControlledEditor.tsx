@@ -6,9 +6,9 @@ import { Button, Grid } from '@material-ui/core';
 import mathquill4quill from 'mathquill4quill';
 import 'mathquill4quill/mathquill4quill.css';
 import _ from 'lodash';
-import logger from '../Utilities/Logger';
+import logger from '../../Utilities/Logger';
 
-import '../Courses/TopicGrades/GradeFeedback.css';
+import './QuillOverrides.css';
 
 // Load Katex with this module
 import katex from 'katex';
