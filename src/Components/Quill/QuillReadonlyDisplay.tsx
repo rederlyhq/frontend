@@ -39,6 +39,7 @@ export const QuillReadonlyDisplay: React.FC<QuillReadonlyDisplayProps> = ({ cont
         style={{
             width: '100%',
         }}
+        scrollingContainer='.QuillReadonlyScrollingContainer'
         ref={r => quill.current = r}
         // theme={'snow'} 
         modules={{

@@ -76,9 +76,6 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                     </Button>
                 </div>
             </Grid>
-            <Grid md={12}>
-                <GenerateQuillField fieldName={'description'} label={'instructions'} />
-            </Grid>
             {/* This is a workaround because setValue doesn't seem to cause a UI rerender. */}
             <Grid item md={12} style={{display: topicTypeId === TopicTypeId.EXAM ? 'none' : undefined}}>
                 {/* ${partialCreditScore} = ((${gradeCandidate}- ${legalScore}) * ${topicLateScalar}) + ${legalScore} */}
@@ -108,6 +105,10 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         />
                     )}
                 />
+            </Grid>
+            <Grid md={12}>
+                <FormLabel component="legend">Topic Description</FormLabel>
+                <GenerateQuillField fieldName={'description'} label={'instructions'} />
             </Grid>
             <Grid item container md={12} spacing={3}>
                 <Grid item>

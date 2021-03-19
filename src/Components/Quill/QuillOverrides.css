@@ -11,5 +11,12 @@
 .ql-editor {
     width: 100% !important;
     min-height: 10vh;
+    height: 15vh;
     resize: vertical;
+    overflow-y: auto;
+}
+
+.QuillReadonlyScrollingContainer {
+    position: relative;
+    width: 100%;
 }
