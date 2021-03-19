@@ -13,23 +13,23 @@ export const CollapsibleQuillReadOnlyDisplay: React.FC<CollapsibleQuillReadOnlyD
     const [show, setShow] = useState<boolean>(false);
 
     return <div className='QuillReadonlyScrollingContainer'>
-        {show ? 
-            <>
-                <Tooltip title={infoTitle}>
-                    <IconButton onClick={()=>setShow(x => !x)} style={{position: 'absolute', right: '1%', top: '2%', zIndex: 3}}> 
-                        <Close />
-                    </IconButton>
-                </Tooltip>
-                <Collapse in={show}>
-                    <QuillReadonlyDisplay 
-                        content={content}
-                    />
-                </Collapse>
-            </> : 
+        {show &&
+            <Tooltip title={infoTitle}>
+                <IconButton onClick={()=>setShow(x => !x)} style={{position: 'absolute', right: '1%', top: '2%', zIndex: 3}}> 
+                    <Close />
+                </IconButton>
+            </Tooltip>
+        }
+        {!show && 
             <IconButton onClick={()=>setShow(x => !x)} title={infoTitle}>
                 <Info />
             </IconButton>
         }
+        <Collapse in={show}>
+            <QuillReadonlyDisplay 
+                content={content}
+            />
+        </Collapse>
     </div>;
 };
 
