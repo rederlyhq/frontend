@@ -18,13 +18,12 @@ export const CollapsibleQuillReadOnlyDisplay: React.FC<CollapsibleQuillReadOnlyD
                 <IconButton onClick={()=>setShow(x => !x)} style={{position: 'absolute', right: '1%', top: '2%', zIndex: 3}}> 
                     <Close />
                 </IconButton>
-            </Tooltip>
-        }
-        {!show && 
+            </Tooltip>}
+        <Collapse in={!show}>
             <IconButton onClick={()=>setShow(x => !x)} title={infoTitle}>
                 <Info />
             </IconButton>
-        }
+        </Collapse>
         <Collapse in={show}>
             <QuillReadonlyDisplay 
                 content={content}

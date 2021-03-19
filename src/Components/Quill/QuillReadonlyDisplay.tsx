@@ -2,7 +2,6 @@ import React, { useRef, useEffect } from 'react';
 import ReactQuill, {Quill, ReactQuillProps} from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 // import 'mathquill/build/mathquill';
-import { Button, Grid } from '@material-ui/core';
 import mathquill4quill from 'mathquill4quill';
 import 'mathquill4quill/mathquill4quill.css';
 import _ from 'lodash';
