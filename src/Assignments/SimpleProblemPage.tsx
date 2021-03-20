@@ -25,7 +25,6 @@ import { LeftRightArrowWrapper } from '../Components/LeftRightArrowWrapper';
 import { AnimatePresence, motion } from 'framer-motion';
 import useQuerystringHelper, { QueryStringMode } from '../Hooks/useQuerystringHelper';
 import { Grid } from '@material-ui/core';
-import { QuillReadonlyDisplay } from '../Components/Quill/QuillReadonlyDisplay';
 import CollapsibleQuillReadOnlyDisplay from '../Components/Quill/CollapsibleQuillReadonlyDisplay';
 
 interface SimpleProblemPageProps {
@@ -433,29 +432,40 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     const generateScoreTable = (data: any) => {
         logger.info('SimpleProblemPage: generating a table of scores');
-        const { problemScores, bestVersionScore, bestOverallVersion } = data;
+        const { problemScores, problemWeights, bestVersionScore, bestOverallVersion } = data;
         return (
             <div className="d-flex flex-column">
                 {
                     Object.keys(problemScores).map(key => {
+
+                        let heading = '';
+                        if (key === 'total') {
+                            heading = 'Total points (this attempt)';
+                        } else if (key === 'totalPossiblePoints') {
+                            heading = 'Total possible points';
+                        } else {
+                            heading = `Problem #${key}`;
+                        }
+
                         return (
                             <div className="d-flex flex-row" key={key}>
                                 <div className="d-flex flex-column flex-grow-1">
-                                    {(key === 'total') && 'Total points (this attempt)'} 
-                                    {(key === 'totalPossiblePoints') && 'Total possible points'} 
-                                    {(key !== 'total' && key !== 'totalPossiblePoints') && `Problem #${key}`}</div>
-                                <div className="d-flex flex-column justify-content-end">{problemScores[key]}</div>
+                                    {heading}
+                                </div>
+                                <div className="d-flex flex-column justify-content-end">
+                                    {problemScores[key]} {problemWeights?.[key] && `/ ${problemWeights[key]}`}
+                                </div>
                             </div>
                         );
                     })
                 }
                 < div className="d-flex flex-row text-success">
                     <div className="d-flex flex-column flex-grow-1">Best Version Score</div>
-                    <div className="d-flex flex-column justify-content-end">{bestVersionScore.toPercentString()}</div>
+                    <div className="d-flex flex-column justify-content-end">{bestVersionScore} ({bestVersionScore.toPercentString()})</div>
                 </div>
                 < div className="d-flex flex-row text-success font-weight-bold">
                     <div className="d-flex flex-column flex-grow-1">Best Overall Score</div>
-                    <div className="d-flex flex-column justify-content-end">{bestOverallVersion.toPercentString()}</div>
+                    <div className="d-flex flex-column justify-content-end">{bestOverallVersion} ({bestOverallVersion.toPercentString()})</div>
                 </div>
             </div>
         );
