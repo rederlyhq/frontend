@@ -134,16 +134,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         </MomentReacter>
                     </div>
                 </OverlayTrigger>
-                <Button
-                    style={{ marginLeft: 'auto' }}
-                    onClick={()=>setOpenDrawer?.(true)}
-                    disabled={_.isNil(setOpenDrawer)}
-                    title={_.isNil(setOpenDrawer) ? 'You must be enrolled in this course to upload attachments.' : 'Click here to open the Attachments sidebar.'}
-                >
-                    Attach Work
-                </Button>
-                <EmailProfessor topic={topic} problem={problem} />
-                <div style={{ marginLeft: '1em' }}>
+                <div style={{ marginLeft: 'auto' }}>
                     <Badge pill variant="dark">
                         {problem.id}{_.isNil(grade) ? '' : `-${grade.id}`}
                     </Badge>

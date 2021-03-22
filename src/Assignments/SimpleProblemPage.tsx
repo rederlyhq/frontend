@@ -26,6 +26,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import useQuerystringHelper, { QueryStringMode } from '../Hooks/useQuerystringHelper';
 import { Grid } from '@material-ui/core';
 import CollapsibleQuillReadOnlyDisplay from '../Components/Quill/CollapsibleQuillReadonlyDisplay';
+import { SimpleProblemButtonRow } from './SimpleProblemButtonRow';
 
 interface SimpleProblemPageProps {
 }
@@ -672,28 +673,15 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                     setAttemptsRemaining={setAttemptsRemaining}
                                     setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
                                 />
-                                {selectedProblemId && topic && topic.topicTypeId !== 2 && 
-                                (problems[selectedProblemId].smaEnabled && (problems[selectedProblemId].grades?.first?.overallBestScore === 1 || topic.deadDate.toMoment().isBefore(moment()))) &&
-                                    <Button
-                                        className='float-right'
-                                        onClick={()=>requestShowMeAnother(selectedProblemId)}
-                                        disabled={smaHasNoVersions}
-                                    >
-                                        Show Me Another
-                                    </Button>
-                                }
-                                {selectedProblemId && course.canAskForHelp && topic?.topicTypeId !== 2 &&
-                                    <Button 
-                                        className='float-right'
-                                        onClick={()=>clickedAskForHelp(selectedProblemId)}>
-                                        Ask for help
-                                    </Button>
-                                }
                                 <Grid md={12}>
-                                    {/* This is a workaround until we update this component to use the centralized Topic object. */}
-                                    {(topic?.description && !_.isEmpty(topic.description)) && <CollapsibleQuillReadOnlyDisplay 
-                                        content={typeof topic.description === 'string' ? JSON.parse(topic.description) : topic.description} 
-                                        infoTitle='Expand description'    
+                                    {topic && <SimpleProblemButtonRow
+                                        problem={problems[selectedProblemId]}
+                                        topic={topic}
+                                        course={course}
+                                        setOpenDrawer={setOpenDrawer}
+                                        smaHasNoVersions={smaHasNoVersions}
+                                        clickedAskForHelp={clickedAskForHelp}
+                                        requestShowMeAnother={requestShowMeAnother}
                                     />}
                                 </Grid>
                                 <AnimatePresence>

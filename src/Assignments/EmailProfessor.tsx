@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { postEmailProfessor } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { ProblemObject, TopicObject } from '../Courses/CourseInterfaces';
 import { useCourseContext } from '../Courses/CourseProvider';
-import { Alert, Button, Form, FormControl, FormGroup, FormLabel, Modal, ModalBody, ModalFooter, ModalTitle } from 'react-bootstrap';
+import { Alert, Button as BSButton, Form, FormControl, FormGroup, FormLabel, Modal, ModalBody, ModalFooter, ModalTitle } from 'react-bootstrap';
+import { Button } from '@material-ui/core';
 import ModalHeader from 'react-bootstrap/ModalHeader';
 import useAlertState from '../Hooks/useAlertState';
 import logger from '../Utilities/Logger';
@@ -47,7 +48,14 @@ export const EmailProfessor: React.FC<EmailProfessorProps> = ({problem}) => {
 
     return (
         <>
-            <Button style={{ marginLeft: '1em' }} onClick={()=>{setSendEmailRespMsg({message: '', variant: 'warning'}); setShow(true);}}>Email Professor</Button>
+            <Button 
+                variant='contained'
+                color='primary'
+                onClick={()=>{setSendEmailRespMsg({message: '', variant: 'warning'}); setShow(true);}}
+                style={{marginLeft: '1em'}} 
+            >
+                Email Professor
+            </Button>
             <Modal show={show} onHide={()=>setShow(false)}>
                 <ModalHeader closeButton>
                     <ModalTitle>Email Your Professor</ModalTitle>
@@ -75,7 +83,8 @@ export const EmailProfessor: React.FC<EmailProfessorProps> = ({problem}) => {
                 </ModalBody>
                 <ModalFooter>
                     <Button 
-                        variant="primary" 
+                        variant='contained'
+                        color="primary" 
                         onClick={onClick}
                         disabled={disabled}
                     >
