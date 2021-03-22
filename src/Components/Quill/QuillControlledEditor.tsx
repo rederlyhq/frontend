@@ -16,11 +16,11 @@ import 'katex/dist/katex.min.css';
 window.katex = katex;
 
 interface QuillControlledEditorProps {
-    onChange: (value: ReactQuillProps['value']) => void;
+    onChange: (value: ReactQuillProps['value'] | null) => void;
     onBlur: ReactQuillProps['onBlur'];
     value: ReactQuillProps['value'];
     defaultValue?: ReactQuillProps['defaultValue'];
-    onSave?: (saveData: Object)=>any;
+    onSave?: (saveData: ReactQuillProps['value'] | null)=>any;
 }
 
 export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue}) => {
@@ -51,12 +51,31 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
         });
     }, []);
 
-    const onClickedSave = () => {
+    const isQuillEmpty = () => {
         const delta = quill.current?.getEditor().getContents();
-        onSave?.(delta ?? {});
+        
+        if ((delta?.['ops'] || []).length > 1) {
+            return false;
+        }
+
+        const text = quill.current?.getEditor().getText();
+        return text === undefined || text.trim().length === 0;
+    };
+
+    const onClickedSave = () => {
+        if (isQuillEmpty()) {
+            onSave?.(null);
+            return;
+        }
+        const delta = quill.current?.getEditor().getContents();
+        onSave?.(delta ?? null);
     };
 
     const wrappedOnChange = () => {
+        if (isQuillEmpty()) {
+            onChange(null);
+            return;
+        }
         const delta = quill.current?.getEditor().getContents();
         onChange(delta);
     };

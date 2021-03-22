@@ -106,10 +106,6 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                     )}
                 />
             </Grid>
-            <Grid md={12}>
-                <FormLabel component="legend">Topic Description</FormLabel>
-                <GenerateQuillField fieldName={'description'} label={'instructions'} />
-            </Grid>
             <Grid item container md={12} spacing={3}>
                 <Grid item>
                     <Controller
@@ -191,6 +187,9 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         }}
                     />}
                 </Grid>
+            </Grid>
+            <Grid item md={12}>
+                <GenerateQuillField fieldName={'description'} label={'Topic Description'} />
             </Grid>
             <Grid item md={12}>
                 <FormControl component="fieldset">
