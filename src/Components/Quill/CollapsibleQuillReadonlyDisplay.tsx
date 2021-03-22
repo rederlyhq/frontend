@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Collapse, IconButton, Tooltip, Button, Grid } from '@material-ui/core';
+import { Collapse, Button, Grid } from '@material-ui/core';
 import { QuillReadonlyDisplay } from './QuillReadonlyDisplay';
 import { ReactQuillProps } from 'react-quill';
-import { Info, Close, ArrowDropDown } from '@material-ui/icons';
+import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 
 interface CollapsibleQuillReadOnlyDisplayProps {
     content: ReactQuillProps['value'];
@@ -10,31 +10,29 @@ interface CollapsibleQuillReadOnlyDisplayProps {
     showQuill: boolean;
 }
 
+/**
+ * This component creates a row and accepts children to be the right-aligned component of the row. 
+ * This allows for buttons to be aligned to the Topic Description button.
+ */
 export const CollapsibleQuillReadOnlyDisplay: React.FC<CollapsibleQuillReadOnlyDisplayProps> = ({showQuill, content, infoTitle, children}) => {
     const [show, setShow] = useState<boolean>(false);
 
-    return <Grid container justify='space-between'>
-        {show &&
-            <Tooltip title={infoTitle}>
-                <IconButton onClick={()=>setShow(x => !x)} style={{position: 'absolute', right: '1%', top: '2%', zIndex: 3}}> 
-                    <Close />
-                </IconButton>
-            </Tooltip>}
-        <Grid item>
+    return <Grid container spacing={1} style={{marginTop: '5px'}}>
+        <Grid md={2} xs={12} item>
             {showQuill && <Button
                 color='primary'
                 variant='outlined'
                 onClick={()=>setShow(x => !x)} 
                 title={infoTitle}
-                endIcon={<ArrowDropDown />}
+                endIcon={show ? <ArrowDropUp /> : <ArrowDropDown />}
             >
                 Topic Description
             </Button>}
         </Grid>
-        <Grid item>
+        <Grid container item spacing={1} md={10} xs={12} justify='flex-end'>
             {children}
         </Grid>
-        <Grid className='QuillReadonlyScrollingContainer'>
+        <Grid xs={12} className='QuillReadonlyScrollingContainer'>
             <Collapse in={show}>
                 <QuillReadonlyDisplay 
                     content={content}

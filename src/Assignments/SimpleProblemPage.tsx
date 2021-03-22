@@ -25,7 +25,6 @@ import { LeftRightArrowWrapper } from '../Components/LeftRightArrowWrapper';
 import { AnimatePresence, motion } from 'framer-motion';
 import useQuerystringHelper, { QueryStringMode } from '../Hooks/useQuerystringHelper';
 import { Grid } from '@material-ui/core';
-import CollapsibleQuillReadOnlyDisplay from '../Components/Quill/CollapsibleQuillReadonlyDisplay';
 import { SimpleProblemButtonRow } from './SimpleProblemButtonRow';
 
 interface SimpleProblemPageProps {
@@ -673,17 +672,15 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                     setAttemptsRemaining={setAttemptsRemaining}
                                     setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
                                 />
-                                <Grid md={12}>
-                                    {topic && <SimpleProblemButtonRow
-                                        problem={problems[selectedProblemId]}
-                                        topic={topic}
-                                        course={course}
-                                        setOpenDrawer={setOpenDrawer}
-                                        smaHasNoVersions={smaHasNoVersions}
-                                        clickedAskForHelp={clickedAskForHelp}
-                                        requestShowMeAnother={requestShowMeAnother}
-                                    />}
-                                </Grid>
+                                {topic && <SimpleProblemButtonRow
+                                    problem={problems[selectedProblemId]}
+                                    topic={topic}
+                                    course={course}
+                                    setOpenDrawer={setOpenDrawer}
+                                    smaHasNoVersions={smaHasNoVersions}
+                                    clickedAskForHelp={clickedAskForHelp}
+                                    requestShowMeAnother={requestShowMeAnother}
+                                />}
                                 <AnimatePresence>
                                     <motion.div
                                         key={selectedProblemId}

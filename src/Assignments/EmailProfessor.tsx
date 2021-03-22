@@ -52,7 +52,6 @@ export const EmailProfessor: React.FC<EmailProfessorProps> = ({problem}) => {
                 variant='contained'
                 color='primary'
                 onClick={()=>{setSendEmailRespMsg({message: '', variant: 'warning'}); setShow(true);}}
-                style={{marginLeft: '1em'}} 
             >
                 Email Professor
             </Button>

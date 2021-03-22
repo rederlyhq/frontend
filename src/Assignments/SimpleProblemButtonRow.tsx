@@ -17,48 +17,48 @@ interface SimpleProblemButtonRowProps {
 }
 
 export const SimpleProblemButtonRow: React.FC<SimpleProblemButtonRowProps> = ({setOpenDrawer, topic, problem, course, smaHasNoVersions, clickedAskForHelp, requestShowMeAnother}) => {
-    return <>
-        {/* This is a workaround until we update this component to use the centralized Topic object. */}
-        <CollapsibleQuillReadOnlyDisplay 
-            showQuill={(topic?.description && !_.isEmpty(topic.description))}
-            content={typeof topic.description === 'string' ? JSON.parse(topic.description) : topic.description} 
-            infoTitle='Expand description'    
-        >
-            {/* <Grid alignContent='flex-end'> */}
+    return <CollapsibleQuillReadOnlyDisplay 
+        showQuill={(topic.description && !_.isEmpty(topic.description))}
+        content={typeof topic.description === 'string' ? JSON.parse(topic.description) : topic.description} 
+        infoTitle='Expand description'    
+    >
+        {/* <Grid alignContent='flex-end'> */}
+        <Grid item xs={6} md='auto'>
             <Button
                 variant='contained'
                 color='primary'
                 onClick={()=>setOpenDrawer(true)}
                 disabled={_.isNil(setOpenDrawer)}
                 title={_.isNil(setOpenDrawer) ? 'You must be enrolled in this course to upload attachments.' : 'Click here to open the Attachments sidebar.'}
-                style={{marginLeft: '1em'}} 
             >
-                    Attach Work
+                Attach Work
             </Button>
-            <EmailProfessor topic={topic} problem={problem} />
-            {topic.topicTypeId !== 2 && 
-                    (problem.smaEnabled && (problem.grades?.first?.overallBestScore === 1 || topic.deadDate.toMoment().isBefore(moment()))) &&
+        </Grid>
+        <Grid item xs={6} md='auto'><EmailProfessor topic={topic} problem={problem} /></Grid>
+        {topic.topicTypeId !== 2 && 
+                (problem.smaEnabled && (problem.grades?.first?.overallBestScore === 1 || topic.deadDate.toMoment().isBefore(moment()))) &&
+                <Grid item xs={6} md='auto'>
                     <Button
                         variant='contained'
                         color='primary'
                         onClick={()=>requestShowMeAnother(problem.id)}
                         disabled={smaHasNoVersions}
-                        style={{marginLeft: '1em'}} 
                     >
                         Show Me Another
                     </Button>
-            }
-            {course.canAskForHelp && topic.topicTypeId !== 2 &&
+                </Grid>
+        }
+        {course.canAskForHelp && topic.topicTypeId !== 2 &&
+            <Grid item xs={6} md='auto'>
                 <Button 
                     variant='contained'
                     color='primary'
                     onClick={()=>clickedAskForHelp(problem.id)}
-                    style={{marginLeft: '1em'}} 
                 >
                     Ask for help
                 </Button>
-            }
-            {/* </Grid> */}
-        </CollapsibleQuillReadOnlyDisplay>
-    </>;
+            </Grid>
+        }
+        {/* </Grid> */}
+    </CollapsibleQuillReadOnlyDisplay>;
 };

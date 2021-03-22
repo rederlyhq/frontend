@@ -142,8 +142,8 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
             </div>
             <div className="d-flex">
                 { !isVersionedAssessment &&
-                    <div className="d-flex flex-column">
-                        <div className="d-flex">
+                    <div>
+                        <div>
                             <OverlayTrigger
                                 placement="top"
                                 delay={{ show: 250, hide: 400 }}
@@ -182,7 +182,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                 </div>
                             </OverlayTrigger>
                         </div>
-                        <div className="d-flex">
+                        <div>
                             {(() => {
                                 if (_.isNil(problem)) {
                                     return null;
@@ -198,17 +198,17 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         </div>
                         {_.isNil(grade) ? null : (
                             <>
-                                <div className="d-flex">
+                                <div>
                                     Your recorded score for this problem is {(grade.effectiveScore * 100).toFixed(1)}%.
                                 </div>
                                 {grade.effectiveScore === grade.overallBestScore ? null : (
-                                    <div className="d-flex">
+                                    <div>
                                         Your best attempt for this problem is {(grade.overallBestScore * 100).toFixed(1)}%.
                                     </div>
                                 )}
                             </>
                         )}
-                        <div className="d-flex">
+                        <div>
                             <MomentReacter
                                 significantMoments={[endDate, deadDate, solutionsMoment]}
                                 stopMoment={solutionsMoment} // Once solutions are available this timer means nothing
