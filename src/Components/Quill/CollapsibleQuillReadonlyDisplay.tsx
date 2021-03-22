@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Collapse, IconButton, Tooltip } from '@material-ui/core';
+import { Collapse, IconButton, Tooltip, Button } from '@material-ui/core';
 import { QuillReadonlyDisplay } from './QuillReadonlyDisplay';
 import { ReactQuillProps } from 'react-quill';
-import { Info, Close } from '@material-ui/icons';
+import { Info, Close, ArrowDropDown } from '@material-ui/icons';
 
 interface CollapsibleQuillReadOnlyDisplayProps {
     content: ReactQuillProps['value'];
@@ -20,9 +20,15 @@ export const CollapsibleQuillReadOnlyDisplay: React.FC<CollapsibleQuillReadOnlyD
                 </IconButton>
             </Tooltip>}
         <Collapse in={!show}>
-            <IconButton onClick={()=>setShow(x => !x)} title={infoTitle}>
-                <Info />
-            </IconButton>
+            <Button
+                color='primary'
+                variant='outlined'
+                onClick={()=>setShow(x => !x)} 
+                title={infoTitle}
+                endIcon={<ArrowDropDown />}
+            >
+                Topic Description
+            </Button>
         </Collapse>
         <Collapse in={show}>
             <QuillReadonlyDisplay 
