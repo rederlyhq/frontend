@@ -2,12 +2,11 @@ import React from 'react';
 import { ProblemObject, TopicObject, StudentGrade, StudentTopicAssessmentFields } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
 import moment from 'moment';
-import { OverlayTrigger, Tooltip, Badge, Button } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip, Badge } from 'react-bootstrap';
 import { getUserRole, UserRole } from '../Enums/UserRole';
 import { MomentReacter } from '../Components/MomentReacter';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import logger from '../Utilities/Logger';
-import EmailProfessor from './EmailProfessor';
 import localPreferences from '../Utilities/LocalPreferences';
 
 const { topicPreferences } = localPreferences;

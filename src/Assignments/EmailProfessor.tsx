@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { postEmailProfessor } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { ProblemObject, TopicObject } from '../Courses/CourseInterfaces';
 import { useCourseContext } from '../Courses/CourseProvider';
-import { Alert, Button as BSButton, Form, FormControl, FormGroup, FormLabel, Modal, ModalBody, ModalFooter, ModalTitle } from 'react-bootstrap';
+import { Alert, Form, FormControl, FormGroup, FormLabel, Modal, ModalBody, ModalFooter, ModalTitle } from 'react-bootstrap';
 import { Button } from '@material-ui/core';
 import ModalHeader from 'react-bootstrap/ModalHeader';
 import useAlertState from '../Hooks/useAlertState';

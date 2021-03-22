@@ -24,7 +24,6 @@ import '../Components/LeftRightArrow.css';
 import { LeftRightArrowWrapper } from '../Components/LeftRightArrowWrapper';
 import { AnimatePresence, motion } from 'framer-motion';
 import useQuerystringHelper, { QueryStringMode } from '../Hooks/useQuerystringHelper';
-import { Grid } from '@material-ui/core';
 import { SimpleProblemButtonRow } from './SimpleProblemButtonRow';
 
 interface SimpleProblemPageProps {
