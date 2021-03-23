@@ -194,7 +194,10 @@ export class TopicObject {
         Object.assign(this, init);
 
         if (!_.isNull(init?.questions)) {
-            this.questions = init?.questions?.map(question => new ProblemObject(question)) || [];
+            this.questions = _(init?.questions)
+                .map(question => new ProblemObject(question))
+                .sortBy(['problemNumber'], ['asc'])
+                .value();
         }
 
         if (typeof init?.description === 'string') {

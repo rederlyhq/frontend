@@ -4,8 +4,8 @@ import { useParams } from 'react-router-dom';
 import { getCourse } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { getUsersForCourse } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../Contexts/BreadcrumbContext';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import { CourseObject, UserObject } from './CourseInterfaces';
+import _ from 'lodash';
 
 interface CourseProviderProps {
     children: React.ReactNode
@@ -49,10 +49,10 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
                 const [courseResp, userResp] = await Promise.all([courseRespPromise, userRespPromise]);
                 setCourse(new CourseObject(courseResp.data.data));
 
-                const usersArr = [];
-                for (const user of userResp.data.data) {
-                    usersArr.push(new UserObject(user));
-                }
+                const usersArr = _(userResp.data.data)
+                    .map(user => new UserObject(user))
+                    .sortBy(['lastName'], ['desc'])
+                    .value();
 
                 updateBreadcrumbLookup?.({[NamedBreadcrumbs.COURSE]: courseResp.data.data.name ?? 'Unnamed Course'});
                 setUsers(usersArr);
