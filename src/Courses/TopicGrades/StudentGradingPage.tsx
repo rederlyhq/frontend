@@ -158,7 +158,7 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
                 </Grid>
                 <Grid container item md={8} style={{paddingLeft: '1rem', height: 'min-content'}}>
                     { selected.user && selected.problem &&
-                        < GradeInfoHeader
+                        <GradeInfoHeader
                             selected={selected}
                             setSelected={setSelected}
                             topic={topic}
