@@ -1,4 +1,4 @@
-import { Grid, Snackbar } from '@material-ui/core';
+import { Grid, Snackbar, Container } from '@material-ui/core';
 import { Alert as MUIAlert, Alert } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
@@ -15,6 +15,7 @@ import AttachmentsPreview from './AttachmentsPreview';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
 import { useQueryParam, NumberParam } from 'use-query-params';
+import { getUserId, getUserRole, UserRole } from '../../Enums/UserRole';
 
 import 'react-quill/dist/quill.snow.css';
 
@@ -23,22 +24,26 @@ interface StudentGradingPageProps {
     courseId?: string;
 }
 
+interface GradingSelectables {
+    problem?: ProblemObject,
+    user?: UserObject,
+    problemState?: ProblemState,
+    grade?: StudentGrade,
+    gradeInstance?: StudentGradeInstance,
+}
+
 export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
     const params = useParams<StudentGradingPageProps>();
     const {users} = useCourseContext();
     const [userId, setUserId] = useQueryParam('userId', NumberParam);
     const [problemId, setProblemId] = useQueryParam('problemId', NumberParam);
     const [gradeAlert, setGradeAlert] = useMUIAlertState();
-    const [topic, setTopic] = useState<TopicObject | null>(null);
+    const [topic, setTopic] = useState<TopicObject | null | undefined>();
 
-    const [selected, setSelected] = useState<{
-        problem?: ProblemObject,
-        user?: UserObject,
-        problemState?: ProblemState,
-        grade?: StudentGrade,
-        gradeInstance?: StudentGradeInstance,
-    }>({});
+    const [selected, setSelected] = useState<GradingSelectables>({});
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
+    const currentUserRole = getUserRole();
+    const currentUserId = getUserId();
 
     useEffect(()=>{
         logger.debug('Fetching topic', params.topicId);
@@ -91,7 +96,9 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
             logger.debug(`GP: attempting to set initial problem #${problemId}`);
         }
 
-        if (_.isNil(userId)) {
+        if (currentUserRole === UserRole.STUDENT) {
+            initialSelectedUser = _.find(users, { 'id': currentUserId });
+        } else if (_.isNil(userId)) {
             // TODO: Default to current user id for single student?
             initialSelectedUser = users[0];
         } else {
@@ -100,13 +107,15 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
         }
 
         setSelected({ user: initialSelectedUser, problem: initialSelectedProblem });
-    }, [topic, users, setGradeAlert, problemId, userId]);
+    }, [topic, users, setGradeAlert, problemId, userId, currentUserRole, currentUserId]);
 
     useEffect(()=>{
         logger.debug('Syncing query parameters.');
-        selected.user && setUserId(selected.user.id);
+        if (currentUserRole !== UserRole.STUDENT) {
+            selected.user && setUserId(selected.user.id);
+        }
         selected.problem && setProblemId(selected.problem.id);
-    }, [selected, setProblemId, setUserId]);
+    }, [currentUserRole, selected, setProblemId, setUserId]);
 
     useEffect(()=>{
         logger.debug('Updating breadcrumb.');
@@ -114,12 +123,14 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
         updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: topic.name});
     }, [updateBreadcrumbLookup, topic]);
 
-    if (_.isNil(topic)) {
+    if (_.isNull(topic)) {
         return <h1>Failed to load the topic.</h1>;
+    } else if (_.isUndefined(topic)) {
+        return <h1>Loading</h1>;
     }
 
     return (
-        <Grid>
+        <Container disableGutters maxWidth='lg'>
             <Snackbar
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
                 open={gradeAlert.message !== ''}
@@ -150,13 +161,13 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
                 Otherwise, you can <Link to={`/common/courses/${params.courseId}?tab=Enrollments`}>enroll students in the enrollments tab</Link>.
             </Alert>}
             {_.isEmpty(topic.questions) && <Alert color='error'>There are no problems in this topic. You can add problems <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}/settings`}>here</Link>. </Alert>}
-            <Grid container spacing={1}>
-                <Grid container item md={4}>
-                    {!_.isEmpty(topic.questions) && !_.isEmpty(users) &&
-                        <MaterialBiSelect problems={topic.questions} users={users} selected={selected} setSelected={setSelected} />
+            <Grid container>
+                <Grid container item md={2}>
+                    {!_.isEmpty(topic.questions) &&
+                        <MaterialBiSelect problems={topic.questions} users={[]} selected={selected} setSelected={setSelected} />
                     }
                 </Grid>
-                <Grid container item md={8} style={{paddingLeft: '1rem', height: 'min-content'}}>
+                <Grid container item md={10} style={{paddingLeft: '5rem', height: 'min-content'}}>
                     { selected.user && selected.problem &&
                         <GradeInfoHeader
                             selected={selected}
@@ -193,7 +204,7 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
                     }
                 </Grid>
             </Grid>
-        </Grid>
+        </Container>
     );
 };
 

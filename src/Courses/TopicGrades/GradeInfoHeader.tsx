@@ -31,7 +31,7 @@ interface GradeInfoHeaderProps {
     }>>;
 }
 
-interface WorkbookInfoDump {
+export interface WorkbookInfoDump {
     workbook?: StudentWorkbookInterface;
     legalScore?: number;
     overallBestScore?: number;
@@ -255,34 +255,30 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             </Grid>
             <Grid item xs={6}>
                 <h4>Grades</h4>
-                Effective score for grades: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
-                {grade &&
-                <>
-                    <Button
-                        variant='outlined'
-                        onClick={() => setShowGradeModal(true)}
-                    >
+                    Effective score for grades: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
+                <Button
+                    variant='outlined'
+                    onClick={() => setShowGradeModal(true)}
+                >
                     Set new score for grades
-                    </Button>
-                    <OverrideGradeModal
-                        show={showGradeModal}
-                        onHide={() => setShowGradeModal(false)}
-                        grade={grade}
-                        onSuccess={(newGrade: Partial<StudentGrade>) => {
-                            if (!_.isNil(newGrade.effectiveScore)) {
-                                setInfo(info => ({ ...info, effectiveScore: newGrade.effectiveScore }));
-                                onSuccess(newGrade);
-                            }
-                        }}
-                    /><br />
-                </>}
+                </Button>
+                <OverrideGradeModal
+                    show={showGradeModal}
+                    onHide={() => setShowGradeModal(false)}
+                    grade={grade}
+                    onSuccess={(newGrade: Partial<StudentGrade>) => {
+                        if (!_.isNil(newGrade.effectiveScore)) {
+                            setInfo(info => ({ ...info, effectiveScore: newGrade.effectiveScore }));
+                            onSuccess(newGrade);
+                        }
+                    }}
+                /><br />
                 {info.workbook &&
                     <p>
                         Score on this attempt: <strong>{info.workbook.result.toPercentString()}</strong>
                     </p>
                 }
             </Grid>
-            {grade &&
             <Grid item xs={12}>
                 {(info.versionMap && info.workbookId)?
                     <WorkbookSelect
@@ -295,7 +291,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                     /> :
                     `${selected.user?.name} has not attempted this problem.`
                 }
-            </Grid>}
+            </Grid>
         </Grid>
     );
 };

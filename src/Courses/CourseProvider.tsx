@@ -17,12 +17,14 @@ const CourseContext = React.createContext<{
         error: string | null,
         users: UserObject[],
         setUsers?: React.Dispatch<React.SetStateAction<UserObject[]>>,
+        loading: boolean;
     }>({
         course: new CourseObject(),
         setCourse: undefined,
         error: null,
         users: [],
         setUsers: undefined,
+        loading: true,
     });
 
 export const useCourseContext = () => React.useContext(CourseContext);
@@ -64,7 +66,7 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
     }, [courseId]);
 
     return (
-        <CourseContext.Provider value={{course, setCourse, error, users, setUsers}}>
+        <CourseContext.Provider value={{course, setCourse, error, users, setUsers, loading}}>
             <Backdrop open={loading}>
                 <CircularProgress/>
             </Backdrop>
