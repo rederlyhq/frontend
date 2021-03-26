@@ -41,6 +41,7 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
     const [topic, setTopic] = useState<TopicObject | null | undefined>();
 
     const [selected, setSelected] = useState<GradingSelectables>({});
+    const [topicGrade, setTopicGrade] = useState<number | null>(null);
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
     const currentUserRole = getUserRole();
     const currentUserId = getUserId();
@@ -148,9 +149,9 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
                 </MUIAlert>
             </Snackbar>
             <Grid container spacing={1} alignItems='center' justify='space-between'>
-                <Grid item className='text-left'>
+                <Grid container item className='text-left' xs={6} alignItems='center'>
                     <h1>Grading {topic.name}</h1>
-                    <Chip  />
+                    <Chip label={topicGrade ? topicGrade.toPercentString() : '--'} color='primary' size='small' />
                 </Grid>
                 {currentUserRole !== UserRole.STUDENT && <Grid item>
                     <ExportAllButton topicId={topic.id} userId={selected.user?.id} />
@@ -175,6 +176,7 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
                             setSelected={setSelected}
                             topic={topic}
                             setGradeAlert={setGradeAlert}
+                            setTopicGrade={setTopicGrade}
                         />
                     }
                     <Grid container alignItems='stretch'>

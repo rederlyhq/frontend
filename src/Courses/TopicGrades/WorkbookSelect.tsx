@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import { StudentGrade } from '../CourseInterfaces';
-import { Grid, FormControl, InputLabel, Select, makeStyles, MenuItem, Chip, ListItemText, ListItemIcon, Menu, List } from '@material-ui/core';
+import { Grid, FormControl, InputLabel, Select, makeStyles, MenuItem, Chip, ListItemText, ListItemIcon, ListSubheader } from '@material-ui/core';
 import logger from '../../Utilities/Logger';
 import { WorkbookInfoDump } from './GradeInfoHeader';
 import { StarBorderOutlined } from '@material-ui/icons';
@@ -65,39 +65,46 @@ export const WorkbookSelect: React.FC<WorkbookSelectProps> = ({grade, onChange, 
     const lastCreditedGradeInstance = _.find(grade.gradeInstances, instance => instance.bestVersionAttemptId === grade.lastInfluencingCreditedAttemptId);
 
     return (
-        <Grid container item md={12} spacing={2}>
-            {(_.keys(versionMap).length > 1) && // don't show unless multiple versions...
-            <Grid item md={4}>
-                <FormControl className={classes.formControl} fullWidth={true}>
-                    <InputLabel id='student-versions'>Viewing Version:</InputLabel>
-                    <Select labelId='student-versions' value={versionKey} onChange={setAttemptsForThisVersion} fullWidth={false} SelectDisplayProps={{style: {display: 'flex', alignItems: 'center', paddingLeft: '10px', paddingRight: '30px'}}}>
-                        {versionList(versionMap).map(version => (
-                            <MenuItem key={version.value} value={version.value}>
-                                <ListItemText primary={version.label} />
-                                {lastCreditedGradeInstance?.id === version.value && <ListItemIcon>
-                                    <Chip variant="outlined" color="primary" size="small" icon={<StarBorderOutlined />} label='Best' />
-                                </ListItemIcon>}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Grid>}
-            {versionKey &&
-            <Grid item md={4}>
-                <FormControl className={classes.formControl} fullWidth={true}>
-                    <InputLabel id='student-attempts'>Viewing Attempt:</InputLabel>
-                    <Select labelId='student-attempts' value={attemptKey} onChange={handleOnChange} fullWidth={false} SelectDisplayProps={{style: {display: 'flex', alignItems: 'center', paddingLeft: '10px', paddingRight: '30px'}}}>
-                        {versionSubList(versionMap, versionKey).map(attempt => (
-                            <MenuItem key={attempt.value} value={attempt.value} divider>
-                                <ListItemText primary={attempt.label} />
-                                {grade.lastInfluencingCreditedAttemptId === attempt.value && <ListItemIcon>
-                                    <Chip variant="outlined" color="primary" size="small" icon={<StarBorderOutlined />} label='Best' />
-                                </ListItemIcon>}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-            </Grid>}
+        <Grid container item md={12}>
+            <Grid container item xs={12}>
+                <ListSubheader disableSticky disableGutters>
+                    <h2>Submission Preview</h2>
+                </ListSubheader>
+            </Grid>
+            <Grid container item xs={12} spacing={2}>
+                {(_.keys(versionMap).length > 1) && // don't show unless multiple versions...
+                <Grid item md={4}>
+                    <FormControl className={classes.formControl} fullWidth={true}>
+                        <InputLabel id='student-versions'>Viewing Version:</InputLabel>
+                        <Select labelId='student-versions' value={versionKey} onChange={setAttemptsForThisVersion} fullWidth={false} SelectDisplayProps={{style: {display: 'flex', alignItems: 'center', paddingLeft: '10px', paddingRight: '30px'}}}>
+                            {versionList(versionMap).map(version => (
+                                <MenuItem key={version.value} value={version.value}>
+                                    <ListItemText primary={version.label} />
+                                    {lastCreditedGradeInstance?.id === version.value && <ListItemIcon>
+                                        <Chip variant="outlined" color="primary" size="small" icon={<StarBorderOutlined />} label='Best' />
+                                    </ListItemIcon>}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Grid>}
+                {versionKey &&
+                <Grid item md={4}>
+                    <FormControl className={classes.formControl} fullWidth={true}>
+                        <InputLabel id='student-attempts'>Viewing Attempt:</InputLabel>
+                        <Select labelId='student-attempts' value={attemptKey} onChange={handleOnChange} fullWidth={false} SelectDisplayProps={{style: {display: 'flex', alignItems: 'center', paddingLeft: '10px', paddingRight: '30px'}}}>
+                            {versionSubList(versionMap, versionKey).map(attempt => (
+                                <MenuItem key={attempt.value} value={attempt.value} divider>
+                                    <ListItemText primary={attempt.label} />
+                                    {grade.lastInfluencingCreditedAttemptId === attempt.value && <ListItemIcon>
+                                        <Chip variant="outlined" color="primary" size="small" icon={<StarBorderOutlined />} label='Best' />
+                                    </ListItemIcon>}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Grid>}
+            </Grid>
         </Grid>
     );
 };

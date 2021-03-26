@@ -155,17 +155,18 @@ export const TopicGradingPage: React.FC<TopicGradingPageProps> = () => {
                 </Grid>
                 <Grid container item md={8} style={{paddingLeft: '1rem', height: 'min-content'}}>
                     { selected.user && selected.problem && topic &&
-                        < GradeInfoHeader
+                        <GradeInfoHeader
                             selected={selected}
                             setSelected={setSelected}
                             topic={topic}
                             setGradeAlert={setGradeAlert}
+                            setTopicGrade={()=>{ /** TODO */}}
                         />
                     }
                     <Grid container alignItems='stretch'>
                         {selected.problem && selected.user && selected.grade &&
                         // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) &&
-                            < ProblemIframe
+                            <ProblemIframe
                                 problem={selected.problem}
                                 userId={selected.user.id}
                                 readonly={true}

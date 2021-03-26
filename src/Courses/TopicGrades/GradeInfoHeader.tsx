@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import _ from 'lodash';
 import { ProblemObject, ProblemState, StudentGrade, StudentGradeInstance, StudentWorkbookInterface, TopicObject, UserObject } from '../CourseInterfaces';
 import logger from '../../Utilities/Logger';
-import { Button, Grid } from '@material-ui/core';
+import { Button, Grid, ListSubheader } from '@material-ui/core';
 import { OverrideGradeModal } from '../CourseDetailsTabs/OverrideGradeModal';
 import { getGrades, getQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { Spinner } from 'react-bootstrap';
@@ -12,6 +12,7 @@ import { UserRole, getUserRole } from '../../Enums/UserRole';
 
 interface GradeInfoHeaderProps {
     topic: TopicObject;
+    setTopicGrade: (grade: number | null) => void;
     selected: {
         problem?: ProblemObject,
         user?: UserObject,
@@ -51,9 +52,9 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     setSelected,
     topic,
     setGradeAlert,
+    setTopicGrade,
 }) => {
     const [showGradeModal, setShowGradeModal] = useState<boolean>(false);
-    const [topicGrade, setTopicGrade] = useState<number | null>(null);
     const [grade, setGrade] = useState<StudentGrade | null>(null);
     const [info, setInfo] = useState<WorkbookInfoDump>({});
     const currentUserRole = getUserRole();
@@ -68,7 +69,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 logger.error('Either UserId or ProblemId are null at this point.');
                 return;
             }
-            logger.debug(`GradeInfoHeader: Fetching question grade for problem #${selected.problem?.id} and user #${selected.user?.id}`);
+            logger.debug(`GradeInfoHeader: Fetching question grade for problem #${selected.problem.id} and user #${selected.user.id}`);
 
             try {
                 const res = await getQuestionGrade({
@@ -220,7 +221,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 
     useEffect(() => {
         logger.debug('GradeInfoHeader: there has been a change in user or topic, fetching new cumulative topic grade.');
-        setTopicGrade(null);
+        // setTopicGrade(null);
         if (_.isNil(topic)) {
             logger.debug('GradeInfoHeader: topic id is nil, skipping grades call');
             return;
@@ -236,13 +237,14 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 const result = await getGrades(params);
                 setTopicGrade(result.data.data.first?.average ?? null);
             } catch (e) {
+                setTopicGrade(null);
                 setGradeAlert({
                     severity: 'error',
                     message: e.message,
                 });
             }
         })();
-    }, [selected.user, topic, info.effectiveScore, setGradeAlert]);
+    }, [selected.user, topic, info.effectiveScore, setGradeAlert, setTopicGrade]);
 
     const onSuccess = (gradeOverride: Partial<StudentGrade>) => {
         logger.debug('GradeInfoHeader: overriding grade', gradeOverride.effectiveScore);
@@ -262,11 +264,13 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     }
 
     return (
-        <Grid container spacing={1} style={{ paddingLeft: '1rem' }} alignItems='flex-start'>
+        <Grid container spacing={1} style={{ paddingLeft: '1rem' }} alignItems='flex-start' justify='space-between'>
             <Grid item xs={12}>
-                <h3>Total Topic Score: {topicGrade?.toPercentString() ?? '--'}</h3>
+                <ListSubheader disableSticky disableGutters>
+                    <h2>{selected.user?.firstName} {selected.user?.lastName} - Problem {selected.problem?.problemNumber}</h2>
+                </ListSubheader>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={4}>
                 <h4>Statistics</h4>
                 Number of attempts: <strong>{info.attemptsCount}</strong><br />
                 Best overall score: <strong>{info.overallBestScore?.toPercentString()}</strong><br />
@@ -275,7 +279,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 Score from best exam submission: <strong>{info.legalScore?.toPercentString()}</strong><br />
                 Average score: <strong>{info.averageScore?.toPercentString()}</strong>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={4}>
                 <h4>Grades</h4>
                     Effective score for grades: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
                 {currentUserRole !== UserRole.STUDENT && <>
