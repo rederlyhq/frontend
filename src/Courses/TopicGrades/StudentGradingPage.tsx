@@ -16,6 +16,7 @@ import { useMUIAlertState } from '../../Hooks/useAlertState';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
 import { useQueryParam, NumberParam } from 'use-query-params';
 import { getUserId, getUserRole, UserRole } from '../../Enums/UserRole';
+import '../../Components/LayoutStyles.css';
 
 import 'react-quill/dist/quill.snow.css';
 
@@ -130,8 +131,18 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
         return <h1>Loading</h1>;
     }
 
+    let maxWidth = undefined;
+    let biselectSize: 2 | 4 = 2;
+    let paneSize: 10 | 8 = 10;
+    
+    if (currentUserRole !== UserRole.STUDENT) {
+        maxWidth = '90vw';
+        biselectSize = 4;
+        paneSize = 8;
+    }
+
     return (
-        <Container disableGutters maxWidth='lg'>
+        <Container disableGutters maxWidth='lg' style={{maxWidth: maxWidth}} >
             <Snackbar
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
                 open={gradeAlert.message !== ''}
@@ -164,12 +175,12 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
             </Alert>}
             {_.isEmpty(topic.questions) && <Alert color='error'>There are no problems in this topic. You can add problems <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}/settings`}>here</Link>. </Alert>}
             <Grid container>
-                <Grid container item md={2}>
+                <Grid container item md={biselectSize}>
                     {!_.isEmpty(topic.questions) &&
-                        <MaterialBiSelect problems={topic.questions} users={[]} selected={selected} setSelected={setSelected} />
+                        <MaterialBiSelect problems={topic.questions} users={currentUserRole === UserRole.STUDENT ? [] : users} selected={selected} setSelected={setSelected} />
                     }
                 </Grid>
-                <Grid container item md={10} style={{paddingLeft: '5rem', height: 'min-content'}}>
+                <Grid container item md={paneSize} style={{paddingLeft: '5rem', height: 'min-content'}}>
                     { selected.user && selected.problem &&
                         <GradeInfoHeader
                             selected={selected}
