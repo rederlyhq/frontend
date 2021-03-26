@@ -9,6 +9,7 @@ import { Spinner } from 'react-bootstrap';
 import { Color } from '@material-ui/lab';
 import { WorkbookSelect } from './WorkbookSelect';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
+import moment from 'moment';
 
 interface GradeInfoHeaderProps {
     topic: TopicObject;
@@ -303,7 +304,8 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 </>}
                 {info.workbook &&
                     <p>
-                        Score on this attempt: <strong>{info.workbook.result.toPercentString()}</strong>
+                        Score on this attempt: <strong>{info.workbook.result.toPercentString()}</strong><br />
+                        Submitted on: <strong>{moment(info.workbook.time).formattedMonthDateTime()}</strong>
                     </p>
                 }
             </Grid>
