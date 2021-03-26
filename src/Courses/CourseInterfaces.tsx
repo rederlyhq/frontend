@@ -326,6 +326,7 @@ export interface StudentGradeDict {
 }
 
 export class StudentGrade {
+    courseWWTopicQuestionId?: number = 0;
     gradeInstances?: StudentGradeInstance[];
     workbooks?: StudentWorkbookInterface[];
     bestScore: number = 0; // should be deprecated?

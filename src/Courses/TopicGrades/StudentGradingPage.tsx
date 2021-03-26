@@ -1,4 +1,4 @@
-import { Grid, Snackbar, Container } from '@material-ui/core';
+import { Grid, Snackbar, Container, Chip } from '@material-ui/core';
 import { Alert as MUIAlert, Alert } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
@@ -150,10 +150,11 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
             <Grid container spacing={1} alignItems='center' justify='space-between'>
                 <Grid item className='text-left'>
                     <h1>Grading {topic.name}</h1>
+                    <Chip  />
                 </Grid>
-                <Grid item>
+                {currentUserRole !== UserRole.STUDENT && <Grid item>
                     <ExportAllButton topicId={topic.id} userId={selected.user?.id} />
-                </Grid>
+                </Grid>}
             </Grid>
             {_.isEmpty(users) && <Alert color='error'>
                 There are no students enrolled in this course.
@@ -179,7 +180,7 @@ export const StudentGradingPage: React.FC<StudentGradingPageProps> = () => {
                     <Grid container alignItems='stretch'>
                         {selected.problem && selected.user && selected.grade &&
                         // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) &&
-                            < ProblemIframe
+                            <ProblemIframe
                                 problem={selected.problem}
                                 userId={selected.user.id}
                                 readonly={true}
