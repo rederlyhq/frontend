@@ -6,6 +6,7 @@ import { getUsersForCourse } from '../APIInterfaces/BackendAPI/Requests/UserRequ
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../Contexts/BreadcrumbContext';
 import { CourseObject, UserObject } from './CourseInterfaces';
 import _ from 'lodash';
+import logger from '../Utilities/Logger';
 
 interface CourseProviderProps {
     children: React.ReactNode
@@ -59,6 +60,7 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
                 updateBreadcrumbLookup?.({[NamedBreadcrumbs.COURSE]: courseResp.data.data.name ?? 'Unnamed Course'});
                 setUsers(usersArr);
             } catch (e) {
+                logger.error('Failed to get course', e);
                 setError(e.message);
             }
             setLoading(false);
