@@ -109,7 +109,7 @@ export default URLBreadcrumb;
 export const NamedBreadcrumbComponent: React.FC<{breadcrumb: NamedBreadcrumbs}> = ({breadcrumb}) => {
     const {breadcrumbLookup} = useBreadcrumbLookupContext();
 
-    if (breadcrumbLookup === undefined || _.isEmpty(breadcrumbLookup)) return null;
+    if (_.isEmpty(breadcrumbLookup)) return null;
 
     return <span>{breadcrumbLookup[breadcrumb]}</span>;
 };
@@ -166,7 +166,7 @@ export const TopicBreadcrumbDropdowns: React.FC<{selectedBreadcrumb: keyof typeo
                             onClick={() => {
                                 setSelected(key as keyof typeof TopicDropdownOptions); 
                                 setMenuOpen(false);
-                                const to = TopicDropdownOptions[key as keyof typeof TopicDropdownOptions]?.(courseId, topicId);
+                                const to = TopicDropdownOptions[key as keyof typeof TopicDropdownOptions](courseId, topicId);
                                 history.push(to);
                             }}
                             role='menuoption'
