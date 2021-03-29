@@ -31,7 +31,6 @@ import localPreferences from '../Utilities/LocalPreferences';
 import { impersonate, logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { BreadcrumbLookupProvider } from '../Contexts/BreadcrumbContext';
 import PrintBlankTopic from '../Courses/TopicGrades/PrintBlankTopic';
-import StudentGradingPage from '../Courses/TopicGrades/StudentGradingPage';
 const { session } = localPreferences;
 
 
@@ -217,9 +216,6 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                                     {obj.child}
                                                 </Route>)
                                             }
-                                            <Route exacat path={`${path}/courses/:courseId/topic/:topicId/student-grading`}>
-                                                <StudentGradingPage />
-                                            </Route>
                                             <Route exact path={`${path}/courses/:courseId/topic/:topicId`}>
                                                 <SimpleProblemPage />
                                             </Route>
