@@ -114,7 +114,9 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
     useEffect(()=>{
         logger.debug('Syncing query parameters.');
         if (currentUserRole !== UserRole.STUDENT) {
-            selected.user && setUserId(selected.user.id);
+            setUserId(selected.user?.id);
+        } else {
+            setUserId(undefined);
         }
         selected.problem && setProblemId(selected.problem.id);
     }, [currentUserRole, selected, setProblemId, setUserId]);

@@ -6,7 +6,7 @@ import { Button, Grid, ListSubheader } from '@material-ui/core';
 import { OverrideGradeModal } from '../CourseDetailsTabs/OverrideGradeModal';
 import { getGrades, getQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { Spinner } from 'react-bootstrap';
-import { Color } from '@material-ui/lab';
+import { Color, Alert } from '@material-ui/lab';
 import { WorkbookSelect } from './WorkbookSelect';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import moment from 'moment';
@@ -74,7 +74,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 
             try {
                 const res = await getQuestionGrade({
-                    userId: selected.user.id,
+                    userId: currentUserRole === UserRole.STUDENT ? 'me' : selected.user.id,
                     questionId: selected.problem.id,
                     includeWorkbooks: true,
                 });
@@ -92,7 +92,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 });
             }
         })();
-    }, [selected.problem, selected.user, setGradeAlert]);
+    }, [currentUserRole, selected.problem, selected.user, setGradeAlert]);
 
     useEffect(() => {
         logger.debug('GradeInfoHeader: student grade object has changed.', grade);
@@ -259,8 +259,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         }
     };
 
-
-    if (_.isNil(grade) || _.isNil(info)) {
+    if ((_.isNil(grade) && topic.topicAssessmentInfo?.showTotalGradeImmediately !== false) || _.isNil(info) || _.isEmpty(info)) {
         return ( <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>) ;
     }
 
@@ -271,53 +270,60 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                     <h2>{selected.user?.firstName} {selected.user?.lastName} - Problem {selected.problem?.problemNumber}</h2>
                 </ListSubheader>
             </Grid>
-            <Grid item xs={4}>
-                <h4>Statistics</h4>
-                Number of attempts: <strong>{info.attemptsCount}</strong><br />
-                Best overall score: <strong>{info.overallBestScore?.toPercentString()}</strong><br />
-                {/* Should check !moment(topic.endDate).isSame(topic.deadDate) for topic and overrides before showing this? */}
-                System score: <strong>{info.partialCreditBestScore?.toPercentString()}</strong><br />
-                Score from best exam submission: <strong>{info.legalScore?.toPercentString()}</strong><br />
-                Average score: <strong>{info.averageScore?.toPercentString()}</strong>
-            </Grid>
-            <Grid item xs={4}>
-                <h4>Grades</h4>
-                    Effective score for grades: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
-                {currentUserRole !== UserRole.STUDENT && <>
-                    <Button
-                        variant='outlined'
-                        onClick={() => setShowGradeModal(true)}
-                    >
-                        Set new score for grades
-                    </Button>
-                    <OverrideGradeModal
-                        show={showGradeModal}
-                        onHide={() => setShowGradeModal(false)}
-                        grade={grade}
-                        onSuccess={(newGrade: Partial<StudentGrade>) => {
-                            if (!_.isNil(newGrade.effectiveScore)) {
-                                setInfo(info => ({ ...info, effectiveScore: newGrade.effectiveScore }));
-                                onSuccess(newGrade);
-                            }
-                        }}
-                    /><br />
+            {topic.topicAssessmentInfo?.showTotalGradeImmediately === false ?
+                <Grid item xs={8}>
+                    <Alert variant='standard' color='warning'>
+                        Your professor has not released the grades for this assessment yet.
+                    </Alert>
+                </Grid> : <>
+                    <Grid item xs={4}>
+                        <h4>Statistics</h4>
+                        Number of attempts: <strong>{info.attemptsCount}</strong><br />
+                        Best overall score: <strong>{info.overallBestScore?.toPercentString()}</strong><br />
+                        {/* Should check !moment(topic.endDate).isSame(topic.deadDate) for topic and overrides before showing this? */}
+                        System score: <strong>{info.partialCreditBestScore?.toPercentString()}</strong><br />
+                        Score from best exam submission: <strong>{info.legalScore?.toPercentString()}</strong><br />
+                        Average score: <strong>{info.averageScore?.toPercentString()}</strong>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <h4>Grades</h4>
+                        Effective score for grades: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
+                        {currentUserRole !== UserRole.STUDENT && <>
+                            <Button
+                                variant='outlined'
+                                onClick={() => setShowGradeModal(true)}
+                            >
+                            Set new score for grades
+                            </Button>
+                            <OverrideGradeModal
+                                show={showGradeModal}
+                                onHide={() => setShowGradeModal(false)}
+                                grade={grade ?? new StudentGrade()}
+                                onSuccess={(newGrade: Partial<StudentGrade>) => {
+                                    if (!_.isNil(newGrade.effectiveScore)) {
+                                        setInfo(info => ({ ...info, effectiveScore: newGrade.effectiveScore }));
+                                        onSuccess(newGrade);
+                                    }
+                                }}
+                            /><br />
+                        </>}
+                        {info.workbook &&
+                        <p>
+                            Score on this attempt: <strong>{info.workbook.result.toPercentString()}</strong><br />
+                            Submitted on: <strong>{moment(info.workbook.time).formattedMonthDateTime()}</strong>
+                        </p>
+                        }
+                    </Grid>
                 </>}
-                {info.workbook &&
-                    <p>
-                        Score on this attempt: <strong>{info.workbook.result.toPercentString()}</strong><br />
-                        Submitted on: <strong>{moment(info.workbook.time).formattedMonthDateTime()}</strong>
-                    </p>
-                }
-            </Grid>
             <Grid item xs={12}>
-                {(info.versionMap && info.workbookId)?
+                {(info.versionMap && info.workbookId) ?
                     <WorkbookSelect
                         versionMap={info.versionMap}
-                        versionKey={info.studentGradeInstanceId ?? grade.id}
+                        versionKey={info.studentGradeInstanceId ?? grade?.id}
                         attemptKey={info.workbookId}
                         onChange={setInfo}
                         info={info}
-                        grade={grade}
+                        grade={grade ?? new StudentGrade()}
                     /> :
                     `${selected.user?.name} has not attempted this problem.`
                 }
