@@ -57,7 +57,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 }) => {
     const [showGradeModal, setShowGradeModal] = useState<boolean>(false);
     const [grade, setGrade] = useState<StudentGrade | null>(null);
-    const [info, setInfo] = useState<WorkbookInfoDump>({});
+    const [info, setInfo] = useState<WorkbookInfoDump | null>(null);
     const currentUserRole = getUserRole();
 
     // Get and Store Grade.
@@ -99,7 +99,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 
         if (_.isNil(grade)) {
             logger.debug(`GradeInfoHeader: Student grade has not been set for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
-            setInfo({});
+            setInfo(null);
             return;
         }
 
@@ -108,12 +108,13 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 
         if (_.isNil(workbooks) || _.isEmpty(workbooks)) {
             logger.debug(`GradeInfoHeader: A grade exists for User ${grade.userId} Grade ${grade.id} but no workbooks could be found.`);
-            return;
+            // If we return here, Info doesn't get set, which means that default 0 values won't be shown for grades.
+            // return;
         }
 
         // Get averages for this specific problem.
         const currentAttemptsCount: number = workbookKeys.length;
-        const currentAverageScore = _.reduce(workbooks, (sum, wb) => sum + wb.result, 0) / currentAttemptsCount;
+        const currentAverageScore = currentAttemptsCount > 0 ? _.reduce(workbooks, (sum, wb) => sum + wb.result, 0) / currentAttemptsCount : 0;
 
         let currentVersionMap: Record<number, Array<number> | undefined> = {};
 
@@ -169,10 +170,10 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         const newProblemState: ProblemState = {};
         const currentGrade = (grade) ? grade : undefined;
 
-        if (_.isNil(grade)) {
+        if (_.isNil(grade) || _.isNil(info)) {
             // no grade for this user/problem combo -> error was already caught
             // this still happens on initial page load, so debug
-            logger.debug(`GradeInfoHeader: No grade for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
+            logger.debug(`GradeInfoHeader: No grade or info for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
             return;
         }
 
@@ -218,7 +219,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 gradeInstance: newGradeInstance 
             });
         });
-    }, [info.workbookId, info.studentGradeId, info.studentGradeInstanceId, info, grade, topic.topicAssessmentInfo, setSelected, selected.user?.id, selected.problem?.id, selected.problem?.webworkQuestionPath]);
+    }, [info?.workbookId, info?.studentGradeId, info?.studentGradeInstanceId, info, grade, topic.topicAssessmentInfo, setSelected, selected.user?.id, selected.problem?.id, selected.problem?.webworkQuestionPath]);
 
     useEffect(() => {
         logger.debug('GradeInfoHeader: there has been a change in user or topic, fetching new cumulative topic grade.');
@@ -245,7 +246,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 });
             }
         })();
-    }, [selected.user, topic, info.effectiveScore, setGradeAlert, setTopicGrade]);
+    }, [selected.user, topic, info?.effectiveScore, setGradeAlert, setTopicGrade]);
 
     const onSuccess = (gradeOverride: Partial<StudentGrade>) => {
         logger.debug('GradeInfoHeader: overriding grade', gradeOverride.effectiveScore);
@@ -259,7 +260,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         }
     };
 
-    if ((_.isNil(grade) && topic.topicAssessmentInfo?.showTotalGradeImmediately !== false) || _.isNil(info) || _.isEmpty(info)) {
+    if ((_.isNil(grade) && topic.topicAssessmentInfo?.showTotalGradeImmediately !== false) || _.isNil(info)) {
         return ( <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>) ;
     }
 
@@ -270,7 +271,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                     <h2>{selected.user?.firstName} {selected.user?.lastName} - Problem {selected.problem?.problemNumber}</h2>
                 </ListSubheader>
             </Grid>
-            {topic.topicAssessmentInfo?.showTotalGradeImmediately === false ?
+            {(currentUserRole === UserRole.STUDENT && topic.topicAssessmentInfo?.showTotalGradeImmediately === false) ?
                 <Grid item xs={8}>
                     <Alert variant='standard' color='warning'>
                         Your professor has not released the grades for this assessment yet.
