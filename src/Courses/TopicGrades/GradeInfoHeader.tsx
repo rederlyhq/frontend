@@ -271,7 +271,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                     <h2>{selected.user?.firstName} {selected.user?.lastName} - Problem {selected.problem?.problemNumber}</h2>
                 </ListSubheader>
             </Grid>
-            {(currentUserRole === UserRole.STUDENT && topic.topicAssessmentInfo?.showTotalGradeImmediately === false) ?
+            {(currentUserRole === UserRole.STUDENT && (topic.topicAssessmentInfo?.showTotalGradeImmediately === false || topic.topicAssessmentInfo?.showItemizedResults === false)) ?
                 <Grid item xs={8}>
                     <Alert variant='standard' color='warning'>
                         Your professor has not released the grades for this assessment yet.
@@ -308,7 +308,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                                 }}
                             /><br />
                         </>}
-                        {info.workbook &&
+                        {info.workbook && info.workbook.result &&
                         <p>
                             Score on this attempt: <strong>{info.workbook.result.toPercentString()}</strong><br />
                             Submitted on: <strong>{moment(info.workbook.time).formattedMonthDateTime()}</strong>
@@ -326,7 +326,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                         info={info}
                         grade={grade ?? new StudentGrade()}
                     /> :
-                    `${selected.user?.name} has not attempted this problem.`
+                    `${currentUserRole === UserRole.STUDENT ? 'You have' : `${selected.user?.name} has`} not attempted this problem.`
                 }
             </Grid>
         </Grid>
