@@ -16,14 +16,19 @@ import 'katex/dist/katex.min.css';
 window.katex = katex;
 
 interface QuillControlledEditorProps {
-    onChange: (value: ReactQuillProps['value'] | null) => void;
-    onBlur: ReactQuillProps['onBlur'];
-    value: ReactQuillProps['value'];
+    // Common props
+    placeholder?: string;
+    // Controlled variant only
+    onChange?: (value: ReactQuillProps['value'] | null) => void;
+    onBlur?: ReactQuillProps['onBlur'];
+    value?: ReactQuillProps['value'];
     defaultValue?: ReactQuillProps['defaultValue'];
+    // Uncontrolled variant only
     onSave?: (saveData: ReactQuillProps['value'] | null)=>any;
 }
 
-export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue}) => {
+
+export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue, placeholder}) => {
     const quill = useRef<ReactQuill | null>();
 
     useEffect(()=>{
@@ -73,11 +78,11 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
 
     const wrappedOnChange = () => {
         if (isQuillEmpty()) {
-            onChange(null);
+            onChange?.(null);
             return;
         }
         const delta = quill.current?.getEditor().getContents();
-        onChange(delta);
+        onChange?.(delta);
     };
 
     return <Grid container item md={12}>
@@ -104,10 +109,10 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                 onBlur={onBlur}
                 value={value}
                 defaultValue={defaultValue}
-                placeholder='Descriptions or instructions for this Topic can be added here. They will be displayed on top of every problem in this topic.'
+                placeholder={placeholder ?? 'Descriptions or instructions for this Topic can be added here. They will be displayed on top of every problem in this topic.'}
             />
+            {onSave && <Button fullWidth variant='contained' onClick={onClickedSave}>Save</Button>}
         </Grid>
-        {onSave && <Button fullWidth variant='contained' onClick={onClickedSave}>Submit</Button>}
     </Grid>;
 };
 

@@ -279,6 +279,7 @@ export interface StudentWorkbookInterface {
     wasAfterAttemptLimit: boolean;
     wasLocked: boolean;
     wasAutoSubmitted: boolean;
+    feedback: any; // ReactQuillProps['value']
 
     createdAt: Date;
     updatedAt: Date;
@@ -306,6 +307,7 @@ export interface StudentGradeInstance {
     active: boolean;
     bestIndividualAttemptId: number;
     bestVersionAttemptId: number;
+    problemAttachments?: ProblemAttachments[];
 }
 
 export interface StudentGradeDict {

@@ -194,6 +194,11 @@ export interface ShowMeAnotherOptions {
     questionId: number;
 }
 
+export interface PostFeedbackOptions {
+    workbookId: number;
+    content: unknown;
+}
+
 /* *************** *************** */
 /* ********* Attachments ********* */
 /* *************** *************** */

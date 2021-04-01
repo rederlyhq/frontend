@@ -13,62 +13,23 @@ import '../../Components/Quill/QuillOverrides.css';
 // Load Katex with this module
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
-import AxiosRequest from '../../Hooks/AxiosRequest';
+import QuillControlledEditor from '../../Components/Quill/QuillControlledEditor';
+import { postFeedback } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 window.katex = katex;
 
 interface GradeFeedbackProps {
-
+    workbookId: number;
 }
 
-export const GradeFeedback: React.FC<GradeFeedbackProps> = () => {
-    const quill = useRef<ReactQuill | null>();
-
-    useEffect(()=>{
-        if (_.isNil(quill.current)) {
-            logger.warn('Component mounted but cannot initialize MathQuill cause Quill is undefined.');
-            return;
+export const GradeFeedback: React.FC<GradeFeedbackProps> = ({ workbookId }) => {
+    const onSave = async (content: unknown) => {
+        try {
+            await postFeedback({workbookId, content});
+        } catch (e) {
+            // TODO: Error validation to user.
+            logger.error(e);
         }
-
-        const enableMathQuillFormulaAuthoring = mathquill4quill({ Quill });
-
-        enableMathQuillFormulaAuthoring(quill.current.editor, {
-            operators: [
-                ['\\sqrt[n]{x}', '\\nthroot'], 
-                ['\\frac{x}{y}','\\frac']
-            ],
-            displayHistory: true,
-            historyCacheKey: '__rederly_math_history_cachekey_',
-            historySize: 3 
-        });
-    }, []);
-
-    const onSave = async () => {
-        AxiosRequest.post('/feedback', {
-            body: quill.current?.getEditorContents()
-        });
     };
 
-    return <Grid container item md={12}>
-        <Grid item id='quillgrid' md={12}>
-            <ReactQuill
-                scrollingContainer={'#quillgrid'}
-                bounds={'#quillgrid'}
-                style={{
-                    width: '100%',
-                }}
-                ref={r => quill.current = r}
-                // theme={'snow'} 
-                modules={{
-                    formula: true,
-                    toolbar: [                  
-                        ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-                        ['blockquote', 'code-block'],
-                        [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-                        [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-                        ['formula']]
-                }}
-            />
-        </Grid>
-        <Button onClick={onSave}>Submit</Button>
-    </Grid>;
+    return <QuillControlledEditor onSave={onSave} placeholder={'Leave feedback for this student\'s attempt'} />;
 };
