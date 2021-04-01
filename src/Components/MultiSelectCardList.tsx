@@ -35,7 +35,8 @@ const variants = {
 export const MultiSelectCardList: React.FC<MultiSelectCardListProps> = ({listItems, onItemClick, title, selected}) => {
     return (
         <List>
-            <ListSubheader><h3>{title}</h3></ListSubheader>
+            {/* Disable sticky until full height issue is resolved. */}
+            <ListSubheader disableSticky><h3>{title}</h3></ListSubheader>
             <AnimatePresence>
                 {
                     listItems.map(((item: SettingsComponentType, i: number) => (
