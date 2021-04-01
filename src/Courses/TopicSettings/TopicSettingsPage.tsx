@@ -28,6 +28,7 @@ interface TopicSettingsPageProps {
 
 export interface TopicSettingsInputs extends ExamSettingsFields {
     name?: string;
+    description?: any;
     startDate?: Moment;
     endDate?: Moment;
     deadDate?: Moment;

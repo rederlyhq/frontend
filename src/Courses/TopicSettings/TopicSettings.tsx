@@ -45,7 +45,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
     const [{ message: updateAlertMsg, severity: updateAlertType }, setUpdateAlert] = useMUIAlertState();
     // This is a hack to allow us to update the selected TopicObject with DEF file information but not
     // lose all the user input that might be in the form.
-    const [oldSelectedState, setOldSelectedState] = useState<TopicObject>(selected);
+    const [oldSelectedState, setOldSelectedState] = useState<TopicObject | null>(null);
     const [saving, setSaving] = useState<boolean>(false);
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
 
