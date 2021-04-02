@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { ProblemObject } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
 import { Alert } from 'react-bootstrap';
-import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance, postPreviewQuestion, getQuestion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import moment from 'moment';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import logger from '../Utilities/Logger';
@@ -11,6 +11,7 @@ import useAlertState from '../Hooks/useAlertState';
 import { RendererIFrame } from './RendererIFrame';
 import { formDataToObject } from '../Utilities/FormHelper';
 import { Constants } from '../Utilities/Constants';
+import { rederlyBackendSDK } from '../APIInterfaces/BackendAPI/RederlyBackendSDK';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
@@ -24,7 +25,7 @@ interface ProblemIframeProps {
     readonly?: boolean;
     userId?: number;
     studentTopicAssessmentInfoId?: number;
-    propagateLoading?: (loading: boolean)=>void;
+    propagateLoading?: (loading: boolean) => void;
     // This was added for professors printing versions with/without exams.
     showCorrectAnswers?: boolean;
 }
@@ -34,6 +35,52 @@ interface PendingRequest {
     problemId?: number;
     workbookId?: number;
 }
+
+export interface PreviewQuestionOptions {
+    webworkQuestionPath?: string;
+    problemSource?: string;
+    problemSeed?: number;
+    showHints?: boolean;
+    showSolutions?: boolean;
+    formData?: FormData;
+}
+
+// This handles both GET and SUBMIT.
+export const postPreviewQuestion = async ({
+    webworkQuestionPath,
+    problemSeed,
+    formData,
+    problemSource,
+    showHints,
+    showSolutions
+}: PreviewQuestionOptions) => {
+    if (_.isNil(problemSource) && _.isNil(webworkQuestionPath)) {
+        throw new Error('Problem source or webwork question path must be defined');
+    }
+
+    if (!_.isNil(problemSource)) {
+        formData = formData ?? new FormData();
+        formData.set('problemSource', Buffer.from(problemSource).toString('base64'));
+        !_.isNil(showHints) && formData.set('showHints', showHints.toString());
+        !_.isNil(showSolutions) && formData.set('showSolutions', showSolutions.toString());
+    }
+
+    // TODO remove, problem seed shouldn't be here anyway so this is temporary
+    formData?.delete('problemSeed');
+    if (!_.isNil(webworkQuestionPath) && !_.isNil(formData)) {
+        formData.set('sourceFilePath', webworkQuestionPath);
+    }
+
+    const result = await rederlyBackendSDK.coursesPostPreview({
+        data: formData,
+        params: {
+            webworkQuestionPath,
+            problemSeed,
+            showAnswersUpfront: showSolutions,
+        }
+    });
+    return result;
+};
 
 /**
  * The most important part- rendering the problem.
@@ -66,44 +113,60 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const { setLastSavedAt, setLastSubmittedAt } = useCurrentProblemState();
 
     // Propagates loading states to parent listeners.
-    useEffect(()=>{
+    useEffect(() => {
         propagateLoading?.(loading);
     }, [loading, propagateLoading]);
 
     const getHTML = useCallback(async () => {
         logger.debug('ProblemIframe: Getting new renderedHTML.');
         try {
-            let res;
+            let renderedHTMLResponse: string | undefined;
 
             if (previewPath || previewProblemSource) {
-                res = await postPreviewQuestion({
+                const res = await postPreviewQuestion({
                     webworkQuestionPath: previewPath,
                     problemSeed: previewSeed,
                     problemSource: previewProblemSource,
                     showHints: previewShowHints,
                     showSolutions: previewShowSolutions
                 });
+                switch (res.data.statusCode) {
+                case 200:
+                    renderedHTMLResponse = res.data.data.rendererData.renderedHTML;
+                    break;
+                default:
+                    throw new Error(`Could not preview problem: unexpected response ${res.status}`);
+                }
             } else {
-                res = await getQuestion({
-                    id: problem.id,
-                    userId,
-                    workbookId,
-                    studentTopicAssessmentInfoId,
-                    readonly,
-                    showCorrectAnswers
+                const res = await rederlyBackendSDK.courseQuestionGetQuestionById({
+                    pathParams: {
+                        id: problem.id
+                    },
+                    params: {
+                        userId,
+                        workbookId,
+                        studentTopicAssessmentInfoId,
+                        readonly,
+                        showCorrectAnswers                            
+                    }
                 });
+                
+                switch (res.data.statusCode) {
+                case 200:
+                    renderedHTMLResponse = res.data.data.rendererData.renderedHTML;
+                    break;
+                default:
+                    throw new Error(`Could not get question: unexpected response ${res.status}`);
+                }
             }
-            return res.data.data.rendererData.renderedHTML as string;
 
+            return renderedHTMLResponse;
         } catch (e) {
             setAlert({
                 variant: 'danger',
                 message: e.message
             });
-            if (!BackendAPIError.isBackendAPIError(e) || (e.status !== 200 && e.status !== 400)) {
-                logger.error(`An error occurred with retrieving ${(previewPath || previewProblemSource) ? 'a preview' : 'a problem'}. ${e.message}`);
-            }
-
+            logger.error(`An error occurred with retrieving ${(previewPath || previewProblemSource) ? 'a preview' : 'a problem'}. ${e.message}`);
             setLoading(false);
         }
     }, [previewPath, previewProblemSource, previewSeed, previewShowHints, previewShowSolutions, problem.id, readonly, setAlert, studentTopicAssessmentInfoId, userId, workbookId]);
@@ -113,7 +176,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             logger.debug(`Problem Iframe: Canceling request for problem #${pendingReq.current.problemId} workbook #${pendingReq.current.workbookId}`);
             pendingReq.current.cancelled = true;
         }
-        const currentReq = {problemId: problem.id, workbookId} as PendingRequest;
+        const currentReq = { problemId: problem.id, workbookId } as PendingRequest;
         pendingReq.current = currentReq;
 
         const rendererHTML = await getHTML();
@@ -132,7 +195,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         }
     }, [getHTML, problem.id, setAlert, workbookId]);
 
-    useEffect(()=>{
+    useEffect(() => {
         // If you don't reset the rendered html you won't get the load event
         // Thus if you go to an error state and back to the success state
         // The rendered html will never call load handler which will never stop loading
@@ -155,7 +218,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     const updateSubmitActive = _.throttle((problemForm: HTMLFormElement, submitButtons: NodeListOf<HTMLButtonElement>) => {
         // called only onLoad or after interaction with already loaded srcdoc - so form will exist, unless bad problemPath
         // no logger.error because exam problems (and static problems) will not have 'submitAnswers'
-        if (_.isNil(submitButtons) || _.isNil(problemForm)) {return;}
+        if (_.isNil(submitButtons) || _.isNil(problemForm)) { return; }
 
         const currentState = _.omitBy(formDataToObject(new FormData(problemForm)), isPrevious);
         const previousState = _.omitBy(lastSubmission, isPrevious);
@@ -167,9 +230,9 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             const valueContents = button.getAttribute('value');
             if (isClean) {
                 if (!button.disabled) {
-                    button.setAttribute('disabled','true');
+                    button.setAttribute('disabled', 'true');
                     // invisibly stash the button's label (in case there are multiple submit buttons)
-                    if (valueContents){
+                    if (valueContents) {
                         button.setAttribute(valueStashAttributeName, valueContents);
                         button.setAttribute('value', 'Submitted');
                     } else {
@@ -187,13 +250,13 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 }
             }
         });
-    }, 100, {leading:true, trailing:true});
+    }, 100, { leading: true, trailing: true });
 
     const prepareAndSubmit = useCallback(async function prepareAndSubmit(problemForm: HTMLFormElement, clickedButton?: HTMLButtonElement) {
         // check that the submit url is accurate
         const submitUrl = problemForm.getAttribute('action');
         const checkId = submitUrl?.match(/\/backend-api\/courses\/question\/([0-9]+)\?/);
-        if (checkId && parseInt(checkId[1],10) !== problem.id) {
+        if (checkId && parseInt(checkId[1], 10) !== problem.id) {
             // if this still happens, we have bigger problems
             logger.error(`Something went wrong. Problem #${problem.id} is rendering a form with url: ${submitUrl}`);
             setAlert({
@@ -203,7 +266,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
         }
 
         const submitAction = (window as any).submitAction;
-        if(typeof submitAction === 'function') submitAction(); // this is a global function from renderer - prepares form field for submit
+        if (typeof submitAction === 'function') submitAction(); // this is a global function from renderer - prepares form field for submit
 
         const formData = new FormData(problemForm);
         if (!_.isNil(clickedButton)) {
@@ -216,9 +279,11 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 setLoading(true);
                 setRenderedHTML('');
                 if (_.isNil(previewPath) && _.isNil(previewProblemSource)) {
-                    result = await postQuestionSubmission({
-                        id: problem.id,
+                    result = await rederlyBackendSDK.courseQuestionPostQuestionById({
                         data: formData,
+                        pathParams: {
+                            id: problem.id
+                        }
                     });
                 } else {
                     result = await postPreviewQuestion({
@@ -231,7 +296,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     });
                 }
 
-                if (clickedButton.name === 'submitAnswers'){
+                if (clickedButton.name === 'submitAnswers') {
                     setProblemStudentGrade(problem.id, result.data.data.studentGrade);
                     setLastSubmission(saveMeLater);
                     setLastSubmittedAt?.(moment());
@@ -245,8 +310,8 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 return;
             }
         } else {
-            if (_.isNil(problem.grades)) {return;} // TODO: impossi-log logger.error()
-            if (_.isNil(problem.grades[0])) {return;} // not enrolled - do not save
+            if (_.isNil(problem.grades)) { return; } // TODO: impossi-log logger.error()
+            if (_.isNil(problem.grades[0])) { return; } // not enrolled - do not save
             if (_.isNil(problem.grades[0].id)) {
                 // TODO: impossi-log logger.error()
                 setAlert({
@@ -271,7 +336,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                     });
 
                 if (result.data.data.updatesCount > 0) {
-                    setProblemStudentGrade(problem.id, {...problem.grades[0], hasBeenSaved: true});
+                    setProblemStudentGrade(problem.id, { ...problem.grades[0], hasBeenSaved: true });
                     setLastSavedAt?.(moment());
                 }
             } catch (e) {
@@ -296,7 +361,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 loading={loading}
                 onLoad={(loadedRenderedHTML: string) => {
                     setRenderedHTML(renderedHTML => {
-                        if(loadedRenderedHTML === renderedHTML) {
+                        if (loadedRenderedHTML === renderedHTML) {
                             setLoading(false);
                         }
                         return renderedHTML;

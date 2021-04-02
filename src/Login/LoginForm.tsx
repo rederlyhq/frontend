@@ -5,8 +5,7 @@ import { useHistory } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import { getUserRoleFromServer } from '../Enums/UserRole';
 import { ForgotPasswordButtonAndModal } from './ForgotPasswordButtonAndModal';
-import { postLogin } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
-import BackendAPIError, { isAxiosError } from '../APIInterfaces/BackendAPI/BackendAPIError';
+import { rederlyBackendSDK } from '../APIInterfaces/BackendAPI/RederlyBackendSDK';
 import ResendVerificationModal from './ResendVerificationModal';
 import logger from '../Utilities/Logger';
 import _ from 'lodash';
@@ -48,35 +47,35 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
 
     const handleLogin = async () => {
         try {
-            const resp = await postLogin({
-                email: formState.email,
-                password: formState.password
+            const resp = await rederlyBackendSDK.usersPostLogin({
+                data: {
+                    email: formState.email,
+                    password: formState.password,
+                }
             });
 
-            if (resp.status === 200) {
-                setLoginAlertMsg({ message: resp.data?.msg || 'Logged in!', variant: 'success' });
-                session.userId = resp.data.data.userId;
+            switch (resp.data.statusCode) {
+            case 200:
+                setLoginAlertMsg({ message: 'Logged in!', variant: 'success' });
+                session.userId = String(resp.data.data.userId);
                 session.userType = getUserRoleFromServer(resp.data.data.roleId);
                 session.actualUserType = session.userType;
                 session.userUUID = resp.data.data.uuid;
                 session.username = `${resp.data.data.firstName} ${resp.data.data.lastName}`;
                 gaTrackLogin('EMAIL', session.userId);
                 history.replace('/common/courses');
+                break;
+            case 401:
+                setLoginAlertMsg({ message: 'Login Failed. Incorrect email and/or password.', variant: 'danger' });
+                break;
+            case 403:
+                setShowResendVerificationModal(true);
+                break;
+            default:
+                throw new Error(`Request failed with status code ${resp.data.message}`);
             }
         } catch (err) {
-            let handled = false;
-            if (err instanceof BackendAPIError && isAxiosError(err.originalError)) {
-                if (err.originalError.response?.status === 401) {
-                    setLoginAlertMsg({ message: 'Login Failed. Incorrect email and/or password.', variant: 'danger' });
-                    handled = true;
-                } else if(err.originalError.response?.status === 403) {
-                    setShowResendVerificationModal(true);
-                    handled = true;
-                }
-            }
-            if (!handled) {
-                setLoginAlertMsg({ message: err.message, variant: 'danger' });
-            }
+            setLoginAlertMsg({ message: err.message, variant: 'danger' });
         }
     };
 
