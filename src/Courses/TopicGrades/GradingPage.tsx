@@ -232,7 +232,7 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                         </ListSubheader>
                         {currentUserRole === UserRole.STUDENT ? 
                             <QuillReadonlyDisplay content={info.workbook.feedback} /> : 
-                            <GradeFeedback workbookId={info.workbook.id} />}
+                            <GradeFeedback workbookId={info.workbook.id} setGradeAlert={setGradeAlert} defaultValue={info.workbook.feedback} />}
                     </Grid>}
                     {(selected.grade || selected.gradeInstance) &&
                         <Grid container item md={12}>

@@ -1,11 +1,7 @@
-import React, { useRef, useEffect } from 'react';
-import ReactQuill, {Quill} from 'react-quill';
+import React, {  } from 'react';
 import 'react-quill/dist/quill.snow.css';
 // import 'mathquill/build/mathquill';
-import { Button, Grid } from '@material-ui/core';
-import mathquill4quill from 'mathquill4quill';
 import 'mathquill4quill/mathquill4quill.css';
-import _ from 'lodash';
 import logger from '../../Utilities/Logger';
 
 import '../../Components/Quill/QuillOverrides.css';
@@ -15,21 +11,28 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import QuillControlledEditor from '../../Components/Quill/QuillControlledEditor';
 import { postFeedback } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { IMUIAlertModalState } from '../../Hooks/useAlertState';
 window.katex = katex;
 
 interface GradeFeedbackProps {
     workbookId: number;
+    defaultValue?: any;
+    setGradeAlert: React.Dispatch<React.SetStateAction<IMUIAlertModalState>>;
 }
 
-export const GradeFeedback: React.FC<GradeFeedbackProps> = ({ workbookId }) => {
+export const GradeFeedback: React.FC<GradeFeedbackProps> = ({ workbookId, setGradeAlert, defaultValue }) => {
     const onSave = async (content: unknown) => {
         try {
             await postFeedback({workbookId, content});
         } catch (e) {
-            // TODO: Error validation to user.
             logger.error(e);
+            setGradeAlert({message: `An error occurred while saving your feedback. (${e.message})`, severity: 'error'});
         }
     };
 
-    return <QuillControlledEditor onSave={onSave} placeholder={'Leave feedback for this student\'s attempt'} />;
+    return <QuillControlledEditor 
+        onSave={onSave} 
+        placeholder={'Leave feedback for this student\'s attempt. Students can see this by visiting their version of the grading page and selecting this attempt.'} 
+        defaultValue={defaultValue}    
+    />;
 };

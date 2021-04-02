@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import ReactQuill, { Quill, ReactQuillProps } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 // import 'mathquill/build/mathquill';
@@ -18,11 +18,11 @@ window.katex = katex;
 interface QuillControlledEditorProps {
     // Common props
     placeholder?: string;
+    defaultValue?: ReactQuillProps['defaultValue'];
     // Controlled variant only
     onChange?: (value: ReactQuillProps['value'] | null) => void;
     onBlur?: ReactQuillProps['onBlur'];
     value?: ReactQuillProps['value'];
-    defaultValue?: ReactQuillProps['defaultValue'];
     // Uncontrolled variant only
     onSave?: (saveData: ReactQuillProps['value'] | null)=>any;
 }
@@ -30,6 +30,7 @@ interface QuillControlledEditorProps {
 
 export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue, placeholder}) => {
     const quill = useRef<ReactQuill | null>();
+    const [disabled, setDisabled] = useState<boolean>(true);
 
     useEffect(()=>{
         if (_.isNil(quill.current)) {
@@ -68,6 +69,7 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
     };
 
     const onClickedSave = () => {
+        setDisabled(true);
         if (isQuillEmpty()) {
             onSave?.(null);
             return;
@@ -77,6 +79,7 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
     };
 
     const wrappedOnChange = () => {
+        setDisabled(false);
         if (isQuillEmpty()) {
             onChange?.(null);
             return;
@@ -105,13 +108,21 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                         [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
                         ['formula']]
                 }}
+                // Controlled props have to conditionally be applied because
+                // undefined values still count as values.
+                {...(onChange ? {
+                    onBlur: onBlur,
+                    value: value,
+                } : {})}
+                // We use onChange to also throttle the save button, so even though it's really a controlled
+                // feature, we need it here.
                 onChange={wrappedOnChange}
-                onBlur={onBlur}
-                value={value}
                 defaultValue={defaultValue}
                 placeholder={placeholder ?? 'Descriptions or instructions for this Topic can be added here. They will be displayed on top of every problem in this topic.'}
             />
-            {onSave && <Button fullWidth variant='contained' onClick={onClickedSave}>Save</Button>}
+            {onSave && <Grid xs={12} style={{margin: '0% 1%'}}>
+                <Button disabled={disabled} fullWidth color='primary' variant='contained' onClick={onClickedSave}>Save Feedback</Button>
+            </Grid>}
         </Grid>
     </Grid>;
 };
