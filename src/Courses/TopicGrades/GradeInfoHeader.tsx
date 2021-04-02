@@ -153,7 +153,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             versionMap: currentVersionMap,
         });
 
-    }, [grade, grade?.id, selected.problem?.id, selected.user?.id]);
+    }, [grade, grade?.id, selected.problem?.id, selected.user?.id, setInfo]);
 
     useEffect(() => {
         logger.debug('GradeInfoHeader: setting new problem state from updated Workbook ID or Grade (Instance) ID', info);

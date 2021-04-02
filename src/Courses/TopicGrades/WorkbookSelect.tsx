@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import { StudentGrade } from '../CourseInterfaces';
-import { Grid, FormControl, InputLabel, Select, makeStyles, MenuItem, Chip, ListItemText, ListItemIcon, ListSubheader, Tooltip, Badge } from '@material-ui/core';
+import { Grid, FormControl, InputLabel, Select, makeStyles, MenuItem, ListItemText, ListSubheader, Tooltip, Badge } from '@material-ui/core';
 import logger from '../../Utilities/Logger';
 import { WorkbookInfoDump } from './GradingPage';
 import { Star, Attachment, Feedback } from '@material-ui/icons';
