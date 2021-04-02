@@ -1,11 +1,12 @@
 import React, { useRef, useState } from 'react';
 import { Button, Modal, FormControl, FormLabel, FormGroup, Spinner, Form } from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import logger from '../Utilities/Logger';
 import _ from 'lodash';
 import { version } from '../../package.json';
 import { createSupportTicket } from '../APIInterfaces/BackendAPI/Requests/SupportRequests';
+import { useMUIAlertState } from '../Hooks/useAlertState';
+import { Alert as MUIAlert } from '@material-ui/lab';
 
 enum ProvideFeedbackState {
     READY='READY',
@@ -16,7 +17,7 @@ export const ProvideFeedback: React.FC<any> = () => {
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
     const [summary, setSummary] = useState('');
     const [description, setDescription] = useState('');
-    const [message, setMessage] = useState('');
+    const [{ message, severity }, setUpdateAlert] = useMUIAlertState();
     const [state, setState] = useState<ProvideFeedbackState>(ProvideFeedbackState.READY);
     const [validated, setValidated] = useState(false);
     const history = useHistory();
@@ -31,17 +32,17 @@ export const ProvideFeedback: React.FC<any> = () => {
 
     const submitFeedback = async () => {
         try {
-            setMessage('');
+            setUpdateAlert({message: '', severity: 'info'});
             setState(ProvideFeedbackState.SUBMITTING);
             logger.info(history);
             await createSupportTicket({
                 description: description,
                 summary: summary,
-                url: `${window.location.origin}${history.location.pathname}`,
+                url: `${window.location.origin}${history.location.pathname}${history.location.search}`,
                 version: version,
                 userAgent: window.navigator.userAgent
             });
-            setMessage('Thank you, your feedback has been submitted.');
+            setUpdateAlert({message: 'Thank you, your feedback has been submitted.', severity: 'success'});
             setState(ProvideFeedbackState.SUBMITTED);
             clearResetTimeout();
             resetTimeout.current = setTimeout(() => {
@@ -49,7 +50,7 @@ export const ProvideFeedback: React.FC<any> = () => {
             }, 3000);
         } catch(e) {
             setState(ProvideFeedbackState.READY);
-            setMessage(e.message);
+            setUpdateAlert({message: e.message, severity: 'error'});
         }
     };
 
@@ -59,7 +60,7 @@ export const ProvideFeedback: React.FC<any> = () => {
      */
     const reset = () => {
         setState(ProvideFeedbackState.READY);
-        setMessage('');
+        setUpdateAlert({message: '', severity: 'info'});
         setDescription('');
         setSummary('');
         setShowFeedbackModal(false);
@@ -101,7 +102,7 @@ export const ProvideFeedback: React.FC<any> = () => {
                         </Modal.Header>
                         <Modal.Body>
                             {state === ProvideFeedbackState.SUBMITTING && <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>}
-                            {message && <p>{message}</p>}
+                            {message && <MUIAlert severity={severity}>{message}</MUIAlert>}
                             <FormGroup controlId='provide-feedback-summary'>
                                 <FormLabel>
                                 Summary:
