@@ -18,7 +18,7 @@ export const CollapsibleQuillReadOnlyDisplay: React.FC<CollapsibleQuillReadOnlyD
     const [show, setShow] = useState<boolean>(false);
 
     return <Grid container spacing={1} style={{marginTop: '5px'}}>
-        <Grid md={2} xs={12} item>
+        <Grid sm={4} xs={12} item>
             {showQuill && <Button
                 color='primary'
                 variant='outlined'
@@ -29,7 +29,7 @@ export const CollapsibleQuillReadOnlyDisplay: React.FC<CollapsibleQuillReadOnlyD
                 Topic Description
             </Button>}
         </Grid>
-        <Grid container item spacing={1} md={10} xs={12} justify='flex-end'>
+        <Grid container item spacing={1} sm={8} xs={12} justify='flex-end'>
             {children}
         </Grid>
         <Grid xs={12} className='QuillReadonlyScrollingContainer'>
