@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactQuill, { Quill, ReactQuillProps } from 'react-quill';
+// import DragAndDropModule from 'quill-drag-and-drop-module';
 import 'react-quill/dist/quill.snow.css';
 // import 'mathquill/build/mathquill';
 import { Button, Grid } from '@material-ui/core';
@@ -7,6 +8,7 @@ import mathquill4quill from 'mathquill4quill';
 import 'mathquill4quill/mathquill4quill.css';
 import _ from 'lodash';
 import logger from '../../Utilities/Logger';
+import { useDropzone, DropzoneOptions } from 'react-dropzone';
 
 import './QuillOverrides.css';
 
@@ -14,6 +16,7 @@ import './QuillOverrides.css';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 window.katex = katex;
+
 
 interface QuillControlledEditorProps {
     // Common props
@@ -85,11 +88,32 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
             return;
         }
         const delta = quill.current?.getEditor().getContents();
+        console.log(delta);
         onChange?.(delta);
     };
 
+    const onDrop: DropzoneOptions['onDrop'] = (file) => {
+        console.log('Quill got a file', file);
+        // TODO: Upload file, get confirmation, finally, use url:
+        const url = 'https://www.google.com';
+        const editor = quill.current?.getEditor();
+        if (editor === undefined) {
+            logger.error('Editor is undefined when a drop occurred.');
+            return;
+        }
+        const range = editor.getSelection();
+        editor.insertText(range?.index ?? 0, file.first?.name ?? 'Unnamed File', 'link', url, 'user');
+    };
+
+    const { getRootProps, getInputProps, open, isDragActive } = useDropzone({ onDrop,
+        accept: ['.pdf', '.png'],
+        noClick: true,
+        noKeyboard: true
+    });
+
     return <Grid container item md={12}>
-        <Grid item id='quillgrid' md={12}>
+        <Grid item id='quillgrid' md={12} {...getRootProps()}>
+            <input {...getInputProps()} />
             <ReactQuill
                 scrollingContainer={'#quillgrid'}
                 bounds={'#quillgrid'}
@@ -106,7 +130,8 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                         ['blockquote', 'code-block'],
                         [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
                         [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-                        ['formula']]
+                        ['formula']
+                    ]
                 }}
                 // Controlled props have to conditionally be applied because
                 // undefined values still count as values.
