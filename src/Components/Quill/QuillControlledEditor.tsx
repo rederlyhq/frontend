@@ -15,6 +15,9 @@ import './QuillOverrides.css';
 // Load Katex with this module
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import { putUploadWork, getGenericUploadURL } from '../../APIInterfaces/AWS/Requests/StudentUpload';
+import { getUploadURL } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import AttachmentType from '../../Enums/AttachmentTypeEnum';
 window.katex = katex;
 
 
@@ -92,17 +95,36 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
         onChange?.(delta);
     };
 
-    const onDrop: DropzoneOptions['onDrop'] = (file) => {
-        console.log('Quill got a file', file);
-        // TODO: Upload file, get confirmation, finally, use url:
-        const url = 'https://www.google.com';
-        const editor = quill.current?.getEditor();
-        if (editor === undefined) {
-            logger.error('Editor is undefined when a drop occurred.');
-            return;
-        }
-        const range = editor.getSelection();
-        editor.insertText(range?.index ?? 0, file.first?.name ?? 'Unnamed File', 'link', url, 'user');
+    const onDrop: DropzoneOptions['onDrop'] = (files) => {
+        files.forEach(async (file) => {
+            // TODO: Fix to be generic
+            const res = await getGenericUploadURL({type: AttachmentType.WORKBOOK_FEEDBACK});
+            const {uploadURL, cloudFilename} = res.data.data;
+            
+            await putUploadWork({
+                presignedUrl: uploadURL,
+                file: file,
+            });
+            
+            // TODO: Add auditing tables
+            // const confirmRes = await postConfirmAttachmentUpload({
+            //     attachment: {
+            //         cloudFilename: res.data.data.cloudFilename,
+            //         userLocalFilename: file.file.name,
+            //     },
+            //     ...(gradeInstanceId ?
+            //         {studentGradeInstanceId: gradeInstanceId} :
+            //         {studentGradeId: gradeId}
+            //     ),
+            // });
+            const editor = quill.current?.getEditor();
+            if (editor === undefined) {
+                logger.error('Editor is undefined when a drop occurred.');
+                return;
+            }
+            const range = editor.getSelection();
+            editor.insertText(range?.index ?? 0, file.name, 'link', `/work/${cloudFilename}`, 'user');
+        });
     };
 
     const { getRootProps, getInputProps, open, isDragActive } = useDropzone({ onDrop,
