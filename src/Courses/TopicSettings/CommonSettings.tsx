@@ -8,6 +8,9 @@ import _ from 'lodash';
 import { IMUIAlertModalState } from '../../Hooks/useAlertState';
 import GetAppOutlinedIcon from '@material-ui/icons/GetAppOutlined';
 import { GenerateQuillField } from './GenericFormInputs';
+import AttachmentType from '../../Enums/AttachmentTypeEnum';
+import { GenericConfirmAttachmentUploadOptions } from '../../APIInterfaces/BackendAPI/RequestTypes/CourseRequestTypes';
+import { postGenericConfirmAttachmentUpload } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 
 interface CommonSettingsProps {
     // This is the register function from react-hook-forms.
@@ -15,13 +18,14 @@ interface CommonSettingsProps {
     setUpdateAlert: React.Dispatch<React.SetStateAction<IMUIAlertModalState>>;
     downloadDefFileClick: () => void
     exportTopicClick: () => void
+    topicId: number;
 }
 
 /**
  * This component renders settings that are common to all Topic objects.
  *
  */
-export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUpdateAlert, downloadDefFileClick, exportTopicClick}) => {
+export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUpdateAlert, downloadDefFileClick, exportTopicClick, topicId}) => {
     const { register, getValues, control, setValue, watch } = formObject;
     const { topicTypeId, partialExtend, startDate, endDate, deadDate } = watch();
 
@@ -30,6 +34,14 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
             setValue('partialExtend', false);
         }
     }, [topicTypeId]);
+
+    const uploadConfirmation = ({attachment}: GenericConfirmAttachmentUploadOptions) => {
+        postGenericConfirmAttachmentUpload({
+            type: AttachmentType.TOPIC_DESCRIPTION,
+            attachment,
+            topicId: topicId,
+        });
+    };
 
     return (
         <Grid container item md={12} spacing={3}>
@@ -189,7 +201,12 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                 </Grid>
             </Grid>
             <Grid item md={12}>
-                <GenerateQuillField fieldName={'description'} label={'Topic Description'} />
+                <GenerateQuillField 
+                    fieldName={'description'} 
+                    label={'Topic Description'} 
+                    attachmentType={AttachmentType.TOPIC_DESCRIPTION} 
+                    uploadConfirmed={uploadConfirmation}
+                />
             </Grid>
             <Grid item md={12}>
                 <FormControl component="fieldset">
