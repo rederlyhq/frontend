@@ -1,10 +1,11 @@
 import React from 'react';
-import { FormControlLabel, Switch, TextField } from '@material-ui/core';
+import { FormControlLabel, Switch, TextField, FormLabel } from '@material-ui/core';
 import _ from 'lodash';
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import ChipInput from 'material-ui-chip-input';
 import { ErrorMessage } from '@hookform/error-message';
 import { Constants } from '../../Utilities/Constants';
+import QuillControlledEditor from '../../Components/Quill/QuillControlledEditor';
 
 /* PROBLEM SETTINGS */
 export const ProblemMaxAttempts: React.FC<{}> = () => {
@@ -290,5 +291,30 @@ export const GenerateSwitchField: React.FC<{fieldName: string, label: string}> =
                 />
             )}
         />
+    );
+};
+
+export const GenerateQuillField: React.FC<{fieldName: string, label: string}> = ({fieldName, label}) => {
+    const { control, errors } = useFormContext();
+    const name = fieldName;
+
+    return (
+        <>
+            <FormLabel component="legend">Topic Description</FormLabel>
+            <Controller
+                name={name}
+                control={control}
+                defaultValue={false}
+                error={Boolean(errors[name])}
+                helperText={errors[name] ? 'Error.' : null}
+                render={({ onChange, onBlur, value }) => (
+                    <QuillControlledEditor
+                        onBlur={onBlur}
+                        onChange={onChange}
+                        value={value}
+                    />
+                )}
+            />
+        </>
     );
 };

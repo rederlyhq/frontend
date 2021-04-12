@@ -2,12 +2,11 @@ import React from 'react';
 import { ProblemObject, TopicObject, StudentGrade, StudentTopicAssessmentFields } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
 import moment from 'moment';
-import { OverlayTrigger, Tooltip, Badge, Button } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip, Badge } from 'react-bootstrap';
 import { getUserRole, UserRole } from '../Enums/UserRole';
 import { MomentReacter } from '../Components/MomentReacter';
 import { useCurrentProblemState } from '../Contexts/CurrentProblemState';
 import logger from '../Utilities/Logger';
-import EmailProfessor from './EmailProfessor';
 import localPreferences from '../Utilities/LocalPreferences';
 
 const { topicPreferences } = localPreferences;
@@ -134,16 +133,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         </MomentReacter>
                     </div>
                 </OverlayTrigger>
-                <Button
-                    style={{ marginLeft: 'auto' }}
-                    onClick={()=>setOpenDrawer?.(true)}
-                    disabled={_.isNil(setOpenDrawer)}
-                    title={_.isNil(setOpenDrawer) ? 'You must be enrolled in this course to upload attachments.' : 'Click here to open the Attachments sidebar.'}
-                >
-                    Attach Work
-                </Button>
-                <EmailProfessor topic={topic} problem={problem} />
-                <div style={{ marginLeft: '1em' }}>
+                <div style={{ marginLeft: 'auto' }}>
                     <Badge pill variant="dark">
                         {problem.id}{_.isNil(grade) ? '' : `-${grade.id}`}
                     </Badge>
@@ -151,8 +141,8 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
             </div>
             <div className="d-flex">
                 { !isVersionedAssessment &&
-                    <div className="d-flex flex-column">
-                        <div className="d-flex">
+                    <div>
+                        <div>
                             <OverlayTrigger
                                 placement="top"
                                 delay={{ show: 250, hide: 400 }}
@@ -191,7 +181,7 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                                 </div>
                             </OverlayTrigger>
                         </div>
-                        <div className="d-flex">
+                        <div>
                             {(() => {
                                 if (_.isNil(problem)) {
                                     return null;
@@ -207,17 +197,17 @@ export const ProblemDetails: React.FC<ProblemDetailsProps> = ({
                         </div>
                         {_.isNil(grade) ? null : (
                             <>
-                                <div className="d-flex">
+                                <div>
                                     Your recorded score for this problem is {(grade.effectiveScore * 100).toFixed(1)}%.
                                 </div>
                                 {grade.effectiveScore === grade.overallBestScore ? null : (
-                                    <div className="d-flex">
+                                    <div>
                                         Your best attempt for this problem is {(grade.overallBestScore * 100).toFixed(1)}%.
                                     </div>
                                 )}
                             </>
                         )}
-                        <div className="d-flex">
+                        <div>
                             <MomentReacter
                                 significantMoments={[endDate, deadDate, solutionsMoment]}
                                 stopMoment={solutionsMoment} // Once solutions are available this timer means nothing

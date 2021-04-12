@@ -1,18 +1,27 @@
-import { Grid } from '@material-ui/core';
+import { Grid, Snackbar } from '@material-ui/core';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ProblemObject, TopicObject, ExamSettingsFields, ExamProblemSettingsFields } from '../CourseInterfaces';
+import { ProblemObject, TopicObject, ExamSettingsFields, ExamProblemSettingsFields, TopicTypeId as TopicTypeIdNumber } from '../CourseInterfaces';
 import TopicSettingsSidebar from './TopicSettingsSidebar';
 import { useCourseContext } from '../CourseProvider';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import _ from 'lodash';
 import SettingsForm from './SettingsForm';
-import { getTopic, postDefFile, postQuestion, putQuestion } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { getTopic, postDefFile, postQuestion, putQuestion, putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { Moment } from 'moment';
 import { TopicTypeId } from '../../Enums/TopicType';
 import { useDropzone } from 'react-dropzone';
 import logger from '../../Utilities/Logger';
 import { useQuery } from '../../Hooks/UseQuery';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
+import WebWorkDef from '@rederly/webwork-def-parser';
+import { readFileAsText } from '../../Utilities/FileHelper';
+import { ConfirmationModal } from '../../Components/ConfirmationModal';
+import { getTopicSettingsFromDefFile, DefFileTopicAssessmentInfo } from '@rederly/rederly-utils';
+import { isKeyOf } from '../../Utilities/TypescriptUtils';
+import { useMUIAlertState } from '../../Hooks/useAlertState';
+import { Alert as MUIAlert } from '@material-ui/lab';
+import BackendAPIError from '../../APIInterfaces/BackendAPI/BackendAPIError';
+import { QuillReadonlyDisplay } from '../../Components/Quill/QuillReadonlyDisplay';
 
 interface TopicSettingsPageProps {
     topic?: TopicObject;
@@ -20,6 +29,7 @@ interface TopicSettingsPageProps {
 
 export interface TopicSettingsInputs extends ExamSettingsFields {
     name?: string;
+    description?: any;
     startDate?: Moment;
     endDate?: Moment;
     deadDate?: Moment;
@@ -36,7 +46,74 @@ export interface ProblemSettingsInputs extends ExamProblemSettingsFields {
     additionalProblemPaths?: Array<{path: string}>;
 }
 
+interface TopicSettingsOverwriteModalOptions {
+    examSettings: DefFileTopicAssessmentInfo;
+    topicId: number;
+    description: unknown;
+    topicTypeId: number;
+}
+
+const settingOptionMap = {
+    'duration': 'Time Limit (minutes)',
+    'hardCutoff': 'Hard Cut-off',
+
+    'maxVersions': 'Available Versions',
+    'maxGradedAttemptsPerVersion': 'Submissions per Version',
+    'versionDelay': 'Delay Between Versions (minutes)',
+    'randomizeOrder': 'Randomize Problem Order',
+
+    'showItemizedResults': 'Show Problem Scores On Submission',
+    'showTotalGradeImmediately': 'Show Total Score on Submission',
+    'hideProblemsAfterFinish': 'Hide Problems from Student on Completition',
+
+    'hideHints': 'Hide Hints',
+};
+
+const topicSettingToString = (value: any) => {
+    if (_.isNil(value)) {
+        return '';
+    }
+
+    if (typeof value === 'boolean') {
+        return value ? 'Yes' : 'No';
+    }
+    return value.toString();
+};
+
+const translateTopicSettings = (examSettings: any): {[key: string]: string} => {
+    if (_.isNil(examSettings)) {
+        return {};
+    }
+    return Object.keys(settingOptionMap).reduce((result: any, key: string) => {
+        if (isKeyOf(key, settingOptionMap) && isKeyOf(key, examSettings)) {
+            result[settingOptionMap[key]] = topicSettingToString(examSettings[key]);
+        }
+        return result;
+    }, {});
+};
+
+interface TryJSONParseOptions {
+    value: string | null | undefined;
+    identifier: string;
+    logValueWithError?: boolean;
+}
+
+const tryJSONParse = ({value, identifier, logValueWithError=true}: TryJSONParseOptions): object | null => {
+    if (_.isNil(value) || _.isEmpty(value)) {
+        return null;
+    }
+    try {
+        return JSON.parse(value);
+    } catch (e) {
+        // This doesn't have sensitive info but if 
+        logger.error(`Could not parse "${identifier}"${logValueWithError ? ` with value "${value}"` : ''}`, e);
+    }
+    return null;
+};
+
 export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topicProp}) => {
+    const [ updateAlert, setUpdateAlert] = useMUIAlertState();
+    const [topicSettingsOverwriteModalOptions, setTopicSettingsOverwriteModalOptions] = useState<TopicSettingsOverwriteModalOptions | null>(null);
     const [selected, setSelected] = useState<ProblemObject | TopicObject>(new TopicObject());
     const [topic, setTopic] = useState<TopicObject | null>(null);
     const {course} = useCourseContext();
@@ -44,6 +121,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     const topicId = topicProp?.id || (topicIdStr ? parseInt(topicIdStr, 10) : null);
     const queryParams = useQuery();
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
+    const history = useHistory();
 
     useEffect(()=>{
         if (!topicId) {
@@ -60,6 +138,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 setSelected(new TopicObject(topicData));
             } catch (e) {
                 logger.error('Failed to load Topic', e);
+                setUpdateAlert({message: e.message, severity: 'error'});
             }
         })();
     }, [course]);
@@ -70,13 +149,10 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
         if (!_.isNil(problemIdStr)) {
             const problemId = parseInt(problemIdStr, 10);
             setSelected(selected => {
-                if (selected instanceof ProblemObject) {
-                    return selected;
-                }
                 return _.find(topic?.questions, ['id', problemId]) ?? selected;
             });
         }
-    }, [topic]);
+    }, [topic, queryParams]);
 
     const addNewProblem = async () => {
         if (_.isNil(topicId) || _.isNil(topic)) {
@@ -97,9 +173,11 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
 
             setTopic(newTopic);
             // Name should never be updated here, so no need to cache.
+            history.push(`?problemId=${newProb.id}`);
             // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Failed to create a new problem with default settings.', e);
+            setUpdateAlert({message: e.message, severity: 'error'});
         }
     };
 
@@ -160,10 +238,36 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
             // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Drag/Drop error:', e);
+            setUpdateAlert({message: e.message, severity: 'error'});
         }
     };
 
-    const onDrop = useCallback(acceptedFiles => {
+    const pushDefFile = async ({
+        topicId,
+        defFile,
+    } : {
+        topicId: number;
+        defFile: File;
+    }) => {
+        if (_.isNil(topic)) {
+            throw new Error('Topic disappeared before pushing the def file');
+        }
+        const res = await postDefFile({
+            defFile: defFile,
+            courseTopicId: topicId,
+        });
+        const newProblems = [
+            ...topic.questions,
+            ...res.data.data.newQuestions.map((question: ProblemObject) => new ProblemObject(question))
+        ];
+        const newTopic = new TopicObject(topic);
+        newTopic.questions = newProblems;
+        setTopic(newTopic);
+        // Name should never be updated here, so no need to cache.
+        // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});    
+    };
+
+    const onDrop = useCallback((acceptedFiles: File[]) => {
         (async () => {
             try {
                 // setError(null);
@@ -171,21 +275,40 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                     logger.error('existing topic is nil');
                     throw new Error('Cannot find topic you are trying to add questions to');
                 }
-                const res = await postDefFile({
-                    acceptedFiles,
-                    courseTopicId: topic.id
+
+                const defFile = acceptedFiles.first;
+                if(_.isNil(defFile)) {
+                    throw new Error('Invalid def file');
+                }
+
+                const fileContent = await readFileAsText(defFile);
+                let parsedWebworkDef:WebWorkDef | null = null;
+                if (_.isSomething(fileContent)) {
+                    parsedWebworkDef = new WebWorkDef(fileContent.toString());
+                }
+
+                await pushDefFile({
+                    topicId: topic.id,
+                    defFile,
                 });
-                const newProblems = [
-                    ...topic.questions,
-                    ...res.data.data.newQuestions.map((question: ProblemObject) => new ProblemObject(question))
-                ];
-                const newTopic = new TopicObject(topic);
-                newTopic.questions = newProblems;
-                setTopic(newTopic);
-                // Name should never be updated here, so no need to cache.
-                // updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
+                if (_.isSomething(parsedWebworkDef)) {
+                    const topicSettingsFromDefFile = getTopicSettingsFromDefFile(parsedWebworkDef);
+                    if (_.isSomething(topicSettingsFromDefFile.topicAssessmentInfo) || _.isSomething(topicSettingsFromDefFile.description)) {
+                        const description = tryJSONParse({
+                            value: topicSettingsFromDefFile.description,
+                            identifier: 'import rederly def file',
+                        });
+
+                        setTopicSettingsOverwriteModalOptions({
+                            examSettings: topicSettingsFromDefFile.topicAssessmentInfo ?? {},
+                            topicId: topic.id,
+                            description: description,
+                            topicTypeId: parsedWebworkDef.isExam() ? TopicTypeIdNumber.EXAM : TopicTypeIdNumber.PROBLEM_SET
+                        });    
+                    }
+                }
             } catch (e) {
-                // setError(e);
+                setUpdateAlert({message: e.message, severity: 'error'});
             }
         })();
     }, [topic]);
@@ -203,6 +326,74 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
 
     return (
         <Grid container spacing={5} style={{maxWidth: '100%', marginLeft: '0px'}} {...getRootProps({refKey: 'innerRef'})}>
+            <Snackbar
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                open={updateAlert.message !== ''}
+                autoHideDuration={6000}
+                onClose={() => setUpdateAlert({message: '', severity: 'info'})}
+                style={{ maxWidth: '50vw' }}
+            >
+                <MUIAlert severity={updateAlert.severity}>
+                    {updateAlert.message}
+                </MUIAlert>
+            </Snackbar>
+            <ConfirmationModal
+                headerContent={<h4>Overwrite settings</h4>}
+                cancelText="No"
+                confirmText="Yes"
+                bodyContent={<>
+                    <h6>Do you want to overwrite the following settings:</h6>
+                    <ul>
+                        {_.isSomething(topicSettingsOverwriteModalOptions?.topicTypeId) &&
+                        <li>
+                            <strong>Topic Type:</strong> {topicSettingsOverwriteModalOptions?.topicTypeId === TopicTypeIdNumber.EXAM ? 'Exam' : 'Homework'}
+                        </li>}
+                        {Object.entries(translateTopicSettings(topicSettingsOverwriteModalOptions?.examSettings)).map((setting) => (
+                            // setting is a touple where 0 is the key and 1 is the value
+                            <li key={`${setting[0]}-${setting[1]}`}>
+                                <strong>{setting[0]}:</strong> {setting[1]}
+                            </li>
+                        ))}
+                        {topicSettingsOverwriteModalOptions?.description &&
+                        <li>
+                            <strong>Description:</strong><br/>
+                            <QuillReadonlyDisplay 
+                                content={topicSettingsOverwriteModalOptions.description as any}
+                            />
+                        </li>}
+                    </ul>
+                </>}
+                onConfirm={async ()=>{
+                    try {
+                        if (_.isNil(topicSettingsOverwriteModalOptions)) {
+                            throw new Error('Options were missing, could not update topic');
+                        }
+                        const result = await putTopic({
+                            data: {
+                                topicAssessmentInfo: topicSettingsOverwriteModalOptions.examSettings,
+                                topicTypeId: topicSettingsOverwriteModalOptions.topicTypeId,
+                                description: topicSettingsOverwriteModalOptions.description
+                            },
+                            id: topicSettingsOverwriteModalOptions.topicId
+                        });
+    
+                        setTopic(currentTopic => new TopicObject({
+                            ...result.data.data.updatesResult.first,
+                            questions: currentTopic?.questions
+                        }));
+                    } catch (e) {
+                        if (!BackendAPIError.isBackendAPIError(e) || ((e.status ?? Number.MAX_SAFE_INTEGER) > 400)) {
+                            logger.error('Error overwriting settings', e);
+                        }
+                        setUpdateAlert({message: e.message, severity: 'error'});
+                    } finally {
+                        setTopicSettingsOverwriteModalOptions(null);
+                    }
+                }}
+                onSecondary={() => setTopicSettingsOverwriteModalOptions(null)}
+                onHide={() => setTopicSettingsOverwriteModalOptions(null)}
+                show={_.isSomething(topicSettingsOverwriteModalOptions)}
+            />
             {/* Sidebar */}
             <TopicSettingsSidebar
                 topic={topic || new TopicObject()}

@@ -24,6 +24,7 @@ import '../Components/LeftRightArrow.css';
 import { LeftRightArrowWrapper } from '../Components/LeftRightArrowWrapper';
 import { AnimatePresence, motion } from 'framer-motion';
 import useQuerystringHelper, { QueryStringMode } from '../Hooks/useQuerystringHelper';
+import { SimpleProblemButtonRow } from './SimpleProblemButtonRow';
 
 interface SimpleProblemPageProps {
 }
@@ -430,26 +431,40 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
 
     const generateScoreTable = (data: any) => {
         logger.info('SimpleProblemPage: generating a table of scores');
-        const { problemScores, bestVersionScore, bestOverallVersion } = data;
+        const { problemScores, problemWeights, bestVersionScore, bestOverallVersion } = data;
         return (
             <div className="d-flex flex-column">
                 {
                     Object.keys(problemScores).map(key => {
+
+                        let heading = '';
+                        if (key === 'total') {
+                            heading = 'Total points (this attempt)';
+                        } else if (key === 'totalPossiblePoints') {
+                            heading = 'Total possible points';
+                        } else {
+                            heading = `Problem #${key}`;
+                        }
+
                         return (
                             <div className="d-flex flex-row" key={key}>
-                                <div className="d-flex flex-column flex-grow-1">{(key === 'total') ? 'Total for this attempt' : `Problem #${key}`}</div>
-                                <div className="d-flex flex-column justify-content-end">{problemScores[key]}</div>
+                                <div className="d-flex flex-column flex-grow-1">
+                                    {heading}
+                                </div>
+                                <div className="d-flex flex-column justify-content-end">
+                                    {problemScores[key]} {problemWeights?.[key] && `/ ${problemWeights[key]}`}
+                                </div>
                             </div>
                         );
                     })
                 }
                 < div className="d-flex flex-row text-success">
                     <div className="d-flex flex-column flex-grow-1">Best Version Score</div>
-                    <div className="d-flex flex-column justify-content-end">{bestVersionScore}</div>
+                    <div className="d-flex flex-column justify-content-end">{bestVersionScore} ({bestVersionScore.toPercentString()})</div>
                 </div>
                 < div className="d-flex flex-row text-success font-weight-bold">
                     <div className="d-flex flex-column flex-grow-1">Best Overall Score</div>
-                    <div className="d-flex flex-column justify-content-end">{bestOverallVersion}</div>
+                    <div className="d-flex flex-column justify-content-end">{bestOverallVersion} ({bestOverallVersion.toPercentString()})</div>
                 </div>
             </div>
         );
@@ -656,23 +671,15 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                     setAttemptsRemaining={setAttemptsRemaining}
                                     setOpenDrawer={_.isNil(selectedGradeId) ? undefined : setOpenDrawer}
                                 />
-                                {selectedProblemId && topic && topic.topicTypeId !== 2 && 
-                                (problems[selectedProblemId].smaEnabled && (problems[selectedProblemId].grades?.first?.overallBestScore === 1 || topic.deadDate.toMoment().isBefore(moment()))) &&
-                                    <Button
-                                        className='float-right'
-                                        onClick={()=>requestShowMeAnother(selectedProblemId)}
-                                        disabled={smaHasNoVersions}
-                                    >
-                                        Show Me Another
-                                    </Button>
-                                }
-                                {selectedProblemId && course.canAskForHelp && topic?.topicTypeId !== 2 &&
-                                    <Button 
-                                        className='float-right'
-                                        onClick={()=>clickedAskForHelp(selectedProblemId)}>
-                                        Ask for help
-                                    </Button>
-                                }
+                                {topic && <SimpleProblemButtonRow
+                                    problem={problems[selectedProblemId]}
+                                    topic={topic}
+                                    course={course}
+                                    setOpenDrawer={setOpenDrawer}
+                                    smaHasNoVersions={smaHasNoVersions}
+                                    clickedAskForHelp={clickedAskForHelp}
+                                    requestShowMeAnother={requestShowMeAnother}
+                                />}
                                 <AnimatePresence>
                                     <motion.div
                                         key={selectedProblemId}

@@ -7,6 +7,7 @@ import { TopicTypeId } from '../../Enums/TopicType';
 import _ from 'lodash';
 import { IMUIAlertModalState } from '../../Hooks/useAlertState';
 import GetAppOutlinedIcon from '@material-ui/icons/GetAppOutlined';
+import { GenerateQuillField } from './GenericFormInputs';
 
 interface CommonSettingsProps {
     // This is the register function from react-hook-forms.
@@ -186,6 +187,9 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                         }}
                     />}
                 </Grid>
+            </Grid>
+            <Grid item md={12}>
+                <GenerateQuillField fieldName={'description'} label={'Topic Description'} />
             </Grid>
             <Grid item md={12}>
                 <FormControl component="fieldset">
