@@ -10,8 +10,10 @@ import '../../Components/Quill/QuillOverrides.css';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import QuillControlledEditor from '../../Components/Quill/QuillControlledEditor';
-import { postFeedback } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { postFeedback, postGenericConfirmAttachmentUpload } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { IMUIAlertModalState } from '../../Hooks/useAlertState';
+import AttachmentType from '../../Enums/AttachmentTypeEnum';
+import { GenericConfirmAttachmentUploadOptions } from '../../APIInterfaces/BackendAPI/RequestTypes/CourseRequestTypes';
 window.katex = katex;
 
 interface GradeFeedbackProps {
@@ -30,9 +32,23 @@ export const GradeFeedback: React.FC<GradeFeedbackProps> = ({ workbookId, setGra
         }
     };
 
+    const uploadConfirmation = ({attachment}: GenericConfirmAttachmentUploadOptions) => {
+        postGenericConfirmAttachmentUpload({
+            type: AttachmentType.WORKBOOK_FEEDBACK,
+            attachment,
+            workbookId,
+        });
+    };
+
     return <QuillControlledEditor 
         onSave={onSave} 
-        placeholder={'Leave feedback for this student\'s attempt. Students can see this by visiting their version of the grading page and selecting this attempt.'} 
-        defaultValue={defaultValue}    
+        placeholder={`
+            Leave feedback for this student's attempt. 
+            Students can see this by visiting their version of the grading page and selecting this attempt.
+            You may drag and drop files to upload them here.
+        `} 
+        defaultValue={defaultValue}
+        attachmentType={AttachmentType.WORKBOOK_FEEDBACK}
+        uploadConfirmation={uploadConfirmation}
     />;
 };

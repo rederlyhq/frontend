@@ -16,8 +16,9 @@ import './QuillOverrides.css';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { putUploadWork, getGenericUploadURL } from '../../APIInterfaces/AWS/Requests/StudentUpload';
-import { getUploadURL } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { getUploadURL, postConfirmAttachmentUpload, postGenericConfirmAttachmentUpload } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import AttachmentType from '../../Enums/AttachmentTypeEnum';
+import { PostGenericConfirmAttachmentUploadOptions, GenericConfirmAttachmentUploadOptions } from '../../APIInterfaces/BackendAPI/RequestTypes/CourseRequestTypes';
 window.katex = katex;
 
 
@@ -25,6 +26,8 @@ interface QuillControlledEditorProps {
     // Common props
     placeholder?: string;
     defaultValue?: ReactQuillProps['defaultValue'];
+    attachmentType?: AttachmentType;
+    uploadConfirmation?: (params: GenericConfirmAttachmentUploadOptions) => void;
     // Controlled variant only
     onChange?: (value: ReactQuillProps['value'] | null) => void;
     onBlur?: ReactQuillProps['onBlur'];
@@ -34,7 +37,7 @@ interface QuillControlledEditorProps {
 }
 
 
-export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue, placeholder}) => {
+export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue, placeholder, attachmentType, uploadConfirmation}) => {
     const quill = useRef<ReactQuill | null>();
     const [disabled, setDisabled] = useState<boolean>(true);
 
@@ -98,32 +101,31 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
     const onDrop: DropzoneOptions['onDrop'] = (files) => {
         files.forEach(async (file) => {
             // TODO: Fix to be generic
-            const res = await getGenericUploadURL({type: AttachmentType.WORKBOOK_FEEDBACK});
-            const {uploadURL, cloudFilename} = res.data.data;
-            
-            await putUploadWork({
-                presignedUrl: uploadURL,
-                file: file,
-            });
-            
-            // TODO: Add auditing tables
-            // const confirmRes = await postConfirmAttachmentUpload({
-            //     attachment: {
-            //         cloudFilename: res.data.data.cloudFilename,
-            //         userLocalFilename: file.file.name,
-            //     },
-            //     ...(gradeInstanceId ?
-            //         {studentGradeInstanceId: gradeInstanceId} :
-            //         {studentGradeId: gradeId}
-            //     ),
-            // });
-            const editor = quill.current?.getEditor();
-            if (editor === undefined) {
-                logger.error('Editor is undefined when a drop occurred.');
-                return;
+            try {
+                const res = await getGenericUploadURL({type: attachmentType});
+                const {uploadURL, cloudFilename} = res.data.data;
+                
+                await putUploadWork({
+                    presignedUrl: uploadURL,
+                    file: file,
+                });
+                
+                uploadConfirmation?.({
+                    attachment: {
+                        cloudFilename: cloudFilename,
+                        userLocalFilename: file.name,
+                    }
+                });
+                const editor = quill.current?.getEditor();
+                if (editor === undefined) {
+                    logger.error('Editor is undefined when a drop occurred.');
+                    return;
+                }
+                const range = editor.getSelection();
+                editor.insertText(range?.index ?? 0, file.name, 'link', `/work/${cloudFilename}`, 'user');
+            } catch (e) {
+                console.error(e);
             }
-            const range = editor.getSelection();
-            editor.insertText(range?.index ?? 0, file.name, 'link', `/work/${cloudFilename}`, 'user');
         });
     };
 
