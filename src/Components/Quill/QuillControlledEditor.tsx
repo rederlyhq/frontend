@@ -9,6 +9,8 @@ import 'mathquill4quill/mathquill4quill.css';
 import _ from 'lodash';
 import logger from '../../Utilities/Logger';
 import { useDropzone, DropzoneOptions } from 'react-dropzone';
+import BlotFormatter, { DeleteAction, ImageSpec, ResizeAction } from 'quill-blot-formatter';
+
 
 import './QuillOverrides.css';
 
@@ -16,11 +18,21 @@ import './QuillOverrides.css';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { putUploadWork, getGenericUploadURL } from '../../APIInterfaces/AWS/Requests/StudentUpload';
-import { getUploadURL, postConfirmAttachmentUpload, postGenericConfirmAttachmentUpload } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import AttachmentType from '../../Enums/AttachmentTypeEnum';
-import { PostGenericConfirmAttachmentUploadOptions, GenericConfirmAttachmentUploadOptions } from '../../APIInterfaces/BackendAPI/RequestTypes/CourseRequestTypes';
+import { GenericConfirmAttachmentUploadOptions } from '../../APIInterfaces/BackendAPI/RequestTypes/CourseRequestTypes';
+import { FaFileUpload } from 'react-icons/fa';
 window.katex = katex;
 
+
+// declare global {
+//     interface Window { Quill: typeof Quill; }
+// }
+// window.Quill = Quill;
+// console.log(window.Quill);
+// eslint-disable-next-line import/first
+
+
+Quill.register('modules/blotFormatter', BlotFormatter);
 
 interface QuillControlledEditorProps {
     // Common props
@@ -36,6 +48,16 @@ interface QuillControlledEditorProps {
     onSave?: (saveData: ReactQuillProps['value'] | null)=>any;
 }
 
+class CustomImageSpec extends ImageSpec {
+    getActions() {
+        return [
+            // The Align action requires additional configuration to fix with ReactQuill
+            // See https://github.com/Fandom-OSS/quill-blot-formatter/issues/5
+            // AlignAction, 
+            DeleteAction, 
+            ResizeAction];
+    }
+}
 
 export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue, placeholder, attachmentType, uploadConfirmation}) => {
     const quill = useRef<ReactQuill | null>();
@@ -122,7 +144,12 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                     return;
                 }
                 const range = editor.getSelection();
-                editor.insertText(range?.index ?? 0, file.name, 'link', `/work/${cloudFilename}`, 'user');
+
+                if (file.type.startsWith('image')) {
+                    editor.insertEmbed(range?.index ?? 0, 'image', `/uploads/workbook/${cloudFilename}`, 'user');
+                } else {
+                    editor.insertText(range?.index ?? 0, file.name, 'link', `/work/${cloudFilename}`, 'user');
+                }
             } catch (e) {
                 console.error(e);
             }
@@ -130,7 +157,7 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
     };
 
     const { getRootProps, getInputProps, open, isDragActive } = useDropzone({ onDrop,
-        accept: ['.pdf', '.png'],
+        // accept: [],
         noClick: true,
         noKeyboard: true
     });
@@ -138,6 +165,27 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
     return <Grid container item md={12}>
         <Grid item id='quillgrid' md={12} {...getRootProps()}>
             <input {...getInputProps()} />
+            {isDragActive && (
+                <div style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    border: '5px dashed lightblue',
+                    borderRadius: '3px',
+                    textAlign: 'center',
+                    zIndex: 2,
+                    backgroundColor: 'white',
+                    opacity: 0.9,
+                }}
+                >
+                    <div style={{ position: 'relative', margin: '0 auto', top: '15%', fontSize: '1em' }}>
+                        {/* Drop your archive file to import! */}
+                        <FaFileUpload style={{ position: 'relative', margin: '0 auto', top: '15%', display: 'block', fontSize: '1em' }} />
+                    </div>
+                </div>
+            )}
             <ReactQuill
                 scrollingContainer={'#quillgrid'}
                 bounds={'#quillgrid'}
@@ -155,7 +203,17 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                         [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
                         [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
                         ['formula']
-                    ]
+                    ],
+                    blotFormatter: {
+                        specs: [
+                            CustomImageSpec,
+                        ],
+                        overlay: {
+                            style: {
+                                border: '2px solid red',
+                            }
+                        }
+                    }
                 }}
                 // Controlled props have to conditionally be applied because
                 // undefined values still count as values.
