@@ -85,12 +85,12 @@ export const WorkbookSelect: React.FC<WorkbookSelectProps> = ({grade, onChange, 
                                     <MenuItem key={version.value} value={version.value}>
                                         <ListItemText primary={version.label} />
                                         {currGradeInstance?.problemAttachments && currGradeInstance.problemAttachments.length > 0 && <Tooltip title={`${currGradeInstance.problemAttachments.length} Attachments`}>
-                                            <Badge badgeContent={currGradeInstance.problemAttachments.length} color="primary" style={{marginRight: '10px'}}>
+                                            <Badge badgeContent={currGradeInstance.problemAttachments.length} color="secondary" style={{marginRight: '10px'}}>
                                                 <Attachment />
                                             </Badge>
                                         </Tooltip>}
-                                        {hasFeedback && <Tooltip title='Feedback Available'><Feedback htmlColor='blue' /></Tooltip>}
-                                        {lastCreditedGradeInstance?.id === version.value && <Tooltip title='Best Attempt'><Star htmlColor='orange' /></Tooltip>}
+                                        {hasFeedback && <Tooltip title='Feedback Available'><Feedback color="primary" /></Tooltip>}
+                                        {lastCreditedGradeInstance?.id === version.value && <Tooltip title='Best Attempt'><Star htmlColor='#ff9100' /></Tooltip>}
                                     </MenuItem>
                                 );
                             })}
@@ -106,8 +106,8 @@ export const WorkbookSelect: React.FC<WorkbookSelectProps> = ({grade, onChange, 
                                 <MenuItem key={attempt.value} value={attempt.value} divider>
                                     <ListItemText primary={attempt.label} />
                                     {/* <ListItemIcon> */}
-                                    {_.find(grade.workbooks, ['id', attempt.value])?.feedback && <Tooltip title='Attempt has Feedback'><Feedback htmlColor='blue' /></Tooltip>}
-                                    {grade.lastInfluencingCreditedAttemptId === attempt.value && <Tooltip title='Best Attempt'><Star htmlColor='orange' /></Tooltip>}
+                                    {_.find(grade.workbooks, ['id', attempt.value])?.feedback && <Tooltip title='Attempt has Feedback'><Feedback color="primary" /></Tooltip>}
+                                    {grade.lastInfluencingCreditedAttemptId === attempt.value && <Tooltip title='Best Attempt'><Star htmlColor='#ff9100' /></Tooltip>}
                                     {/* </ListItemIcon> */}
                                 </MenuItem>
                             ))}

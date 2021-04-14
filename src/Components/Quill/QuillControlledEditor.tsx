@@ -23,15 +23,6 @@ import { GenericConfirmAttachmentUploadOptions } from '../../APIInterfaces/Backe
 import { FaFileUpload } from 'react-icons/fa';
 window.katex = katex;
 
-
-// declare global {
-//     interface Window { Quill: typeof Quill; }
-// }
-// window.Quill = Quill;
-// console.log(window.Quill);
-// eslint-disable-next-line import/first
-
-
 Quill.register('modules/blotFormatter', BlotFormatter);
 
 interface QuillControlledEditorProps {

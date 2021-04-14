@@ -16,14 +16,14 @@ interface GradeInfoHeaderProps {
     topic: TopicObject;
     setTopicGrade: (grade: number | null) => void;
     selected: {
-        problem?: ProblemObject,
+        problem?: ProblemObject | null,
         user?: UserObject,
         problemState?: ProblemState,
         grade?: StudentGrade,
         gradeInstance?: StudentGradeInstance,
     };
     setSelected: React.Dispatch<React.SetStateAction<{
-        problem?: ProblemObject,
+        problem?: ProblemObject | null,
         user?: UserObject,
         problemState?: ProblemState,
         grade?: StudentGrade,

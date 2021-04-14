@@ -1,24 +1,28 @@
 import React from 'react';
 import { List, Card, ListItem, ListSubheader } from '@material-ui/core';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ProblemObject, SettingsComponentType } from '../Courses/CourseInterfaces';
+import { ProblemObject, SettingsComponentType, TopicObject } from '../Courses/CourseInterfaces';
+import _ from 'lodash';
+import { getUserRole, UserRole } from '../Enums/UserRole';
 
 interface MultiSelectCardListProps {
     listItems: SettingsComponentType[];
     onItemClick: (type: SettingsComponentType) => void;
     title: string;
-    selected?: SettingsComponentType;
+    selected?: SettingsComponentType | null;
 }
 
-const renderCard = (item: SettingsComponentType) => {
+const RenderCard = ({item}: {item: SettingsComponentType}) => {
     if (item instanceof ProblemObject) {
         const pgPathArr = item.webworkQuestionPath.split('/');
         const pgPath = pgPathArr[pgPathArr.length-1];
         return (
-            <span title={pgPath}>{`Problem ${item.problemNumber} (${item.id})`}</span>
+            <span title={getUserRole() === UserRole.STUDENT ? pgPath : ''}>{`Problem ${item.problemNumber} (${item.id})`}</span>
         );
+    } else if (item instanceof TopicObject) {
+        return <span>Topic Grades</span>;
     }
-    return item.name;
+    return <span>{item.name}</span>;
 };
 
 const variants = {
@@ -51,12 +55,12 @@ export const MultiSelectCardList: React.FC<MultiSelectCardListProps> = ({listIte
                         >
                             <ListItem
                                 button
-                                selected={selected && selected.id === item.id}
+                                selected={item instanceof TopicObject ? _.isNil(selected) : selected?.id === item.id}
                                 onClick={() => onItemClick(item)}
                                 component={Card}
                                 style={{margin: '1em', overflow: 'ellipses'}}
                             >
-                                {renderCard(item)}
+                                <RenderCard item={item} />
                             </ListItem>
                         </motion.div>
                     )))

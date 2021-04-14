@@ -8,7 +8,7 @@ import MaterialBiSelect from '../../Components/MaterialBiSelect';
 import { useCourseContext } from '../CourseProvider';
 import { UserObject, TopicObject, ProblemObject, StudentGrade, StudentGradeInstance, ProblemState, StudentWorkbookInterface } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
-import { getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { getTopic, getTopicFeedback } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import ExportAllButton from './ExportAllButton';
 import { GradeInfoHeader } from './GradeInfoHeader';
 import AttachmentsPreview from './AttachmentsPreview';
@@ -27,7 +27,7 @@ interface GradingPageProps {
 }
 
 interface GradingSelectables {
-    problem?: ProblemObject,
+    problem?: ProblemObject | null,
     user?: UserObject,
     problemState?: ProblemState,
     grade?: StudentGrade,
@@ -56,6 +56,7 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
     const [problemId, setProblemId] = useQueryParam('problemId', NumberParam);
     const [gradeAlert, setGradeAlert] = useMUIAlertState();
     const [topic, setTopic] = useState<TopicObject | null | undefined>();
+    const [topicFeedback, setTopicFeedback] = useState<unknown>();
 
     const [selected, setSelected] = useState<GradingSelectables>({});
     const [topicGrade, setTopicGrade] = useState<number | null>(null);
@@ -63,6 +64,26 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
     const currentUserRole = getUserRole();
     const currentUserId = getUserId();
+
+    // Get topic feedback
+    useEffect(()=>{
+        (async () => {
+            if (!selected.user || selected.problem || !topic) return;
+            
+            try {
+                const res = await getTopicFeedback({
+                    topicId: topic.id,
+                    userId: selected.user.id,
+                });
+        
+                setTopicFeedback(res.data.data.feedback);
+                console.log(res.data.data.feedback);
+            } catch (e) {
+                setTopicFeedback(null);
+                logger.error(e);
+            }
+        })();
+    }, [selected.problem, selected.user, topic]);
 
     useEffect(()=>{
         logger.debug('Fetching topic', params.topicId);
@@ -90,27 +111,28 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
     useEffect(()=>{
         logger.debug('Updating selected items after the topic (or another dep) has changed.');
         if (_.isNil(topic)) {
+            logger.warn('No topic found on Grading Page.');
             return;
         }
 
         if (_.isEmpty(topic.questions)) {
+            logger.warn('No questions found for topic on Grading Page.');
             return;
         }
 
         // TODO: This check won't work for a Student-accessible grading page.
         if (_.isEmpty(users)) {
+            logger.warn('No users found for Grading Page.');
             return;    
         }
 
         const currentProblems = topic.questions;
         
-        let initialSelectedProblem: ProblemObject | undefined;
+        let initialSelectedProblem: ProblemObject | null | undefined = null;
 
         let initialSelectedUser: UserObject | undefined;
 
-        if (_.isNil(problemId)) {
-            initialSelectedProblem = currentProblems.first;
-        } else {
+        if (!_.isNil(problemId)) {
             initialSelectedProblem = _.find(currentProblems, ['id', problemId]);
             logger.debug(`GP: attempting to set initial problem #${problemId}`);
         }
@@ -136,7 +158,11 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
         } else {
             setUserId(undefined);
         }
-        selected.problem && setProblemId(selected.problem.id);
+        // This is undefined on page load, but null if Topic is specifically selected.
+        console.log('selected.problem', selected.problem);
+        if (selected.problem !== undefined) {
+            setProblemId(selected.problem?.id ?? undefined);
+        }
     }, [currentUserRole, selected, setProblemId, setUserId]);
 
     useEffect(()=>{
@@ -197,21 +223,50 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
             <Grid container>
                 <Grid container item md={biselectSize}>
                     {!_.isEmpty(topic.questions) &&
-                        <MaterialBiSelect problems={topic.questions} users={currentUserRole === UserRole.STUDENT ? [] : users} selected={selected} setSelected={setSelected} />
+                        <MaterialBiSelect 
+                            topic={topic}
+                            problems={topic.questions} 
+                            users={currentUserRole === UserRole.STUDENT ? [] : users} 
+                            selected={selected} 
+                            setSelected={setSelected} 
+                        />
                     }
                 </Grid>
                 <Grid container item md={paneSize} style={{paddingLeft: '5rem', height: 'min-content'}}>
-                    { selected.user && selected.problem &&
-                        <GradeInfoHeader
-                            selected={selected}
-                            setSelected={setSelected}
-                            topic={topic}
-                            setGradeAlert={setGradeAlert}
-                            setTopicGrade={setTopicGrade}
-                            info={info}
-                            setInfo={setInfo}
-                        />
+                    { selected.user && 
+                        (selected.problem ?
+                            <GradeInfoHeader
+                                selected={selected}
+                                setSelected={setSelected}
+                                topic={topic}
+                                setGradeAlert={setGradeAlert}
+                                setTopicGrade={setTopicGrade}
+                                info={info}
+                                setInfo={setInfo}
+                            /> : 
+                            <p>
+                                <h2>Total Score: {topicGrade ?? '--'}</h2>
+                            </p>)
                     }
+                    {console.log('preGrid', topicFeedback)}
+                    {selected.user && 
+                      ((currentUserRole !== UserRole.STUDENT && (info?.workbook || _.isNull(selected.problem))) || 
+                      ((!selected.problem && topicFeedback) || (selected.problem && info?.workbook?.feedback))) && 
+                      <Grid container item>
+                          <ListSubheader disableSticky>
+                              <h2>Feedback</h2>
+                          </ListSubheader>
+                          {console.log('selected.problem 2', selected.problem)}
+                          {(currentUserRole === UserRole.STUDENT ? 
+                              <QuillReadonlyDisplay content={selected.problem ? info?.workbook?.feedback : topicFeedback} /> : 
+                              <GradeFeedback 
+                                  workbookId={selected.problem ? info?.workbook?.id : undefined} 
+                                  setGradeAlert={setGradeAlert} 
+                                  defaultValue={selected.problem ? info?.workbook?.feedback : topicFeedback} 
+                                  topicId={topic.id}    
+                                  userId={selected.user.id}
+                              />)}
+                      </Grid>}
                     <Grid container item alignItems='stretch'>
                         {selected.problem && selected.user && selected.grade &&
                         // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) &&
@@ -226,14 +281,6 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                             />
                         }
                     </Grid>
-                    {info?.workbook && <Grid container item>
-                        <ListSubheader disableSticky>
-                            <h2>Feedback</h2>
-                        </ListSubheader>
-                        {currentUserRole === UserRole.STUDENT ? 
-                            <QuillReadonlyDisplay content={info.workbook.feedback} /> : 
-                            <GradeFeedback workbookId={info.workbook.id} setGradeAlert={setGradeAlert} defaultValue={info.workbook.feedback} />}
-                    </Grid>}
                     {(selected.grade || selected.gradeInstance) &&
                         <Grid container item md={12}>
                             <AttachmentsPreview

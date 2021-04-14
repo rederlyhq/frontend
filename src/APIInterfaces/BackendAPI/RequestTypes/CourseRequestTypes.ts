@@ -86,6 +86,17 @@ export interface ExtendCourseTopicForUser {
     }
 }
 
+export interface GetTopicFeedbackOptions {
+    topicId: number;
+    userId: number;
+}
+
+export interface PostTopicFeedbackOptions {
+    topicId: number;
+    userId: number;
+    content: unknown;
+}
+
 /* *************** *************** */
 /* ********** Questions ********** */
 /* *************** *************** */

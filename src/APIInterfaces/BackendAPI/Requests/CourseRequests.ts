@@ -1,4 +1,4 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, getAssessmentProblemsWithWorkbooksOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions, ListAttachmentOptions, ReadQuestionOptions, SaveQuestionOptions, GetGradesOptions, EnrollByCodeOptions, GetRawQuestionOptions, QuestionGradeResponse, GetQuestionGradeOptions, AskForHelpOptions, PostImportCourseArchiveOptions, ShowMeAnotherOptions, GetBrowseProblemsCourseListOptions, GetBrowseProblemsUnitListOptions, GetBrowseProblemsTopicListOptions, GetProblemSearchResultsOptions, EnrollStudentOptions, PostFeedbackOptions, PostGenericConfirmAttachmentUploadOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, getAssessmentProblemsWithWorkbooksOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions, ListAttachmentOptions, ReadQuestionOptions, SaveQuestionOptions, GetGradesOptions, EnrollByCodeOptions, GetRawQuestionOptions, QuestionGradeResponse, GetQuestionGradeOptions, AskForHelpOptions, PostImportCourseArchiveOptions, ShowMeAnotherOptions, GetBrowseProblemsCourseListOptions, GetBrowseProblemsUnitListOptions, GetBrowseProblemsTopicListOptions, GetProblemSearchResultsOptions, EnrollStudentOptions, PostFeedbackOptions, PostGenericConfirmAttachmentUploadOptions, PostTopicFeedbackOptions, GetTopicFeedbackOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
@@ -44,6 +44,8 @@ const COURSE_UPLOAD_PATH = urlJoin(COURSE_PATH, 'upload/');
 const COURSE_UPLOAD_WORKBOOK_FEEDBACK_PATH = (workbookId: string | number) => urlJoin(COURSE_UPLOAD_PATH, 'workbook/', workbookId.toString(), '/feedback');
 const COURSE_UPLOAD_TOPIC_FEEDBACK_PATH = (topicId: string | number) => urlJoin(COURSE_UPLOAD_PATH, 'topic/', topicId.toString(), '/feedback');
 const COURSE_UPLOAD_TOPIC_DESCRIPTION_PATH = (topicId: string | number) => urlJoin(COURSE_UPLOAD_PATH, 'topic/', topicId.toString(), '/description');
+const COURSE_TOPIC_FEEDBACK_PATH = (topicId: string | number, userId: string | number) => urlJoin(COURSE_PATH, 'feedback/topic/', topicId.toString(), 'user', userId.toString());
+
 /* *************** *************** */
 /* *********** Courses *********** */
 /* *************** *************** */
@@ -265,6 +267,33 @@ export const extendTopic = async ({
                     }, _.isUndefined))
                 }`
             ), data
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getTopicFeedback = async ({
+    topicId, userId
+}: GetTopicFeedbackOptions): Promise<BackendAPIResponse<any>> => {
+    try {
+        return await AxiosRequest.get(
+            COURSE_TOPIC_FEEDBACK_PATH(topicId, userId)
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const postTopicFeedback = async ({
+    topicId, userId, content
+}: PostTopicFeedbackOptions): Promise<BackendAPIResponse<any>> => {
+    try {
+        return await AxiosRequest.post(
+            COURSE_TOPIC_FEEDBACK_PATH(topicId, userId),
+            {
+                content
+            }
         );
     } catch (e) {
         throw new BackendAPIError(e);
