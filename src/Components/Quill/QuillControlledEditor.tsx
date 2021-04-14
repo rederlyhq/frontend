@@ -30,7 +30,7 @@ interface QuillControlledEditorProps {
     placeholder?: string;
     defaultValue?: ReactQuillProps['defaultValue'];
     attachmentType?: AttachmentType;
-    uploadConfirmation?: (params: GenericConfirmAttachmentUploadOptions) => void;
+    uploadConfirmation?: (params: GenericConfirmAttachmentUploadOptions) => Promise<void>;
     // Controlled variant only
     onChange?: (value: ReactQuillProps['value'] | null) => void;
     onBlur?: ReactQuillProps['onBlur'];
@@ -107,7 +107,6 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
             return;
         }
         const delta = quill.current?.getEditor().getContents();
-        console.log(delta);
         onChange?.(delta);
     };
 
@@ -123,7 +122,7 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                     file: file,
                 });
                 
-                uploadConfirmation?.({
+                await uploadConfirmation?.({
                     attachment: {
                         cloudFilename: cloudFilename,
                         userLocalFilename: file.name,
@@ -147,7 +146,7 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
         });
     };
 
-    const { getRootProps, getInputProps, open, isDragActive } = useDropzone({ onDrop,
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop,
         // accept: [],
         noClick: true,
         noKeyboard: true

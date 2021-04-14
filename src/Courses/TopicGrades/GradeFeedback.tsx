@@ -38,15 +38,15 @@ export const GradeFeedback: React.FC<GradeFeedbackProps> = ({ workbookId, setGra
         }
     };
 
-    const uploadConfirmation = ({attachment}: GenericConfirmAttachmentUploadOptions) => {
+    const uploadConfirmation = async ({attachment}: GenericConfirmAttachmentUploadOptions) => {
         if (workbookId) {
-            postGenericConfirmAttachmentUpload({
+            await postGenericConfirmAttachmentUpload({
                 type: AttachmentType.WORKBOOK_FEEDBACK,
                 attachment,
                 workbookId,
             });
         } else {
-            postGenericConfirmAttachmentUpload({
+            await postGenericConfirmAttachmentUpload({
                 type: AttachmentType.TOPIC_FEEDBACK,
                 attachment,
                 topicId,

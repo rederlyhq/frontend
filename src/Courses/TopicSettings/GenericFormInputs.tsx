@@ -299,9 +299,9 @@ export const GenerateSwitchField: React.FC<{fieldName: string, label: string}> =
 export const GenerateQuillField: React.FC<{
     fieldName: string, 
     label: string, 
-    uploadConfirmed?: (params: GenericConfirmAttachmentUploadOptions) => void,
+    uploadConfirmation?: (params: GenericConfirmAttachmentUploadOptions) => Promise<void>,
     attachmentType?: AttachmentType
-}> = ({fieldName, label, uploadConfirmed, attachmentType}) => {
+}> = ({fieldName, label, uploadConfirmation, attachmentType}) => {
     const { control, errors } = useFormContext();
     const name = fieldName;
 
@@ -321,7 +321,7 @@ export const GenerateQuillField: React.FC<{
                         value={value}
                         // Should this be generic?
                         attachmentType={attachmentType}
-                        uploadConfirmation={uploadConfirmed}
+                        uploadConfirmation={uploadConfirmation}
                     />
                 )}
             />

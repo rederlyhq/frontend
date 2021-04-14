@@ -190,9 +190,6 @@ export class TopicObject {
     unit?: UnitObject;
     description: any = {};
 
-    // TODO: This should be in an extended object.
-    localGrade?: number;
-
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
 
@@ -388,9 +385,6 @@ export class ProblemObject implements IProblemObject {
     }
     rendererData?: any;
     errors: CourseTopicQuestionErrors | null = null;
-    
-    // TODO: This should be in an extended object.
-    localGrade?: number;
 
     public constructor(init?:Partial<ProblemObject>) {
         Object.assign(this, init);

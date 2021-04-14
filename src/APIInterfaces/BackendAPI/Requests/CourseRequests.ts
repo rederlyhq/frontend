@@ -741,7 +741,7 @@ export const postGenericConfirmAttachmentUpload = async (options: PostGenericCon
         case AttachmentType.TOPIC_FEEDBACK:
             return await AxiosRequest.post(COURSE_UPLOAD_TOPIC_FEEDBACK_PATH(options.topicId), {
                 attachment: options.attachment,
-                studentId: options.userId,
+                userId: options.userId,
             });
         case AttachmentType.TOPIC_DESCRIPTION:
             return await AxiosRequest.post(COURSE_UPLOAD_TOPIC_DESCRIPTION_PATH(options.topicId), {

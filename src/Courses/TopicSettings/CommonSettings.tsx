@@ -35,8 +35,8 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
         }
     }, [topicTypeId]);
 
-    const uploadConfirmation = ({attachment}: GenericConfirmAttachmentUploadOptions) => {
-        postGenericConfirmAttachmentUpload({
+    const uploadConfirmation = async ({attachment}: GenericConfirmAttachmentUploadOptions) => {
+        await postGenericConfirmAttachmentUpload({
             type: AttachmentType.TOPIC_DESCRIPTION,
             attachment,
             topicId: topicId,
@@ -205,7 +205,7 @@ export const CommonSettings: React.FC<CommonSettingsProps> = ({formObject, setUp
                     fieldName={'description'} 
                     label={'Topic Description'} 
                     attachmentType={AttachmentType.TOPIC_DESCRIPTION} 
-                    uploadConfirmed={uploadConfirmation}
+                    uploadConfirmation={uploadConfirmation}
                 />
             </Grid>
             <Grid item md={12}>

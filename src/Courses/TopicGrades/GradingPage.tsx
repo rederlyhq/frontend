@@ -1,4 +1,4 @@
-import { Grid, Snackbar, Container, Chip, ListSubheader } from '@material-ui/core';
+import { Grid, Snackbar, Container, ListSubheader } from '@material-ui/core';
 import { Alert as MUIAlert, Alert } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
@@ -20,6 +20,7 @@ import { QuillReadonlyDisplay } from '../../Components/Quill/QuillReadonlyDispla
 import { GradeFeedback } from './GradeFeedback';
 import '../../Components/LayoutStyles.css';
 import 'react-quill/dist/quill.snow.css';
+import { TopicObjectWithLocalGrades, ProblemObjectWithLocalGrades } from './GradingInterfaces';
 
 interface GradingPageProps {
     topicId?: string;
@@ -56,10 +57,8 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
     const [problemId, setProblemId] = useQueryParam('problemId', NumberParam);
     const [gradeAlert, setGradeAlert] = useMUIAlertState();
     const [topic, setTopic] = useState<TopicObject | null | undefined>();
-    // TODO: Make new class for this.
-    const [topicWithLocalGrade, setTopicWithLocalGrade] = useState<TopicObject | null | undefined>();
+    const [topicWithLocalGrade, setTopicWithLocalGrade] = useState<TopicObjectWithLocalGrades | null | undefined>();
     const [topicFeedback, setTopicFeedback] = useState<unknown>();
-
     const [selected, setSelected] = useState<GradingSelectables>({});
     const [info, setInfo] = useState<WorkbookInfoDump | null>(null);
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
@@ -87,7 +86,7 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
 
             try {
                 const result = await getGrades(params);
-                const topicWithGrades = new TopicObject(topic);
+                const topicWithGrades = new TopicObjectWithLocalGrades(topic);
                 topicWithGrades.localGrade = result.data.data.first?.average;
                 const grades = await getStudentGrades({
                     courseId: course.id,
@@ -96,7 +95,7 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                 });
                 const questionGrades = grades.data.data.data;
                 topicWithGrades.questions = topic.questions.map(question => {
-                    const questionWithGrades = new ProblemObject(question);
+                    const questionWithGrades = new ProblemObjectWithLocalGrades(question);
                     questionWithGrades.localGrade = _.find(questionGrades, ['id', questionWithGrades.id])?.averageScore;
                     return questionWithGrades;
                 });
@@ -203,7 +202,6 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
             setUserId(undefined);
         }
         // This is undefined on page load, but null if Topic is specifically selected.
-        console.log('selected.problem', selected.problem);
         if (selected.problem !== undefined) {
             setProblemId(selected.problem?.id ?? undefined);
         }
