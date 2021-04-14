@@ -211,6 +211,12 @@ export interface PostFeedbackOptions {
     content: unknown;
 }
 
+export interface GetStudentGradesOptions {
+    courseId: number;
+    courseTopicContentId: number;
+    userId: number;
+}
+
 /* *************** *************** */
 /* ********* Attachments ********* */
 /* *************** *************** */

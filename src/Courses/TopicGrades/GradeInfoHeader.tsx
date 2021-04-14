@@ -4,7 +4,7 @@ import { ProblemObject, ProblemState, StudentGrade, StudentGradeInstance, TopicO
 import logger from '../../Utilities/Logger';
 import { Button, Grid, ListSubheader } from '@material-ui/core';
 import { OverrideGradeModal } from '../CourseDetailsTabs/OverrideGradeModal';
-import { getGrades, getQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { getQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { Spinner } from 'react-bootstrap';
 import { Color, Alert } from '@material-ui/lab';
 import { WorkbookSelect } from './WorkbookSelect';
@@ -14,7 +14,6 @@ import { WorkbookInfoDump } from './GradingPage';
 
 interface GradeInfoHeaderProps {
     topic: TopicObject;
-    setTopicGrade: (grade: number | null) => void;
     selected: {
         problem?: ProblemObject | null,
         user?: UserObject,
@@ -42,7 +41,6 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     setSelected,
     topic,
     setGradeAlert,
-    setTopicGrade,
     info,
     setInfo
 }) => {
@@ -210,33 +208,6 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             });
         });
     }, [info?.workbookId, info?.studentGradeId, info?.studentGradeInstanceId, info, grade, topic.topicAssessmentInfo, setSelected, selected.user?.id, selected.problem?.id, selected.problem?.webworkQuestionPath]);
-
-    useEffect(() => {
-        logger.debug('GradeInfoHeader: there has been a change in user or topic, fetching new cumulative topic grade.');
-        // setTopicGrade(null);
-        if (_.isNil(topic)) {
-            logger.debug('GradeInfoHeader: topic id is nil, skipping grades call');
-            return;
-        }
-
-        const params = {
-            topicId: topic.id,
-            userId: selected.user?.id // check selected.user not nil?
-        };
-
-        (async () => {
-            try {
-                const result = await getGrades(params);
-                setTopicGrade(result.data.data.first?.average ?? null);
-            } catch (e) {
-                setTopicGrade(null);
-                setGradeAlert({
-                    severity: 'error',
-                    message: e.message,
-                });
-            }
-        })();
-    }, [selected.user, topic, info?.effectiveScore, setGradeAlert, setTopicGrade]);
 
     const onSuccess = (gradeOverride: Partial<StudentGrade>) => {
         logger.debug('GradeInfoHeader: overriding grade', gradeOverride.effectiveScore);

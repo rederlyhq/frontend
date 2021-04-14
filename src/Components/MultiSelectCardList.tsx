@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Card, ListItem, ListSubheader } from '@material-ui/core';
+import { List, Card, ListItem, ListSubheader, Tooltip, ListItemIcon, Chip, ListItemText } from '@material-ui/core';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ProblemObject, SettingsComponentType, TopicObject } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
@@ -17,12 +17,14 @@ const RenderCard = ({item}: {item: SettingsComponentType}) => {
         const pgPathArr = item.webworkQuestionPath.split('/');
         const pgPath = pgPathArr[pgPathArr.length-1];
         return (
-            <span title={getUserRole() === UserRole.STUDENT ? pgPath : ''}>{`Problem ${item.problemNumber} (${item.id})`}</span>
+            <ListItemText title={getUserRole() !== UserRole.STUDENT ? `${pgPath} (ID# ${item.id})}` : `ID# ${item.id}`}>
+                {`Problem ${item.problemNumber} (${item.weight} Point${item.weight > 1 ? 's' : ''})`}
+            </ListItemText>
         );
     } else if (item instanceof TopicObject) {
-        return <span>Topic Grades</span>;
+        return <ListItemText>Topic Grades</ListItemText>;
     }
-    return <span>{item.name}</span>;
+    return <ListItemText>{item.name}</ListItemText>;
 };
 
 const variants = {
@@ -61,6 +63,11 @@ export const MultiSelectCardList: React.FC<MultiSelectCardListProps> = ({listIte
                                 style={{margin: '1em', overflow: 'ellipses'}}
                             >
                                 <RenderCard item={item} />
+                                {!_.isNil(_.get(item, 'localGrade')) && <ListItemIcon>
+                                    <Tooltip title='Grade'>
+                                        <Chip label={_.get(item, 'localGrade')?.toPercentString()} color={item instanceof TopicObject ? 'primary' : undefined}/>
+                                    </Tooltip>
+                                </ListItemIcon>}
                             </ListItem>
                         </motion.div>
                     )))
