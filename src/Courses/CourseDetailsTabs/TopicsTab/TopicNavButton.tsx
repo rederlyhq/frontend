@@ -61,18 +61,18 @@ export const TopicNavButton: React.FC<TopicNavButtonProps> = ({topic, onDelete})
                                                 Grading
                                             </Button>
                                         </MenuItem>
-                                        {isNotStudent && <ThemeProvider theme={altTheme}>
+                                        <ThemeProvider theme={altTheme}>
                                             <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}`)}>
                                                 <Button variant="text" color="primary" startIcon={<MdLaunch />} >
-                                                    Try Assignment
+                                                    {isNotStudent ? 'Try Assignment' : 'Assignment'}
                                                 </Button>
                                             </MenuItem>
-                                            <MenuItem onClick={() => history.push(`${location.pathname}/settings?topicId=${topic.id}`)}>
+                                            {isNotStudent && <MenuItem onClick={() => history.push(`${location.pathname}/settings?topicId=${topic.id}`)}>
                                                 <Button variant="text" color="secondary" startIcon={<GrShift />}>
                                                     Extensions
                                                 </Button>
-                                            </MenuItem>
-                                        </ThemeProvider>}
+                                            </MenuItem>}
+                                        </ThemeProvider>
                                         {isNotStudent && onDelete && <MenuItem onClick={(e) => onDelete(e, topic.id)}>
                                             <Button variant="text" color="secondary" startIcon={<MdDelete />}>
                                                 Delete
