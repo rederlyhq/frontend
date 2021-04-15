@@ -11,6 +11,7 @@ import axios from 'axios';
 import logger from './Utilities/Logger';
 import { MuiPickersUtilsProvider} from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
+import { GlobalSnackbarProvider } from './Contexts/GlobalSnackbar';
 
 interface RederlyConfig {
     paymentURL: string;
@@ -42,7 +43,9 @@ ReactDOM.render(
         <GlobalErrorBoundaryState>
             <VersionCheck>
                 <MuiPickersUtilsProvider utils={MomentUtils}>
-                    <Router />
+                    <GlobalSnackbarProvider>
+                        <Router />
+                    </GlobalSnackbarProvider>
                 </MuiPickersUtilsProvider>
             </VersionCheck>
         </GlobalErrorBoundaryState>
