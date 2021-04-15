@@ -1,3 +1,4 @@
 {
-    "paymentURL": "https://rederly.com/professor-account"
+    "paymentURL": "https://rederly.com/professor-account",
+    "domain": "localhost"
 }
