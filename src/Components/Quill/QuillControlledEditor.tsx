@@ -136,12 +136,12 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                 const range = editor.getSelection();
 
                 if (file.type.startsWith('image')) {
-                    editor.insertEmbed(range?.index ?? 0, 'image', `/uploads/workbook/${cloudFilename}`, 'user');
+                    editor.insertEmbed(range?.index ?? 0, 'image', `${attachmentType}/${cloudFilename}`, 'user');
                 } else {
-                    editor.insertText(range?.index ?? 0, file.name, 'link', `/work/${cloudFilename}`, 'user');
+                    editor.insertText(range?.index ?? 0, file.name, 'link', `${attachmentType}/${cloudFilename}`, 'user');
                 }
             } catch (e) {
-                console.error(e);
+                logger.error(e);
             }
         });
     };
