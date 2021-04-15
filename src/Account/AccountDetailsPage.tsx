@@ -5,6 +5,7 @@ import localPreferences, { AccountType } from '../Utilities/LocalPreferences';
 import { getUserRole, UserRole } from '../Enums/UserRole';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import logger from '../Utilities/Logger';
+import { useConfigContext } from '../Contexts/ConfigProvider';
 const { session, account } = localPreferences;
 
 interface AccountDetailsPageProps {
@@ -13,13 +14,14 @@ interface AccountDetailsPageProps {
 
 export const AccountDetailsPage: React.FC<AccountDetailsPageProps> = () => {
     const userName = session.username;
-    const [paymentURL, setPaymentURL] = useState<string | null>(null);
+    const config = useConfigContext();
     const [paidUntilMoment, setPaidUntilMoment] = useState<moment.Moment | null>(null);
 
     useEffect(() => {
         (async () => {
-            const rederlyConfig = await window.rederlyConfig;
-            setPaymentURL(rederlyConfig?.paymentURL ?? null);
+            if (_.isNil(config)) {
+                logger.error('Cannot get Payment URL because config was not defined.');
+            }
 
             try {
                 const res = await AxiosRequest.get('/users/status');
@@ -60,8 +62,8 @@ export const AccountDetailsPage: React.FC<AccountDetailsPageProps> = () => {
                     <p>
                         <strong>Paid Until: </strong>{`${paidUntilMoment.format('LL')}`}
                         <br />
-                        {paymentURL && getUserRole() !== UserRole.STUDENT &&
-                            <a href={paymentURL} target={paymentURL}>Renew your account</a>
+                        {config?.paymentURL && getUserRole() !== UserRole.STUDENT &&
+                            <a href={config.paymentURL} target={config.paymentURL}>Renew your account</a>
                         }
                     </p>
                 </Grid>}
