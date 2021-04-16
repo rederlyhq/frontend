@@ -30,9 +30,6 @@ export const CourseTemplateList: React.FC<CourseTemplateListProps> = ({ courseTe
                             <Col>
                                 {template.name}
                             </Col>
-                            {/* <Col md={2}>
-                                <CurriculumDetailsModal title={template.name} desc={template.comment} className='float-right' />
-                            </Col> */}
                         </Row>
                     </ListGroupItem>
                 ))}

@@ -31,7 +31,6 @@ export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({ courseTemp
 
     const createCourse = async (course: CourseObject) => {
         return postCourse({
-            useCurriculum: true,
             data: CourseObject.toAPIObject(course)
         });
     };
