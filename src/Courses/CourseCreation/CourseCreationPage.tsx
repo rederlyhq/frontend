@@ -51,8 +51,10 @@ export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
         <EnterRightAnimWrapper>
             <Container>
                 <Tabs value={templateType} onChange={(e, val) => setTemplateType(val)} aria-label="Course creation options.">
-                    <Tab label={'Curricula'} />
-                    <Tab label={'Courses'} />
+                    <Tab label={'Institutional Curricula'} />
+                    <Tab label={'Global Curricula'} />
+                    <Tab label={'Active Courses'} />
+                    <Tab label={'Past Courses'} />
                 </Tabs>
                 <FormControl type="search" placeholder="Search by Course or Curriculum Name" onChange={filterCourseTemplates} />
                 <CourseTemplateList courseTemplates={filteredCourseTemplates} />
