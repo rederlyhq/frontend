@@ -7,14 +7,16 @@ import './Course.css';
 import moment from 'moment';
 import { useHistory } from 'react-router-dom';
 import { postCourse } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { TemplateType } from './CourseCreationPage';
 
 interface CreateCourseModalProps {
     courseTemplate: ICourseTemplate | null;
     onHide?: (() => void);
     show?: boolean;
+    templateType: TemplateType;
 }
 
-export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({ courseTemplate, onHide, show }) => {
+export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({ courseTemplate, onHide, show, templateType }) => {
     const [course, setCourse] = useState<CourseObject>(new CourseObject());
     const [saving, setSaving] = useState<boolean>(false);
     const [error, setError] = useState<string | undefined | null>();
@@ -57,7 +59,9 @@ export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({ courseTemp
                 dialogClassName="modal-90w"
                 onShow={() => {
                     setCourse(new CourseObject({
-                        curriculumId: courseTemplate?.id,
+                        ...((templateType === TemplateType.GLOBAL_CURRICULA || templateType === TemplateType.INSTITUTIONAL_CURRICULA) ? 
+                            {curriculumId: courseTemplate?.id,} :
+                            {originatingCourseId: courseTemplate?.id,}),
                         name: courseTemplate?.name,
                         start: moment().toDate(),
                         end: moment().add(4, 'M').toDate(),

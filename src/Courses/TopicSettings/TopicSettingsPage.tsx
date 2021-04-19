@@ -291,22 +291,22 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                     topicId: topic.id,
                     defFile,
                 });
-                // if (_.isSomething(parsedWebworkDef)) {
-                //     const topicSettingsFromDefFile = getTopicSettingsFromDefFile(parsedWebworkDef);
-                //     if (_.isSomething(topicSettingsFromDefFile.topicAssessmentInfo) || _.isSomething(topicSettingsFromDefFile.description)) {
-                //         const description = tryJSONParse({
-                //             value: topicSettingsFromDefFile.description,
-                //             identifier: 'import rederly def file',
-                //         });
+                if (_.isSomething(parsedWebworkDef)) {
+                    const topicSettingsFromDefFile = getTopicSettingsFromDefFile(parsedWebworkDef);
+                    if (_.isSomething(topicSettingsFromDefFile.topicAssessmentInfo) || _.isSomething(topicSettingsFromDefFile.description)) {
+                        const description = tryJSONParse({
+                            value: topicSettingsFromDefFile.description,
+                            identifier: 'import rederly def file',
+                        });
 
-                //         setTopicSettingsOverwriteModalOptions({
-                //             examSettings: topicSettingsFromDefFile.topicAssessmentInfo ?? {},
-                //             topicId: topic.id,
-                //             description: description,
-                //             topicTypeId: parsedWebworkDef.isExam() ? TopicTypeIdNumber.EXAM : TopicTypeIdNumber.PROBLEM_SET
-                //         });    
-                //     }
-                // }
+                        setTopicSettingsOverwriteModalOptions({
+                            examSettings: topicSettingsFromDefFile.topicAssessmentInfo ?? {},
+                            topicId: topic.id,
+                            description: description,
+                            topicTypeId: parsedWebworkDef.isExam() ? TopicTypeIdNumber.EXAM : TopicTypeIdNumber.PROBLEM_SET
+                        });    
+                    }
+                }
             } catch (e) {
                 setUpdateAlert({message: e.message, severity: 'error'});
             }

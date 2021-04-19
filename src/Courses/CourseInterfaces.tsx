@@ -23,6 +23,7 @@ export class CourseObject {
     units: Array<UnitObject> = [];
     code: string = '';
     curriculumId: number = 0;
+    originatingCourseId: number = 0;
     textbooks: string = '';
     canAskForHelp: boolean = false;
 
@@ -44,10 +45,13 @@ export class CourseObject {
 
     static toAPIObject(course: CourseObject) {
         // Not every field belongs in the request.
-        const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode', 'textbooks', 'curriculumId'];
+        const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode', 'textbooks', 'curriculumId', 'originatingCourseId'];
         const postObject = _.pick(course, newCourseFields);
         postObject.semesterCode = `${course.semesterCode}${course.semesterCodeYear}`;
         postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
+
+        if (postObject.curriculumId === 0) delete postObject.curriculumId;
+        if (postObject.originatingCourseId === 0) delete postObject.originatingCourseId;
         // TODO: Fix naming for route, should be 'templateId'.
         return postObject;
     }
