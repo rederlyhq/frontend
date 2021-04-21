@@ -43,7 +43,7 @@ ReactDOM.render(
             <ConfigProvider>
                 <VersionCheck>
                   <MuiPickersUtilsProvider utils={MomentUtils}>
-                      <GlobalSnackbarProvider>
+                        <GlobalSnackbarProvider>
                           <Router />
                       </GlobalSnackbarProvider>
                   </MuiPickersUtilsProvider>
