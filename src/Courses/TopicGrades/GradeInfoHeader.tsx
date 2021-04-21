@@ -6,7 +6,7 @@ import { Button, Grid, ListSubheader } from '@material-ui/core';
 import { OverrideGradeModal } from '../CourseDetailsTabs/OverrideGradeModal';
 import { getGrades, getQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { Spinner } from 'react-bootstrap';
-import { Color } from '@material-ui/lab';
+import { Color, Alert } from '@material-ui/lab';
 import { WorkbookSelect } from './WorkbookSelect';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import moment from 'moment';
@@ -57,7 +57,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 }) => {
     const [showGradeModal, setShowGradeModal] = useState<boolean>(false);
     const [grade, setGrade] = useState<StudentGrade | null>(null);
-    const [info, setInfo] = useState<WorkbookInfoDump>({});
+    const [info, setInfo] = useState<WorkbookInfoDump | null>(null);
     const currentUserRole = getUserRole();
 
     // Get and Store Grade.
@@ -74,7 +74,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 
             try {
                 const res = await getQuestionGrade({
-                    userId: selected.user.id,
+                    userId: currentUserRole === UserRole.STUDENT ? 'me' : selected.user.id,
                     questionId: selected.problem.id,
                     includeWorkbooks: true,
                 });
@@ -92,14 +92,14 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 });
             }
         })();
-    }, [selected.problem, selected.user, setGradeAlert]);
+    }, [currentUserRole, selected.problem, selected.user, setGradeAlert]);
 
     useEffect(() => {
         logger.debug('GradeInfoHeader: student grade object has changed.', grade);
 
         if (_.isNil(grade)) {
             logger.debug(`GradeInfoHeader: Student grade has not been set for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
-            setInfo({});
+            setInfo(null);
             return;
         }
 
@@ -108,12 +108,13 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 
         if (_.isNil(workbooks) || _.isEmpty(workbooks)) {
             logger.debug(`GradeInfoHeader: A grade exists for User ${grade.userId} Grade ${grade.id} but no workbooks could be found.`);
-            return;
+            // If we return here, Info doesn't get set, which means that default 0 values won't be shown for grades.
+            // return;
         }
 
         // Get averages for this specific problem.
         const currentAttemptsCount: number = workbookKeys.length;
-        const currentAverageScore = _.reduce(workbooks, (sum, wb) => sum + wb.result, 0) / currentAttemptsCount;
+        const currentAverageScore = currentAttemptsCount > 0 ? _.reduce(workbooks, (sum, wb) => sum + wb.result, 0) / currentAttemptsCount : 0;
 
         let currentVersionMap: Record<number, Array<number> | undefined> = {};
 
@@ -169,10 +170,10 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         const newProblemState: ProblemState = {};
         const currentGrade = (grade) ? grade : undefined;
 
-        if (_.isNil(grade)) {
+        if (_.isNil(grade) || _.isNil(info)) {
             // no grade for this user/problem combo -> error was already caught
             // this still happens on initial page load, so debug
-            logger.debug(`GradeInfoHeader: No grade for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
+            logger.debug(`GradeInfoHeader: No grade or info for this combination of user (${selected.user?.id}) and problem (${selected.problem?.id}).`);
             return;
         }
 
@@ -218,7 +219,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 gradeInstance: newGradeInstance 
             });
         });
-    }, [info.workbookId, info.studentGradeId, info.studentGradeInstanceId, info, grade, topic.topicAssessmentInfo, setSelected, selected.user?.id, selected.problem?.id, selected.problem?.webworkQuestionPath]);
+    }, [info?.workbookId, info?.studentGradeId, info?.studentGradeInstanceId, info, grade, topic.topicAssessmentInfo, setSelected, selected.user?.id, selected.problem?.id, selected.problem?.webworkQuestionPath]);
 
     useEffect(() => {
         logger.debug('GradeInfoHeader: there has been a change in user or topic, fetching new cumulative topic grade.');
@@ -245,7 +246,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 });
             }
         })();
-    }, [selected.user, topic, info.effectiveScore, setGradeAlert, setTopicGrade]);
+    }, [selected.user, topic, info?.effectiveScore, setGradeAlert, setTopicGrade]);
 
     const onSuccess = (gradeOverride: Partial<StudentGrade>) => {
         logger.debug('GradeInfoHeader: overriding grade', gradeOverride.effectiveScore);
@@ -259,8 +260,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         }
     };
 
-
-    if (_.isNil(grade) || _.isNil(info)) {
+    if ((_.isNil(grade) && topic.topicAssessmentInfo?.showTotalGradeImmediately !== false) || _.isNil(info)) {
         return ( <Spinner animation='border' role='status'><span className='sr-only'>Loading...</span></Spinner>) ;
     }
 
@@ -271,55 +271,62 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                     <h2>{selected.user?.firstName} {selected.user?.lastName} - Problem {selected.problem?.problemNumber}</h2>
                 </ListSubheader>
             </Grid>
-            <Grid item xs={4}>
-                <h4>Statistics</h4>
-                Number of attempts: <strong>{info.attemptsCount}</strong><br />
-                Best overall score: <strong>{info.overallBestScore?.toPercentString()}</strong><br />
-                {/* Should check !moment(topic.endDate).isSame(topic.deadDate) for topic and overrides before showing this? */}
-                System score: <strong>{info.partialCreditBestScore?.toPercentString()}</strong><br />
-                Score from best exam submission: <strong>{info.legalScore?.toPercentString()}</strong><br />
-                Average score: <strong>{info.averageScore?.toPercentString()}</strong>
-            </Grid>
-            <Grid item xs={4}>
-                <h4>Grades</h4>
-                    Effective score for grades: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
-                {currentUserRole !== UserRole.STUDENT && <>
-                    <Button
-                        variant='outlined'
-                        onClick={() => setShowGradeModal(true)}
-                    >
-                        Set new score for grades
-                    </Button>
-                    <OverrideGradeModal
-                        show={showGradeModal}
-                        onHide={() => setShowGradeModal(false)}
-                        grade={grade}
-                        onSuccess={(newGrade: Partial<StudentGrade>) => {
-                            if (!_.isNil(newGrade.effectiveScore)) {
-                                setInfo(info => ({ ...info, effectiveScore: newGrade.effectiveScore }));
-                                onSuccess(newGrade);
-                            }
-                        }}
-                    /><br />
+            {(currentUserRole === UserRole.STUDENT && (topic.topicAssessmentInfo?.showTotalGradeImmediately === false || topic.topicAssessmentInfo?.showItemizedResults === false)) ?
+                <Grid item xs={8}>
+                    <Alert variant='standard' color='warning'>
+                        Your professor has not released the grades for this assessment yet.
+                    </Alert>
+                </Grid> : <>
+                    <Grid item xs={4}>
+                        <h4>Statistics</h4>
+                        Number of attempts: <strong>{info.attemptsCount}</strong><br />
+                        Best overall score: <strong>{info.overallBestScore?.toPercentString()}</strong><br />
+                        {/* Should check !moment(topic.endDate).isSame(topic.deadDate) for topic and overrides before showing this? */}
+                        System score: <strong>{info.partialCreditBestScore?.toPercentString()}</strong><br />
+                        Score from best exam submission: <strong>{info.legalScore?.toPercentString()}</strong><br />
+                        Average score: <strong>{info.averageScore?.toPercentString()}</strong>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <h4>Grades</h4>
+                        Effective score for grades: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
+                        {currentUserRole !== UserRole.STUDENT && <>
+                            <Button
+                                variant='outlined'
+                                onClick={() => setShowGradeModal(true)}
+                            >
+                            Set new score for grades
+                            </Button>
+                            <OverrideGradeModal
+                                show={showGradeModal}
+                                onHide={() => setShowGradeModal(false)}
+                                grade={grade ?? new StudentGrade()}
+                                onSuccess={(newGrade: Partial<StudentGrade>) => {
+                                    if (!_.isNil(newGrade.effectiveScore)) {
+                                        setInfo(info => ({ ...info, effectiveScore: newGrade.effectiveScore }));
+                                        onSuccess(newGrade);
+                                    }
+                                }}
+                            /><br />
+                        </>}
+                        {info.workbook && info.workbook.result &&
+                        <p>
+                            Score on this attempt: <strong>{info.workbook.result.toPercentString()}</strong><br />
+                            Submitted on: <strong>{moment(info.workbook.time).formattedMonthDateTime()}</strong>
+                        </p>
+                        }
+                    </Grid>
                 </>}
-                {info.workbook &&
-                    <p>
-                        Score on this attempt: <strong>{info.workbook.result.toPercentString()}</strong><br />
-                        Submitted on: <strong>{moment(info.workbook.time).formattedMonthDateTime()}</strong>
-                    </p>
-                }
-            </Grid>
             <Grid item xs={12}>
-                {(info.versionMap && info.workbookId)?
+                {(info.versionMap && info.workbookId) ?
                     <WorkbookSelect
                         versionMap={info.versionMap}
-                        versionKey={info.studentGradeInstanceId ?? grade.id}
+                        versionKey={info.studentGradeInstanceId ?? grade?.id}
                         attemptKey={info.workbookId}
                         onChange={setInfo}
                         info={info}
-                        grade={grade}
+                        grade={grade ?? new StudentGrade()}
                     /> :
-                    `${selected.user?.name} has not attempted this problem.`
+                    `${currentUserRole === UserRole.STUDENT ? 'You have' : `${selected.user?.name} has`} not attempted this problem.`
                 }
             </Grid>
         </Grid>

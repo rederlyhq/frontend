@@ -246,7 +246,7 @@ export interface GetGradesOptions {
 }
 
 export interface GetQuestionGradeOptions {
-    userId: number;
+    userId: number | 'me';
     questionId: number;
     includeWorkbooks?: boolean;
 }

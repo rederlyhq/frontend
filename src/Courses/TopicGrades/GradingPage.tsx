@@ -114,7 +114,10 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
     useEffect(()=>{
         logger.debug('Syncing query parameters.');
         if (currentUserRole !== UserRole.STUDENT) {
+            // This can be null on page load, so we have to prevent that from overwriting the param.
             selected.user && setUserId(selected.user.id);
+        } else {
+            setUserId(undefined);
         }
         selected.problem && setProblemId(selected.problem.id);
     }, [currentUserRole, selected, setProblemId, setUserId]);
@@ -190,7 +193,7 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                             setTopicGrade={setTopicGrade}
                         />
                     }
-                    <Grid container alignItems='stretch'>
+                    <Grid container item alignItems='stretch'>
                         {selected.problem && selected.user && selected.grade &&
                         // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) &&
                             <ProblemIframe
