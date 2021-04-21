@@ -46,7 +46,7 @@ ReactDOM.render(
                         <GlobalSnackbarProvider>
                           <Router />
                       </GlobalSnackbarProvider>
-                  </MuiPickersUtilsProvider>
+                    </MuiPickersUtilsProvider>
                 </VersionCheck>
             </ConfigProvider>
         </GlobalErrorBoundaryState>
