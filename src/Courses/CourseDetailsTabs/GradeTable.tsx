@@ -15,8 +15,6 @@ interface GradeTableProps {
 }
 
 export const GradeTable: React.FC<GradeTableProps> = ({courseName, grades, onRowClick, setTopicTypeFilter, topicTypeFilter}) => {
-    if (grades.length <= 0) return null;
-
     // Material UI edits the object in-place, which causes problems.
     let safeGrades = grades.map(obj => ({
         ...obj,

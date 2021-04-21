@@ -192,16 +192,15 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
                     subObjArray={selectedObjects.topic?.questions.sort((a, b) => a.problemNumber < b.problemNumber ? -1 : 1) || []}
                     style={{visibility: selectedObjects.topic ? 'visible' : 'hidden'}} />
             </Nav>
-            {viewData ?
-                <GradeTable
-                    courseName={course.name}
-                    grades={viewData}
-                    topicTypeFilter={topicTypeFilter}
-                    setTopicTypeFilter={setTopicTypeFilter}
-                    onRowClick={(_event: any, rowData: any) => {
-                        setStudentGradesTab(rowData.firstName, rowData.id);
-                    }} /> :
-                <div>No data!</div>}
+            <GradeTable
+                courseName={course.name}
+                grades={viewData}
+                topicTypeFilter={topicTypeFilter}
+                setTopicTypeFilter={setTopicTypeFilter}
+                onRowClick={(_event: any, rowData: any) => {
+                    setStudentGradesTab(rowData.firstName, rowData.id);
+                }} 
+            />
         </>
     );
 };

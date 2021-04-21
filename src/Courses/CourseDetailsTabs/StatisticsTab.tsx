@@ -147,12 +147,14 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             break;
         }
 
+        const hasTopicTypeFilter = (view !== StatisticsView.ATTEMPTS && view !== StatisticsViewFilter.PROBLEMS_FILTERED && 
+            view !== StatisticsView.PROBLEMS && view !== StatisticsViewFilter.TOPICS_FILTERED);
+
         const queryString = qs.stringify(_({
             courseId: course.id,
             [filterParam]: idFilterLocal,
             userId: (view !== StatisticsView.ATTEMPTS && view !== StatisticsViewFilter.PROBLEMS_FILTERED) ? userId : null,
-            // TODO: Omit for problem, or allow as a noop on the backend.
-            topicTypeFilter
+            topicTypeFilter: hasTopicTypeFilter ? topicTypeFilter : null,
         }).omitBy(_.isNil).value() as any).toString();
 
         url = `${url}${queryString}`;
