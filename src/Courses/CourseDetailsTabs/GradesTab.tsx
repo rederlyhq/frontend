@@ -3,7 +3,7 @@ import { Button, Nav } from 'react-bootstrap';
 import GradeTable from './GradeTable';
 import _ from 'lodash';
 import SubObjectDropdown from '../../Components/SubObjectDropdown';
-import { UnitObject, TopicObject, ProblemObject, CourseObject } from '../CourseInterfaces';
+import { UnitObject, TopicObject, ProblemObject, CourseObject, TOPIC_TYPE_FILTERS } from '../CourseInterfaces';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import logger from '../../Utilities/Logger';
 import localPreferences from '../../Utilities/LocalPreferences';
@@ -48,6 +48,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
     const [view, setView] = useState<string>(GradesView.OVERVIEW);
     const [selectedObjects, setSelectedObjects] = useState<IDropdownCascade>({});
     const [viewData, setViewData] = useState<Array<any>>([]);
+    const [topicTypeFilter, setTopicTypeFilter] = useState<TOPIC_TYPE_FILTERS>(TOPIC_TYPE_FILTERS.ALL);
     const userId: string | null = localPreferences.session.userId;
     const userType: UserRole = getUserRole();
 
@@ -81,7 +82,8 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
         (async () => {
             if (_.isNil(course) || !course.id) return;
             const params: GetGradesOptions = {
-                courseId: course.id
+                courseId: course.id,
+                topicTypeFilter
             };
 
             if (selectedObjects.problem) {
@@ -117,7 +119,7 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
         })();
     };
 
-    useEffect(getCourseGradesHook, [course.id, userId, selectedObjects]);
+    useEffect(getCourseGradesHook, [course.id, userId, selectedObjects, topicTypeFilter]);
 
     if (!course) return null;
 
@@ -194,6 +196,8 @@ export const GradesTab: React.FC<GradesTabProps> = ({course, setStudentGradesTab
                 <GradeTable
                     courseName={course.name}
                     grades={viewData}
+                    topicTypeFilter={topicTypeFilter}
+                    setTopicTypeFilter={setTopicTypeFilter}
                     onRowClick={(_event: any, rowData: any) => {
                         setStudentGradesTab(rowData.firstName, rowData.id);
                     }} /> :

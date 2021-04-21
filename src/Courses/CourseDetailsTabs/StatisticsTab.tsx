@@ -151,6 +151,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             courseId: course.id,
             [filterParam]: idFilterLocal,
             userId: (view !== StatisticsView.ATTEMPTS && view !== StatisticsViewFilter.PROBLEMS_FILTERED) ? userId : null,
+            // TODO: Omit for problem, or allow as a noop on the backend.
             topicTypeFilter
         }).omitBy(_.isNil).value() as any).toString();
 
@@ -480,7 +481,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         });
     }
 
-    actions.push(        {
+    actions.push({
         icon: function FilterComponent() { 
             return <Select
                 value={topicTypeFilter}

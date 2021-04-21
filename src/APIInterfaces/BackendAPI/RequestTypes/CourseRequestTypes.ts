@@ -1,4 +1,4 @@
-import { CourseObject, UnitObject, TopicObject, ProblemObject, NewCourseUnitObj, StudentGrade, StudentGradeInstance } from '../../../Courses/CourseInterfaces';
+import { CourseObject, UnitObject, TopicObject, ProblemObject, NewCourseUnitObj, StudentGrade, StudentGradeInstance, TOPIC_TYPE_FILTERS } from '../../../Courses/CourseInterfaces';
 import { Moment } from 'moment';
 
 /* *************** *************** */
@@ -243,6 +243,7 @@ export interface GetGradesOptions {
     unitId?: number;
     questionId?: number;
     courseId?: number;
+    topicTypeFilter?: TOPIC_TYPE_FILTERS;
 }
 
 export interface GetQuestionGradeOptions {
