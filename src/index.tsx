@@ -42,7 +42,7 @@ ReactDOM.render(
         <GlobalErrorBoundaryState>
             <ConfigProvider>
                 <VersionCheck>
-                  <MuiPickersUtilsProvider utils={MomentUtils}>
+                    <MuiPickersUtilsProvider utils={MomentUtils}>
                         <GlobalSnackbarProvider>
                             <Router />
                         </GlobalSnackbarProvider>
