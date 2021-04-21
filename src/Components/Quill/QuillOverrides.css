@@ -1,5 +1,10 @@
 /* These styles mostly focus on overriding the Quill styles to achieve reasonable behaviors within the flexboxes. */
 
+#quillgrid {
+    /* This is required for the drag-and-drop overlay. */
+    position: relative;
+}
+
 .ql-container {
     min-height: 10vh;
 }
