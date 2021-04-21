@@ -62,17 +62,10 @@ export const getCourse = async ({
 };
 
 export const postCourse = async ({
-    useCurriculum = true,
     data
 }: CreateCourseOptions): Promise<AxiosResponse<CreateCourseResponse>> => {
     try {
-        return await AxiosRequest.post(
-            url.resolve(
-                COURSE_PATH,
-                `?${qs.stringify({
-                    useCurriculum
-                })}`
-            ), data
+        return await AxiosRequest.post(COURSE_PATH, data
         );
     } catch (e) {
         throw new BackendAPIError(e);
