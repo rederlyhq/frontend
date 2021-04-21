@@ -31,7 +31,7 @@ export const MaterialBiSelect: React.FC<MaterialBiSelectProps> = ({problems, use
     return (
         <Grid container spacing={1} wrap="nowrap">
             <AnimatePresence>
-                {problems && <Grid item md={6}>
+                {<Grid item md={users.length > 0 ? 6 : 12}>
                     <motion.div
                         initial={{scale: 0}}
                         animate={{scale: 1}}
@@ -46,7 +46,7 @@ export const MaterialBiSelect: React.FC<MaterialBiSelectProps> = ({problems, use
                     </motion.div>
                 </Grid>}
             </AnimatePresence>
-            <AnimatePresence>
+            {users.length > 0 && <AnimatePresence>
                 <Grid item md={6}>
                     <MultiSelectCardList 
                         title='Users'
@@ -55,7 +55,7 @@ export const MaterialBiSelect: React.FC<MaterialBiSelectProps> = ({problems, use
                         selected={selected.user}
                     />
                 </Grid>
-            </AnimatePresence>
+            </AnimatePresence>}
         </Grid>
     );
 };
