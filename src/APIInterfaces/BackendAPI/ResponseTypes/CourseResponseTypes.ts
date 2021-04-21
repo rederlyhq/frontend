@@ -117,6 +117,55 @@ export type GetQuestionsResponse = BackendAPIResponse<GetQuestions>;
 
 export type GetQuestionResponse = BackendAPIResponse<Partial<ProblemObject>>;
 
+interface GetStudentGrades {
+    data: {
+        id: number;
+        name: string;
+        averageAttemptedCount: string;
+        averageScore: number;
+        pointsEarnedOpen: number;
+        pointsAvailableOpen: string | number,
+        averageScoreOpen: number;
+        pointsEarnedDead: number;
+        pointsAvailableDead: string | number,
+        averageScoreDead: number;
+        systemScore: number;
+        totalGrades: string | number,
+        completedCount: string | number,
+        completionPercent: number;
+        grades: {
+            id: number;
+            active: boolean;
+            userId: number;
+            courseWWTopicQuestionId: number;
+            lastInfluencingLegalAttemptId: number | null;
+            lastInfluencingCreditedAttemptId: number | null;
+            lastInfluencingAttemptId: number | null;
+            originalRandomSeed: number;
+            randomSeed: number;
+            bestScore: number;
+            overallBestScore: number;
+            numAttempts: number;
+            numLegalAttempts: number;
+            numExtendedAttempts: number;
+            firstAttempts: number;
+            latestAttempts: number;
+            effectiveScore: number;
+            partialCreditBestScore: number;
+            legalScore: number;
+            locked: false,
+            currentProblemState: null,
+            createdAt: string | Date;
+            updatedAt: string | Date;
+            user_id: number;
+        }[];
+    }[];
+    totalAverage: number | null;
+    totalOpenAverage: number | null;
+    totalDeadAverage: number | null;
+}
+export type GetStudentGradesResponse = BackendAPIResponse<GetStudentGrades>;
+
 /* *************** *************** */
 /* ********** Questions ********** */
 /* *************** *************** */

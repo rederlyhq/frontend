@@ -194,7 +194,10 @@ export class TopicObject {
         Object.assign(this, init);
 
         if (!_.isNull(init?.questions)) {
-            this.questions = init?.questions?.map(question => new ProblemObject(question)) || [];
+            this.questions = _(init?.questions)
+                .map(question => new ProblemObject(question))
+                .sortBy(['problemNumber'], ['asc'])
+                .value();
         }
 
         if (typeof init?.description === 'string') {
@@ -276,6 +279,7 @@ export interface StudentWorkbookInterface {
     wasAfterAttemptLimit: boolean;
     wasLocked: boolean;
     wasAutoSubmitted: boolean;
+    feedback: any; // ReactQuillProps['value']
 
     createdAt: Date;
     updatedAt: Date;
@@ -303,6 +307,7 @@ export interface StudentGradeInstance {
     active: boolean;
     bestIndividualAttemptId: number;
     bestVersionAttemptId: number;
+    problemAttachments?: ProblemAttachments[];
 }
 
 export interface StudentGradeDict {
@@ -323,6 +328,7 @@ export interface StudentGradeDict {
 }
 
 export class StudentGrade {
+    courseWWTopicQuestionId?: number = 0;
     gradeInstances?: StudentGradeInstance[];
     workbooks?: StudentWorkbookInterface[];
     bestScore: number = 0; // should be deprecated?
