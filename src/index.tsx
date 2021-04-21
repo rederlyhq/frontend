@@ -47,7 +47,7 @@ ReactDOM.render(
                           <Router />
                       </GlobalSnackbarProvider>
                   </MuiPickersUtilsProvider>
-              </VersionCheck>
+                </VersionCheck>
             </ConfigProvider>
         </GlobalErrorBoundaryState>
     </React.StrictMode>,
