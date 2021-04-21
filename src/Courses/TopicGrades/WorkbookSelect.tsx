@@ -1,10 +1,10 @@
 import React from 'react';
 import _ from 'lodash';
 import { StudentGrade } from '../CourseInterfaces';
-import { Grid, FormControl, InputLabel, Select, makeStyles, MenuItem, Chip, ListItemText, ListItemIcon, ListSubheader } from '@material-ui/core';
+import { Grid, FormControl, InputLabel, Select, makeStyles, MenuItem, ListItemText, ListSubheader, Tooltip, Badge } from '@material-ui/core';
 import logger from '../../Utilities/Logger';
-import { WorkbookInfoDump } from './GradeInfoHeader';
-import { StarBorderOutlined } from '@material-ui/icons';
+import { WorkbookInfoDump } from './GradingPage';
+import { Star, Attachment, Feedback } from '@material-ui/icons';
 
 interface WorkbookSelectProps {
     grade: StudentGrade;
@@ -34,7 +34,7 @@ export const WorkbookSelect: React.FC<WorkbookSelectProps> = ({grade, onChange, 
     const classes = useStyles();
 
     const versionList = (vMap: Record<number, Array<number> | undefined>): WorkbookOption[] => {
-        return _(vMap).keys().map(v => parseInt(v, 10)).sort().map((key, i) =>  ({label: `Version #${i+1}`, value: key})).value();
+        return _(vMap).keys().map(v => parseInt(v, 10)).sort().map((key, i) =>  ({label: `Version #${i+1}`, value: key})).value().reverse();
     };
 
     // This could also be called the Attempt List.
@@ -44,7 +44,7 @@ export const WorkbookSelect: React.FC<WorkbookSelectProps> = ({grade, onChange, 
             return [];
         }
 
-        const attempts = (vMap[versionKey] ?? []).sort().map((id, index) => ({ label: `Attempt #${index + 1}`, value: id }));
+        const attempts = (vMap[versionKey] ?? []).sort().map((id, index) => ({ label: `Attempt #${index + 1}`, value: id })).reverse();
         
         attempts.unshift({ label: 'current', value: -1 });
     
@@ -77,14 +77,23 @@ export const WorkbookSelect: React.FC<WorkbookSelectProps> = ({grade, onChange, 
                     <FormControl className={classes.formControl} fullWidth={true}>
                         <InputLabel id='student-versions'>Viewing Version:</InputLabel>
                         <Select labelId='student-versions' value={versionKey} onChange={setAttemptsForThisVersion} fullWidth={false} SelectDisplayProps={{style: {display: 'flex', alignItems: 'center', paddingLeft: '10px', paddingRight: '30px'}}}>
-                            {versionList(versionMap).map(version => (
-                                <MenuItem key={version.value} value={version.value}>
-                                    <ListItemText primary={version.label} />
-                                    {lastCreditedGradeInstance?.id === version.value && <ListItemIcon>
-                                        <Chip variant="outlined" color="primary" size="small" icon={<StarBorderOutlined />} label='Best' />
-                                    </ListItemIcon>}
-                                </MenuItem>
-                            ))}
+                            {versionList(versionMap).map(version => {
+                                const currGradeInstance = _.find(grade.gradeInstances, curr => curr.id === version.value);
+                                const hasFeedback = _.some(grade.workbooks, workbook => workbook.feedback && workbook.studentGradeInstanceId === version.value);
+
+                                return (
+                                    <MenuItem key={version.value} value={version.value}>
+                                        <ListItemText primary={version.label} />
+                                        {currGradeInstance?.problemAttachments && currGradeInstance.problemAttachments.length > 0 && <Tooltip title={`${currGradeInstance.problemAttachments.length} Attachments`}>
+                                            <Badge badgeContent={currGradeInstance.problemAttachments.length} color="primary" style={{marginRight: '10px'}}>
+                                                <Attachment />
+                                            </Badge>
+                                        </Tooltip>}
+                                        {hasFeedback && <Tooltip title='Feedback Available'><Feedback htmlColor='blue' /></Tooltip>}
+                                        {lastCreditedGradeInstance?.id === version.value && <Tooltip title='Best Attempt'><Star htmlColor='orange' /></Tooltip>}
+                                    </MenuItem>
+                                );
+                            })}
                         </Select>
                     </FormControl>
                 </Grid>}
@@ -96,9 +105,10 @@ export const WorkbookSelect: React.FC<WorkbookSelectProps> = ({grade, onChange, 
                             {versionSubList(versionMap, versionKey).map(attempt => (
                                 <MenuItem key={attempt.value} value={attempt.value} divider>
                                     <ListItemText primary={attempt.label} />
-                                    {grade.lastInfluencingCreditedAttemptId === attempt.value && <ListItemIcon>
-                                        <Chip variant="outlined" color="primary" size="small" icon={<StarBorderOutlined />} label='Best' />
-                                    </ListItemIcon>}
+                                    {/* <ListItemIcon> */}
+                                    {_.find(grade.workbooks, ['id', attempt.value])?.feedback && <Tooltip title='Attempt has Feedback'><Feedback htmlColor='blue' /></Tooltip>}
+                                    {grade.lastInfluencingCreditedAttemptId === attempt.value && <Tooltip title='Best Attempt'><Star htmlColor='orange' /></Tooltip>}
+                                    {/* </ListItemIcon> */}
                                 </MenuItem>
                             ))}
                         </Select>

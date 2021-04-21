@@ -1,11 +1,7 @@
-import React, { useRef, useEffect } from 'react';
-import ReactQuill, {Quill} from 'react-quill';
+import React, {  } from 'react';
 import 'react-quill/dist/quill.snow.css';
 // import 'mathquill/build/mathquill';
-import { Button, Grid } from '@material-ui/core';
-import mathquill4quill from 'mathquill4quill';
 import 'mathquill4quill/mathquill4quill.css';
-import _ from 'lodash';
 import logger from '../../Utilities/Logger';
 
 import '../../Components/Quill/QuillOverrides.css';
@@ -13,62 +9,30 @@ import '../../Components/Quill/QuillOverrides.css';
 // Load Katex with this module
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
-import AxiosRequest from '../../Hooks/AxiosRequest';
+import QuillControlledEditor from '../../Components/Quill/QuillControlledEditor';
+import { postFeedback } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { IMUIAlertModalState } from '../../Hooks/useAlertState';
 window.katex = katex;
 
 interface GradeFeedbackProps {
-
+    workbookId: number;
+    defaultValue?: any;
+    setGradeAlert: React.Dispatch<React.SetStateAction<IMUIAlertModalState>>;
 }
 
-export const GradeFeedback: React.FC<GradeFeedbackProps> = () => {
-    const quill = useRef<ReactQuill | null>();
-
-    useEffect(()=>{
-        if (_.isNil(quill.current)) {
-            logger.warn('Component mounted but cannot initialize MathQuill cause Quill is undefined.');
-            return;
+export const GradeFeedback: React.FC<GradeFeedbackProps> = ({ workbookId, setGradeAlert, defaultValue }) => {
+    const onSave = async (content: unknown) => {
+        try {
+            await postFeedback({workbookId, content});
+        } catch (e) {
+            logger.error(e);
+            setGradeAlert({message: `An error occurred while saving your feedback. (${e.message})`, severity: 'error'});
         }
-
-        const enableMathQuillFormulaAuthoring = mathquill4quill({ Quill });
-
-        enableMathQuillFormulaAuthoring(quill.current.editor, {
-            operators: [
-                ['\\sqrt[n]{x}', '\\nthroot'], 
-                ['\\frac{x}{y}','\\frac']
-            ],
-            displayHistory: true,
-            historyCacheKey: '__rederly_math_history_cachekey_',
-            historySize: 3 
-        });
-    }, []);
-
-    const onSave = async () => {
-        AxiosRequest.post('/feedback', {
-            body: quill.current?.getEditorContents()
-        });
     };
 
-    return <Grid container item md={12}>
-        <Grid item id='quillgrid' md={12}>
-            <ReactQuill
-                scrollingContainer={'#quillgrid'}
-                bounds={'#quillgrid'}
-                style={{
-                    width: '100%',
-                }}
-                ref={r => quill.current = r}
-                // theme={'snow'} 
-                modules={{
-                    formula: true,
-                    toolbar: [                  
-                        ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-                        ['blockquote', 'code-block'],
-                        [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-                        [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-                        ['formula']]
-                }}
-            />
-        </Grid>
-        <Button onClick={onSave}>Submit</Button>
-    </Grid>;
+    return <QuillControlledEditor 
+        onSave={onSave} 
+        placeholder={'Leave feedback for this student\'s attempt. Students can see this by visiting their version of the grading page and selecting this attempt.'} 
+        defaultValue={defaultValue}    
+    />;
 };

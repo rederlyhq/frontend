@@ -1,4 +1,4 @@
-import { Grid, Snackbar, Container, Chip } from '@material-ui/core';
+import { Grid, Snackbar, Container, Chip, ListSubheader } from '@material-ui/core';
 import { Alert as MUIAlert, Alert } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
@@ -6,7 +6,7 @@ import { useParams, Link } from 'react-router-dom';
 import logger from '../../Utilities/Logger';
 import MaterialBiSelect from '../../Components/MaterialBiSelect';
 import { useCourseContext } from '../CourseProvider';
-import { UserObject, TopicObject, ProblemObject, StudentGrade, StudentGradeInstance, ProblemState } from '../CourseInterfaces';
+import { UserObject, TopicObject, ProblemObject, StudentGrade, StudentGradeInstance, ProblemState, StudentWorkbookInterface } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import { getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import ExportAllButton from './ExportAllButton';
@@ -16,8 +16,9 @@ import { useMUIAlertState } from '../../Hooks/useAlertState';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
 import { useQueryParam, NumberParam } from 'use-query-params';
 import { getUserId, getUserRole, UserRole } from '../../Enums/UserRole';
+import { QuillReadonlyDisplay } from '../../Components/Quill/QuillReadonlyDisplay';
+import { GradeFeedback } from './GradeFeedback';
 import '../../Components/LayoutStyles.css';
-
 import 'react-quill/dist/quill.snow.css';
 
 interface GradingPageProps {
@@ -33,6 +34,21 @@ interface GradingSelectables {
     gradeInstance?: StudentGradeInstance,
 }
 
+export interface WorkbookInfoDump {
+    workbook?: StudentWorkbookInterface;
+    legalScore?: number;
+    overallBestScore?: number;
+    partialCreditBestScore?: number;
+    effectiveScore?: number;
+    workbookId?: number;
+    studentGradeId?: number;
+    studentGradeInstanceId?: number;
+    averageScore?: number;
+    attemptsCount?: number;
+    versionMap?: Record<number, Array<number> | undefined>;
+}
+
+
 export const GradingPage: React.FC<GradingPageProps> = () => {
     const params = useParams<GradingPageProps>();
     const {users} = useCourseContext();
@@ -43,6 +59,7 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
 
     const [selected, setSelected] = useState<GradingSelectables>({});
     const [topicGrade, setTopicGrade] = useState<number | null>(null);
+    const [info, setInfo] = useState<WorkbookInfoDump | null>(null);
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
     const currentUserRole = getUserRole();
     const currentUserId = getUserId();
@@ -165,7 +182,7 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
             <Grid container spacing={1} alignItems='center' justify='space-between'>
                 <Grid container item className='text-left' xs={6} alignItems='center'>
                     <h1>Grading {topic.name}</h1>
-                    <Chip label={topicGrade ? topicGrade.toPercentString() : '--'} color='primary' size='small' />
+                    <Chip label={topicGrade ? topicGrade.toPercentString() : '--'} color='primary' />
                 </Grid>
                 {currentUserRole !== UserRole.STUDENT && <Grid item>
                     <ExportAllButton topicId={topic.id} userId={selected.user?.id} />
@@ -191,6 +208,8 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                             topic={topic}
                             setGradeAlert={setGradeAlert}
                             setTopicGrade={setTopicGrade}
+                            info={info}
+                            setInfo={setInfo}
                         />
                     }
                     <Grid container item alignItems='stretch'>
@@ -207,6 +226,14 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                             />
                         }
                     </Grid>
+                    {info?.workbook && <Grid container item>
+                        <ListSubheader disableSticky>
+                            <h2>Feedback</h2>
+                        </ListSubheader>
+                        {currentUserRole === UserRole.STUDENT ? 
+                            <QuillReadonlyDisplay content={info.workbook.feedback} /> : 
+                            <GradeFeedback workbookId={info.workbook.id} setGradeAlert={setGradeAlert} defaultValue={info.workbook.feedback} />}
+                    </Grid>}
                     {(selected.grade || selected.gradeInstance) &&
                         <Grid container item md={12}>
                             <AttachmentsPreview

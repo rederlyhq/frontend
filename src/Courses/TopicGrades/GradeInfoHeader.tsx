@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import _ from 'lodash';
-import { ProblemObject, ProblemState, StudentGrade, StudentGradeInstance, StudentWorkbookInterface, TopicObject, UserObject } from '../CourseInterfaces';
+import { ProblemObject, ProblemState, StudentGrade, StudentGradeInstance, TopicObject, UserObject } from '../CourseInterfaces';
 import logger from '../../Utilities/Logger';
 import { Button, Grid, ListSubheader } from '@material-ui/core';
 import { OverrideGradeModal } from '../CourseDetailsTabs/OverrideGradeModal';
@@ -10,6 +10,7 @@ import { Color, Alert } from '@material-ui/lab';
 import { WorkbookSelect } from './WorkbookSelect';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import moment from 'moment';
+import { WorkbookInfoDump } from './GradingPage';
 
 interface GradeInfoHeaderProps {
     topic: TopicObject;
@@ -32,20 +33,8 @@ interface GradeInfoHeaderProps {
         message: string;
         severity: Color;
     }>>;
-}
-
-export interface WorkbookInfoDump {
-    workbook?: StudentWorkbookInterface;
-    legalScore?: number;
-    overallBestScore?: number;
-    partialCreditBestScore?: number;
-    effectiveScore?: number;
-    workbookId?: number;
-    studentGradeId?: number;
-    studentGradeInstanceId?: number;
-    averageScore?: number;
-    attemptsCount?: number;
-    versionMap?: Record<number, Array<number> | undefined>;
+    info: WorkbookInfoDump | null;
+    setInfo: React.Dispatch<React.SetStateAction<WorkbookInfoDump | null>>;
 }
 
 export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
@@ -54,10 +43,11 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
     topic,
     setGradeAlert,
     setTopicGrade,
+    info,
+    setInfo
 }) => {
     const [showGradeModal, setShowGradeModal] = useState<boolean>(false);
     const [grade, setGrade] = useState<StudentGrade | null>(null);
-    const [info, setInfo] = useState<WorkbookInfoDump | null>(null);
     const currentUserRole = getUserRole();
 
     // Get and Store Grade.
@@ -163,7 +153,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             versionMap: currentVersionMap,
         });
 
-    }, [grade, grade?.id, selected.problem?.id, selected.user?.id]);
+    }, [grade, grade?.id, selected.problem?.id, selected.user?.id, setInfo]);
 
     useEffect(() => {
         logger.debug('GradeInfoHeader: setting new problem state from updated Workbook ID or Grade (Instance) ID', info);
@@ -308,7 +298,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                                 }}
                             /><br />
                         </>}
-                        {info.workbook && info.workbook.result &&
+                        {info.workbook && !_.isNil(info.workbook.result) &&
                         <p>
                             Score on this attempt: <strong>{info.workbook.result.toPercentString()}</strong><br />
                             Submitted on: <strong>{moment(info.workbook.time).formattedMonthDateTime()}</strong>

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import ReactQuill, { Quill, ReactQuillProps } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 // import 'mathquill/build/mathquill';
@@ -16,15 +16,21 @@ import 'katex/dist/katex.min.css';
 window.katex = katex;
 
 interface QuillControlledEditorProps {
-    onChange: (value: ReactQuillProps['value'] | null) => void;
-    onBlur: ReactQuillProps['onBlur'];
-    value: ReactQuillProps['value'];
+    // Common props
+    placeholder?: string;
     defaultValue?: ReactQuillProps['defaultValue'];
+    // Controlled variant only
+    onChange?: (value: ReactQuillProps['value'] | null) => void;
+    onBlur?: ReactQuillProps['onBlur'];
+    value?: ReactQuillProps['value'];
+    // Uncontrolled variant only
     onSave?: (saveData: ReactQuillProps['value'] | null)=>any;
 }
 
-export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue}) => {
+
+export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue, placeholder}) => {
     const quill = useRef<ReactQuill | null>();
+    const [disabled, setDisabled] = useState<boolean>(true);
 
     useEffect(()=>{
         if (_.isNil(quill.current)) {
@@ -63,6 +69,7 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
     };
 
     const onClickedSave = () => {
+        setDisabled(true);
         if (isQuillEmpty()) {
             onSave?.(null);
             return;
@@ -72,12 +79,13 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
     };
 
     const wrappedOnChange = () => {
+        setDisabled(false);
         if (isQuillEmpty()) {
-            onChange(null);
+            onChange?.(null);
             return;
         }
         const delta = quill.current?.getEditor().getContents();
-        onChange(delta);
+        onChange?.(delta);
     };
 
     return <Grid container item md={12}>
@@ -104,14 +112,22 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                         ['link', 'formula'],
                     ]
                 }}
+                // Controlled props have to conditionally be applied because
+                // undefined values still count as values.
+                {...(onChange ? {
+                    onBlur: onBlur,
+                    value: value,
+                } : {})}
+                // We use onChange to also throttle the save button, so even though it's really a controlled
+                // feature, we need it here.
                 onChange={wrappedOnChange}
-                onBlur={onBlur}
-                value={value}
                 defaultValue={defaultValue}
-                placeholder='Descriptions or instructions for this Topic can be added here. They will be displayed on top of every problem in this topic.'
+                placeholder={placeholder ?? 'Descriptions or instructions for this Topic can be added here. They will be displayed on top of every problem in this topic.'}
             />
+            {onSave && <Grid xs={12} style={{margin: '0% 1%'}}>
+                <Button disabled={disabled} fullWidth color='primary' variant='contained' onClick={onClickedSave}>Save Feedback</Button>
+            </Grid>}
         </Grid>
-        {onSave && <Button fullWidth variant='contained' onClick={onClickedSave}>Submit</Button>}
     </Grid>;
 };
 
