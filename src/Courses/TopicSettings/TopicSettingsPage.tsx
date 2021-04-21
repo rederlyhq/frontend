@@ -21,6 +21,7 @@ import { isKeyOf } from '../../Utilities/TypescriptUtils';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import BackendAPIError from '../../APIInterfaces/BackendAPI/BackendAPIError';
+import { QuillReadonlyDisplay } from '../../Components/Quill/QuillReadonlyDisplay';
 
 interface TopicSettingsPageProps {
     topic?: TopicObject;
@@ -28,6 +29,7 @@ interface TopicSettingsPageProps {
 
 export interface TopicSettingsInputs extends ExamSettingsFields {
     name?: string;
+    description?: any;
     startDate?: Moment;
     endDate?: Moment;
     deadDate?: Moment;
@@ -47,6 +49,8 @@ export interface ProblemSettingsInputs extends ExamProblemSettingsFields {
 interface TopicSettingsOverwriteModalOptions {
     examSettings: DefFileTopicAssessmentInfo;
     topicId: number;
+    description: unknown;
+    topicTypeId: number;
 }
 
 const settingOptionMap = {
@@ -86,6 +90,25 @@ const translateTopicSettings = (examSettings: any): {[key: string]: string} => {
         }
         return result;
     }, {});
+};
+
+interface TryJSONParseOptions {
+    value: string | null | undefined;
+    identifier: string;
+    logValueWithError?: boolean;
+}
+
+const tryJSONParse = ({value, identifier, logValueWithError=true}: TryJSONParseOptions): object | null => {
+    if (_.isNil(value) || _.isEmpty(value)) {
+        return null;
+    }
+    try {
+        return JSON.parse(value);
+    } catch (e) {
+        // This doesn't have sensitive info but if 
+        logger.error(`Could not parse "${identifier}"${logValueWithError ? ` with value "${value}"` : ''}`, e);
+    }
+    return null;
 };
 
 export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topicProp}) => {
@@ -268,14 +291,21 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                     topicId: topic.id,
                     defFile,
                 });
-                if (_.isSomething(parsedWebworkDef) && parsedWebworkDef.isExam()) {
+                if (_.isSomething(parsedWebworkDef)) {
                     const topicSettingsFromDefFile = getTopicSettingsFromDefFile(parsedWebworkDef);
-                    const examSettings = topicSettingsFromDefFile.topicAssessmentInfo ?? {};
+                    if (_.isSomething(topicSettingsFromDefFile.topicAssessmentInfo) || _.isSomething(topicSettingsFromDefFile.description)) {
+                        const description = tryJSONParse({
+                            value: topicSettingsFromDefFile.description,
+                            identifier: 'import rederly def file',
+                        });
 
-                    setTopicSettingsOverwriteModalOptions({
-                        examSettings: examSettings,
-                        topicId: topic.id,
-                    });
+                        setTopicSettingsOverwriteModalOptions({
+                            examSettings: topicSettingsFromDefFile.topicAssessmentInfo ?? {},
+                            topicId: topic.id,
+                            description: description,
+                            topicTypeId: parsedWebworkDef.isExam() ? TopicTypeIdNumber.EXAM : TopicTypeIdNumber.PROBLEM_SET
+                        });    
+                    }
                 }
             } catch (e) {
                 setUpdateAlert({message: e.message, severity: 'error'});
@@ -314,12 +344,23 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 bodyContent={<>
                     <h6>Do you want to overwrite the following settings:</h6>
                     <ul>
+                        {_.isSomething(topicSettingsOverwriteModalOptions?.topicTypeId) &&
+                        <li>
+                            <strong>Topic Type:</strong> {topicSettingsOverwriteModalOptions?.topicTypeId === TopicTypeIdNumber.EXAM ? 'Exam' : 'Homework'}
+                        </li>}
                         {Object.entries(translateTopicSettings(topicSettingsOverwriteModalOptions?.examSettings)).map((setting) => (
                             // setting is a touple where 0 is the key and 1 is the value
                             <li key={`${setting[0]}-${setting[1]}`}>
                                 <strong>{setting[0]}:</strong> {setting[1]}
                             </li>
                         ))}
+                        {topicSettingsOverwriteModalOptions?.description &&
+                        <li>
+                            <strong>Description:</strong><br/>
+                            <QuillReadonlyDisplay 
+                                content={topicSettingsOverwriteModalOptions.description as any}
+                            />
+                        </li>}
                     </ul>
                 </>}
                 onConfirm={async ()=>{
@@ -330,7 +371,8 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                         const result = await putTopic({
                             data: {
                                 topicAssessmentInfo: topicSettingsOverwriteModalOptions.examSettings,
-                                topicTypeId: TopicTypeIdNumber.EXAM
+                                topicTypeId: topicSettingsOverwriteModalOptions.topicTypeId,
+                                description: topicSettingsOverwriteModalOptions.description
                             },
                             id: topicSettingsOverwriteModalOptions.topicId
                         });

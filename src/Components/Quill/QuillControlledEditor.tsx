@@ -187,12 +187,15 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                 // theme={'snow'} 
                 modules={{
                     formula: true,
-                    toolbar: [                  
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],  
+                        [{ 'font': [] }],
+                        [{ 'color': [] }, { 'background': [] }, { 'align': [] }],
                         ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
                         ['blockquote', 'code-block'],
                         [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
                         [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-                        ['formula']
+                        ['link', 'formula']
                     ],
                     blotFormatter: {
                         specs: [
