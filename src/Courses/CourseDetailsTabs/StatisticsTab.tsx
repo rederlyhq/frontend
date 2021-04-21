@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert, Button as BSButton, Col, Nav } from 'react-bootstrap';
 import MaterialTable, { Column } from 'material-table';
 import { ChevronRight } from '@material-ui/icons';
-import { ProblemObject, CourseObject, StudentGrade } from '../CourseInterfaces';
+import { ProblemObject, CourseObject, StudentGrade, TOPIC_TYPE_FILTERS } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import _ from 'lodash';
 import AxiosRequest from '../../Hooks/AxiosRequest';
@@ -16,7 +16,7 @@ import { IAlertModalState, useMUIAlertState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
-import { CircularProgress, Chip, Grid, Tooltip, TablePagination } from '@material-ui/core';
+import { CircularProgress, Chip, Grid, Tooltip, TablePagination, FormControl, RadioGroup, FormLabel, FormControlLabel, Radio } from '@material-ui/core';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import MaterialIcons from '../../Components/MaterialIcons';
 import { STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_TOPIC_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_PROBLEM_HEADERS, STUDENT_STATISTICS_ATTEMPTS_HEADERS } from './TableColumnHeaders';
@@ -102,6 +102,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [loading, setLoading] = useState<boolean>(false);
     const [statisticsAlert, setStatisticsAlert] = useMUIAlertState();
     const [titleGrade, setTitleGrade] = useState<TitleData | null>(null);
+    const [topicTypeFilter, setTopicTypeFilter] = useState<string>(TOPIC_TYPE_FILTERS.ALL.toString());
     const userType: UserRole = getUserRole();
 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
@@ -150,6 +151,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             courseId: course.id,
             [filterParam]: idFilterLocal,
             userId: (view !== StatisticsView.ATTEMPTS && view !== StatisticsViewFilter.PROBLEMS_FILTERED) ? userId : null,
+            topicTypeFilter
         }).omitBy(_.isNil).value() as any).toString();
 
         url = `${url}${queryString}`;
@@ -246,7 +248,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 setLoading(false);
             }
         })();
-    }, [course.id, globalView, idFilter, userId, userType]);
+    }, [course.id, globalView, idFilter, userId, userType, topicTypeFilter]);
 
     const renderProblemPreview = (rowData: any) => {
         logger.debug('Stats tab: renderProblemPreview called');
@@ -548,6 +550,35 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     );
                 })}
             </Nav>
+            <Grid xs={12} justify='flex-end'>
+                <RadioGroup 
+                    row 
+                    aria-label="grade-topic-type-filtering" 
+                    name="grade-topic-type-filtering" 
+                    defaultValue={TOPIC_TYPE_FILTERS.ALL}
+                    value={topicTypeFilter}
+                    onChange={(e) => setTopicTypeFilter(e.target.value)}
+                >
+                    <FormControlLabel
+                        value={TOPIC_TYPE_FILTERS.ALL.toString()}
+                        control={<Radio color="primary" />}
+                        label="All"
+                        labelPlacement="bottom"
+                    />
+                    <FormControlLabel
+                        value={TOPIC_TYPE_FILTERS.EXAMS.toString()}
+                        control={<Radio color="primary" />}
+                        label="Assessments"
+                        labelPlacement="bottom"
+                    />
+                    <FormControlLabel
+                        value={TOPIC_TYPE_FILTERS.HOMEWORK.toString()}
+                        control={<Radio color="primary" />}
+                        label="Homeworks"
+                        labelPlacement="bottom"
+                    />
+                </RadioGroup>
+            </Grid>
             <div style={{ maxWidth: '100%' }}>
                 {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) &&
                 <>
