@@ -16,7 +16,7 @@ import { IAlertModalState, useMUIAlertState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
-import { CircularProgress, Chip, Grid, Tooltip, TablePagination, FormControl, RadioGroup, FormLabel, FormControlLabel, Radio } from '@material-ui/core';
+import { CircularProgress, Chip, Grid, Tooltip, TablePagination, FormControl, RadioGroup, FormLabel, FormControlLabel, Radio, Select, MenuItem } from '@material-ui/core';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import MaterialIcons from '../../Components/MaterialIcons';
 import { STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_TOPIC_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_PROBLEM_HEADERS, STUDENT_STATISTICS_ATTEMPTS_HEADERS } from './TableColumnHeaders';
@@ -102,7 +102,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [loading, setLoading] = useState<boolean>(false);
     const [statisticsAlert, setStatisticsAlert] = useMUIAlertState();
     const [titleGrade, setTitleGrade] = useState<TitleData | null>(null);
-    const [topicTypeFilter, setTopicTypeFilter] = useState<string>(TOPIC_TYPE_FILTERS.ALL.toString());
+    const [topicTypeFilter, setTopicTypeFilter] = useState<TOPIC_TYPE_FILTERS>(TOPIC_TYPE_FILTERS.ALL);
     const userType: UserRole = getUserRole();
 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
@@ -214,7 +214,9 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
                     if (view === StatisticsView.TOPICS) {
                         const allTopics = _.flatMap(course.units, unit => unit.topics);
-                        const diffs = _.differenceWith(allTopics, data, (a, b: any)=>a.id === b.id);
+                        const allTopicsExcludingFilters = _.filter(allTopics, topic => topicTypeFilter === TOPIC_TYPE_FILTERS.ALL || topic.topicTypeId as number === topicTypeFilter as number);
+                        const diffs = _.differenceWith(allTopicsExcludingFilters, data, (a, b: any)=>a.id === b.id);
+                        console.log(allTopicsExcludingFilters, diffs);
 
                         data = _.concat(data, diffs.map((diff) => ({
                             id: diff.id,
@@ -226,7 +228,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
                     if (view === StatisticsViewFilter.UNITS_FILTERED && !_.isNil(idFilter)) {
                         const unit = course.findUnit(idFilter);
-                        const diffs = _.differenceWith(unit?.topics, data, (a, b: any)=>a.id === b.id);
+                        const allTopicsExcludingFilters = _.filter(unit?.topics, topic => topicTypeFilter === TOPIC_TYPE_FILTERS.ALL || topic.topicTypeId as number === topicTypeFilter as number);
+                        const diffs = _.differenceWith(allTopicsExcludingFilters, data, (a, b: any)=>a.id === b.id);
 
                         data = _.concat(data, diffs.map((diff) => ({
                             id: diff.id,
@@ -477,6 +480,21 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         });
     }
 
+    actions.push(        {
+        icon: function FilterComponent() { 
+            return <Select
+                value={topicTypeFilter}
+                onChange={(e) => setTopicTypeFilter(e.target.value as TOPIC_TYPE_FILTERS)}
+            >
+                <MenuItem value={TOPIC_TYPE_FILTERS.ALL}>ALL</MenuItem>
+                <MenuItem value={TOPIC_TYPE_FILTERS.EXAMS}>EXAMS</MenuItem>
+                <MenuItem value={TOPIC_TYPE_FILTERS.HOMEWORK}>HOMEWORK</MenuItem>
+            </Select>;
+        },
+        isFreeAction: true,
+        onClick: _.noop
+    });
+
     if(_.isEmpty(actions)) {
         actions = undefined;
     }
@@ -550,35 +568,6 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     );
                 })}
             </Nav>
-            <Grid xs={12} justify='flex-end'>
-                <RadioGroup 
-                    row 
-                    aria-label="grade-topic-type-filtering" 
-                    name="grade-topic-type-filtering" 
-                    defaultValue={TOPIC_TYPE_FILTERS.ALL}
-                    value={topicTypeFilter}
-                    onChange={(e) => setTopicTypeFilter(e.target.value)}
-                >
-                    <FormControlLabel
-                        value={TOPIC_TYPE_FILTERS.ALL.toString()}
-                        control={<Radio color="primary" />}
-                        label="All"
-                        labelPlacement="bottom"
-                    />
-                    <FormControlLabel
-                        value={TOPIC_TYPE_FILTERS.EXAMS.toString()}
-                        control={<Radio color="primary" />}
-                        label="Assessments"
-                        labelPlacement="bottom"
-                    />
-                    <FormControlLabel
-                        value={TOPIC_TYPE_FILTERS.HOMEWORK.toString()}
-                        control={<Radio color="primary" />}
-                        label="Homeworks"
-                        labelPlacement="bottom"
-                    />
-                </RadioGroup>
-            </Grid>
             <div style={{ maxWidth: '100%' }}>
                 {userType === UserRole.PROFESSOR && !_.isNil(userId) && !_.isNil(grade) &&
                 <>
