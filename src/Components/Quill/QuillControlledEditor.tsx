@@ -21,6 +21,7 @@ import { putUploadWork, getGenericUploadURL } from '../../APIInterfaces/AWS/Requ
 import AttachmentType from '../../Enums/AttachmentTypeEnum';
 import { GenericConfirmAttachmentUploadOptions } from '../../APIInterfaces/BackendAPI/RequestTypes/CourseRequestTypes';
 import { FaFileUpload } from 'react-icons/fa';
+import { useGlobalSnackbarContext } from '../../Contexts/GlobalSnackbar';
 window.katex = katex;
 
 Quill.register('modules/blotFormatter', BlotFormatter);
@@ -53,6 +54,7 @@ class CustomImageSpec extends ImageSpec {
 export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue, placeholder, attachmentType, uploadConfirmation}) => {
     const quill = useRef<ReactQuill | null>();
     const [disabled, setDisabled] = useState<boolean>(true);
+    const setAlert = useGlobalSnackbarContext();
 
     useEffect(()=>{
         if (_.isNil(quill.current)) {
@@ -141,13 +143,21 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                     editor.insertText(range?.index ?? 0, file.name, 'link', `${attachmentType}/${cloudFilename}`, 'user');
                 }
             } catch (e) {
-                logger.error(e);
+                logger.error('Failed to upload external file to feedback.', e);
+                setAlert?.({message: 'Failed to upload external file to feedback.', severity: 'error'});
             }
         });
     };
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop,
-        // accept: [],
+        accept: [
+            'image/*',
+            'application/pdf',
+            // Fallback, if MIME-type detection fails.
+            '.heic',
+            '.png',
+            '.jpeg',
+        ],
         noClick: true,
         noKeyboard: true
     });
