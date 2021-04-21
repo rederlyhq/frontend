@@ -7,3 +7,5 @@ declare interface PromiseConstructor {
 }
 
 declare module 'mathquill4quill';
+
+declare module 'quill-image-resize-module';

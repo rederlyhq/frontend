@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, Button as BSButton, Col, Nav } from 'react-bootstrap';
-import MaterialTable, { Column } from 'material-table';
+import MaterialTable from 'material-table';
 import { ChevronRight } from '@material-ui/icons';
 import { ProblemObject, CourseObject, StudentGrade } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';

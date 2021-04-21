@@ -1,5 +1,6 @@
 import { CourseObject, UnitObject, TopicObject, ProblemObject, NewCourseUnitObj, StudentGrade, StudentGradeInstance } from '../../../Courses/CourseInterfaces';
 import { Moment } from 'moment';
+import AttachmentType from '../../../Enums/AttachmentTypeEnum';
 
 /* *************** *************** */
 /* *********** Courses *********** */
@@ -83,6 +84,17 @@ export interface ExtendCourseTopicForUser {
             maxGradedAttemptsPerVersion?: number;
         };
     }
+}
+
+export interface GetTopicFeedbackOptions {
+    topicId: number;
+    userId: number;
+}
+
+export interface PostTopicFeedbackOptions {
+    topicId: number;
+    userId: number;
+    content: unknown;
 }
 
 /* *************** *************** */
@@ -199,6 +211,12 @@ export interface PostFeedbackOptions {
     content: unknown;
 }
 
+export interface GetStudentGradesOptions {
+    courseId: number;
+    courseTopicContentId: number;
+    userId: number;
+}
+
 /* *************** *************** */
 /* ********* Attachments ********* */
 /* *************** *************** */
@@ -211,6 +229,38 @@ export interface PostConfirmAttachmentUploadOptions {
     studentGradeId?: number;
     studentGradeInstanceId?: number;
 }
+
+export interface GenericConfirmAttachmentUploadOptions {
+    attachment: {
+        cloudFilename: string;
+        userLocalFilename: string;
+    },
+}
+
+export interface PostWorkbookFeedbackConfirmAttachmentUploadOptions extends GenericConfirmAttachmentUploadOptions {
+    type: AttachmentType.WORKBOOK_FEEDBACK;
+    workbookId: number;
+}
+
+export interface PostTopicFeedbackConfirmAttachmentUploadOptions extends GenericConfirmAttachmentUploadOptions {
+    type: AttachmentType.TOPIC_FEEDBACK;
+    topicId: number;
+    userId: number;
+}
+
+export interface PostTopicDescriptionConfirmAttachmentUploadOptions extends GenericConfirmAttachmentUploadOptions {
+    type: AttachmentType.TOPIC_DESCRIPTION;
+    topicId: number;
+}
+
+export interface PostStudentWorkConfirmAttachmentUploadOptions {
+    type: AttachmentType.STUDENT_WORK;
+    studentGradeId?: number;
+    studentGradeInstanceId?: number;
+}
+
+
+export type PostGenericConfirmAttachmentUploadOptions = PostWorkbookFeedbackConfirmAttachmentUploadOptions | PostTopicFeedbackConfirmAttachmentUploadOptions | PostTopicDescriptionConfirmAttachmentUploadOptions | PostStudentWorkConfirmAttachmentUploadOptions;
 
 export interface ListAttachmentOptions {
     studentGradeId?: number;

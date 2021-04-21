@@ -1,24 +1,30 @@
 import React from 'react';
-import { List, Card, ListItem, ListSubheader } from '@material-ui/core';
+import { List, Card, ListItem, ListSubheader, Tooltip, ListItemIcon, Chip, ListItemText } from '@material-ui/core';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ProblemObject, SettingsComponentType } from '../Courses/CourseInterfaces';
+import { ProblemObject, SettingsComponentType, TopicObject } from '../Courses/CourseInterfaces';
+import _ from 'lodash';
+import { getUserRole, UserRole } from '../Enums/UserRole';
 
 interface MultiSelectCardListProps {
     listItems: SettingsComponentType[];
     onItemClick: (type: SettingsComponentType) => void;
     title: string;
-    selected?: SettingsComponentType;
+    selected?: SettingsComponentType | null;
 }
 
-const renderCard = (item: SettingsComponentType) => {
+const RenderCard = ({item}: {item: SettingsComponentType}) => {
     if (item instanceof ProblemObject) {
         const pgPathArr = item.webworkQuestionPath.split('/');
         const pgPath = pgPathArr[pgPathArr.length-1];
         return (
-            <span title={pgPath}>{`Problem ${item.problemNumber} (${item.id})`}</span>
+            <ListItemText title={getUserRole() !== UserRole.STUDENT ? `${pgPath} (ID# ${item.id})}` : `ID# ${item.id}`}>
+                {`Problem ${item.problemNumber} (${item.weight} Point${item.weight > 1 ? 's' : ''})`}
+            </ListItemText>
         );
+    } else if (item instanceof TopicObject) {
+        return <ListItemText>Topic Grades</ListItemText>;
     }
-    return item.name;
+    return <ListItemText>{item.name}</ListItemText>;
 };
 
 const variants = {
@@ -51,12 +57,17 @@ export const MultiSelectCardList: React.FC<MultiSelectCardListProps> = ({listIte
                         >
                             <ListItem
                                 button
-                                selected={selected && selected.id === item.id}
+                                selected={item instanceof TopicObject ? _.isNil(selected) : selected?.id === item.id}
                                 onClick={() => onItemClick(item)}
                                 component={Card}
                                 style={{margin: '1em', overflow: 'ellipses'}}
                             >
-                                {renderCard(item)}
+                                <RenderCard item={item} />
+                                {!_.isNil(_.get(item, 'localGrade')) && <ListItemIcon>
+                                    <Tooltip title='Grade'>
+                                        <Chip label={_.get(item, 'localGrade')?.toPercentString()} color={item instanceof TopicObject ? 'primary' : undefined}/>
+                                    </Tooltip>
+                                </ListItemIcon>}
                             </ListItem>
                         </motion.div>
                     )))

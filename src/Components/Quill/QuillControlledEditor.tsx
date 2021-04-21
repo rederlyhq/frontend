@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactQuill, { Quill, ReactQuillProps } from 'react-quill';
+// import DragAndDropModule from 'quill-drag-and-drop-module';
 import 'react-quill/dist/quill.snow.css';
 // import 'mathquill/build/mathquill';
 import { Button, Grid } from '@material-ui/core';
@@ -7,18 +8,29 @@ import mathquill4quill from 'mathquill4quill';
 import 'mathquill4quill/mathquill4quill.css';
 import _ from 'lodash';
 import logger from '../../Utilities/Logger';
+import { useDropzone, DropzoneOptions } from 'react-dropzone';
+import BlotFormatter, { DeleteAction, ImageSpec, ResizeAction } from 'quill-blot-formatter';
+
 
 import './QuillOverrides.css';
 
 // Load Katex with this module
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import { putUploadWork, getGenericUploadURL } from '../../APIInterfaces/AWS/Requests/StudentUpload';
+import AttachmentType from '../../Enums/AttachmentTypeEnum';
+import { GenericConfirmAttachmentUploadOptions } from '../../APIInterfaces/BackendAPI/RequestTypes/CourseRequestTypes';
+import { FaFileUpload } from 'react-icons/fa';
 window.katex = katex;
+
+Quill.register('modules/blotFormatter', BlotFormatter);
 
 interface QuillControlledEditorProps {
     // Common props
     placeholder?: string;
     defaultValue?: ReactQuillProps['defaultValue'];
+    attachmentType?: AttachmentType;
+    uploadConfirmation?: (params: GenericConfirmAttachmentUploadOptions) => Promise<void>;
     // Controlled variant only
     onChange?: (value: ReactQuillProps['value'] | null) => void;
     onBlur?: ReactQuillProps['onBlur'];
@@ -27,8 +39,18 @@ interface QuillControlledEditorProps {
     onSave?: (saveData: ReactQuillProps['value'] | null)=>any;
 }
 
+class CustomImageSpec extends ImageSpec {
+    getActions() {
+        return [
+            // The Align action requires additional configuration to fix with ReactQuill
+            // See https://github.com/Fandom-OSS/quill-blot-formatter/issues/5
+            // AlignAction, 
+            DeleteAction, 
+            ResizeAction];
+    }
+}
 
-export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue, placeholder}) => {
+export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue, placeholder, attachmentType, uploadConfirmation}) => {
     const quill = useRef<ReactQuill | null>();
     const [disabled, setDisabled] = useState<boolean>(true);
 
@@ -88,8 +110,72 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
         onChange?.(delta);
     };
 
+    const onDrop: DropzoneOptions['onDrop'] = (files) => {
+        files.forEach(async (file) => {
+            // TODO: Fix to be generic
+            try {
+                const res = await getGenericUploadURL({type: attachmentType});
+                const {uploadURL, cloudFilename} = res.data.data;
+                
+                await putUploadWork({
+                    presignedUrl: uploadURL,
+                    file: file,
+                });
+                
+                await uploadConfirmation?.({
+                    attachment: {
+                        cloudFilename: cloudFilename,
+                        userLocalFilename: file.name,
+                    }
+                });
+                const editor = quill.current?.getEditor();
+                if (editor === undefined) {
+                    logger.error('Editor is undefined when a drop occurred.');
+                    return;
+                }
+                const range = editor.getSelection();
+
+                if (file.type.startsWith('image')) {
+                    editor.insertEmbed(range?.index ?? 0, 'image', `${attachmentType}/${cloudFilename}`, 'user');
+                } else {
+                    editor.insertText(range?.index ?? 0, file.name, 'link', `${attachmentType}/${cloudFilename}`, 'user');
+                }
+            } catch (e) {
+                logger.error(e);
+            }
+        });
+    };
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop,
+        // accept: [],
+        noClick: true,
+        noKeyboard: true
+    });
+
     return <Grid container item md={12}>
-        <Grid item id='quillgrid' md={12}>
+        <Grid item id='quillgrid' md={12} {...getRootProps()}>
+            <input {...getInputProps()} />
+            {isDragActive && (
+                <div style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    border: '5px dashed lightblue',
+                    borderRadius: '3px',
+                    textAlign: 'center',
+                    zIndex: 2,
+                    backgroundColor: 'white',
+                    opacity: 0.9,
+                }}
+                >
+                    <div style={{ position: 'relative', margin: '0 auto', top: '15%', fontSize: '1em' }}>
+                        {/* Drop your archive file to import! */}
+                        <FaFileUpload style={{ position: 'relative', margin: '0 auto', top: '15%', display: 'block', fontSize: '1em' }} />
+                    </div>
+                </div>
+            )}
             <ReactQuill
                 scrollingContainer={'#quillgrid'}
                 bounds={'#quillgrid'}
@@ -109,8 +195,18 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                         ['blockquote', 'code-block'],
                         [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
                         [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-                        ['link', 'formula'],
-                    ]
+                        ['link', 'formula']
+                    ],
+                    blotFormatter: {
+                        specs: [
+                            CustomImageSpec,
+                        ],
+                        overlay: {
+                            style: {
+                                border: '2px solid red',
+                            }
+                        }
+                    }
                 }}
                 // Controlled props have to conditionally be applied because
                 // undefined values still count as values.
