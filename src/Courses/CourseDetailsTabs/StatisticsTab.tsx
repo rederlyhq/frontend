@@ -16,7 +16,7 @@ import { IAlertModalState, useMUIAlertState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
-import { CircularProgress, Chip, Grid, Tooltip, TablePagination, FormControl, RadioGroup, FormLabel, FormControlLabel, Radio, Select, MenuItem } from '@material-ui/core';
+import { CircularProgress, Chip, Grid, Tooltip, TablePagination, Select, MenuItem } from '@material-ui/core';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import MaterialIcons from '../../Components/MaterialIcons';
 import { STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_TOPIC_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_PROBLEM_HEADERS, STUDENT_STATISTICS_ATTEMPTS_HEADERS } from './TableColumnHeaders';
@@ -219,7 +219,6 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                         const allTopics = _.flatMap(course.units, unit => unit.topics);
                         const allTopicsExcludingFilters = _.filter(allTopics, topic => topicTypeFilter === TOPIC_TYPE_FILTERS.ALL || topic.topicTypeId as number === topicTypeFilter as number);
                         const diffs = _.differenceWith(allTopicsExcludingFilters, data, (a, b: any)=>a.id === b.id);
-                        console.log(allTopicsExcludingFilters, diffs);
 
                         data = _.concat(data, diffs.map((diff) => ({
                             id: diff.id,
