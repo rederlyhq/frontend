@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert, Button as BSButton, Col, Nav } from 'react-bootstrap';
 import MaterialTable from 'material-table';
 import { ChevronRight } from '@material-ui/icons';
-import { ProblemObject, CourseObject, StudentGrade } from '../CourseInterfaces';
+import { ProblemObject, CourseObject, StudentGrade, TOPIC_TYPE_FILTERS } from '../CourseInterfaces';
 import ProblemIframe from '../../Assignments/ProblemIframe';
 import _ from 'lodash';
 import AxiosRequest from '../../Hooks/AxiosRequest';
@@ -16,7 +16,7 @@ import { IAlertModalState, useMUIAlertState } from '../../Hooks/useAlertState';
 import { putQuestionGrade } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { EnumDictionary } from '../../Utilities/TypescriptUtils';
 import logger from '../../Utilities/Logger';
-import { CircularProgress, Chip, Grid, Tooltip, TablePagination } from '@material-ui/core';
+import { CircularProgress, Chip, Grid, Tooltip, TablePagination, Select, MenuItem } from '@material-ui/core';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import MaterialIcons from '../../Components/MaterialIcons';
 import { STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_TOPIC_HEADERS, STUDENT_STATISTICS_SIMPLIFIED_PROBLEM_HEADERS, STUDENT_STATISTICS_ATTEMPTS_HEADERS } from './TableColumnHeaders';
@@ -102,6 +102,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
     const [loading, setLoading] = useState<boolean>(false);
     const [statisticsAlert, setStatisticsAlert] = useMUIAlertState();
     const [titleGrade, setTitleGrade] = useState<TitleData | null>(null);
+    const [topicTypeFilter, setTopicTypeFilter] = useState<TOPIC_TYPE_FILTERS>(TOPIC_TYPE_FILTERS.ALL);
     const userType: UserRole = getUserRole();
 
     const globalView = statisticsViewFromAllStatisticsViewFilter(view);
@@ -146,10 +147,14 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             break;
         }
 
+        const hasTopicTypeFilter = (view !== StatisticsView.ATTEMPTS && view !== StatisticsViewFilter.PROBLEMS_FILTERED && 
+            view !== StatisticsView.PROBLEMS && view !== StatisticsViewFilter.TOPICS_FILTERED);
+
         const queryString = qs.stringify(_({
             courseId: course.id,
             [filterParam]: idFilterLocal,
             userId: (view !== StatisticsView.ATTEMPTS && view !== StatisticsViewFilter.PROBLEMS_FILTERED) ? userId : null,
+            topicTypeFilter: hasTopicTypeFilter ? topicTypeFilter : null,
         }).omitBy(_.isNil).value() as any).toString();
 
         url = `${url}${queryString}`;
@@ -212,7 +217,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
                     if (view === StatisticsView.TOPICS) {
                         const allTopics = _.flatMap(course.units, unit => unit.topics);
-                        const diffs = _.differenceWith(allTopics, data, (a, b: any)=>a.id === b.id);
+                        const allTopicsExcludingFilters = _.filter(allTopics, topic => topicTypeFilter === TOPIC_TYPE_FILTERS.ALL || topic.topicTypeId as number === topicTypeFilter as number);
+                        const diffs = _.differenceWith(allTopicsExcludingFilters, data, (a, b: any)=>a.id === b.id);
 
                         data = _.concat(data, diffs.map((diff) => ({
                             id: diff.id,
@@ -224,7 +230,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
 
                     if (view === StatisticsViewFilter.UNITS_FILTERED && !_.isNil(idFilter)) {
                         const unit = course.findUnit(idFilter);
-                        const diffs = _.differenceWith(unit?.topics, data, (a, b: any)=>a.id === b.id);
+                        const allTopicsExcludingFilters = _.filter(unit?.topics, topic => topicTypeFilter === TOPIC_TYPE_FILTERS.ALL || topic.topicTypeId as number === topicTypeFilter as number);
+                        const diffs = _.differenceWith(allTopicsExcludingFilters, data, (a, b: any)=>a.id === b.id);
 
                         data = _.concat(data, diffs.map((diff) => ({
                             id: diff.id,
@@ -246,7 +253,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 setLoading(false);
             }
         })();
-    }, [course.id, globalView, idFilter, userId, userType]);
+    }, [course.id, globalView, idFilter, userId, userType, topicTypeFilter]);
 
     const renderProblemPreview = (rowData: any) => {
         logger.debug('Stats tab: renderProblemPreview called');
@@ -474,6 +481,21 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             };
         });
     }
+
+    actions.push({
+        icon: function FilterComponent() { 
+            return <Select
+                value={topicTypeFilter}
+                onChange={(e) => setTopicTypeFilter(e.target.value as TOPIC_TYPE_FILTERS)}
+            >
+                <MenuItem value={TOPIC_TYPE_FILTERS.ALL}>ALL</MenuItem>
+                <MenuItem value={TOPIC_TYPE_FILTERS.EXAMS}>EXAMS</MenuItem>
+                <MenuItem value={TOPIC_TYPE_FILTERS.HOMEWORK}>HOMEWORK</MenuItem>
+            </Select>;
+        },
+        isFreeAction: true,
+        onClick: _.noop
+    });
 
     if(_.isEmpty(actions)) {
         actions = undefined;

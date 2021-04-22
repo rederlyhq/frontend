@@ -94,6 +94,13 @@ export enum TopicTypeId {
     EXAM = 2
 }
 
+// This is used for grade filter calls.
+export enum TOPIC_TYPE_FILTERS {
+    ALL,
+    HOMEWORK = TopicTypeId.PROBLEM_SET,
+    EXAMS = TopicTypeId.EXAM,
+ }
+
 export class TopicAssessmentFields {
     id?: number;
     duration?: number;
