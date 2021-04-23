@@ -7,9 +7,10 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { GrShift } from 'react-icons/gr';
 import { MdLaunch, MdDelete, MdEdit, MdDoneAll } from 'react-icons/md';
 import { green, red, deepOrange, indigo } from '@material-ui/core/colors';
+import { getUserRole, UserRole } from '../../../Enums/UserRole';
 interface TopicNavButtonProps {
     topic: TopicObject;
-    onDelete: _.CurriedFunction2<any, number, void>;
+    onDelete?: _.CurriedFunction2<any, number, void>;
 }
 
 export const TopicNavButton: React.FC<TopicNavButtonProps> = ({topic, onDelete}) => {
@@ -33,6 +34,7 @@ export const TopicNavButton: React.FC<TopicNavButtonProps> = ({topic, onDelete})
       
 
     const handleClose = () => setOpen(false);
+    const isNotStudent = getUserRole() !== UserRole.STUDENT;
 
     return (
         <>
@@ -49,11 +51,11 @@ export const TopicNavButton: React.FC<TopicNavButtonProps> = ({topic, onDelete})
                             <ClickAwayListener onClickAway={handleClose}>
                                 <MenuList autoFocusItem={open} id={`menu-list-${topic.id}`}>
                                     <ThemeProvider theme={theme}>
-                                        <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}/settings`)}>
+                                        {isNotStudent && <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}/settings`)}>
                                             <Button variant="text" color="primary" startIcon={<MdEdit />} >
                                                 View / Settings
                                             </Button>
-                                        </MenuItem>
+                                        </MenuItem>}
                                         <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}/grading`)}>
                                             <Button variant="text" color="default" startIcon={<MdDoneAll />}>
                                                 Grading
@@ -62,20 +64,20 @@ export const TopicNavButton: React.FC<TopicNavButtonProps> = ({topic, onDelete})
                                         <ThemeProvider theme={altTheme}>
                                             <MenuItem onClick={() => history.push(`${location.pathname}/topic/${topic.id}`)}>
                                                 <Button variant="text" color="primary" startIcon={<MdLaunch />} >
-                                                    Try Assignment
+                                                    {isNotStudent ? 'Try Assignment' : 'Assignment'}
                                                 </Button>
                                             </MenuItem>
-                                            <MenuItem onClick={() => history.push(`${location.pathname}/settings?topicId=${topic.id}`)}>
+                                            {isNotStudent && <MenuItem onClick={() => history.push(`${location.pathname}/settings?topicId=${topic.id}`)}>
                                                 <Button variant="text" color="secondary" startIcon={<GrShift />}>
                                                     Extensions
                                                 </Button>
-                                            </MenuItem>
+                                            </MenuItem>}
                                         </ThemeProvider>
-                                        <MenuItem onClick={(e) => onDelete(e, topic.id)}>
+                                        {isNotStudent && onDelete && <MenuItem onClick={(e) => onDelete(e, topic.id)}>
                                             <Button variant="text" color="secondary" startIcon={<MdDelete />}>
                                                 Delete
                                             </Button>
-                                        </MenuItem>
+                                        </MenuItem>}
                                     </ThemeProvider>
                                 </MenuList>
                             </ClickAwayListener>

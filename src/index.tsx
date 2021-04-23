@@ -7,30 +7,10 @@ import { Router } from './Router';
 import './Extensions';
 import GlobalErrorBoundaryState from './Utilities/ErrorBoundaries/GlobalErrorBoundary';
 import { VersionCheck } from './Utilities/VersionCheck';
-import axios from 'axios';
-import logger from './Utilities/Logger';
 import { MuiPickersUtilsProvider} from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
-
-interface RederlyConfig {
-    paymentURL: string;
-}
-
-declare global {
-    interface Window {
-        rederlyConfig?: Promise<RederlyConfig | null>;
-    }
-}
-
-const getConfig = () => axios.get<RederlyConfig>(`/config.json?cache_bust=${new Date().getTime()}`)
-    .then(resp => resp.data)
-    .catch(err => {
-        logger.error('Failed to load frontend config file.', err);
-        return null;
-    });
-
-
-window.rederlyConfig = getConfig();
+import { ConfigProvider } from './Contexts/ConfigProvider';
+import { GlobalSnackbarProvider } from './Contexts/GlobalSnackbar';
 
 if (process.env.NODE_ENV !== 'production' && process.env.REACT_APP_ENABLE_AXE === 'true') {
     const axe = require('react-axe');
@@ -40,11 +20,15 @@ if (process.env.NODE_ENV !== 'production' && process.env.REACT_APP_ENABLE_AXE ==
 ReactDOM.render(
     <React.StrictMode>
         <GlobalErrorBoundaryState>
-            <VersionCheck>
-                <MuiPickersUtilsProvider utils={MomentUtils}>
-                    <Router />
-                </MuiPickersUtilsProvider>
-            </VersionCheck>
+            <ConfigProvider>
+                <VersionCheck>
+                    <MuiPickersUtilsProvider utils={MomentUtils}>
+                        <GlobalSnackbarProvider>
+                            <Router />
+                        </GlobalSnackbarProvider>
+                    </MuiPickersUtilsProvider>
+                </VersionCheck>
+            </ConfigProvider>
         </GlobalErrorBoundaryState>
     </React.StrictMode>,
     document.getElementById('root')

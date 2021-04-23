@@ -139,6 +139,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                     <CommonSettings
                         formObject={topicForm}
                         setUpdateAlert={setUpdateAlert}
+                        topicId={selected.id}
                         downloadDefFileClick={() => {
                             try {
                                 // TODO fix typing higher up

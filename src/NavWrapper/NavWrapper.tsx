@@ -206,9 +206,6 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                                 path: `${path}/courses/:courseId/topic/:topicId/grading/print/`,
                                                 child: <PrintLoadingProvider><PrintBlankTopic /></PrintLoadingProvider>
                                             }, {
-                                                path: `${path}/courses/:courseId/topic/:topicId/grading`,
-                                                child: <TopicGradingPage />
-                                            }, {
                                                 path: `${path}/courses/:courseId/settings`,
                                                 child: <ExtensionsPage />
                                             }].map(obj =>
@@ -216,6 +213,9 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                                                     {obj.child}
                                                 </Route>)
                                             }
+                                            <Route exacat path={`${path}/courses/:courseId/topic/:topicId/grading`}>
+                                                <TopicGradingPage />
+                                            </Route>
                                             <Route exact path={`${path}/courses/:courseId/topic/:topicId`}>
                                                 <SimpleProblemPage />
                                             </Route>

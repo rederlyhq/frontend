@@ -7,6 +7,7 @@ import { Grid, CardActionArea, CardMedia, CardContent, CardActions, Button, Card
 import PrintingPage from './PrintingPage';
 import Heic from '../../Components/Heic';
 import _ from 'lodash';
+import { getUserRole, UserRole } from '../../Enums/UserRole';
 
 
 interface AttachmentsPreviewProps {
@@ -46,7 +47,9 @@ export const AttachmentsPreview: React.FC<AttachmentsPreviewProps> = ({gradeId, 
     return (
         <Grid container style={{paddingLeft: '1rem'}}>
             <Grid item md={12}>
-                {attachedFiles.length > 0 ? <h1>Attachments</h1> : <h3>The selected student has not uploaded any files for this problem.</h3>}
+                {attachedFiles.length > 0 ? 
+                    <h1>Attachments</h1> : 
+                    <h3>{getUserRole() !== UserRole.STUDENT ? 'The selected student has' : 'You have'} not uploaded any files for this problem.</h3>}
                 {/* This is hidden because printing attachments for a specific version is not currently supported. */}
                 {false && <><PrintingPage
                     debug={false}

@@ -355,7 +355,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
     return (
         <>
-            <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message} -- Please refresh your page.</Alert>
+            <Alert variant={alert.variant} show={Boolean(alert.message)}>{alert.message} {!alert.message?.toString().includes('does not allow problems to be viewed after completion') && '-- Please refresh your page.'}</Alert>
             <RendererIFrame
                 renderedHTML={renderedHTML}
                 loading={loading}
