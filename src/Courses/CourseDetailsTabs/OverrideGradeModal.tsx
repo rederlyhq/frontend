@@ -26,6 +26,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
     onSuccess
 }) => {
     const displayCurrentScore = useRef<string | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     if(_.isNil(displayCurrentScore.current) && show) {
         displayCurrentScore.current = (grade.effectiveScore * 100).toFixed(1);
     }
@@ -34,6 +35,14 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
     const [validated, setValidated] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [newScorePercentInput, setNewScorePercentInput] = useState<string>(displayCurrentScore.current ?? '');
+
+    useEffect(() => {
+        if (inputRef.current) {
+            inputRef.current.select();
+        }
+    // inputRef.current is set to a new value every time the dialog comes up
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [inputRef.current]);
 
     useEffect(() => {
         // This is to handle the case where you change grades that were the same value or you canceled a change and went back in
@@ -177,6 +186,9 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                                             min={0}
                                             max={100}
                                             onChange={onNewScoreChange}
+                                            // Can't use a function here to use it directly since it get's called on all inputs
+                                            // which causes the text to highlight and erase as you type
+                                            ref={inputRef}
                                         />
                                         <Form.Control.Feedback type="invalid">{<span>The new score must be a positive number between 0 and 100</span>}</Form.Control.Feedback>
                                     </FormGroup>
@@ -227,25 +239,41 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                         switch(overrideGradePhase) {
                         case OverrideGradePhase.PROMPT:
                             return (
-                                <Button variant="primary" type="submit">
+                                <Button
+                                    variant="primary"
+                                    type="submit"
+                                    // The input gets focus instead of the button
+                                    // ref={(ref: HTMLButtonElement | null) => ref?.focus()}
+                                >
                                         Submit
                                 </Button>
                             );
                         case OverrideGradePhase.CONFIRM:
                             return (
-                                <Button variant="primary" onClick={overrideGradeConfirm}>
+                                <Button variant="primary"
+                                    onClick={overrideGradeConfirm}
+                                    ref={(ref: HTMLButtonElement | null) => ref?.focus()}
+                                >
                                     Confirm
                                 </Button>
                             );
                         case OverrideGradePhase.LOCK:
                             return (
-                                <Button variant="danger" onClick={lockSubmit}>
+                                <Button
+                                    variant="danger"
+                                    onClick={lockSubmit}
+                                    ref={(ref: HTMLButtonElement | null) => ref?.focus()}
+                                >
                                     Lock
                                 </Button>
                             );
                         case OverrideGradePhase.LOCK_CONFIRM:
                             return (
-                                <Button variant="primary" onClick={lockConfirm}>
+                                <Button
+                                    variant="primary"
+                                    onClick={lockConfirm}
+                                    ref={(ref: HTMLButtonElement | null) => ref?.focus()}
+                                >
                                     Confirm
                                 </Button>
                             );
