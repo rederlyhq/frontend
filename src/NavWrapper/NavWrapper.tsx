@@ -44,13 +44,15 @@ export const userContext = React.createContext({ userType: 'Professor' });
 // Once cookies are reactive we won't need to use the history object anymore thus this method will have no react dependencies
 // Until then leaving here
 export const performLogout = async (history: History) => {
+    console.warn('Performing Logout.');
     try {
         await logout();
     } catch (e) {
         logger.error('Error logging out', e);
     }
 
-    Cookies.remove(CookieEnum.SESSION);
+    console.log(Cookies.get(CookieEnum.SESSION));
+    // Cookies.remove(CookieEnum.SESSION);
     session.nullifySession();
 
     history.push('/');
@@ -74,7 +76,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
 
     // TODO: Check if the user has been deauthenticated (ex: expired) and display a message.
     if (!sessionCookie) {
-        logger.info('Logging out due to missing session token.');
+        logger.info('Logging out due to missing session token.', sessionCookie, Cookies.get(CookieEnum.SESSION));
         unauthorizedRedirect(false);
         return <Redirect to={{
             pathname: '/'

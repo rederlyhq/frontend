@@ -12,5 +12,6 @@ export default axios.create({
          * Other headers don't work because they get modified by aws (between cloudfront and the load balancers)
          */
         'rederly-origin': window.location.origin,
-    }
+    },
+    withCredentials: true,
 });

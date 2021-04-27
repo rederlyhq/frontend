@@ -11,8 +11,11 @@ export enum UserRole {
 
 export const unauthorizedRedirect = (doRedirect: boolean = true) => {
     // TODO: Generic redirect to handle clearing cookies.
+    console.warn('Unauthorized redirect.');
     general.loginRedirectURL = `${window.location.pathname}${window.location.search}`;
-    Cookies.remove(CookieEnum.SESSION);
+    
+    console.log(Cookies.get(CookieEnum.SESSION));
+    // Cookies.remove(CookieEnum.SESSION);
     session.nullifySession();
 
     if (doRedirect) {

@@ -201,6 +201,7 @@ const localPreferences = {
             setItem(SESSION_USER_USERNAME, value);
         },
         nullifySession: (): void => {
+            console.warn('Nullifying Session.');
             const { session } = localPreferences;
             session.userType = null;
             session.actualUserType = null;
