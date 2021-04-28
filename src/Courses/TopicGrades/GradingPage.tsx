@@ -1,4 +1,4 @@
-import { Grid, Snackbar, Container, ListSubheader } from '@material-ui/core';
+import { Grid, Snackbar, Container, ListSubheader, Button, Box } from '@material-ui/core';
 import { Alert as MUIAlert, Alert } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
@@ -18,6 +18,7 @@ import { useQueryParam, NumberParam } from 'use-query-params';
 import { getUserId, getUserRole, UserRole } from '../../Enums/UserRole';
 import { QuillReadonlyDisplay } from '../../Components/Quill/QuillReadonlyDisplay';
 import { GradeFeedback } from './GradeFeedback';
+import { useGlobalSnackbarContext } from '../../Contexts/GlobalSnackbar';
 import '../../Components/LayoutStyles.css';
 import 'react-quill/dist/quill.snow.css';
 import { TopicObjectWithLocalGrades, ProblemObjectWithLocalGrades } from './GradingInterfaces';
@@ -61,9 +62,102 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
     const [topicFeedback, setTopicFeedback] = useState<unknown>();
     const [selected, setSelected] = useState<GradingSelectables>({});
     const [info, setInfo] = useState<WorkbookInfoDump | null>(null);
+    const setAlert = useGlobalSnackbarContext();
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
     const currentUserRole = getUserRole();
     const currentUserId = getUserId();
+
+    const nextProblem = (increment: boolean) => {
+        if (_.isNil(topic)) {
+            logger.error('GradingPage: nextProblem: nil topic');
+            setAlert?.({
+                message: 'Could not go to the next problem since the topic was not found.',
+                severity: 'error'
+            });
+            return;
+        }
+
+        if (_.isEmpty(topic.questions)) {
+            logger.error('GradingPage: nextProblem: empty questions');
+            setAlert?.({
+                message: 'Could not go to the next problem since there are no problems.',
+                severity: 'error'
+            });
+            return;
+        }
+
+        let nextIndex: number;
+        if (_.isNil(problemId)) {
+            nextIndex = increment ? 0 : (topic.questions.length - 1);
+        } else {
+            const problemIndex = _.findIndex(topic.questions, ['id', problemId]);
+            if (problemIndex < 0) {
+                logger.warn('GradingPage: nextProblem: problem not found');
+            }    
+            // nextIndex = increment ?
+            //     (problemIndex + 1) % topic.questions.length :
+            //     (problemIndex + topic.questions.length - 1) % topic.questions.length;
+            // This intentionaly does not use modulus since wrapping doesn't bring it to the first or last problem but rather topic grades
+            // Overflow and underflow default to null which is topic grades
+            nextIndex = problemIndex + ((Number(increment) * 2) - 1);
+        }
+        let nextProblem: ProblemObject | null | undefined = null;
+
+        if (nextIndex >= 0 && nextIndex < topic.questions.length) {
+            nextProblem = topic.questions[nextIndex];
+        }
+
+        setSelected((current) => ({
+            ...current,
+            problem: nextProblem,
+        }));
+    };
+
+    const nextUser = (increment: boolean) => {
+        if (currentUserRole === UserRole.STUDENT) {
+            logger.warn('GradingPage: nextUser: student tried to use next user');
+            setAlert?.({
+                message: 'Feature unavailable.',
+                severity: 'error'
+            });
+            return;
+        }
+
+        if (_.isNil(userId)) {
+            logger.warn('GradingPage: nextUser: nil userId');
+            setAlert?.({
+                message: 'Could not go to the next user since the current user is unknown.',
+                severity: 'error'
+            });
+            return;
+        }
+
+        if (_.isEmpty(users)) {
+            logger.warn('GradingPage: nextUser: empty users');
+            setAlert?.({
+                message: 'Could not go to the next user since there are no users.',
+                severity: 'error'
+            });
+            return;
+        }
+
+        let nextUser: UserObject | null | undefined = null;
+        const userIndex = _.findIndex(users, { 'id': userId });
+        if (userIndex < 0) {
+            logger.warn('GradingPage: nextUser: user not found');
+        }
+        // userIndex + or - 1, = user length to avoid underflow, mod user lenth to keep in array bounds
+        const nextIndex = (userIndex + ((Number(increment) * 2) - 1) + users.length) % users.length;
+
+        nextUser = users[nextIndex];
+
+        setSelected((current) => ({
+            ...current,
+            ..._.omitBy({
+                user: nextUser
+            }, _.isNull)
+        }));
+    };
 
     useEffect(() => {
         (async () => {
@@ -261,8 +355,27 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                 Otherwise, you can <Link to={`/common/courses/${params.courseId}?tab=Enrollments`}>enroll students in the enrollments tab</Link>.
             </Alert>}
             {_.isEmpty(topic.questions) && <Alert color='error'>There are no problems in this topic. You can add problems <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}/settings`}>here</Link>. </Alert>}
-            <Grid container>
-                <Grid container item md={biselectSize}>
+            <Grid
+                container
+                style={{
+                    height: 'calc(100vh - 260px)',
+                }}
+            >
+                {/* Student / problem selector grid */}
+                <Grid
+                    container
+                    item
+                    md={biselectSize}
+                    className='col-remove-scrollbar-padding'
+                    style={{
+                        height: '100%',
+                        overflowY: 'auto',
+                        // The child with .MuiGrid-spacing-xs-1 adds a -4px margin which was causing scroll bars to always be present, padding fixes this
+                        padding: '4px',
+                        // There was a horizontal scroll (don't know what caused it), increasing right padding fixes the horizontal scroll
+                        paddingRight: '16px',
+                    }}
+                >
                     {!_.isEmpty(topicWithLocalGrade.questions) &&
                         <MaterialBiSelect 
                             topic={topicWithLocalGrade}
@@ -273,64 +386,135 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                         />
                     }
                 </Grid>
-                <Grid container item md={paneSize} style={{paddingLeft: '5rem', height: 'min-content'}}>
-                    { selected.user && 
-                        (selected.problem ?
-                            <GradeInfoHeader
-                                selected={selected}
-                                setSelected={setSelected}
-                                topic={topic}
-                                setGradeAlert={setGradeAlert}
-                                info={info}
-                                setInfo={setInfo}
-                            /> : 
-                            <p>
-                                <h2>Total Score: {topicWithLocalGrade.localGrade?.toPercentString() ?? '--'}</h2>
-                            </p>)
-                    }
-                    {selected.user && 
-                      ((currentUserRole !== UserRole.STUDENT && (info?.workbook || _.isNull(selected.problem))) || 
-                      ((!selected.problem && topicFeedback) || (selected.problem && info?.workbook?.feedback))) && 
-                      <Grid container item>
-                          <ListSubheader disableSticky>
-                              <h2>Feedback</h2>
-                          </ListSubheader>
-                          {(currentUserRole === UserRole.STUDENT ? 
-                              <QuillReadonlyDisplay content={selected.problem ? info?.workbook?.feedback : topicFeedback} /> : 
-                              <GradeFeedback 
-                                  workbookId={selected.problem ? info?.workbook?.id : undefined} 
-                                  setGradeAlert={setGradeAlert} 
-                                  defaultValue={selected.problem ? info?.workbook?.feedback : topicFeedback} 
-                                  topicId={topic.id}    
-                                  userId={selected.user.id}
-                              />)}
-                      </Grid>}
-                    <Grid container item alignItems='stretch'>
-                        {selected.problem && selected.user && selected.grade &&
-                        // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) &&
-                            <ProblemIframe
-                                problem={selected.problem}
-                                userId={selected.user.id}
-                                readonly={true}
-                                workbookId={selected.problemState?.workbookId}
-                                studentTopicAssessmentInfoId={selected.problemState?.studentTopicAssessmentInfoId}
-                                previewPath={selected.problemState?.previewPath}
-                                previewSeed={selected.problemState?.previewSeed}
-                            />
-                        }
-                    </Grid>
-                    {(selected.grade || selected.gradeInstance) &&
-                        <Grid container item md={12}>
-                            <AttachmentsPreview
-                                gradeId={selected.grade?.id}
-                                gradeInstanceId={selected.gradeInstance?.id}
-                                // Workbooks don't seem to be loading in the database right now,
-                                // but a professor shouldn't really care about this level. Attachments should show the same for
-                                // all attempts, maybe even all versions?
-                                // workbookId={selected.workbook?.id}
-                            />
-                        </Grid>
-                    }
+                <Grid
+                    container
+                    item
+                    md={paneSize}
+                    style={{
+                        height: '100%',
+                        paddingLeft: '5rem',
+                        // height: 'min-content',
+                    }}
+                >
+                    <div style={{position: 'relative', width: '100%', height: '100%'}}>
+                        <Box
+                            style= {{
+                                position: 'absolute',
+                                left: 0,
+                                right: 0,
+                                top: 0,
+                            }}
+                            display="flex"
+                            flexWrap="nowrap"
+                        >
+                            <Button
+                                onClick={() => nextProblem(false)}
+                                color='primary'
+                                variant='outlined'
+                            >
+                                Previous Problem
+                            </Button>
+                            {currentUserRole !== UserRole.STUDENT &&
+                                <Button
+                                    onClick={() => nextUser(false)}
+                                    color='default'
+                                    variant='outlined'
+                                >
+                                    Previous User
+                                </Button>
+                            }
+                            <div style={{
+                                margin: 'auto'
+                            }}></div>
+                            {currentUserRole !== UserRole.STUDENT &&
+                                <Button
+                                    onClick={() => nextUser(true)}
+                                    color='default'
+                                    variant='outlined'
+                                >
+                                    Next User
+                                </Button>
+                            }
+                            <Button
+                                onClick={() => nextProblem(true)}
+                                color='primary'
+                                variant='outlined'
+                            >
+                                Next Problem
+                            </Button>
+                        </Box>
+                        <div
+                            className='col-remove-scrollbar-padding'
+                            style={{
+                                position: 'absolute',
+                                left: 0,
+                                right: 0,
+                                top: '60px',
+                                bottom: 0,
+                                overflowY: 'auto',
+                                // There was a horizontal scroll (don't know what caused it), increasing right padding fixes the horizontal scroll
+                                paddingRight: '4px',
+                            }}
+                        >
+                            { selected.user && 
+                                (selected.problem ?
+                                    <GradeInfoHeader
+                                        selected={selected}
+                                        setSelected={setSelected}
+                                        topic={topic}
+                                        setGradeAlert={setGradeAlert}
+                                        info={info}
+                                        setInfo={setInfo}
+                                    /> : 
+                                    <p>
+                                        <h2>Total Score: {topicWithLocalGrade.localGrade?.toPercentString() ?? '--'}</h2>
+                                    </p>)
+                            }
+                            {selected.user && 
+                            ((currentUserRole !== UserRole.STUDENT && (info?.workbook || _.isNull(selected.problem))) || 
+                            ((!selected.problem && topicFeedback) || (selected.problem && info?.workbook?.feedback))) && 
+                            <Grid container item>
+                                <ListSubheader disableSticky>
+                                    <h2>Feedback</h2>
+                                </ListSubheader>
+                                {(currentUserRole === UserRole.STUDENT ? 
+                                    <QuillReadonlyDisplay content={selected.problem ? info?.workbook?.feedback : topicFeedback} /> : 
+                                    <GradeFeedback 
+                                        workbookId={selected.problem ? info?.workbook?.id : undefined} 
+                                        setGradeAlert={setGradeAlert} 
+                                        defaultValue={selected.problem ? info?.workbook?.feedback : topicFeedback} 
+                                        topicId={topic.id}    
+                                        userId={selected.user.id}
+                                    />)}
+                            </Grid>}
+                            <Grid container item alignItems='stretch'>
+                                {selected.problem && selected.user && selected.grade &&
+                                // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) &&
+                                    <ProblemIframe
+                                        problem={selected.problem}
+                                        userId={selected.user.id}
+                                        readonly={true}
+                                        workbookId={selected.problemState?.workbookId}
+                                        studentTopicAssessmentInfoId={selected.problemState?.studentTopicAssessmentInfoId}
+                                        previewPath={selected.problemState?.previewPath}
+                                        previewSeed={selected.problemState?.previewSeed}
+                                    />
+                                }
+                            </Grid>
+                            {(selected.grade || selected.gradeInstance) &&
+                                <Grid container item md={12}>
+                                    <AttachmentsPreview
+                                        gradeId={selected.grade?.id}
+                                        gradeInstanceId={selected.gradeInstance?.id}
+                                        // Workbooks don't seem to be loading in the database right now,
+                                        // but a professor shouldn't really care about this level. Attachments should show the same for
+                                        // all attempts, maybe even all versions?
+                                        // workbookId={selected.workbook?.id}
+                                    />
+                                </Grid>
+                            }
+                        </div>
+                    </div>
                 </Grid>
             </Grid>
         </Container>
