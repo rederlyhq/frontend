@@ -392,23 +392,27 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                             >
                                 Previous Problem
                             </Button>
-                            <Button
-                                onClick={() => nextUser(false)}
-                                color='default'
-                                variant='outlined'
-                            >
-                                Previous User
-                            </Button>
-                            <Button
-                                onClick={() => nextUser(true)}
-                                color='default'
-                                variant='outlined'
-                                style={{
-                                    marginLeft: 'auto'
-                                }}
-                            >
-                                Next User
-                            </Button>
+                            {currentUserRole !== UserRole.STUDENT &&
+                                <Button
+                                    onClick={() => nextUser(false)}
+                                    color='default'
+                                    variant='outlined'
+                                >
+                                    Previous User
+                                </Button>
+                            }
+                            <div style={{
+                                margin: 'auto'
+                            }}></div>
+                            {currentUserRole !== UserRole.STUDENT &&
+                                <Button
+                                    onClick={() => nextUser(true)}
+                                    color='default'
+                                    variant='outlined'
+                                >
+                                    Next User
+                                </Button>
+                            }
                             <Button
                                 onClick={() => nextProblem(true)}
                                 color='primary'
