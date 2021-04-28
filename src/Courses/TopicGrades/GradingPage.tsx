@@ -65,6 +65,78 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
     const currentUserRole = getUserRole();
     const currentUserId = getUserId();
 
+    const nextProblem = (increment: boolean) => {
+        if (_.isNil(topic)) {
+            logger.error('GradingPage: nextProblem: nil topic');
+            return;
+        }
+
+        if (_.isEmpty(topic.questions)) {
+            logger.error('GradingPage: nextProblem: empty questions');
+            return;
+        }
+
+        let nextIndex: number;
+        if (_.isNil(problemId)) {
+            nextIndex = increment ? 0 : (topic.questions.length - 1);
+        } else {
+            const problemIndex = _.findIndex(topic.questions, ['id', problemId]);
+            if (problemIndex < 0) {
+                logger.warn('GradingPage: nextProblem: problem not found');
+            }    
+            // nextIndex = increment ?
+            //     (problemIndex + 1) % topic.questions.length :
+            //     (problemIndex + topic.questions.length - 1) % topic.questions.length;
+            // This intentionaly does not use modulus since wrapping doesn't bring it to the first or last problem but rather topic grades
+            // Overflow and underflow default to null which is topic grades
+            nextIndex = problemIndex + ((Number(increment) * 2) - 1);
+        }
+        let nextProblem: ProblemObject | null | undefined = null;
+
+        if (nextIndex >= 0 && nextIndex < topic.questions.length) {
+            nextProblem = topic.questions[nextIndex];
+        }
+
+        setSelected((current) => ({
+            ...current,
+            problem: nextProblem,
+        }));
+    };
+
+    const nextUser = (increment: boolean) => {
+        if (currentUserRole === UserRole.STUDENT) {
+            logger.warn('GradingPage: nextUser: student tried to use next user');
+            return;
+        }
+
+        if (_.isNil(userId)) {
+            logger.warn('GradingPage: nextUser: nil userId');
+            return;
+        }
+
+        if (_.isEmpty(users)) {
+            logger.warn('GradingPage: nextUser: empty users');
+            return;
+        }
+
+        let nextUser: UserObject | null | undefined = null;
+        const userIndex = _.findIndex(users, { 'id': userId });
+        if (userIndex < 0) {
+            logger.warn('GradingPage: nextUser: user not found');
+        }
+        // userIndex + or - 1, = user length to avoid underflow, mod user lenth to keep in array bounds
+        const nextIndex = (userIndex + ((Number(increment) * 2) - 1) + users.length) % users.length;
+
+        nextUser = users[nextIndex];
+
+        setSelected((current) => ({
+            ...current,
+            ..._.omitBy({
+                user: nextUser
+            }, _.isNull)
+        }));
+    };
+
     useEffect(() => {
         (async () => {
             logger.debug('GP: there has been a change in user or topic, fetching new cumulative topic grade.');
@@ -298,6 +370,48 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                     }}
                 >
                     <div style={{position: 'relative', width: '100%', height: '100%'}}>
+                        <Box
+                            style= {{
+                                position: 'absolute',
+                                left: 0,
+                                right: 0,
+                                top: 0,
+                            }}
+                            display="flex"
+                            flexWrap="nowrap"
+                        >
+                            <Button
+                                onClick={() => nextProblem(false)}
+                                color='primary'
+                                variant='outlined'
+                            >
+                                Previous Problem
+                            </Button>
+                            <Button
+                                onClick={() => nextUser(false)}
+                                color='default'
+                                variant='outlined'
+                            >
+                                Previous User
+                            </Button>
+                            <Button
+                                onClick={() => nextUser(true)}
+                                color='default'
+                                variant='outlined'
+                                style={{
+                                    marginLeft: 'auto'
+                                }}
+                            >
+                                Next User
+                            </Button>
+                            <Button
+                                onClick={() => nextProblem(true)}
+                                color='primary'
+                                variant='outlined'
+                            >
+                                Next Problem
+                            </Button>
+                        </Box>
                         <div
                             className='col-remove-scrollbar-padding'
                             style={{
