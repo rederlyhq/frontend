@@ -53,7 +53,7 @@ export interface WorkbookInfoDump {
 
 export const GradingPage: React.FC<GradingPageProps> = () => {
     const params = useParams<GradingPageProps>();
-    const {course, users} = useCourseContext();
+    const {course, users, loading: courseContextLoading} = useCourseContext();
     const [userId, setUserId] = useQueryParam('userId', NumberParam);
     const [problemId, setProblemId] = useQueryParam('problemId', NumberParam);
     const [gradeAlert, setGradeAlert] = useMUIAlertState();
@@ -309,7 +309,7 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
 
     if (_.isNull(topic) || _.isNull(topicWithLocalGrade)) {
         return <h1>Failed to load the topic.</h1>;
-    } else if (_.isUndefined(topic) || _.isUndefined(topicWithLocalGrade)) {
+    } else if (courseContextLoading || _.isUndefined(topic)) {
         return <h1>Loading</h1>;
     }
 
@@ -322,6 +322,8 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
         biselectSize = 4;
         paneSize = 8;
     }
+
+    const isMissingUsersOrProblems = _.isEmpty(users) || _.isEmpty(topic.questions);
 
     return (
         <Container disableGutters maxWidth='lg' style={{maxWidth: maxWidth}} >
@@ -349,174 +351,178 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                     <ExportAllButton topicId={topic.id} userId={selected.user?.id} />
                 </Grid>}
             </Grid>
-            {_.isEmpty(users) && <Alert color='error'>
-                There are no students enrolled in this course.
-                If you want to view your Assignment, <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}`}>click here to visit the Assignment page</Link>.
-                Otherwise, you can <Link to={`/common/courses/${params.courseId}?tab=Enrollments`}>enroll students in the enrollments tab</Link>.
-            </Alert>}
-            {_.isEmpty(topic.questions) && <Alert color='error'>There are no problems in this topic. You can add problems <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}/settings`}>here</Link>. </Alert>}
-            <Grid
-                container
-                style={{
-                    height: 'calc(100vh - 260px)',
-                }}
-            >
-                {/* Student / problem selector grid */}
+            {isMissingUsersOrProblems && <>
+                {_.isEmpty(users) && <Alert color='error'>
+                    There are no students enrolled in this course.
+                    If you want to view your Assignment, <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}`}>click here to visit the Assignment page</Link>.
+                    Otherwise, you can <Link to={`/common/courses/${params.courseId}?tab=Enrollments`}>enroll students in the enrollments tab</Link>.
+                </Alert>}
+                {_.isEmpty(topic.questions) && <Alert color='error'>There are no problems in this topic. You can add problems <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}/settings`}>here</Link>. </Alert>}
+            </>}
+            {!isMissingUsersOrProblems && <>
                 <Grid
                     container
-                    item
-                    md={biselectSize}
-                    className='col-remove-scrollbar-padding'
                     style={{
-                        height: '100%',
-                        overflowY: 'auto',
-                        // The child with .MuiGrid-spacing-xs-1 adds a -4px margin which was causing scroll bars to always be present, padding fixes this
-                        padding: '4px',
-                        // There was a horizontal scroll (don't know what caused it), increasing right padding fixes the horizontal scroll
-                        paddingRight: '16px',
+                        height: 'calc(100vh - 260px)',
                     }}
                 >
-                    {!_.isEmpty(topicWithLocalGrade.questions) &&
-                        <MaterialBiSelect 
-                            topic={topicWithLocalGrade}
-                            problems={topicWithLocalGrade.questions} 
-                            users={currentUserRole === UserRole.STUDENT ? [] : users} 
-                            selected={selected} 
-                            setSelected={setSelected} 
-                        />
-                    }
-                </Grid>
-                <Grid
-                    container
-                    item
-                    md={paneSize}
-                    style={{
-                        height: '100%',
-                        paddingLeft: '5rem',
-                        // height: 'min-content',
-                    }}
-                >
-                    <div style={{position: 'relative', width: '100%', height: '100%'}}>
-                        <Box
-                            style= {{
-                                position: 'absolute',
-                                left: 0,
-                                right: 0,
-                                top: 0,
-                            }}
-                            display="flex"
-                            flexWrap="nowrap"
-                        >
-                            <Button
-                                onClick={() => nextProblem(false)}
-                                color='primary'
-                                variant='outlined'
+                    {/* Student / problem selector grid */}
+                    <Grid
+                        container
+                        item
+                        md={biselectSize}
+                        className='col-remove-scrollbar-padding'
+                        style={{
+                            height: '100%',
+                            overflowY: 'auto',
+                            // The child with .MuiGrid-spacing-xs-1 adds a -4px margin which was causing scroll bars to always be present, padding fixes this
+                            padding: '4px',
+                            // There was a horizontal scroll (don't know what caused it), increasing right padding fixes the horizontal scroll
+                            paddingRight: '16px',
+                        }}
+                    >
+                        {!_.isNil(topicWithLocalGrade) && !_.isEmpty(topicWithLocalGrade.questions) &&
+                            <MaterialBiSelect 
+                                topic={topicWithLocalGrade}
+                                problems={topicWithLocalGrade.questions} 
+                                users={currentUserRole === UserRole.STUDENT ? [] : users} 
+                                selected={selected} 
+                                setSelected={setSelected} 
+                            />
+                        }
+                    </Grid>
+                    <Grid
+                        container
+                        item
+                        md={paneSize}
+                        style={{
+                            height: '100%',
+                            paddingLeft: '5rem',
+                            // height: 'min-content',
+                        }}
+                    >
+                        <div style={{position: 'relative', width: '100%', height: '100%'}}>
+                            <Box
+                                style= {{
+                                    position: 'absolute',
+                                    left: 0,
+                                    right: 0,
+                                    top: 0,
+                                }}
+                                display="flex"
+                                flexWrap="nowrap"
                             >
-                                Previous Problem
-                            </Button>
-                            {currentUserRole !== UserRole.STUDENT &&
                                 <Button
-                                    onClick={() => nextUser(false)}
-                                    color='default'
+                                    onClick={() => nextProblem(false)}
+                                    color='primary'
                                     variant='outlined'
                                 >
-                                    Previous User
+                                    Previous Problem
                                 </Button>
-                            }
-                            <div style={{
-                                margin: 'auto'
-                            }}></div>
-                            {currentUserRole !== UserRole.STUDENT &&
-                                <Button
-                                    onClick={() => nextUser(true)}
-                                    color='default'
-                                    variant='outlined'
-                                >
-                                    Next User
-                                </Button>
-                            }
-                            <Button
-                                onClick={() => nextProblem(true)}
-                                color='primary'
-                                variant='outlined'
-                            >
-                                Next Problem
-                            </Button>
-                        </Box>
-                        <div
-                            className='col-remove-scrollbar-padding'
-                            style={{
-                                position: 'absolute',
-                                left: 0,
-                                right: 0,
-                                top: '60px',
-                                bottom: 0,
-                                overflowY: 'auto',
-                                // There was a horizontal scroll (don't know what caused it), increasing right padding fixes the horizontal scroll
-                                paddingRight: '4px',
-                            }}
-                        >
-                            { selected.user && 
-                                (selected.problem ?
-                                    <GradeInfoHeader
-                                        selected={selected}
-                                        setSelected={setSelected}
-                                        topic={topic}
-                                        setGradeAlert={setGradeAlert}
-                                        info={info}
-                                        setInfo={setInfo}
-                                    /> : 
-                                    <p>
-                                        <h2>Total Score: {topicWithLocalGrade.localGrade?.toPercentString() ?? '--'}</h2>
-                                    </p>)
-                            }
-                            {selected.user && 
-                            ((currentUserRole !== UserRole.STUDENT && (info?.workbook || _.isNull(selected.problem))) || 
-                            ((!selected.problem && topicFeedback) || (selected.problem && info?.workbook?.feedback))) && 
-                            <Grid container item>
-                                <ListSubheader disableSticky>
-                                    <h2>Feedback</h2>
-                                </ListSubheader>
-                                {(currentUserRole === UserRole.STUDENT ? 
-                                    <QuillReadonlyDisplay content={selected.problem ? info?.workbook?.feedback : topicFeedback} /> : 
-                                    <GradeFeedback 
-                                        workbookId={selected.problem ? info?.workbook?.id : undefined} 
-                                        setGradeAlert={setGradeAlert} 
-                                        defaultValue={selected.problem ? info?.workbook?.feedback : topicFeedback} 
-                                        topicId={topic.id}    
-                                        userId={selected.user.id}
-                                    />)}
-                            </Grid>}
-                            <Grid container item alignItems='stretch'>
-                                {selected.problem && selected.user && selected.grade &&
-                                // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) &&
-                                    <ProblemIframe
-                                        problem={selected.problem}
-                                        userId={selected.user.id}
-                                        readonly={true}
-                                        workbookId={selected.problemState?.workbookId}
-                                        studentTopicAssessmentInfoId={selected.problemState?.studentTopicAssessmentInfoId}
-                                        previewPath={selected.problemState?.previewPath}
-                                        previewSeed={selected.problemState?.previewSeed}
-                                    />
+                                {currentUserRole !== UserRole.STUDENT &&
+                                    <Button
+                                        onClick={() => nextUser(false)}
+                                        color='default'
+                                        variant='outlined'
+                                    >
+                                        Previous User
+                                    </Button>
                                 }
-                            </Grid>
-                            {(selected.grade || selected.gradeInstance) &&
-                                <Grid container item md={12}>
-                                    <AttachmentsPreview
-                                        gradeId={selected.grade?.id}
-                                        gradeInstanceId={selected.gradeInstance?.id}
-                                        // Workbooks don't seem to be loading in the database right now,
-                                        // but a professor shouldn't really care about this level. Attachments should show the same for
-                                        // all attempts, maybe even all versions?
-                                        // workbookId={selected.workbook?.id}
-                                    />
+                                <div style={{
+                                    margin: 'auto'
+                                }}></div>
+                                {currentUserRole !== UserRole.STUDENT &&
+                                    <Button
+                                        onClick={() => nextUser(true)}
+                                        color='default'
+                                        variant='outlined'
+                                    >
+                                        Next User
+                                    </Button>
+                                }
+                                <Button
+                                    onClick={() => nextProblem(true)}
+                                    color='primary'
+                                    variant='outlined'
+                                >
+                                    Next Problem
+                                </Button>
+                            </Box>
+                            <div
+                                className='col-remove-scrollbar-padding'
+                                style={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    right: 0,
+                                    top: '60px',
+                                    bottom: 0,
+                                    overflowY: 'auto',
+                                    // There was a horizontal scroll (don't know what caused it), increasing right padding fixes the horizontal scroll
+                                    paddingRight: '4px',
+                                }}
+                            >
+                                { selected.user && 
+                                    (selected.problem ?
+                                        <GradeInfoHeader
+                                            selected={selected}
+                                            setSelected={setSelected}
+                                            topic={topic}
+                                            setGradeAlert={setGradeAlert}
+                                            info={info}
+                                            setInfo={setInfo}
+                                        /> : 
+                                        <p>
+                                            <h2>Total Score: {topicWithLocalGrade?.localGrade?.toPercentString() ?? '--'}</h2>
+                                        </p>)
+                                }
+                                {selected.user && 
+                                ((currentUserRole !== UserRole.STUDENT && (info?.workbook || _.isNull(selected.problem))) || 
+                                ((!selected.problem && topicFeedback) || (selected.problem && info?.workbook?.feedback))) && 
+                                <Grid container item>
+                                    <ListSubheader disableSticky>
+                                        <h2>Feedback</h2>
+                                    </ListSubheader>
+                                    {(currentUserRole === UserRole.STUDENT ? 
+                                        <QuillReadonlyDisplay content={selected.problem ? info?.workbook?.feedback : topicFeedback} /> : 
+                                        <GradeFeedback 
+                                            workbookId={selected.problem ? info?.workbook?.id : undefined} 
+                                            setGradeAlert={setGradeAlert} 
+                                            defaultValue={selected.problem ? info?.workbook?.feedback : topicFeedback} 
+                                            topicId={topic.id}    
+                                            userId={selected.user.id}
+                                        />)}
+                                </Grid>}
+                                <Grid container item alignItems='stretch'>
+                                    {selected.problem && selected.user && selected.grade &&
+                                    // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) &&
+                                        <ProblemIframe
+                                            problem={selected.problem}
+                                            userId={selected.user.id}
+                                            readonly={true}
+                                            workbookId={selected.problemState?.workbookId}
+                                            studentTopicAssessmentInfoId={selected.problemState?.studentTopicAssessmentInfoId}
+                                            previewPath={selected.problemState?.previewPath}
+                                            previewSeed={selected.problemState?.previewSeed}
+                                        />
+                                    }
                                 </Grid>
-                            }
+                                {(selected.grade || selected.gradeInstance) &&
+                                    <Grid container item md={12}>
+                                        <AttachmentsPreview
+                                            gradeId={selected.grade?.id}
+                                            gradeInstanceId={selected.gradeInstance?.id}
+                                            // Workbooks don't seem to be loading in the database right now,
+                                            // but a professor shouldn't really care about this level. Attachments should show the same for
+                                            // all attempts, maybe even all versions?
+                                            // workbookId={selected.workbook?.id}
+                                        />
+                                    </Grid>
+                                }
+                            </div>
                         </div>
-                    </div>
+                    </Grid>
                 </Grid>
-            </Grid>
+            </>}
         </Container>
     );
 };
