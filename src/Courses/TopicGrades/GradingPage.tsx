@@ -93,6 +93,10 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
             const problemIndex = _.findIndex(topic.questions, ['id', problemId]);
             if (problemIndex < 0) {
                 logger.warn('GradingPage: nextProblem: problem not found');
+                setAlert?.({
+                    message: 'Could not find the problem, jumping to a problem that does exist.',
+                    severity: 'warning'
+                });
             }    
             // nextIndex = increment ?
             //     (problemIndex + 1) % topic.questions.length :
