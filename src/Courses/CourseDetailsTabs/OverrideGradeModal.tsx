@@ -244,6 +244,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                                     type="submit"
                                     // The input gets focus instead of the button
                                     // ref={(ref: HTMLButtonElement | null) => ref?.focus()}
+                                    aria-describedby="Override grade"
                                 >
                                         Submit
                                 </Button>
@@ -253,6 +254,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                                 <Button variant="primary"
                                     onClick={overrideGradeConfirm}
                                     ref={(ref: HTMLButtonElement | null) => ref?.focus()}
+                                    aria-describedby="Confirm grade override"
                                 >
                                     Confirm
                                 </Button>
@@ -263,6 +265,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                                     variant="danger"
                                     onClick={lockSubmit}
                                     ref={(ref: HTMLButtonElement | null) => ref?.focus()}
+                                    aria-describedby="Lock grade"
                                 >
                                     Lock
                                 </Button>
@@ -273,6 +276,7 @@ export const OverrideGradeModal: React.FC<OverrideGradeModalProps> = ({
                                     variant="primary"
                                     onClick={lockConfirm}
                                     ref={(ref: HTMLButtonElement | null) => ref?.focus()}
+                                    aria-describedby="Confirm locked grade"
                                 >
                                     Confirm
                                 </Button>
