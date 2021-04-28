@@ -336,9 +336,10 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
             <Grid
                 container
                 style={{
-                    height: 'calc(100vh - 256px)',
+                    height: 'calc(100vh - 260px)',
                 }}
             >
+                {/* Student / problem selector grid */}
                 <Grid
                     container
                     item
@@ -347,6 +348,10 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                     style={{
                         height: '100%',
                         overflowY: 'auto',
+                        // The child with .MuiGrid-spacing-xs-1 adds a -4px margin which was causing scroll bars to always be present, padding fixes this
+                        padding: '4px',
+                        // There was a horizontal scroll (don't know what caused it), increasing right padding fixes the horizontal scroll
+                        paddingRight: '16px',
                     }}
                 >
                     {!_.isEmpty(topicWithLocalGrade.questions) &&
@@ -421,6 +426,8 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                                 top: '60px',
                                 bottom: 0,
                                 overflowY: 'auto',
+                                // There was a horizontal scroll (don't know what caused it), increasing right padding fixes the horizontal scroll
+                                paddingRight: '4px',
                             }}
                         >
                             { selected.user && 
