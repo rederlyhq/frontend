@@ -39,14 +39,15 @@ export const WorkbookSelect: React.FC<WorkbookSelectProps> = ({grade, onChange, 
 
     // This could also be called the Attempt List.
     const versionSubList = (vMap: Record<number, Array<number> | undefined>, versionKey: number): WorkbookOption[] => {
+        const current = { label: 'current', value: -1 };
         if (_.isNil(vMap[versionKey])) {
             logger.warn(`Grade Info Header: Workbook dropdown data cannot find #${versionKey} in version map.`);
-            return [];
+            return [current];
         }
 
         const attempts = (vMap[versionKey] ?? []).sort().map((id, index) => ({ label: `Attempt #${index + 1}`, value: id })).reverse();
         
-        attempts.unshift({ label: 'current', value: -1 });
+        attempts.unshift(current);
     
         return attempts;
     };
