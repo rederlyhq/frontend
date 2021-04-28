@@ -1,4 +1,4 @@
-import { Grid, Snackbar, Container, ListSubheader } from '@material-ui/core';
+import { Grid, Snackbar, Container, ListSubheader, Button, Box } from '@material-ui/core';
 import { Alert as MUIAlert, Alert } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
@@ -261,8 +261,22 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                 Otherwise, you can <Link to={`/common/courses/${params.courseId}?tab=Enrollments`}>enroll students in the enrollments tab</Link>.
             </Alert>}
             {_.isEmpty(topic.questions) && <Alert color='error'>There are no problems in this topic. You can add problems <Link to={`/common/courses/${params.courseId}/topic/${params.topicId}/settings`}>here</Link>. </Alert>}
-            <Grid container>
-                <Grid container item md={biselectSize}>
+            <Grid
+                container
+                style={{
+                    height: 'calc(100vh - 256px)',
+                }}
+            >
+                <Grid
+                    container
+                    item
+                    md={biselectSize}
+                    className='col-remove-scrollbar-padding'
+                    style={{
+                        height: '100%',
+                        overflowY: 'auto',
+                    }}
+                >
                     {!_.isEmpty(topicWithLocalGrade.questions) &&
                         <MaterialBiSelect 
                             topic={topicWithLocalGrade}
@@ -273,64 +287,87 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
                         />
                     }
                 </Grid>
-                <Grid container item md={paneSize} style={{paddingLeft: '5rem', height: 'min-content'}}>
-                    { selected.user && 
-                        (selected.problem ?
-                            <GradeInfoHeader
-                                selected={selected}
-                                setSelected={setSelected}
-                                topic={topic}
-                                setGradeAlert={setGradeAlert}
-                                info={info}
-                                setInfo={setInfo}
-                            /> : 
-                            <p>
-                                <h2>Total Score: {topicWithLocalGrade.localGrade?.toPercentString() ?? '--'}</h2>
-                            </p>)
-                    }
-                    {selected.user && 
-                      ((currentUserRole !== UserRole.STUDENT && (info?.workbook || _.isNull(selected.problem))) || 
-                      ((!selected.problem && topicFeedback) || (selected.problem && info?.workbook?.feedback))) && 
-                      <Grid container item>
-                          <ListSubheader disableSticky>
-                              <h2>Feedback</h2>
-                          </ListSubheader>
-                          {(currentUserRole === UserRole.STUDENT ? 
-                              <QuillReadonlyDisplay content={selected.problem ? info?.workbook?.feedback : topicFeedback} /> : 
-                              <GradeFeedback 
-                                  workbookId={selected.problem ? info?.workbook?.id : undefined} 
-                                  setGradeAlert={setGradeAlert} 
-                                  defaultValue={selected.problem ? info?.workbook?.feedback : topicFeedback} 
-                                  topicId={topic.id}    
-                                  userId={selected.user.id}
-                              />)}
-                      </Grid>}
-                    <Grid container item alignItems='stretch'>
-                        {selected.problem && selected.user && selected.grade &&
-                        // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) &&
-                            <ProblemIframe
-                                problem={selected.problem}
-                                userId={selected.user.id}
-                                readonly={true}
-                                workbookId={selected.problemState?.workbookId}
-                                studentTopicAssessmentInfoId={selected.problemState?.studentTopicAssessmentInfoId}
-                                previewPath={selected.problemState?.previewPath}
-                                previewSeed={selected.problemState?.previewSeed}
-                            />
-                        }
-                    </Grid>
-                    {(selected.grade || selected.gradeInstance) &&
-                        <Grid container item md={12}>
-                            <AttachmentsPreview
-                                gradeId={selected.grade?.id}
-                                gradeInstanceId={selected.gradeInstance?.id}
-                                // Workbooks don't seem to be loading in the database right now,
-                                // but a professor shouldn't really care about this level. Attachments should show the same for
-                                // all attempts, maybe even all versions?
-                                // workbookId={selected.workbook?.id}
-                            />
-                        </Grid>
-                    }
+                <Grid
+                    container
+                    item
+                    md={paneSize}
+                    style={{
+                        height: '100%',
+                        paddingLeft: '5rem',
+                        // height: 'min-content',
+                    }}
+                >
+                    <div style={{position: 'relative', width: '100%', height: '100%'}}>
+                        <div
+                            className='col-remove-scrollbar-padding'
+                            style={{
+                                position: 'absolute',
+                                left: 0,
+                                right: 0,
+                                top: '60px',
+                                bottom: 0,
+                                overflowY: 'auto',
+                            }}
+                        >
+                            { selected.user && 
+                                (selected.problem ?
+                                    <GradeInfoHeader
+                                        selected={selected}
+                                        setSelected={setSelected}
+                                        topic={topic}
+                                        setGradeAlert={setGradeAlert}
+                                        info={info}
+                                        setInfo={setInfo}
+                                    /> : 
+                                    <p>
+                                        <h2>Total Score: {topicWithLocalGrade.localGrade?.toPercentString() ?? '--'}</h2>
+                                    </p>)
+                            }
+                            {selected.user && 
+                            ((currentUserRole !== UserRole.STUDENT && (info?.workbook || _.isNull(selected.problem))) || 
+                            ((!selected.problem && topicFeedback) || (selected.problem && info?.workbook?.feedback))) && 
+                            <Grid container item>
+                                <ListSubheader disableSticky>
+                                    <h2>Feedback</h2>
+                                </ListSubheader>
+                                {(currentUserRole === UserRole.STUDENT ? 
+                                    <QuillReadonlyDisplay content={selected.problem ? info?.workbook?.feedback : topicFeedback} /> : 
+                                    <GradeFeedback 
+                                        workbookId={selected.problem ? info?.workbook?.id : undefined} 
+                                        setGradeAlert={setGradeAlert} 
+                                        defaultValue={selected.problem ? info?.workbook?.feedback : topicFeedback} 
+                                        topicId={topic.id}    
+                                        userId={selected.user.id}
+                                    />)}
+                            </Grid>}
+                            <Grid container item alignItems='stretch'>
+                                {selected.problem && selected.user && selected.grade &&
+                                // (selected.problemState?.workbookId || selected.problemState?.studentTopicAssessmentInfoId || selected.problemState?.previewPath) &&
+                                    <ProblemIframe
+                                        problem={selected.problem}
+                                        userId={selected.user.id}
+                                        readonly={true}
+                                        workbookId={selected.problemState?.workbookId}
+                                        studentTopicAssessmentInfoId={selected.problemState?.studentTopicAssessmentInfoId}
+                                        previewPath={selected.problemState?.previewPath}
+                                        previewSeed={selected.problemState?.previewSeed}
+                                    />
+                                }
+                            </Grid>
+                            {(selected.grade || selected.gradeInstance) &&
+                                <Grid container item md={12}>
+                                    <AttachmentsPreview
+                                        gradeId={selected.grade?.id}
+                                        gradeInstanceId={selected.gradeInstance?.id}
+                                        // Workbooks don't seem to be loading in the database right now,
+                                        // but a professor shouldn't really care about this level. Attachments should show the same for
+                                        // all attempts, maybe even all versions?
+                                        // workbookId={selected.workbook?.id}
+                                    />
+                                </Grid>
+                            }
+                        </div>
+                    </div>
                 </Grid>
             </Grid>
         </Container>
