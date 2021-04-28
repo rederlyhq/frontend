@@ -1,17 +1,15 @@
 import Cookies from 'js-cookie';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Redirect, useHistory } from 'react-router-dom';
 import { MomentReacter } from '../Components/MomentReacter';
 import { CookieEnum } from '../Enums/CookieEnum';
-import { unauthorizedRedirect, getUserRoleFromServer } from '../Enums/UserRole';
+import { unauthorizedRedirect } from '../Enums/UserRole';
 import logger from '../Utilities/Logger';
 import _ from 'lodash';
 import { Button, Modal } from 'react-bootstrap';
 import moment from 'moment';
 import { checkIn } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { performLogout } from './NavWrapper';
-import localPreferences from '../Utilities/LocalPreferences';
-import AxiosRequest from '../Hooks/AxiosRequest';
 
 interface AuthorizationWrapperProps {
     children: React.ReactNode
@@ -57,7 +55,6 @@ export const AuthorizationWrapper: React.FC<AuthorizationWrapperProps> = ({
 
     // default to max date
     const [tokenExpiration, setTokenExpiration] = useState<Date>(new Date(8640000000000000));
-    const { session } = localPreferences;
     // The expiration date cannot be fetched from the cookie
     // Can't rely on it from login either because it updates
     // Could set a second cookie or embed it in the original cookie
@@ -65,22 +62,6 @@ export const AuthorizationWrapper: React.FC<AuthorizationWrapperProps> = ({
     //     const sessionCookie = Cookies.get(CookieEnum.SESSION);
     //     return sessionCookie.expirationDate
     // });
-
-    useEffect(()=>{
-        const parsedSessionCookie = parseSessionCookie();
-
-        if (!_.isNil(parsedSessionCookie.uuid) && _.isNil(session.userId)) {
-            (async () => {
-                const resp = await AxiosRequest.get('/users/session');
-                session.userId = resp.data.data.userId;
-                session.userType = getUserRoleFromServer(resp.data.data.roleId);
-                session.actualUserType = session.userType;
-                session.userUUID = resp.data.data.uuid;
-                session.username = `${resp.data.data.firstName} ${resp.data.data.lastName}`;
-                // gaTrackLogin('EMAIL', session.userId);
-            })();
-        }
-    }, [session]);
 
     const renewSession = async () => {
         try {
