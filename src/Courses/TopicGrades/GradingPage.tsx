@@ -18,6 +18,7 @@ import { useQueryParam, NumberParam } from 'use-query-params';
 import { getUserId, getUserRole, UserRole } from '../../Enums/UserRole';
 import { QuillReadonlyDisplay } from '../../Components/Quill/QuillReadonlyDisplay';
 import { GradeFeedback } from './GradeFeedback';
+import { useGlobalSnackbarContext } from '../../Contexts/GlobalSnackbar';
 import '../../Components/LayoutStyles.css';
 import 'react-quill/dist/quill.snow.css';
 import { TopicObjectWithLocalGrades, ProblemObjectWithLocalGrades } from './GradingInterfaces';
@@ -61,6 +62,7 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
     const [topicFeedback, setTopicFeedback] = useState<unknown>();
     const [selected, setSelected] = useState<GradingSelectables>({});
     const [info, setInfo] = useState<WorkbookInfoDump | null>(null);
+    const setAlert = useGlobalSnackbarContext();
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
     const currentUserRole = getUserRole();
     const currentUserId = getUserId();
@@ -68,11 +70,19 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
     const nextProblem = (increment: boolean) => {
         if (_.isNil(topic)) {
             logger.error('GradingPage: nextProblem: nil topic');
+            setAlert?.({
+                message: 'Could not go to the next problem since the topic was not found.',
+                severity: 'error'
+            });
             return;
         }
 
         if (_.isEmpty(topic.questions)) {
             logger.error('GradingPage: nextProblem: empty questions');
+            setAlert?.({
+                message: 'Could not go to the next problem since there are no problems.',
+                severity: 'error'
+            });
             return;
         }
 
@@ -106,16 +116,28 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
     const nextUser = (increment: boolean) => {
         if (currentUserRole === UserRole.STUDENT) {
             logger.warn('GradingPage: nextUser: student tried to use next user');
+            setAlert?.({
+                message: 'Feature unavailable.',
+                severity: 'error'
+            });
             return;
         }
 
         if (_.isNil(userId)) {
             logger.warn('GradingPage: nextUser: nil userId');
+            setAlert?.({
+                message: 'Could not go to the next user since the current user is unknown.',
+                severity: 'error'
+            });
             return;
         }
 
         if (_.isEmpty(users)) {
             logger.warn('GradingPage: nextUser: empty users');
+            setAlert?.({
+                message: 'Could not go to the next user since there are no users.',
+                severity: 'error'
+            });
             return;
         }
 
