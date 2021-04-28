@@ -73,6 +73,12 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 } 
                 
                 setGrade(res.data.data);
+                setSelected(selected => {
+                    return ({
+                        ...selected,
+                        grade: res.data.data,
+                    });
+                });
             } catch (e) {
                 setGradeAlert({
                     severity: 'error',
@@ -132,7 +138,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
 
         // set default selection to the last attempt that impacted the user's grade
         // if they never did the problem for credit -- fall back to the last influencing
-        const workbookId = grade.lastInfluencingCreditedAttemptId ?? grade.lastInfluencingAttemptId;
+        const workbookId = grade.lastInfluencingCreditedAttemptId ?? grade.lastInfluencingAttemptId ?? -1;
         const workbook = _.find(grade.workbooks, ['id', workbookId]);
         const studentGradeInstanceId = workbook?.studentGradeInstanceId;
 
