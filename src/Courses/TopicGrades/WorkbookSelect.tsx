@@ -40,6 +40,11 @@ export const WorkbookSelect: React.FC<WorkbookSelectProps> = ({grade, onChange, 
     // This could also be called the Attempt List.
     const versionSubList = (vMap: Record<number, Array<number> | undefined>, versionKey: number): WorkbookOption[] => {
         const current = { label: 'current', value: -1 };
+
+        if (_.isEmpty(vMap)) {
+            return [current];
+        }
+
         if (_.isNil(vMap[versionKey])) {
             logger.warn(`Grade Info Header: Workbook dropdown data cannot find #${versionKey} in version map.`);
             return [current];

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import _ from 'lodash';
-import { ProblemObject, ProblemState, StudentGrade, StudentGradeInstance, TopicObject, UserObject } from '../CourseInterfaces';
+import { ProblemObject, ProblemState, StudentGrade, StudentGradeInstance, TopicObject, TopicTypeId, UserObject } from '../CourseInterfaces';
 import logger from '../../Utilities/Logger';
 import { Button, Grid, ListSubheader } from '@material-ui/core';
 import { OverrideGradeModal } from '../CourseDetailsTabs/OverrideGradeModal';
@@ -73,12 +73,6 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 } 
                 
                 setGrade(res.data.data);
-                setSelected(selected => {
-                    return ({
-                        ...selected,
-                        grade: res.data.data,
-                    });
-                });
             } catch (e) {
                 setGradeAlert({
                     severity: 'error',
@@ -140,7 +134,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         // if they never did the problem for credit -- fall back to the last influencing
         const workbookId = grade.lastInfluencingCreditedAttemptId ?? grade.lastInfluencingAttemptId ?? -1;
         const workbook = _.find(grade.workbooks, ['id', workbookId]);
-        const studentGradeInstanceId = workbook?.studentGradeInstanceId;
+        const studentGradeInstanceId = workbook?.studentGradeInstanceId ?? grade.gradeInstances?.first?.id;
 
         logger.debug('GradeInfoHeader: Setting local info from new grade object.', currentVersionMap);
         setInfo({
@@ -183,13 +177,15 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
             newProblemState.previewPath = selected.problem?.webworkQuestionPath;
             newProblemState.previewSeed = grade.randomSeed;
         } else if (isCurrentSelected) {
-            // no workbooks, or none selected -> use currentProblemState (need version info if an exam... grade instance ID will not suffice)
-            if (_.isNil(info.studentGradeInstanceId) || _.isNil(grade.gradeInstances) || _.isEmpty(grade.gradeInstances)) {
-                logger.error(`GradeInfoHeader: Should show the current state, but found neither gradeInstances nor studentGradeInstages for ${selected.user?.id} and ${grade.id}`);
-                return;
-            }
+            if (topic.topicTypeId === TopicTypeId.EXAM) {
+                // no workbooks, or none selected -> use currentProblemState (need version info if an exam... grade instance ID will not suffice)
+                if (_.isNil(info.studentGradeInstanceId) || _.isNil(grade.gradeInstances) || _.isEmpty(grade.gradeInstances)) {
+                    logger.error(`GradeInfoHeader: Should show the current state, but found neither gradeInstances nor studentGradeInstages for ${selected.user?.id} and ${grade.id}`);
+                    return;
+                }
 
-            newProblemState.studentTopicAssessmentInfoId = _.find(grade.gradeInstances, ['id', info.studentGradeInstanceId])?.studentTopicAssessmentInfoId;
+                newProblemState.studentTopicAssessmentInfoId = _.find(grade.gradeInstances, ['id', info.studentGradeInstanceId])?.studentTopicAssessmentInfoId;
+            }
             logger.debug(`GradeInfoHeader: setting Problem State - versionId: ${newProblemState.studentTopicAssessmentInfoId}`);
         } else if (_.isNil(_.find(grade.workbooks, ['id', info.workbookId]))) {
             // we have workbooks, and one is selected, but entry doesn't exist -> error
@@ -203,7 +199,9 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
         logger.debug('GradeInfoHeader: setting new selected grades', newProblemState, newGradeInstance);
         setSelected(selected => {
             if (selected.problem?.id !== grade.courseWWTopicQuestionId) {
-                logger.error(`Mismatch in problem id ${selected.problem?.id} and grade problem id ${grade.courseWWTopicQuestionId}.`);
+                // TODO uncomment and cleanup
+                // currently this gets called a ton while the problem is loading, component needs to be refactored
+                // logger.error(`Mismatch in problem id ${selected.problem?.id} and grade problem id ${grade.courseWWTopicQuestionId}.`);
                 return selected;
             }
             return ({ 

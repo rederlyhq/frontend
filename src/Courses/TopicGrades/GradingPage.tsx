@@ -252,18 +252,15 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
     useEffect(()=>{
         logger.debug('Updating selected items after the topic (or another dep) has changed.');
         if (_.isNil(topic)) {
-            logger.warn('No topic found on Grading Page.');
             return;
         }
 
         if (_.isEmpty(topic.questions)) {
-            logger.warn('No questions found for topic on Grading Page.');
             return;
         }
 
         // TODO: This check won't work for a Student-accessible grading page.
         if (_.isEmpty(users)) {
-            logger.warn('No users found for Grading Page.');
             return;    
         }
 
