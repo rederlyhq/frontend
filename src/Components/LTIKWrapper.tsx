@@ -5,6 +5,8 @@ import { useGlobalSnackbarContext } from '../Contexts/GlobalSnackbar';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import { getUserRoleFromServer } from '../Enums/UserRole';
 import _ from 'lodash';
+import { useBackdropContext } from '../Contexts/BackdropContext';
+import logger from '../Utilities/Logger';
 const { general, session } = localPreferences;
 
 interface LTIKWrapperProps {
@@ -17,14 +19,24 @@ interface LTIKWrapperProps {
 export const LTIKWrapper: React.FC<LTIKWrapperProps> = ({children}) => {
     const [ltik, setLtik] = useQueryParam('ltik', StringParam);
     const setAlert = useGlobalSnackbarContext();
+    const setShowBackdropLoading = useBackdropContext();
 
     useEffect(()=>{
         (async () => {
             try {
                 // If we already have a session userId, then don't repeat the request.
-                if (_.isNil(ltik) || _.isEmpty(ltik)) return;
+                if (_.isNil(ltik) || _.isEmpty(ltik)) {
+                    logger.debug('Returning early because LTIK is empty.', ltik);
+                    return;
+                }
 
-                if (session.userId) return;
+                if (session.userId) {
+                    logger.debug('Returning early because Session already exists.');
+                    setLtik(undefined);
+                    return;
+                }
+
+                setShowBackdropLoading?.(true);
 
                 const resp = await AxiosRequest.get('/users/session', {
                     params: {
@@ -37,19 +49,20 @@ export const LTIKWrapper: React.FC<LTIKWrapperProps> = ({children}) => {
                 session.userUUID = resp.data.data.uuid;
                 session.username = `${resp.data.data.firstName} ${resp.data.data.lastName}`;
                 // gaTrackLogin('LTI', session.userId);
-            } catch (e) {
-                setAlert?.({message: e.message, severity: 'error'});
-            } finally {
                 // Remove LTIK when done. It has been replaced with a session token.
                 setLtik(undefined);
+            } catch (e) {
+                setAlert?.({message: e.message, severity: 'error'});
+                // Remove LTIK when done. It has been replaced with a session token.
+                setLtik(undefined);
+            } finally {
+                setShowBackdropLoading?.(false);
             }
         })();
-    }, [ltik, setAlert, setLtik]);
+    }, [ltik, setAlert, setLtik, setShowBackdropLoading]);
 
 
-    return ltik ? 
-        <h1>Loading (LTI)</h1> :
-        <>{children}</>;
+    return ltik ? <>Loading</> : <>{children}</>;
 
 };
 

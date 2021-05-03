@@ -44,15 +44,15 @@ export const userContext = React.createContext({ userType: 'Professor' });
 // Once cookies are reactive we won't need to use the history object anymore thus this method will have no react dependencies
 // Until then leaving here
 export const performLogout = async (history: History) => {
-    console.warn('Performing Logout.');
+    logger.debug('Performing Logout.');
     try {
         await logout();
     } catch (e) {
         logger.error('Error logging out', e);
     }
 
-    console.log(Cookies.get(CookieEnum.SESSION));
-    // Cookies.remove(CookieEnum.SESSION);
+    logger.debug('Removing session', Cookies.get(CookieEnum.SESSION));
+    Cookies.remove(CookieEnum.SESSION);
     session.nullifySession();
 
     history.push('/');
