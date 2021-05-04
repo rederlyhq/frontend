@@ -78,7 +78,7 @@ export const WorkbookSelect: React.FC<WorkbookSelectProps> = ({grade, onChange, 
                 </ListSubheader>
             </Grid>
             <Grid container item xs={12} spacing={2}>
-                {(_.keys(versionMap).length > 1) && // don't show unless multiple versions...
+                {(_.keys(versionMap).length > 0) && // don't show unless multiple versions...
                 <Grid item md={4}>
                     <FormControl className={classes.formControl} fullWidth={true}>
                         <InputLabel id='student-versions'>Viewing Version:</InputLabel>
