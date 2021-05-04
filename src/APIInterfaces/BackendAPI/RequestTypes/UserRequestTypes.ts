@@ -7,6 +7,11 @@ export interface PutUpdatePasswordOptions {
     oldPassword: string;
 }
 
+export interface PutUpdateNilPasswordOptions {
+    newPassword: string;
+    ltik: string;
+}
+
 export interface PutUpdateForgottonPasswordOptions {
     newPassword: string;
     email: string;

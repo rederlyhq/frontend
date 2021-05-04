@@ -10,6 +10,7 @@ const SESSION_ACTUAL_USER_TYPE = 'SESSION_ACTUAL_USER_TYPE';
 const SESSION_USER_ID = 'SESSION_USER_ID'; 
 const SESSION_USER_UUID = 'SESSION_USER_UUID'; 
 const SESSION_USER_USERNAME = 'SESSION_USER_USERNAME'; 
+const SESSION_USER_HAS_PASSWORD = 'SESSION_USER_HAS_PASSWORD'; 
 const ACCOUNT_PAID_UNTIL = 'ACCOUNT_PAID_UNTIL';
 const ACCOUNT_OWNER = 'ACCOUNT_OWNER';
 const ACCOUNT_STATUS = 'ACCOUNT_STATUS';
@@ -200,6 +201,12 @@ const localPreferences = {
         set username(value: string | null) {
             setItem(SESSION_USER_USERNAME, value);
         },
+        get hasPassword(): boolean | null {
+            return localStorage.getItem(SESSION_USER_HAS_PASSWORD) === false.toString() ? false : true;
+        },
+        set hasPassword(value: boolean | null) {
+            setItem(SESSION_USER_HAS_PASSWORD, value?.toString() ?? null);
+        },
         nullifySession: (): void => {
             console.warn('Nullifying Session.');
             const { session } = localPreferences;
@@ -208,6 +215,7 @@ const localPreferences = {
             session.userId = null;
             session.userUUID = null;
             session.username = null;
+            session.hasPassword = null;
         }
     }
 };

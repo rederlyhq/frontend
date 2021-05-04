@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQueryParam, StringParam } from 'use-query-params';
 import localPreferences from '../Utilities/LocalPreferences';
 import { useGlobalSnackbarContext } from '../Contexts/GlobalSnackbar';
@@ -7,6 +7,8 @@ import { getUserRoleFromServer } from '../Enums/UserRole';
 import _ from 'lodash';
 import { useBackdropContext } from '../Contexts/BackdropContext';
 import logger from '../Utilities/Logger';
+import { Modal } from 'react-bootstrap';
+import LTISetPassword from './LTISetPassword';
 const { general, session } = localPreferences;
 
 interface LTIKWrapperProps {
@@ -18,6 +20,7 @@ interface LTIKWrapperProps {
  */
 export const LTIKWrapper: React.FC<LTIKWrapperProps> = ({children}) => {
     const [ltik, setLtik] = useQueryParam('ltik', StringParam);
+    const [showSetPassword, setShowSetPassword] = useState<boolean>(false);
     const setAlert = useGlobalSnackbarContext();
     const setShowBackdropLoading = useBackdropContext();
 
@@ -48,21 +51,46 @@ export const LTIKWrapper: React.FC<LTIKWrapperProps> = ({children}) => {
                 session.actualUserType = session.userType;
                 session.userUUID = resp.data.data.uuid;
                 session.username = `${resp.data.data.firstName} ${resp.data.data.lastName}`;
+                session.hasPassword = resp.data.data.hasPassword;
                 // gaTrackLogin('LTI', session.userId);
-                // Remove LTIK when done. It has been replaced with a session token.
-                setLtik(undefined);
             } catch (e) {
                 setAlert?.({message: e.message, severity: 'error'});
-                // Remove LTIK when done. It has been replaced with a session token.
-                setLtik(undefined);
             } finally {
+                if (!session.hasPassword) {
+                    setShowSetPassword(true);
+                } else {
+                    // Remove LTIK when done. It has been replaced with a session token.
+                    setLtik(undefined);
+                }
                 setShowBackdropLoading?.(false);
             }
         })();
     }, [ltik, setAlert, setLtik, setShowBackdropLoading]);
 
+    const onDone = () => {
+        setLtik(undefined);
+        setShowSetPassword(false);
+        session.hasPassword = false;
+    };
 
-    return ltik ? <>Loading</> : <>{children}</>;
+    return <>
+        {ltik ? 
+            <>
+                <Modal show={showSetPassword} onHide={_.noop}>
+                    <Modal.Header>
+                        You must set a password.
+                    </Modal.Header>
+                    <Modal.Body>
+                        <LTISetPassword onDone={onDone} ltik={ltik} />
+                    </Modal.Body>
+                </Modal>
+                Loading
+            </> : 
+            <>
+                {children}
+            </>
+        }
+    </>;
 
 };
 
