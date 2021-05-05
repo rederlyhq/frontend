@@ -1,4 +1,4 @@
-import { Grid, Button, Snackbar } from '@material-ui/core';
+import { Grid, Button, Snackbar, CircularProgress } from '@material-ui/core';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -8,7 +8,7 @@ import { TopicObject, TopicAssessmentFields } from '../CourseInterfaces';
 import CommonSettings from './CommonSettings';
 import ExamSettings from './ExamSettings';
 import { TopicSettingsInputs } from './TopicSettingsPage';
-import { putTopic, regradeTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
 import logger from '../../Utilities/Logger';
@@ -20,16 +20,16 @@ import { getDefObjectFromTopic } from '@rederly/rederly-utils';
 import { isKeyOf } from '../../Utilities/TypescriptUtils';
 import { DevTool } from '@hookform/devtools';
 import { RegradeTopicButton } from './RegradeTopicButton';
-import { Spinner } from 'react-bootstrap';
 import { ConfirmationModal, ConfirmationModalProps } from '../../Components/ConfirmationModal';
-import BackendAPIError from '../../APIInterfaces/BackendAPI/BackendAPIError';
 
 interface TopicSettingsProps {
     selected: TopicObject;
     setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
+    regrade: () => unknown;
+    fetchTopic: () => Promise<void>;
 }
 
-export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}) => {
+export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic, regrade, fetchTopic}) => {
     const topicForm = useForm<TopicSettingsInputs>({
         mode: 'onSubmit',
         shouldFocusError: true,
@@ -140,29 +140,6 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
         }
     };
 
-    const regrade = async () => {
-        try {
-            const res = await regradeTopic({
-                id: selected.id
-            });
-            const topicData = res.data.data;
-
-            setTopic(currentTopic => new TopicObject({
-                ...topicData,
-                // didn't fetch questions again
-                questions: currentTopic?.questions,
-                topicAssessmentInfo: currentTopic?.topicAssessmentInfo
-            }));
-        } catch (err) {
-            if (BackendAPIError.isBackendAPIError(err)) {
-                setUpdateAlert({message: err.message, severity: 'error'});
-            } else {
-                logger.error('Failed to start regrading', err);
-                setUpdateAlert({message: 'Failed to start regrading', severity: 'error'});
-            }
-        }
-    };
-
     const { topicTypeId } = watch();
 
     return (
@@ -251,6 +228,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                                 ...current,
                                 show: true
                             }))}
+                            fetchTopic={fetchTopic}
                         />
 
                         <Button
@@ -260,7 +238,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                             disabled={saving || selected.retroStartedTime !== null}
                         >
                             Save Topic Settings
-                            { saving && <Spinner animation='border' role='status' style={{marginLeft: '1em'}}><span className='sr-only'>Loading...</span></Spinner>}
+                            { saving && <CircularProgress size={24} style={{marginLeft: '1em'}} /> }
                         </Button>
                     </Grid>
                 </Grid>

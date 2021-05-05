@@ -52,6 +52,7 @@ export interface GetCourseTopicOptions {
     id: number;
     userId?: number;
     includeQuestions?: boolean;
+    includeGradeIdsThatNeedRegrade?: boolean;
 }
 
 export interface PostCourseTopicOptions {

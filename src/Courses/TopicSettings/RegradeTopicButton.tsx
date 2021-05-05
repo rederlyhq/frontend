@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { Button } from '@material-ui/core';
-import { TopicObject } from '../CourseInterfaces';
+import { Button,CircularProgress } from '@material-ui/core';
+import { ProblemObject, TopicObject } from '../CourseInterfaces';
 import logger from '../../Utilities/Logger';
-import { Spinner } from 'react-bootstrap';
+
 import { getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { useGlobalSnackbarContext } from '../../Contexts/GlobalSnackbar';
+import _ from 'lodash';
 
 interface RegradeTopicButtonProps {
     topic: TopicObject;
@@ -12,6 +13,8 @@ interface RegradeTopicButtonProps {
     style?: React.CSSProperties;
     setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
     onRegradeClick: () => unknown;
+    question?: ProblemObject;
+    fetchTopic: () => Promise<void>;
 }
 
 export const RegradeTopicButton: React.FC<RegradeTopicButtonProps> = ({
@@ -19,7 +22,9 @@ export const RegradeTopicButton: React.FC<RegradeTopicButtonProps> = ({
     saving,
     style,
     setTopic,
-    onRegradeClick
+    question,
+    onRegradeClick,
+    fetchTopic
 }: RegradeTopicButtonProps) => {
     const topicPollingTimeout = useRef<NodeJS.Timeout | null>(null);
     const setAlert = useGlobalSnackbarContext();
@@ -45,29 +50,14 @@ export const RegradeTopicButton: React.FC<RegradeTopicButtonProps> = ({
                         topicPollingTimeout.current = null;
                         return;
                     }
-                    try {
-                        const res = await getTopic({id: topic.id, includeQuestions: false});
-                        const topicData = res.data.data;
-                        
-                        setTopic(currentTopic => new TopicObject({
-                            ...topicData,
-                            // didn't fetch questions again
-                            questions: currentTopic?.questions,
-                            // but did fetch assessment info since there is no toggle for it
-                            // topicAssessmentInfo: currentTopic?.topicAssessmentInfo
-                        }));
-                    } catch (e) {
-                        logger.error('Failed to check topic status', e);
-                        setAlert?.({message: 'Failed to check topic status', severity: 'error'});
-                    } finally {
-                        topicPollingTimeout.current = setTimeout(timeoutHandler, 15000);
-                    }
+                    await fetchTopic();
+                    topicPollingTimeout.current = setTimeout(timeoutHandler, 15000);
                 };
 
                 topicPollingTimeout.current = setTimeout(timeoutHandler, 15000);
             }
         }
-    }, [topic, setTopic]);
+    }, [topic, setTopic, setAlert]);
 
     useEffect(() => {
         // wanted to clear the timeout on unmount but it seems to get unmounted very frequently
@@ -80,20 +70,20 @@ export const RegradeTopicButton: React.FC<RegradeTopicButtonProps> = ({
         };
     }, []);
 
-    if (topic.gradeIdsThatNeedRetro.length === 0) {
+    if (topic.retroStartedTime === null && (((question?.grades?.length ?? 1) === 0) || topic.gradeIdsThatNeedRetro.length === 0)) {
         return null;
     }
 
     return (<>
         <Button
-            color='secondary'
+            color='default'
             variant='contained'
             disabled={topic.retroStartedTime !== null || saving}
             style={style}
             onClick={onRegradeClick}
         >
-            Regrade Topic
-            { topic.retroStartedTime !== null && <Spinner animation='border' role='status' style={{marginLeft: '1em'}}><span className='sr-only'>Loading...</span></Spinner>}
+            Regrade {_.isNil(question) ? 'Topic' : 'Question'}
+            { topic.retroStartedTime !== null && <CircularProgress size={24} style={{marginLeft: '1em'}}/>}
         </Button>
     </>);
 };

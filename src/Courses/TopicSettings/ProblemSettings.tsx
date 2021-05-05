@@ -17,6 +17,7 @@ import logger from '../../Utilities/Logger';
 import RendererPreview from './RendererPreview';
 import { HasEverBeenActiveWarning } from './HasEverBeenActiveWarning';
 import { PromptUnsaved } from '../../Components/PromptUnsaved';
+import { RegradeTopicButton } from './RegradeTopicButton';
 
 interface ProblemSettingsProps {
     selected: ProblemObject;
@@ -24,9 +25,11 @@ interface ProblemSettingsProps {
     setSelected: React.Dispatch<React.SetStateAction<TopicObject | ProblemObject>>;
     setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
     topic: TopicObject;
+    regrade: () => unknown;
+    fetchTopic: () => Promise<void>;
 }
 
-export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSelected, setTopic, topic}) => {
+export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSelected, setTopic, topic, regrade, fetchTopic}) => {
     const additionalProblemPathsArray = selected.courseQuestionAssessmentInfo?.additionalProblemPaths;
     const additionalProblemPathsArrayIsEmpty = _.isNil(additionalProblemPathsArray) || _.isEmpty(additionalProblemPathsArray);
 
@@ -59,6 +62,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
     const noPGErrorObject = useRef([]);
     const [PGErrorsMsg, setPGErrorsAlert] = useState<string[]>(noPGErrorObject.current);
     const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
+    const [saving, setSaving] = useState<boolean>(false);
 
     useEffect(()=>{
         const defaultAdditionalProblemPaths = [
@@ -135,6 +139,8 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             return;
         }
 
+        setSaving(true);
+
         // React Hook Forms only supports nested field array structures, so we have to flatten it ourselves.
         const fieldArray = _.compact(data.courseQuestionAssessmentInfo?.additionalProblemPaths?.map(f => f.path));
         // The first path should be set to the Webwork Question path.
@@ -181,9 +187,12 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             setTopic(newTopic);
             // This is a hack to avoid having to implement a state management solution right now.
             setSelected(newQuestion);
+            fetchTopic();
         } catch (e) {
             logger.error('Error updating question.', e);
             setUpdateAlert({message: e.message, severity: 'error'});
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -302,23 +311,38 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                         />
                     </Grid>
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
-                        <Grid container item md={4} spacing={3} justify='flex-end'>
-                            <Button
-                                color='secondary'
-                                variant='contained'
-                                onClick={()=>{setShowConfirmDelete(true);}}
-                                style={{marginRight: '1em'}}
-                            >
-                                Delete
-                            </Button>
-                            <Button
-                                color='primary'
-                                variant='contained'
-                                type='submit'
-                            >
-                                Save Problem
-                            </Button>
-                        </Grid>
+                        <RegradeTopicButton
+                            topic={topic}
+                            saving={saving}
+                            style={{
+                                marginRight: '1em',
+                            }}
+                            setTopic={setTopic}
+                            onRegradeClick={regrade}
+                            question={selected}
+                            fetchTopic={fetchTopic}
+                            // onRegradeClick={() => setConfirmationParameters(current => ({
+                            //     ...current,
+                            //     show: true
+                            // }))}
+                        />
+                        <Button
+                            color='secondary'
+                            variant='contained'
+                            onClick={()=>{setShowConfirmDelete(true);}}
+                            style={{marginRight: '1em'}}
+                            disabled={saving || topic.retroStartedTime !== null}
+                        >
+                            Delete
+                        </Button>
+                        <Button
+                            color='primary'
+                            variant='contained'
+                            type='submit'
+                            disabled={saving || topic.retroStartedTime !== null}
+                        >
+                            Save Problem
+                        </Button>
                     </Grid>
                 </Grid>
                 <ConfirmationModal

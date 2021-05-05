@@ -123,24 +123,27 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
     const history = useHistory();
 
-    useEffect(()=>{
+    const fetchTopic = async () => {
         if (!topicId) {
             logger.error('No topicId!', window.location);
             return;
         }
 
-        (async ()=>{
-            try {
-                const res = await getTopic({id: topicId, includeQuestions: true});
-                const topicData = res.data.data;
-                setTopic(new TopicObject(topicData));
-                updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: topicData.name ?? 'Unnamed Topic'});
-                setSelected(new TopicObject(topicData));
-            } catch (e) {
-                logger.error('Failed to load Topic', e);
-                setUpdateAlert({message: e.message, severity: 'error'});
-            }
-        })();
+        try {
+            const res = await getTopic({id: topicId, includeQuestions: true, includeGradeIdsThatNeedRegrade: true});
+            const topicData = res.data.data;
+            setTopic(new TopicObject(topicData));
+            updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: topicData.name ?? 'Unnamed Topic'});
+            setSelected(new TopicObject(topicData));
+        } catch (e) {
+            logger.error('Failed to load Topic', e);
+            setUpdateAlert({message: e.message, severity: 'error'});
+        }
+
+    };
+
+    useEffect(()=>{
+        fetchTopic();
     }, [course]);
 
     // Sets the selected state when the topic is loaded to the problemId in the URL.
@@ -411,6 +414,7 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
                 setSelected={setSelected}
                 setTopic={setTopic}
                 topic={topic}
+                fetchTopic={fetchTopic}
             />
         </Grid>
     );

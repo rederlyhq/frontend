@@ -183,13 +183,15 @@ export const deleteUnit = async ({
 export const getTopic = async ({
     id,
     userId,
-    includeQuestions
+    includeQuestions,
+    includeGradeIdsThatNeedRegrade
 }: GetCourseTopicOptions): Promise<AxiosResponse<GetTopicResponse>> => {
     try {
         return await AxiosRequest.get(
             url.resolve(COURSE_TOPIC_PATH, `${id}?${qs.stringify(_.omitBy({
                 userId,
-                includeQuestions
+                includeQuestions,
+                includeGradeIdsThatNeedRegrade
             }, _.isUndefined))}`)
         );
     } catch (e) {
@@ -229,13 +231,23 @@ export const putTopic = async ({
 
 export const regradeTopic = async ({
     id,
-}: { id: number}): Promise<AxiosResponse<PutCourseTopicUpdatesResponse>> => {
+    questionId
+}: {
+    id: number;
+    questionId?: number;
+}): Promise<AxiosResponse<PutCourseTopicUpdatesResponse>> => {
     try {
         return await AxiosRequest.put(
             url.resolve(
                 COURSE_TOPIC_PATH,
                 `${id}/regrade`
             ),
+            undefined,
+            {
+                params: {
+                    questionId: questionId
+                }
+            }
         );
     } catch (e) {
         throw new BackendAPIError(e);
