@@ -8,7 +8,7 @@ import { TopicObject, TopicAssessmentFields } from '../CourseInterfaces';
 import CommonSettings from './CommonSettings';
 import ExamSettings from './ExamSettings';
 import { TopicSettingsInputs } from './TopicSettingsPage';
-import { putTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { putTopic, regradeTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import _ from 'lodash';
 import { useMUIAlertState } from '../../Hooks/useAlertState';
 import logger from '../../Utilities/Logger';
@@ -19,6 +19,10 @@ import { PromptUnsaved } from '../../Components/PromptUnsaved';
 import { getDefObjectFromTopic } from '@rederly/rederly-utils';
 import { isKeyOf } from '../../Utilities/TypescriptUtils';
 import { DevTool } from '@hookform/devtools';
+import { RegradeTopicButton } from './RegradeTopicButton';
+import { Spinner } from 'react-bootstrap';
+import { ConfirmationModal, ConfirmationModalProps } from '../../Components/ConfirmationModal';
+import BackendAPIError from '../../APIInterfaces/BackendAPI/BackendAPIError';
 
 interface TopicSettingsProps {
     selected: TopicObject;
@@ -48,6 +52,21 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
     const [oldSelectedState, setOldSelectedState] = useState<TopicObject | null>(null);
     const [saving, setSaving] = useState<boolean>(false);
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
+
+    const DEFAULT_CONFIRMATION_PARAMETERS: ConfirmationModalProps = {
+        show: false,
+        onConfirm: () => { logger.error('onConfirm not set'); },
+        onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
+        headerContent: 'Do you want to regrade this topic?',
+        bodyContent: <div>
+            <p>Due to some of the edits made to this topic some student&apos;s grade&apos;s should change.</p>
+            <p>During regrade the topic will not be available to students or for updates.</p>
+            <p>This should only take a few minutes.</p>
+        </div>
+    };
+
+    const [confirmationParameters, setConfirmationParameters] = useState<ConfirmationModalProps>(DEFAULT_CONFIRMATION_PARAMETERS);
+    
 
     useEffect(()=>{
         const selectedWithoutQuestions = _.omit(selected, ['questions']);
@@ -89,22 +108,58 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
 
         try {
             setSaving(true);
-            await putTopic({
+            
+            const res = await putTopic({
                 id: selected.id,
                 data: obj
             });
+            const topicData = res.data.data.updatesResult.first;
+
+            if ((topicData?.gradeIdsThatNeedRetro?.length ?? 0) > 0) {
+                setConfirmationParameters(current => ({
+                    ...current,
+                    show: true
+                }));
+            }
 
             setUpdateAlert({message: 'Successfully updated', severity: 'success'});
 
             // Overwrite fields from the original object. This resets the state object when clicking between options.
-            const newTopic = new TopicObject({...selected, ...obj});
-            setTopic(newTopic);
-            updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
+            setTopic(currentTopic => new TopicObject({
+                ...topicData,
+                // didn't fetch questions again
+                questions: currentTopic?.questions,
+                topicAssessmentInfo: currentTopic?.topicAssessmentInfo
+            }));
+            updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: topicData?.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Error updating topic.', e);
             setUpdateAlert({message: e.message, severity: 'error'});
         } finally {
             setSaving(false);
+        }
+    };
+
+    const regrade = async () => {
+        try {
+            const res = await regradeTopic({
+                id: selected.id
+            });
+            const topicData = res.data.data;
+
+            setTopic(currentTopic => new TopicObject({
+                ...topicData,
+                // didn't fetch questions again
+                questions: currentTopic?.questions,
+                topicAssessmentInfo: currentTopic?.topicAssessmentInfo
+            }));
+        } catch (err) {
+            if (BackendAPIError.isBackendAPIError(err)) {
+                setUpdateAlert({message: err.message, severity: 'error'});
+            } else {
+                logger.error('Failed to start regrading', err);
+                setUpdateAlert({message: 'Failed to start regrading', severity: 'error'});
+            }
         }
     };
 
@@ -174,16 +229,39 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                     />
                     {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end">
-                        <Grid container item md={3} spacing={3} justify='flex-end'>
-                            <Button
-                                color='primary'
-                                variant='contained'
-                                type='submit'
-                                disabled={saving}
-                            >
-                                Save Topic Settings
-                            </Button>
-                        </Grid>
+                        <ConfirmationModal
+                            {...confirmationParameters}
+                            onConfirm={() => {
+                                regrade();
+                                setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS);
+                            }}
+                            onHide={() => {
+                                setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS);
+                            }}
+                        />
+                        
+                        <RegradeTopicButton
+                            topic={selected}
+                            saving={saving}
+                            style={{
+                                marginRight: '1em',
+                            }}
+                            setTopic={setTopic}
+                            onRegradeClick={() => setConfirmationParameters(current => ({
+                                ...current,
+                                show: true
+                            }))}
+                        />
+
+                        <Button
+                            color='primary'
+                            variant='contained'
+                            type='submit'
+                            disabled={saving || selected.retroStartedTime !== null}
+                        >
+                            Save Topic Settings
+                            { saving && <Spinner animation='border' role='status' style={{marginLeft: '1em'}}><span className='sr-only'>Loading...</span></Spinner>}
+                        </Button>
                     </Grid>
                 </Grid>
             </form>

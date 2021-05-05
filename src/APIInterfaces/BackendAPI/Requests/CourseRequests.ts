@@ -227,6 +227,21 @@ export const putTopic = async ({
     }
 };
 
+export const regradeTopic = async ({
+    id,
+}: { id: number}): Promise<AxiosResponse<PutCourseTopicUpdatesResponse>> => {
+    try {
+        return await AxiosRequest.put(
+            url.resolve(
+                COURSE_TOPIC_PATH,
+                `${id}/regrade`
+            ),
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
 export const deleteTopic = async ({
     id
 }: DeleteCourseTopicOptions): Promise<AxiosResponse<BackendAPIResponse>> => {

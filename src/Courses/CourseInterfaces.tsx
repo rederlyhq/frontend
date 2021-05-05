@@ -200,6 +200,8 @@ export class TopicObject {
     errors: number = 0;
     unit?: UnitObject;
     description: any = {};
+    gradeIdsThatNeedRetro: number[] = [];
+    retroStartedTime: Date | null = null;
 
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
