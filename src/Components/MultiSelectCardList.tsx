@@ -12,7 +12,7 @@ interface MultiSelectCardListProps {
     selected?: SettingsComponentType | null;
 }
 
-const RenderCard = ({item}: {item: SettingsComponentType}) => {
+const RenderCard = ({item, title}: {item: SettingsComponentType, title: string}) => {
     if (item instanceof ProblemObject) {
         const pgPathArr = item.webworkQuestionPath.split('/');
         const pgPath = pgPathArr[pgPathArr.length-1];
@@ -21,7 +21,7 @@ const RenderCard = ({item}: {item: SettingsComponentType}) => {
                 {`Problem ${item.problemNumber} (${item.weight} Point${item.weight > 1 ? 's' : ''})`}
             </ListItemText>
         );
-    } else if (item instanceof TopicObject) {
+    } else if (item instanceof TopicObject && title === 'Assignment') {
         return <ListItemText>Topic Grades</ListItemText>;
     }
     return <ListItemText>{item.name}</ListItemText>;
@@ -57,12 +57,12 @@ export const MultiSelectCardList: React.FC<MultiSelectCardListProps> = ({listIte
                         >
                             <ListItem
                                 button
-                                selected={item instanceof TopicObject ? _.isNil(selected) : selected?.id === item.id}
+                                selected={(item instanceof TopicObject && title === 'Assignment') ? _.isNil(selected) : selected?.id === item.id}
                                 onClick={() => onItemClick(item)}
                                 component={Card}
                                 style={{margin: '1em', overflow: 'ellipses'}}
                             >
-                                <RenderCard item={item} />
+                                <RenderCard item={item} title={title} />
                                 {!_.isNil(_.get(item, 'localGrade')) && <ListItemIcon>
                                     <Tooltip title='Grade'>
                                         <Chip label={_.get(item, 'localGrade')?.toPercentString()} color={item instanceof TopicObject ? 'primary' : undefined}/>
