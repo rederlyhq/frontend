@@ -325,10 +325,6 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                             onRegradeClick={triggerRegrade}
                             question={selected}
                             fetchTopic={fetchTopic}
-                            // onRegradeClick={() => setConfirmationParameters(current => ({
-                            //     ...current,
-                            //     show: true
-                            // }))}
                         />
                         <Button
                             color='secondary'
