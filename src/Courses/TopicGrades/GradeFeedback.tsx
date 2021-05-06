@@ -15,6 +15,7 @@ import { IMUIAlertModalState } from '../../Hooks/useAlertState';
 import AttachmentType from '../../Enums/AttachmentTypeEnum';
 import { GenericConfirmAttachmentUploadOptions } from '../../APIInterfaces/BackendAPI/RequestTypes/CourseRequestTypes';
 import { useForm, Controller } from 'react-hook-form';
+import { Grid } from '@material-ui/core';
 window.katex = katex;
 
 interface GradeFeedbackProps {
@@ -71,29 +72,31 @@ export const GradeFeedback: React.FC<GradeFeedbackProps> = ({ workbookId, setGra
 
     console.log(formState.isDirty);
 
-    return <form onSubmit={handleSubmit(onSave)}>
-        <Controller
-            name={'feedback'}
-            control={control}
-            defaultValue={{feedback: defaultValue}}
-            render={({ onChange, onBlur, value }) => (
-                <QuillControlledEditor
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    value={value}
-                    // key={JSON.stringify({workbookId, topicId, userId})}
-                    // onSave={onSave} 
-                    placeholder={`Leave feedback for this student's attempt. 
+    return <Grid container item md={12}>
+        <form onSubmit={handleSubmit(onSave)} style={{width: '100%'}}>
+            <Controller
+                name={'feedback'}
+                control={control}
+                defaultValue={{feedback: defaultValue}}
+                render={({ onChange, onBlur, value }) => (
+                    <QuillControlledEditor
+                        onBlur={onBlur}
+                        onChange={onChange}
+                        value={value}
+                        // key={JSON.stringify({workbookId, topicId, userId})}
+                        // onSave={onSave} 
+                        placeholder={`Leave feedback for this student's attempt. 
 Students can see this by visiting their version of the grading page and selecting this attempt.
 You may drag and drop files to upload them here.
                     `} 
-                    defaultValue={defaultValue}
-                    attachmentType={AttachmentType.WORKBOOK_FEEDBACK}
-                    uploadConfirmation={uploadConfirmation}
-                    isDirty={formState.isDirty}
-                    isNestedInForm
-                />
-            )}
-        />
-    </form>;
+                        defaultValue={defaultValue}
+                        attachmentType={AttachmentType.WORKBOOK_FEEDBACK}
+                        uploadConfirmation={uploadConfirmation}
+                        isDirty={formState.isDirty}
+                        isNestedInForm
+                    />
+                )}
+            />
+        </form>
+    </Grid>;
 };
