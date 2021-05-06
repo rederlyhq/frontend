@@ -38,7 +38,6 @@ interface QuillControlledEditorProps {
     value?: ReactQuillProps['value'];
     // Uncontrolled variant only
     onSave?: (saveData: ReactQuillProps['value'] | null)=>any;
-    isNestedInForm?: boolean;
     isDirty?: boolean;
 }
 
@@ -53,7 +52,7 @@ class CustomImageSpec extends ImageSpec {
     }
 }
 
-export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue, placeholder, attachmentType, uploadConfirmation, isNestedInForm, isDirty}) => {
+export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onSave, onChange, onBlur, value, defaultValue, placeholder, attachmentType, uploadConfirmation, isDirty}) => {
     const quill = useRef<ReactQuill | null>();
     const [disabled, setDisabled] = useState<boolean>(true);
     const setAlert = useGlobalSnackbarContext();
@@ -85,7 +84,6 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
 
     const isQuillEmpty = () => {
         const delta = quill.current?.getEditor().getContents();
-        console.log(delta);
         
         if ((delta?.['ops'] || []).length > 1) {
             return false;
@@ -236,7 +234,7 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
             {onSave && <Grid xs={12} style={{margin: '0% 1%'}}>
                 <Button disabled={disabled} fullWidth color='primary' variant='contained' onClick={onClickedSave}>Save Feedback</Button>
             </Grid>}
-            {isNestedInForm && <Grid xs={12} style={{margin: '0% 1%'}}>
+            {!_.isNil(isDirty) && <Grid xs={12} style={{margin: '0% 1%'}}>
                 <Button disabled={!isDirty} fullWidth color='primary' variant='contained' type='submit'>Save Feedback</Button>
             </Grid>}
         </Grid>

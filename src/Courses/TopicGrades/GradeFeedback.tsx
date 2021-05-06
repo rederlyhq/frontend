@@ -70,8 +70,6 @@ export const GradeFeedback: React.FC<GradeFeedbackProps> = ({ workbookId, setGra
         }
     };
 
-    console.log(formState.isDirty);
-
     return <Grid container item md={12}>
         <form onSubmit={handleSubmit(onSave)} style={{width: '100%'}}>
             <Controller
@@ -93,7 +91,6 @@ You may drag and drop files to upload them here.
                         attachmentType={AttachmentType.WORKBOOK_FEEDBACK}
                         uploadConfirmation={uploadConfirmation}
                         isDirty={formState.isDirty}
-                        isNestedInForm
                     />
                 )}
             />
