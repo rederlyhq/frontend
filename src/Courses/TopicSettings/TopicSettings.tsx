@@ -20,16 +20,15 @@ import { getDefObjectFromTopic } from '@rederly/rederly-utils';
 import { isKeyOf } from '../../Utilities/TypescriptUtils';
 import { DevTool } from '@hookform/devtools';
 import { RegradeTopicButton } from './RegradeTopicButton';
-import { ConfirmationModal, ConfirmationModalProps } from '../../Components/ConfirmationModal';
 
 interface TopicSettingsProps {
     selected: TopicObject;
     setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
-    regrade: () => unknown;
-    fetchTopic: () => Promise<void>;
+    triggerRegrade: () => unknown;
+    fetchTopic: () => Promise<TopicObject | null>;
 }
 
-export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic, regrade, fetchTopic}) => {
+export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic, triggerRegrade, fetchTopic}) => {
     const topicForm = useForm<TopicSettingsInputs>({
         mode: 'onSubmit',
         shouldFocusError: true,
@@ -52,21 +51,6 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic,
     const [oldSelectedState, setOldSelectedState] = useState<TopicObject | null>(null);
     const [saving, setSaving] = useState<boolean>(false);
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
-
-    const DEFAULT_CONFIRMATION_PARAMETERS: ConfirmationModalProps = {
-        show: false,
-        onConfirm: () => { logger.error('onConfirm not set'); },
-        onHide: () => setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS),
-        headerContent: 'Do you want to regrade this topic?',
-        bodyContent: <div>
-            <p>Due to some of the edits made to this topic some student&apos;s grade&apos;s should change.</p>
-            <p>During regrade the topic will not be available to students or for updates.</p>
-            <p>This should only take a few minutes.</p>
-        </div>
-    };
-
-    const [confirmationParameters, setConfirmationParameters] = useState<ConfirmationModalProps>(DEFAULT_CONFIRMATION_PARAMETERS);
-    
 
     useEffect(()=>{
         const selectedWithoutQuestions = _.omit(selected, ['questions']);
@@ -108,18 +92,15 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic,
 
         try {
             setSaving(true);
-            
+            const gradeIdsThatNeededRetro = selected.gradeIdsThatNeedRetro.length;
             const res = await putTopic({
                 id: selected.id,
                 data: obj
             });
             const topicData = res.data.data.updatesResult.first;
 
-            if ((topicData?.gradeIdsThatNeedRetro?.length ?? 0) > 0) {
-                setConfirmationParameters(current => ({
-                    ...current,
-                    show: true
-                }));
+            if ((topicData?.gradeIdsThatNeedRetro?.length ?? 0) > gradeIdsThatNeededRetro) {
+                triggerRegrade();
             }
 
             setUpdateAlert({message: 'Successfully updated', severity: 'success'});
@@ -206,17 +187,6 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic,
                     />
                     {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
                     <Grid container item md={12} alignItems='flex-start' justify="flex-end">
-                        <ConfirmationModal
-                            {...confirmationParameters}
-                            onConfirm={() => {
-                                regrade();
-                                setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS);
-                            }}
-                            onHide={() => {
-                                setConfirmationParameters(DEFAULT_CONFIRMATION_PARAMETERS);
-                            }}
-                        />
-                        
                         <RegradeTopicButton
                             topic={selected}
                             saving={saving}
@@ -224,10 +194,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic,
                                 marginRight: '1em',
                             }}
                             setTopic={setTopic}
-                            onRegradeClick={() => setConfirmationParameters(current => ({
-                                ...current,
-                                show: true
-                            }))}
+                            onRegradeClick={triggerRegrade}
                             fetchTopic={fetchTopic}
                         />
 

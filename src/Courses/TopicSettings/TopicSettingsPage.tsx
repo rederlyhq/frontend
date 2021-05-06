@@ -123,23 +123,25 @@ export const TopicSettingsPage: React.FC<TopicSettingsPageProps> = ({topic: topi
     const {updateBreadcrumbLookup} = useBreadcrumbLookupContext();
     const history = useHistory();
 
-    const fetchTopic = async () => {
+    const fetchTopic = async (): Promise<TopicObject | null> => {
         if (!topicId) {
             logger.error('No topicId!', window.location);
-            return;
+            return null;
         }
 
         try {
             const res = await getTopic({id: topicId, includeQuestions: true, includeGradeIdsThatNeedRegrade: true});
             const topicData = res.data.data;
-            setTopic(new TopicObject(topicData));
+            const newTopic = new TopicObject(topicData);
+            setTopic(newTopic);
             updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: topicData.name ?? 'Unnamed Topic'});
-            setSelected(new TopicObject(topicData));
+            setSelected(newTopic);
+            return newTopic;
         } catch (e) {
             logger.error('Failed to load Topic', e);
             setUpdateAlert({message: e.message, severity: 'error'});
         }
-
+        return null;
     };
 
     useEffect(()=>{

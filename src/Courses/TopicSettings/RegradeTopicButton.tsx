@@ -3,7 +3,6 @@ import { Button,CircularProgress } from '@material-ui/core';
 import { ProblemObject, TopicObject } from '../CourseInterfaces';
 import logger from '../../Utilities/Logger';
 
-import { getTopic } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { useGlobalSnackbarContext } from '../../Contexts/GlobalSnackbar';
 import _ from 'lodash';
 
@@ -14,7 +13,7 @@ interface RegradeTopicButtonProps {
     setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
     onRegradeClick: () => unknown;
     question?: ProblemObject;
-    fetchTopic: () => Promise<void>;
+    fetchTopic: () => Promise<TopicObject | null>;
 }
 
 export const RegradeTopicButton: React.FC<RegradeTopicButtonProps> = ({
@@ -57,7 +56,7 @@ export const RegradeTopicButton: React.FC<RegradeTopicButtonProps> = ({
                 topicPollingTimeout.current = setTimeout(timeoutHandler, 15000);
             }
         }
-    }, [topic, setTopic, setAlert]);
+    }, [topic, setTopic, setAlert, fetchTopic]);
 
     useEffect(() => {
         // wanted to clear the timeout on unmount but it seems to get unmounted very frequently

@@ -25,11 +25,11 @@ interface ProblemSettingsProps {
     setSelected: React.Dispatch<React.SetStateAction<TopicObject | ProblemObject>>;
     setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
     topic: TopicObject;
-    regrade: () => unknown;
-    fetchTopic: () => Promise<void>;
+    triggerRegrade: () => unknown;
+    fetchTopic: () => Promise<TopicObject | null>;
 }
 
-export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSelected, setTopic, topic, regrade, fetchTopic}) => {
+export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSelected, setTopic, topic, triggerRegrade, fetchTopic}) => {
     const additionalProblemPathsArray = selected.courseQuestionAssessmentInfo?.additionalProblemPaths;
     const additionalProblemPathsArrayIsEmpty = _.isNil(additionalProblemPathsArray) || _.isEmpty(additionalProblemPathsArray);
 
@@ -160,6 +160,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
         const dataWithoutAssessmentInfo = _.omit(data, ['courseQuestionAssessmentInfo']);
 
         try {
+            const gradeIdsThatNeededRetro = topic.gradeIdsThatNeedRetro.length;
             const res = await putQuestion({
                 id: selected.id,
                 data: {
@@ -187,7 +188,10 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
             setTopic(newTopic);
             // This is a hack to avoid having to implement a state management solution right now.
             setSelected(newQuestion);
-            fetchTopic();
+            const fetchedTopic = await fetchTopic();
+            if ((fetchedTopic?.gradeIdsThatNeedRetro.length ?? 0) > gradeIdsThatNeededRetro) {
+                triggerRegrade();
+            }
         } catch (e) {
             logger.error('Error updating question.', e);
             setUpdateAlert({message: e.message, severity: 'error'});
@@ -318,7 +322,7 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
                                 marginRight: '1em',
                             }}
                             setTopic={setTopic}
-                            onRegradeClick={regrade}
+                            onRegradeClick={triggerRegrade}
                             question={selected}
                             fetchTopic={fetchTopic}
                             // onRegradeClick={() => setConfirmationParameters(current => ({

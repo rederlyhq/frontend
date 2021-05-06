@@ -14,8 +14,8 @@ interface ProblemSettingsProps {
     setSelected: React.Dispatch<React.SetStateAction<TopicObject | ProblemObject>>;
     setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
     topic: TopicObject;
-    regrade: () => unknown;
-    fetchTopic: () => Promise<void>;
+    triggerRegrade: () => unknown;
+    fetchTopic: () => Promise<TopicObject | null>;
 }
 
 function a11yProps(index: any) {
