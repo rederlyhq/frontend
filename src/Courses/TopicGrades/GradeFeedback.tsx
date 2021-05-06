@@ -1,4 +1,4 @@
-import React, {  } from 'react';
+import React, { useEffect } from 'react';
 import 'react-quill/dist/quill.snow.css';
 // import 'mathquill/build/mathquill';
 import 'mathquill4quill/mathquill4quill.css';
@@ -26,7 +26,16 @@ interface GradeFeedbackProps {
 }
 
 export const GradeFeedback: React.FC<GradeFeedbackProps> = ({ workbookId, setGradeAlert, defaultValue, userId, topicId }) => {
-    const { handleSubmit, formState, control } = useForm<{feedback: unknown}>();
+    const { control, handleSubmit, formState, reset } = useForm<{feedback: unknown}>({
+        mode: 'onSubmit',
+        defaultValues: {
+            feedback: defaultValue,
+        },
+    });
+
+    useEffect(()=>{
+        reset({feedback: defaultValue ?? null});
+    }, [reset, defaultValue, workbookId, topicId, userId]);
 
     const onSave = async (feedbackObject: {feedback: unknown}) => {
         const content = feedbackObject.feedback;
@@ -36,6 +45,7 @@ export const GradeFeedback: React.FC<GradeFeedbackProps> = ({ workbookId, setGra
             } else {
                 await postTopicFeedback({topicId, userId, content});
             }
+            reset(feedbackObject);
         } catch (e) {
             logger.error(e);
             setGradeAlert({message: `An error occurred while saving your feedback. (${e.message})`, severity: 'error'});
@@ -57,28 +67,31 @@ export const GradeFeedback: React.FC<GradeFeedbackProps> = ({ workbookId, setGra
                 userId,
             });
         }
-        
     };
+
+    console.log(formState.isDirty);
 
     return <form onSubmit={handleSubmit(onSave)}>
         <Controller
             name={'feedback'}
             control={control}
-            defaultValue={defaultValue}
+            defaultValue={{feedback: defaultValue}}
             render={({ onChange, onBlur, value }) => (
                 <QuillControlledEditor
                     onBlur={onBlur}
                     onChange={onChange}
                     value={value}
-                    key={JSON.stringify(defaultValue)}
+                    // key={JSON.stringify({workbookId, topicId, userId})}
                     // onSave={onSave} 
                     placeholder={`Leave feedback for this student's attempt. 
-        Students can see this by visiting their version of the grading page and selecting this attempt.
-        You may drag and drop files to upload them here.
+Students can see this by visiting their version of the grading page and selecting this attempt.
+You may drag and drop files to upload them here.
                     `} 
                     defaultValue={defaultValue}
                     attachmentType={AttachmentType.WORKBOOK_FEEDBACK}
                     uploadConfirmation={uploadConfirmation}
+                    isDirty={formState.isDirty}
+                    isNestedInForm
                 />
             )}
         />
