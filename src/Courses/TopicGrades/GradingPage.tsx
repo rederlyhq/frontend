@@ -292,13 +292,13 @@ export const GradingPage: React.FC<GradingPageProps> = () => {
         logger.debug('Syncing query parameters.');
         if (currentUserRole !== UserRole.STUDENT) {
             // This can be null on page load, so we have to prevent that from overwriting the param.
-            selected.user && setUserId(selected.user.id);
+            selected.user && setUserId(selected.user.id, 'replaceIn');
         } else {
-            setUserId(undefined);
+            setUserId(undefined, 'replaceIn');
         }
         // This is undefined on page load, but null if Topic is specifically selected.
         if (selected.problem !== undefined) {
-            setProblemId(selected.problem?.id ?? undefined);
+            setProblemId(selected.problem?.id ?? undefined, 'replaceIn');
         }
     }, [currentUserRole, selected, setProblemId, setUserId]);
 
