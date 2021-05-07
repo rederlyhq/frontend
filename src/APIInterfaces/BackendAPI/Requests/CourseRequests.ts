@@ -231,10 +231,12 @@ export const putTopic = async ({
 
 export const regradeTopic = async ({
     id,
-    questionId
+    questionId,
+    userId
 }: {
     id: number;
     questionId?: number;
+    userId?: number;
 }): Promise<AxiosResponse<PutCourseTopicUpdatesResponse>> => {
     try {
         return await AxiosRequest.put(
@@ -245,7 +247,39 @@ export const regradeTopic = async ({
             undefined,
             {
                 params: {
-                    questionId: questionId
+                    questionId: questionId,
+                    userId: userId,
+                }
+            }
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const checkRegradeTopic = async ({
+    id,
+    questionId,
+    userId,
+}: {
+    id: number;
+    questionId?: number;
+    userId?: number;
+}): Promise<AxiosResponse<BackendAPIResponse<{
+    retroStartedTime: Date | null;
+    needsRegrade: boolean;
+    gradeIdsThatNeedRetro: number[];
+}>>> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(
+                COURSE_TOPIC_PATH,
+                `${id}/regrade`
+            ),
+            {
+                params: {
+                    questionId: questionId,
+                    userId: userId
                 }
             }
         );

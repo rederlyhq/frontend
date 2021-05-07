@@ -238,122 +238,125 @@ export const ProblemSettings: React.FC<ProblemSettingsProps> = ({selected, setSe
         }
     };
 
+    const disabled = saving || topic.retroStartedTime !== null;
     return (
         <FormProvider {...topicForm}>
             <HasEverBeenActiveWarning topic={topic} />
             <PromptUnsaved message='You have unsaved changes. Are you sure you want to leave the page?' when={formState.isDirty} />
             <form onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', severity: 'warning'});}} onSubmit={handleSubmit(onSubmit)}>
-                <DevTool control={control} />
-                <Grid container item md={12} spacing={3}>
-                    <Snackbar
-                        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                        open={updateAlertMsg !== ''}
-                        autoHideDuration={updateAlertType === 'success' ? 6000 : undefined}
-                        onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
-                        style={{maxWidth: '50vw'}}
-                    >
-                        <MUIAlert
-                            onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
-                            severity={updateAlertType}
-                            variant='filled'
-                            style={{fontSize: '1.1em'}}
-                        >
-                            <div>{updateAlertMsg}</div>
-                        </MUIAlert>
-                    </Snackbar>
+                <fieldset disabled={disabled}>
+                    <DevTool control={control} />
                     <Grid container item md={12} spacing={3}>
-                        <Grid item container md={12}><h1>Problem Settings</h1></Grid>
-                        <Grid item container md={12}>
-                            {PGErrorsMsg.length > 0 && <MUIAlert 
-                                severity='error'
-                                variant='standard'
+                        <Snackbar
+                            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                            open={updateAlertMsg !== ''}
+                            autoHideDuration={updateAlertType === 'success' ? 6000 : undefined}
+                            onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                            style={{maxWidth: '50vw'}}
+                        >
+                            <MUIAlert
+                                onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                                severity={updateAlertType}
+                                variant='filled'
+                                style={{fontSize: '1.1em'}}
                             >
-                                {PGErrorsMsg.map((msg, i) => {
-                                    return (i !== PGErrorsMsg.length - 1 && i > 0) ? <>{msg}<br/></> : msg;
-                                })}
-                            </MUIAlert>}
-                        </Grid>
-                        <Grid item md={8}>
-                            Enter the path to the problem on the Rederly server. This is prefaced either
-                            with <code>Library/</code> or <code>Contrib/</code> if the desired problem is included
-                            in the <Link to='https://github.com/openwebwork/webwork-open-problem-library'>OPL</Link> or <code>private/</code> if
-                            this problem has been uploaded to your private Rederly folder.
-                            {topic.topicTypeId === TopicTypeId.EXAM ?
-                                <MultipleProblemPaths /> :
-                                <ProblemPath />
-                            }
-                        </Grid>{topic.topicTypeId !== TopicTypeId.EXAM && (<Grid item md={12}>
-                            Enter the maximum number of graded attempts for a problem, use 0 or -1 to give students unlimited attempts.<br/>
-                            <ProblemMaxAttempts />
-                        </Grid>)}<Grid item md={12}>
-                            Enter the number of points available for this problem. If the problem is marked as <b>optional</b>, these points will be treated as extra credit.<br/>
-                            <ProblemWeight />
-                        </Grid>
-                        {topic.topicTypeId === TopicTypeId.PROBLEM_SET &&
-                        <Grid item md={12}>
-                            This problem is {optional ? 'optional' : 'required'}.<br/>
-                            <ToggleField name={'optional'} label={'Optional'} /><br />
-                            Show Me Another <br />
-                            <ToggleField name={'smaEnabled'} label={(smaEnabled) ? 'Enabled' : 'Disabled'} /><br />
-                        </Grid>
-                        }
-                        {topic.topicTypeId === TopicTypeId.EXAM && (
-                            <Grid item md={12}>
-                                <Grid item md={10}>
-                                    You can optionally limit the randomization of this problem by entering specific <b>random seeds</b> (numeric values between 1 and 999999) into the text field below.
-                                    Use the problem preview pane below to see how different <b>seeds</b> affect the randomization. You can add multiple numbers by pressing enter or using a comma to separate them.<br/>
-                                </Grid>
-                                <RandomSeedSet />
+                                <div>{updateAlertMsg}</div>
+                            </MUIAlert>
+                        </Snackbar>
+                        <Grid container item md={12} spacing={3}>
+                            <Grid item container md={12}><h1>Problem Settings</h1></Grid>
+                            <Grid item container md={12}>
+                                {PGErrorsMsg.length > 0 && <MUIAlert 
+                                    severity='error'
+                                    variant='standard'
+                                >
+                                    {PGErrorsMsg.map((msg, i) => {
+                                        return (i !== PGErrorsMsg.length - 1 && i > 0) ? <>{msg}<br/></> : msg;
+                                    })}
+                                </MUIAlert>}
                             </Grid>
-                        )}
-                    </Grid><Grid item xs={12}>
-                        <RendererPreview
-                            opened={false}
-                            defaultPath={topic.topicTypeId === TopicTypeId.EXAM ?
-                                additionalProblemPaths.first?.path || '' :
-                                webworkQuestionPath}
-                        />
+                            <Grid item md={8}>
+                                Enter the path to the problem on the Rederly server. This is prefaced either
+                                with <code>Library/</code> or <code>Contrib/</code> if the desired problem is included
+                                in the <Link to='https://github.com/openwebwork/webwork-open-problem-library'>OPL</Link> or <code>private/</code> if
+                                this problem has been uploaded to your private Rederly folder.
+                                {topic.topicTypeId === TopicTypeId.EXAM ?
+                                    <MultipleProblemPaths /> :
+                                    <ProblemPath />
+                                }
+                            </Grid>{topic.topicTypeId !== TopicTypeId.EXAM && (<Grid item md={12}>
+                                Enter the maximum number of graded attempts for a problem, use 0 or -1 to give students unlimited attempts.<br/>
+                                <ProblemMaxAttempts />
+                            </Grid>)}<Grid item md={12}>
+                                Enter the number of points available for this problem. If the problem is marked as <b>optional</b>, these points will be treated as extra credit.<br/>
+                                <ProblemWeight />
+                            </Grid>
+                            {topic.topicTypeId === TopicTypeId.PROBLEM_SET &&
+                            <Grid item md={12}>
+                                This problem is {optional ? 'optional' : 'required'}.<br/>
+                                <ToggleField name={'optional'} label={'Optional'} /><br />
+                                Show Me Another <br />
+                                <ToggleField name={'smaEnabled'} label={(smaEnabled) ? 'Enabled' : 'Disabled'} /><br />
+                            </Grid>
+                            }
+                            {topic.topicTypeId === TopicTypeId.EXAM && (
+                                <Grid item md={12}>
+                                    <Grid item md={10}>
+                                        You can optionally limit the randomization of this problem by entering specific <b>random seeds</b> (numeric values between 1 and 999999) into the text field below.
+                                        Use the problem preview pane below to see how different <b>seeds</b> affect the randomization. You can add multiple numbers by pressing enter or using a comma to separate them.<br/>
+                                    </Grid>
+                                    <RandomSeedSet />
+                                </Grid>
+                            )}
+                        </Grid><Grid item xs={12}>
+                            <RendererPreview
+                                opened={false}
+                                defaultPath={topic.topicTypeId === TopicTypeId.EXAM ?
+                                    additionalProblemPaths.first?.path || '' :
+                                    webworkQuestionPath}
+                            />
+                        </Grid>
+                        <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
+                            <RegradeTopicButton
+                                topic={topic}
+                                saving={saving}
+                                style={{
+                                    marginRight: '1em',
+                                }}
+                                setTopic={setTopic}
+                                onRegradeClick={triggerRegrade}
+                                question={selected}
+                                fetchTopic={fetchTopic}
+                            />
+                            <Button
+                                color='secondary'
+                                variant='contained'
+                                onClick={()=>{setShowConfirmDelete(true);}}
+                                style={{marginRight: '1em'}}
+                                disabled={disabled}
+                            >
+                                Delete
+                            </Button>
+                            <Button
+                                color='primary'
+                                variant='contained'
+                                type='submit'
+                                disabled={disabled}
+                            >
+                                Save Problem
+                            </Button>
+                        </Grid>
                     </Grid>
-                    <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
-                        <RegradeTopicButton
-                            topic={topic}
-                            saving={saving}
-                            style={{
-                                marginRight: '1em',
-                            }}
-                            setTopic={setTopic}
-                            onRegradeClick={triggerRegrade}
-                            question={selected}
-                            fetchTopic={fetchTopic}
-                        />
-                        <Button
-                            color='secondary'
-                            variant='contained'
-                            onClick={()=>{setShowConfirmDelete(true);}}
-                            style={{marginRight: '1em'}}
-                            disabled={saving || topic.retroStartedTime !== null}
-                        >
-                            Delete
-                        </Button>
-                        <Button
-                            color='primary'
-                            variant='contained'
-                            type='submit'
-                            disabled={saving || topic.retroStartedTime !== null}
-                        >
-                            Save Problem
-                        </Button>
-                    </Grid>
-                </Grid>
-                <ConfirmationModal
-                    onConfirm={() => { onDelete(); setShowConfirmDelete(false); }}
-                    onHide={() => {
-                        setShowConfirmDelete(false);
-                    }}
-                    show={showConfirmDelete}
-                    headerContent={<h5>Confirm delete</h5>}
-                    bodyContent={`Are you sure you want to remove Problem ${selected.problemNumber}?`}
-                />
+                    <ConfirmationModal
+                        onConfirm={() => { onDelete(); setShowConfirmDelete(false); }}
+                        onHide={() => {
+                            setShowConfirmDelete(false);
+                        }}
+                        show={showConfirmDelete}
+                        headerContent={<h5>Confirm delete</h5>}
+                        bodyContent={`Are you sure you want to remove Problem ${selected.problemNumber}?`}
+                    />
+                </fieldset>
             </form>
         </FormProvider>
     );

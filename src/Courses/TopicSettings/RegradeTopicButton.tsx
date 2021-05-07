@@ -1,29 +1,33 @@
 import React, { useEffect, useRef } from 'react';
 import { Button,CircularProgress } from '@material-ui/core';
-import { ProblemObject, TopicObject } from '../CourseInterfaces';
+import { TopicObject } from '../CourseInterfaces';
 import logger from '../../Utilities/Logger';
 
 import { useGlobalSnackbarContext } from '../../Contexts/GlobalSnackbar';
 import _ from 'lodash';
 
 interface RegradeTopicButtonProps {
-    topic: TopicObject;
+    topic: {
+        retroStartedTime: Date | null;
+        gradeIdsThatNeedRetro: number[];
+    };
     saving: boolean;
     style?: React.CSSProperties;
-    setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
+    setTopic?: React.Dispatch<React.SetStateAction<TopicObject | null>>;
     onRegradeClick: () => unknown;
-    question?: ProblemObject;
-    fetchTopic: () => Promise<TopicObject | null>;
+    question?: {grades?: unknown[]};
+    fetchTopic: () => Promise<unknown> | unknown;
+    regradeRequiredOverride?: boolean;
 }
 
 export const RegradeTopicButton: React.FC<RegradeTopicButtonProps> = ({
     topic,
     saving,
     style,
-    setTopic,
     question,
     onRegradeClick,
-    fetchTopic
+    fetchTopic,
+    regradeRequiredOverride,
 }: RegradeTopicButtonProps) => {
     const topicPollingTimeout = useRef<NodeJS.Timeout | null>(null);
     const setAlert = useGlobalSnackbarContext();
@@ -56,7 +60,7 @@ export const RegradeTopicButton: React.FC<RegradeTopicButtonProps> = ({
                 topicPollingTimeout.current = setTimeout(timeoutHandler, 15000);
             }
         }
-    }, [topic, setTopic, setAlert, fetchTopic]);
+    }, [topic, setAlert, fetchTopic]);
 
     useEffect(() => {
         // wanted to clear the timeout on unmount but it seems to get unmounted very frequently
@@ -69,16 +73,23 @@ export const RegradeTopicButton: React.FC<RegradeTopicButtonProps> = ({
         };
     }, []);
 
+    if (regradeRequiredOverride === false) {
+        return null;
+    }
+
     if (topic.retroStartedTime === null && (((question?.grades?.length ?? 1) === 0) || topic.gradeIdsThatNeedRetro.length === 0)) {
         return null;
     }
 
     return (<>
         <Button
-            color='default'
+            color='primary'
             variant='contained'
             disabled={topic.retroStartedTime !== null || saving}
-            style={style}
+            style={{
+                backgroundColor: '#b26a00',
+                ...style
+            }}
             onClick={onRegradeClick}
         >
             Regrade {_.isNil(question) ? 'Topic' : 'Question'}
