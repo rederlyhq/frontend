@@ -307,7 +307,7 @@ export const GenerateQuillField: React.FC<{
 
     return (
         <>
-            <FormLabel component="legend">Topic Description</FormLabel>
+            <FormLabel component="legend">{label}</FormLabel>
             <Controller
                 name={name}
                 control={control}
