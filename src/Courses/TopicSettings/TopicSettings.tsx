@@ -110,7 +110,6 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic,
                 ...topicData,
                 // didn't fetch questions again
                 questions: currentTopic?.questions,
-                topicAssessmentInfo: currentTopic?.topicAssessmentInfo
             }));
             updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: topicData?.name ?? 'Unnamed Topic'});
         } catch (e) {
