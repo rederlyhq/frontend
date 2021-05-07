@@ -18,6 +18,7 @@ interface RegradeTopicButtonProps {
     question?: {grades?: unknown[]};
     fetchTopic: () => Promise<unknown> | unknown;
     regradeRequiredOverride?: boolean;
+    regradeType?: string;
 }
 
 export const RegradeTopicButton: React.FC<RegradeTopicButtonProps> = ({
@@ -28,6 +29,7 @@ export const RegradeTopicButton: React.FC<RegradeTopicButtonProps> = ({
     onRegradeClick,
     fetchTopic,
     regradeRequiredOverride,
+    regradeType
 }: RegradeTopicButtonProps) => {
     const topicPollingTimeout = useRef<NodeJS.Timeout | null>(null);
     const setAlert = useGlobalSnackbarContext();
@@ -81,18 +83,20 @@ export const RegradeTopicButton: React.FC<RegradeTopicButtonProps> = ({
         return null;
     }
 
+    const disabled = topic.retroStartedTime !== null || saving;
+    regradeType = regradeType ?? (_.isNil(question) ? 'Topic' : 'Question');
     return (<>
         <Button
             color='primary'
             variant='contained'
-            disabled={topic.retroStartedTime !== null || saving}
+            disabled={disabled}
             style={{
-                backgroundColor: '#b26a00',
+                backgroundColor: disabled ? undefined : '#b26a00',
                 ...style
             }}
             onClick={onRegradeClick}
         >
-            Regrade {_.isNil(question) ? 'Topic' : 'Question'}
+            Regrade {regradeType}
             { topic.retroStartedTime !== null && <CircularProgress size={24} style={{marginLeft: '1em'}}/>}
         </Button>
     </>);

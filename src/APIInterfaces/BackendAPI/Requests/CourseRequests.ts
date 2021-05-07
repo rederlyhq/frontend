@@ -267,7 +267,7 @@ export const checkRegradeTopic = async ({
     userId?: number;
 }): Promise<AxiosResponse<BackendAPIResponse<{
     retroStartedTime: Date | null;
-    needsRegrade: boolean;
+    regradeCount: number;
     gradeIdsThatNeedRetro: number[];
 }>>> => {
     try {
