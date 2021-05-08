@@ -9,6 +9,7 @@ import { Alert } from 'react-bootstrap';
 import logger from '../../Utilities/Logger';
 import { TopicOverrideForm } from './TopicOverrideForm';
 import { QuestionOverrideForm } from './QuestionOverrideForm';
+import { WrappedRegradeTopicButton } from './WrappedRegradeTopicButton';
 
 interface ExtensionsFormProps {
     userId: number;
@@ -52,6 +53,7 @@ export const ExtensionsForm: React.FC<ExtensionsFormProps> = ({topic, userId, pr
     const [defaultTopic, setDefaultTopic] = useState<TopicObject | undefined>(topic);
     const [defaultProblem, setDefaultProblem] = useState<ProblemObject | undefined>(problem);
     const { isSubmitSuccessful, isSubmitting  } = formState;
+    const [refetchTopicTriggerForRegrade, setRefetchTopicTriggerForRegrade] = useState<number | undefined>(undefined);
 
     useEffect(()=>{
         setDefaultTopic(topic);
@@ -188,8 +190,10 @@ export const ExtensionsForm: React.FC<ExtensionsFormProps> = ({topic, userId, pr
         try {
             if (problem) {
                 await updateQuestions(problem.id, userId, extensions as QuestionExtensions);
+                setRefetchTopicTriggerForRegrade(new Date().getTime());
             } else if (topic) {
                 await updateTopic(topic.id, userId, extensions as TopicExtensions, defaultTopic?.topicAssessmentInfo?.id);
+                setRefetchTopicTriggerForRegrade(new Date().getTime());
             } else {
                 logger.error('Unhandled override case.');
             }
@@ -227,6 +231,17 @@ export const ExtensionsForm: React.FC<ExtensionsFormProps> = ({topic, userId, pr
                         }
 
                         <Grid container item md={12} alignItems='flex-start' justify="flex-end" >
+                            <Grid item>
+                                {_.isSomething(topic) &&
+                                <WrappedRegradeTopicButton
+                                    saving={isSubmitting}
+                                    topicId={topic.id}
+                                    questionId={problem?.id}
+                                    userId={userId}
+                                    topicTrigger={refetchTopicTriggerForRegrade}
+                                    style={{fontSize: '1.2em'}}
+                                />}
+                            </Grid>
                             <Grid item>
                                 {isSubmitting ?
                                     (<Button

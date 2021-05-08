@@ -183,13 +183,15 @@ export const deleteUnit = async ({
 export const getTopic = async ({
     id,
     userId,
-    includeQuestions
+    includeQuestions,
+    includeGradeIdsThatNeedRegrade
 }: GetCourseTopicOptions): Promise<AxiosResponse<GetTopicResponse>> => {
     try {
         return await AxiosRequest.get(
             url.resolve(COURSE_TOPIC_PATH, `${id}?${qs.stringify(_.omitBy({
                 userId,
-                includeQuestions
+                includeQuestions,
+                includeGradeIdsThatNeedRegrade
             }, _.isUndefined))}`)
         );
     } catch (e) {
@@ -221,6 +223,65 @@ export const putTopic = async ({
                 `${id}/`
             ),
             data
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const regradeTopic = async ({
+    id,
+    questionId,
+    userId
+}: {
+    id: number;
+    questionId?: number;
+    userId?: number;
+}): Promise<AxiosResponse<PutCourseTopicUpdatesResponse>> => {
+    try {
+        return await AxiosRequest.put(
+            url.resolve(
+                COURSE_TOPIC_PATH,
+                `${id}/regrade`
+            ),
+            undefined,
+            {
+                params: {
+                    questionId: questionId,
+                    userId: userId,
+                }
+            }
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const checkRegradeTopic = async ({
+    id,
+    questionId,
+    userId,
+}: {
+    id: number;
+    questionId?: number;
+    userId?: number;
+}): Promise<AxiosResponse<BackendAPIResponse<{
+    retroStartedTime: Date | null;
+    regradeCount: number;
+    gradeIdsThatNeedRetro: number[];
+}>>> => {
+    try {
+        return await AxiosRequest.get(
+            url.resolve(
+                COURSE_TOPIC_PATH,
+                `${id}/regrade`
+            ),
+            {
+                params: {
+                    questionId: questionId,
+                    userId: userId
+                }
+            }
         );
     } catch (e) {
         throw new BackendAPIError(e);
