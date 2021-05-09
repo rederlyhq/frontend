@@ -385,7 +385,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     } else {
                         setAlert({
                             severity: 'warning',
-                            message: `Another version of this assessment will be available after ${new Date(nextAvailableStartTime).toLocaleString()}.`
+                            message: `Another version of this assessment will be available after ${moment(nextAvailableStartTime).format('M/D/YYYY, h:mm:ss A')}.`
                         });
                     }
                 } else {
