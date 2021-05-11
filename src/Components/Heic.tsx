@@ -33,6 +33,12 @@ export const Heic = forwardRef<HTMLImageElement, HeicProps>(
             (async () => {
                 try {
                     const res = await fetch(url);
+
+                    if (res.headers.get('content-type') === 'image/jpeg') {
+                        setDataUrl(url);
+                        return;
+                    }
+
                     const blob = await res.blob();
                     // const png = await heic2any({blob});
                     const png = await sequentialHeic2any(blob);
