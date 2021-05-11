@@ -55,7 +55,8 @@
         "@typescript-eslint/no-unused-vars": "warn",
         "no-console": ["warn"],
         "prefer-const": "warn",
-        "@typescript-eslint/no-unnecessary-condition": "warn"
+        "@typescript-eslint/no-unnecessary-condition": "warn",
+        "no-extend-native": "off"
     },
     "ignorePatterns": "**/*.min.js"
 }

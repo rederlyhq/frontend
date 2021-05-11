@@ -129,6 +129,6 @@ export const SingleTopicListItem: React.FC<SingleTopicListItemProps> = ({topic, 
                 />
             }
             {/* I explicitly do not want this in a Col. */}
-            {removeTopic && <TopicNavButton topic={topic} onDelete={removeTopic}/>}
+            {<TopicNavButton topic={topic} onDelete={removeTopic}/>}
         </div>
     );};

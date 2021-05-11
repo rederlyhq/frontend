@@ -1,6 +1,6 @@
 {
   "name": "webwork-react-ts",
-  "version": "1.10.4",
+  "version": "1.11.2",
   "author": "Rederly",
   "license": "GPL-3.0-or-later",
   "private": true,
@@ -50,6 +50,8 @@
     "moment": "^2.29.1",
     "pdfjs-dist": "^2.6.347",
     "popper.js": "^1.16.1",
+    "query-string": "^6.14.1",
+    "quill-blot-formatter": "^1.0.5",
     "react": "^16.14.0",
     "react-autocomplete": "^1.8.1",
     "react-beautiful-dnd": "^13.0.0",
@@ -70,6 +72,7 @@
     "react-window": "^1.8.6",
     "typescript": "^3.9.7",
     "url-join": "^4.0.1",
+    "use-query-params": "^1.2.0",
     "use-react-router-breadcrumbs": "^2.0.0",
     "winston": "^3.3.3"
   },

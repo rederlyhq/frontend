@@ -385,7 +385,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                     } else {
                         setAlert({
                             severity: 'warning',
-                            message: `Another version of this assessment will be available after ${new Date(nextAvailableStartTime).toLocaleString()}.`
+                            message: `Another version of this assessment will be available after ${moment(nextAvailableStartTime).format('M/D/YYYY, h:mm:ss A')}.`
                         });
                     }
                 } else {
@@ -432,6 +432,9 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const generateScoreTable = (data: any) => {
         logger.info('SimpleProblemPage: generating a table of scores');
         const { problemScores, problemWeights, bestVersionScore, bestOverallVersion } = data;
+        const totalActualWeight = _(problemWeights).values().sum();
+        const totalWeight = totalActualWeight === 0 ? _(problemWeights).keys().value().length : totalActualWeight;
+
         return (
             <div className="d-flex flex-column">
                 {
@@ -452,7 +455,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                     {heading}
                                 </div>
                                 <div className="d-flex flex-column justify-content-end">
-                                    {problemScores[key]} {problemWeights?.[key] && `/ ${problemWeights[key]}`}
+                                    {problemScores[key]} {!_.isNil(problemWeights[key]) && `/ ${problemWeights[key]}`}
                                 </div>
                             </div>
                         );
@@ -460,11 +463,11 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                 }
                 < div className="d-flex flex-row text-success">
                     <div className="d-flex flex-column flex-grow-1">Best Version Score</div>
-                    <div className="d-flex flex-column justify-content-end">{bestVersionScore} ({bestVersionScore.toPercentString()})</div>
+                    <div className="d-flex flex-column justify-content-end">{bestVersionScore} ({(bestVersionScore / totalWeight).toPercentString()})</div>
                 </div>
                 < div className="d-flex flex-row text-success font-weight-bold">
                     <div className="d-flex flex-column flex-grow-1">Best Overall Score</div>
-                    <div className="d-flex flex-column justify-content-end">{bestOverallVersion} ({bestOverallVersion.toPercentString()})</div>
+                    <div className="d-flex flex-column justify-content-end">{bestOverallVersion} ({(bestOverallVersion / totalWeight).toPercentString()})</div>
                 </div>
             </div>
         );

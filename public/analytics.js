@@ -13,4 +13,8 @@ function gtag() {
 }
 
 gtag('js', new Date());
-gtag('config', window.GA_TRACKING_ID);
+gtag('config', window.GA_TRACKING_ID, {
+    cookie_domain: 'localhost',
+    cookie_flags: 'SameSite=None;Secure',
+    // debug_mode: true
+});

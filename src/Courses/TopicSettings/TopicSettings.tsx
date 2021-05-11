@@ -1,4 +1,4 @@
-import { Grid, Button, Snackbar } from '@material-ui/core';
+import { Grid, Button, Snackbar, CircularProgress } from '@material-ui/core';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -19,13 +19,16 @@ import { PromptUnsaved } from '../../Components/PromptUnsaved';
 import { getDefObjectFromTopic } from '@rederly/rederly-utils';
 import { isKeyOf } from '../../Utilities/TypescriptUtils';
 import { DevTool } from '@hookform/devtools';
+import { RegradeTopicButton } from './RegradeTopicButton';
 
 interface TopicSettingsProps {
     selected: TopicObject;
     setTopic: React.Dispatch<React.SetStateAction<TopicObject | null>>;
+    triggerRegrade: () => unknown;
+    fetchTopic: () => Promise<TopicObject | null>;
 }
 
-export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}) => {
+export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic, triggerRegrade, fetchTopic}) => {
     const topicForm = useForm<TopicSettingsInputs>({
         mode: 'onSubmit',
         shouldFocusError: true,
@@ -89,17 +92,26 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
 
         try {
             setSaving(true);
-            await putTopic({
+            const gradeIdsThatNeededRetro = selected.gradeIdsThatNeedRetro.length;
+            const res = await putTopic({
                 id: selected.id,
                 data: obj
             });
+            const topicData = res.data.data.updatesResult.first;
+
+            if ((topicData?.gradeIdsThatNeedRetro?.length ?? 0) > gradeIdsThatNeededRetro) {
+                triggerRegrade();
+            }
 
             setUpdateAlert({message: 'Successfully updated', severity: 'success'});
 
             // Overwrite fields from the original object. This resets the state object when clicking between options.
-            const newTopic = new TopicObject({...selected, ...obj});
-            setTopic(newTopic);
-            updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: newTopic.name ?? 'Unnamed Topic'});
+            setTopic(currentTopic => new TopicObject({
+                ...topicData,
+                // didn't fetch questions again
+                questions: currentTopic?.questions,
+            }));
+            updateBreadcrumbLookup?.({[NamedBreadcrumbs.TOPIC]: topicData?.name ?? 'Unnamed Topic'});
         } catch (e) {
             logger.error('Error updating topic.', e);
             setUpdateAlert({message: e.message, severity: 'error'});
@@ -110,6 +122,7 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
 
     const { topicTypeId } = watch();
 
+    const disabled = saving || selected.retroStartedTime !== null;
     return (
         <FormProvider {...topicForm}>
             <PromptUnsaved message='You have unsaved changes. Are you sure you want to leave the page?' when={formState.isDirty} />
@@ -117,74 +130,87 @@ export const TopicSettings: React.FC<TopicSettingsProps> = ({selected, setTopic}
                 onChange={() => {if (updateAlertMsg !== '') setUpdateAlert({message: '', severity: 'warning'});}}
                 onSubmit={handleSubmit(onSubmit)}
             >
-                <DevTool control={control} />
-                <Grid container item md={12} spacing={3}>
-                    <Snackbar
-                        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                        open={updateAlertMsg !== ''}
-                        autoHideDuration={updateAlertType === 'success' ? 6000 : undefined}
-                        onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
-                        style={{maxWidth: '50vw'}}
-                    >
-                        <MUIAlert
+                <fieldset disabled={disabled}>
+                    <DevTool control={control} />
+                    <Grid container item md={12} spacing={3}>
+                        <Snackbar
+                            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                            open={updateAlertMsg !== ''}
+                            autoHideDuration={updateAlertType === 'success' ? 6000 : undefined}
                             onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
-                            severity={updateAlertType}
-                            variant='filled'
-                            style={{fontSize: '1.1em'}}
+                            style={{maxWidth: '50vw'}}
                         >
-                            {updateAlertMsg}
-                        </MUIAlert>
-                    </Snackbar>
-                    <HasEverBeenActiveWarning topic={selected} />
-                    <CommonSettings
-                        formObject={topicForm}
-                        setUpdateAlert={setUpdateAlert}
-                        downloadDefFileClick={() => {
-                            try {
-                                // TODO fix typing higher up
-                                const tempTopic = {...selected};
-                                ['startDate', 'endDate', 'deadDate'].forEach(key => {
-                                    if(isKeyOf(key, tempTopic)) {
-                                        const dateCandidate: unknown = tempTopic[key];
-                                        if (moment.isMoment(dateCandidate)) {
-                                            (tempTopic[key] as any) = dateCandidate.toDate();
-                                        } else if(typeof tempTopic[key] === 'string') {
-                                            (tempTopic[key] as any) = new Date(dateCandidate as string);
-                                        }    
-                                    }
-                                });
+                            <MUIAlert
+                                onClose={() => setUpdateAlert(alertState => ({...alertState, message: ''}))}
+                                severity={updateAlertType}
+                                variant='filled'
+                                style={{fontSize: '1.1em'}}
+                            >
+                                {updateAlertMsg}
+                            </MUIAlert>
+                        </Snackbar>
+                        <HasEverBeenActiveWarning topic={selected} />
+                        <CommonSettings
+                            formObject={topicForm}
+                            setUpdateAlert={setUpdateAlert}
+                            topicId={selected.id}
+                            downloadDefFileClick={() => {
+                                try {
+                                    // TODO fix typing higher up
+                                    const tempTopic = {...selected};
+                                    ['startDate', 'endDate', 'deadDate'].forEach(key => {
+                                        if(isKeyOf(key, tempTopic)) {
+                                            const dateCandidate: unknown = tempTopic[key];
+                                            if (moment.isMoment(dateCandidate)) {
+                                                (tempTopic[key] as any) = dateCandidate.toDate();
+                                            } else if(typeof tempTopic[key] === 'string') {
+                                                (tempTopic[key] as any) = new Date(dateCandidate as string);
+                                            }    
+                                        }
+                                    });
 
-                                const webworkdef = getDefObjectFromTopic(tempTopic);
-                                const fileContent = webworkdef.dumpAsDefFileContent();
-                                const defBlob = new Blob([fileContent], {type: 'text/plain;charset=utf-8'});
-                                saveAs(defBlob, `${selected.name}.rdef`);
-                            } catch (e) {
-                                setUpdateAlert({message: 'Could not export Rederly-DEF file', severity: 'error'});
-                                logger.error('Could not export Rederly-DEF file', e);
-                            }
-                        }}
-                        exportTopicClick={() => {
-                            const deepKeys = _.deepKeys(emptyRTDF);
-                            const adjustedKeys = _.removeArrayIndexesFromDeepKeys(deepKeys);
-                            const result = _.pickWithArrays(selected, ...adjustedKeys) as Partial<typeof emptyRTDF>;
-                            const rtdfBlob = new Blob([JSON.stringify(result, null, 2)], {type: 'text/plain;charset=utf-8'});
-                            saveAs(rtdfBlob, `${selected.name}.rtdf`);
-                        }}
-                    />
-                    {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
-                    <Grid container item md={12} alignItems='flex-start' justify="flex-end">
-                        <Grid container item md={3} spacing={3} justify='flex-end'>
+                                    const webworkdef = getDefObjectFromTopic(tempTopic);
+                                    const fileContent = webworkdef.dumpAsDefFileContent();
+                                    const defBlob = new Blob([fileContent], {type: 'text/plain;charset=utf-8'});
+                                    saveAs(defBlob, `${selected.name}.rdef`);
+                                } catch (e) {
+                                    setUpdateAlert({message: 'Could not export Rederly-DEF file', severity: 'error'});
+                                    logger.error('Could not export Rederly-DEF file', e);
+                                }
+                            }}
+                            exportTopicClick={() => {
+                                const deepKeys = _.deepKeys(emptyRTDF);
+                                const adjustedKeys = _.removeArrayIndexesFromDeepKeys(deepKeys);
+                                const result = _.pickWithArrays(selected, ...adjustedKeys) as Partial<typeof emptyRTDF>;
+                                const rtdfBlob = new Blob([JSON.stringify(result, null, 2)], {type: 'text/plain;charset=utf-8'});
+                                saveAs(rtdfBlob, `${selected.name}.rtdf`);
+                            }}
+                        />
+                        {topicTypeId === TopicTypeId.EXAM && <ExamSettings register={register} control={control} watch={watch} />}
+                        <Grid container item md={12} alignItems='flex-start' justify="flex-end">
+                            <RegradeTopicButton
+                                topic={selected}
+                                saving={saving}
+                                style={{
+                                    marginRight: '1em',
+                                }}
+                                setTopic={setTopic}
+                                onRegradeClick={triggerRegrade}
+                                fetchTopic={fetchTopic}
+                            />
+
                             <Button
                                 color='primary'
                                 variant='contained'
                                 type='submit'
-                                disabled={saving}
+                                disabled={disabled}
                             >
                                 Save Topic Settings
+                                { saving && <CircularProgress size={24} style={{marginLeft: '1em'}} /> }
                             </Button>
                         </Grid>
                     </Grid>
-                </Grid>
+                </fieldset>
             </form>
         </FormProvider>
     );

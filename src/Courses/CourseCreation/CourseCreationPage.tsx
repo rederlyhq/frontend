@@ -6,9 +6,20 @@ import EnterRightAnimWrapper from './EnterRightAnimWrapper';
 import AxiosRequest from '../../Hooks/AxiosRequest';
 
 import './Course.css';
+import { Tabs, Tab } from '@material-ui/core';
+import { getUserId } from '../../Enums/UserRole';
+import ListCoursesFilters from '../../Enums/ListCoursesEnum';
+import ListCurriculumFilters from '../../Enums/ListCurriculumEnum';
 
 interface CourseCreationPageProps {
 
+}
+
+export enum TemplateType {
+    GLOBAL_CURRICULA,
+    INSTITUTIONAL_CURRICULA,
+    ACTIVE_COURSES,
+    PAST_COURSES,
 }
 
 /**
@@ -17,18 +28,34 @@ interface CourseCreationPageProps {
  *
  */
 export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
+    const [templateType, setTemplateType] = useState<TemplateType>(TemplateType.INSTITUTIONAL_CURRICULA);
     const [courseTemplates, setCourseTemplates] = useState<Array<ICourseTemplate>>([]);
     const [filteredCourseTemplates, setFilteredCourseTemplates] = useState<Array<ICourseTemplate>>([]);
 
     useEffect(() => {
         (async () => {
-            // TODO: Get courses as well.
-            const templatesResponse = await AxiosRequest.get('/curriculum');
+            let url = '/courses?instructorId=' + getUserId();
+            switch(templateType) {
+            case TemplateType.INSTITUTIONAL_CURRICULA:
+                url = `/curriculum/?filterOptions=${ListCurriculumFilters.INSTITUTIONAL}`;
+                break;
+            case TemplateType.GLOBAL_CURRICULA:
+                url = `/curriculum/?filterOptions=${ListCurriculumFilters.GLOBAL}`;
+                break;
+            case TemplateType.ACTIVE_COURSES:
+                url = `/courses?instructorId=${getUserId()}&filterOptions=${ListCoursesFilters.ACTIVE}`;
+                break;
+            case TemplateType.PAST_COURSES:
+                url = `/courses?instructorId=${getUserId()}&filterOptions=${ListCoursesFilters.PAST}`;
+                break;       
+            }
+
+            const templatesResponse = await AxiosRequest.get(url);
             const templates = templatesResponse.data.data;
             setCourseTemplates(templates);
             setFilteredCourseTemplates(templates);
         })();
-    }, []);
+    }, [templateType]);
 
     const filterCourseTemplates = (e: any) => {
         setFilteredCourseTemplates(courseTemplates.filter(template => (
@@ -39,10 +66,14 @@ export const CourseCreationPage: React.FC<CourseCreationPageProps> = () => {
     return (
         <EnterRightAnimWrapper>
             <Container>
-                <>
-                    <FormControl type="search" placeholder="Search by Course or Curriculum Name" onChange={filterCourseTemplates} />
-                    <CourseTemplateList courseTemplates={filteredCourseTemplates} />
-                </>
+                <Tabs value={templateType} onChange={(e, val) => setTemplateType(val)} aria-label="Course creation options.">
+                    <Tab value={TemplateType.INSTITUTIONAL_CURRICULA} label={'Institutional Curricula'} />
+                    <Tab value={TemplateType.GLOBAL_CURRICULA} label={'Global Curricula'} />
+                    <Tab value={TemplateType.ACTIVE_COURSES} label={'Active Courses'} />
+                    <Tab value={TemplateType.PAST_COURSES} label={'Past Courses'} />
+                </Tabs>
+                <FormControl type="search" placeholder="Search by Course or Curriculum Name" onChange={filterCourseTemplates} />
+                <CourseTemplateList courseTemplates={filteredCourseTemplates} templateType={templateType} />
             </Container>
         </EnterRightAnimWrapper>
     );

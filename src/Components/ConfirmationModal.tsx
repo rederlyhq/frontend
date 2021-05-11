@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button } from 'react-bootstrap';
+import { Modal, ModalProps, Button } from 'react-bootstrap';
 
 type ModalVariant = 'primary'
     | 'secondary'
@@ -32,6 +32,7 @@ export interface ConfirmationModalProps {
     secondaryDisabled?: boolean;
     confirmVariant?: ModalVariant;
     secondaryVariant?: ModalVariant;
+    additionalModalProps?: Omit<ModalProps, 'show' | 'onHide'>
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -46,10 +47,12 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     confirmDisabled = false,
     secondaryDisabled = false,
     onConfirm,
-    onSecondary
+    onSecondary,
+    additionalModalProps
 }) => {
     return (
         <Modal
+            {...additionalModalProps}
             show={show}
             onHide={onHide}
         >

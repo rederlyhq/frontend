@@ -630,7 +630,7 @@ export const TopicsTab: React.FC<TopicsTabProps> = ({ course, setCourse }) => {
                                                                     </Col>
                                                                 </Row>
                                                             </Accordion.Toggle>
-                                                            <Accordion.Collapse eventKey="0">
+                                                            <Accordion.Collapse eventKey="0" mountOnEnter>
                                                                 <Card.Body>
                                                                     <TopicsList
                                                                         flush

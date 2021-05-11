@@ -23,6 +23,7 @@ export class CourseObject {
     units: Array<UnitObject> = [];
     code: string = '';
     curriculumId: number = 0;
+    originatingCourseId: number = 0;
     textbooks: string = '';
     canAskForHelp: boolean = false;
 
@@ -44,10 +45,13 @@ export class CourseObject {
 
     static toAPIObject(course: CourseObject) {
         // Not every field belongs in the request.
-        const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode', 'textbooks', 'curriculumId'];
+        const newCourseFields = ['curriculum', 'name', 'code', 'start', 'end', 'sectionCode', 'semesterCode', 'textbooks', 'curriculumId', 'originatingCourseId'];
         const postObject = _.pick(course, newCourseFields);
         postObject.semesterCode = `${course.semesterCode}${course.semesterCodeYear}`;
         postObject.code = `${postObject.sectionCode}_${postObject.semesterCode}_${generateString(4).toUpperCase()}`;
+
+        if (postObject.curriculumId === 0) delete postObject.curriculumId;
+        if (postObject.originatingCourseId === 0) delete postObject.originatingCourseId;
         // TODO: Fix naming for route, should be 'templateId'.
         return postObject;
     }
@@ -89,6 +93,13 @@ export enum TopicTypeId {
     PROBLEM_SET = 1,
     EXAM = 2
 }
+
+// This is used for grade filter calls.
+export enum TOPIC_TYPE_FILTERS {
+    ALL,
+    HOMEWORK = TopicTypeId.PROBLEM_SET,
+    EXAMS = TopicTypeId.EXAM,
+ }
 
 export class TopicAssessmentFields {
     id?: number;
@@ -189,12 +200,17 @@ export class TopicObject {
     errors: number = 0;
     unit?: UnitObject;
     description: any = {};
+    gradeIdsThatNeedRetro: number[] = [];
+    retroStartedTime: Date | null = null;
 
     public constructor(init?:Partial<TopicObject>) {
         Object.assign(this, init);
 
         if (!_.isNull(init?.questions)) {
-            this.questions = init?.questions?.map(question => new ProblemObject(question)) || [];
+            this.questions = _(init?.questions)
+                .map(question => new ProblemObject(question))
+                .sortBy(['problemNumber'], ['asc'])
+                .value();
         }
 
         if (typeof init?.description === 'string') {
@@ -276,6 +292,7 @@ export interface StudentWorkbookInterface {
     wasAfterAttemptLimit: boolean;
     wasLocked: boolean;
     wasAutoSubmitted: boolean;
+    feedback: any; // ReactQuillProps['value']
 
     createdAt: Date;
     updatedAt: Date;
@@ -303,6 +320,7 @@ export interface StudentGradeInstance {
     active: boolean;
     bestIndividualAttemptId: number;
     bestVersionAttemptId: number;
+    problemAttachments?: ProblemAttachments[];
 }
 
 export interface StudentGradeDict {
@@ -323,6 +341,7 @@ export interface StudentGradeDict {
 }
 
 export class StudentGrade {
+    courseWWTopicQuestionId?: number = 0;
     gradeInstances?: StudentGradeInstance[];
     workbooks?: StudentWorkbookInterface[];
     bestScore: number = 0; // should be deprecated?

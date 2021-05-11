@@ -109,7 +109,7 @@ export default URLBreadcrumb;
 export const NamedBreadcrumbComponent: React.FC<{breadcrumb: NamedBreadcrumbs}> = ({breadcrumb}) => {
     const {breadcrumbLookup} = useBreadcrumbLookupContext();
 
-    if (breadcrumbLookup === undefined || _.isEmpty(breadcrumbLookup)) return null;
+    if (_.isEmpty(breadcrumbLookup)) return null;
 
     return <span>{breadcrumbLookup[breadcrumb]}</span>;
 };
@@ -157,28 +157,32 @@ export const TopicBreadcrumbDropdowns: React.FC<{selectedBreadcrumb: keyof typeo
             onClose={handleClose}
         >
             {
-                _.keys(TopicDropdownOptions).map((key) => (
-                    <MenuItem 
-                        key={key} 
-                        onClick={() => {
-                            setSelected(key as keyof typeof TopicDropdownOptions); 
-                            setMenuOpen(false);
-                            const to = TopicDropdownOptions[key as keyof typeof TopicDropdownOptions]?.(courseId, topicId);
-                            history.push(to);
-                        }}
-                        role='menuoption'
-                        selected={selected === key}
-                    >
-                        {key}
-                    </MenuItem>
-                ))
+                _.keys(TopicDropdownOptions).map((key) => {
+                    if (getUserRole() === UserRole.STUDENT && key === 'Settings') return null; 
+
+                    return (
+                        <MenuItem 
+                            key={key} 
+                            onClick={() => {
+                                setSelected(key as keyof typeof TopicDropdownOptions); 
+                                setMenuOpen(false);
+                                const to = TopicDropdownOptions[key as keyof typeof TopicDropdownOptions](courseId, topicId);
+                                history.push(to);
+                            }}
+                            role='menuoption'
+                            selected={selected === key}
+                        >
+                            {key}
+                        </MenuItem>
+                    );
+                })
             }
         </Menu>
     </>;
 };
 
 const ViewTopicBreadcrumbDropdown: React.FC<{match: any; location: any}> = ({match, location}) => {
-    return (match.url !== location.pathname || getUserRole() === UserRole.STUDENT) ?
+    return match.url !== location.pathname ?
         <NamedTopicBreadcrumbComponent /> :
         <TopicBreadcrumbDropdowns selectedBreadcrumb={'Assignment'} courseId={match.params.courseId} topicId={match.params.topicId} />;
 };

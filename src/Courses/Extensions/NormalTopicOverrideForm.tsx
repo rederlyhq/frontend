@@ -25,7 +25,7 @@ export const NormalTopicOverrideForm: React.FC<NormalTopicOverrideFormProps> = (
                 autoOk
                 variant="inline"
                 fullWidth={true}
-                label='Start Date'
+                label='Start'
                 InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
                 inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
                 maxDate={endDate || moment(topic.endDate)}
@@ -52,10 +52,10 @@ export const NormalTopicOverrideForm: React.FC<NormalTopicOverrideFormProps> = (
                 autoOk
                 variant="inline"
                 fullWidth={true}
-                label='End Date'
+                label='End (full credit)'
                 InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
                 inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                minDate={moment.max([(startDate || moment(topic.startDate)), moment()])}
+                minDate={startDate && moment(startDate)}
                 maxDate={topic.topicTypeId === TopicTypeId.PROBLEM_SET ? (deadDate || moment(topic.deadDate)) : undefined}
                 rules={{
                     required: true,
@@ -78,10 +78,10 @@ export const NormalTopicOverrideForm: React.FC<NormalTopicOverrideFormProps> = (
                     autoOk
                     variant="inline"
                     fullWidth={true}
-                    label='Dead Date'
+                    label='End (partial credit)'
                     InputLabelProps={{style: { color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize }}}
                     inputProps={{ style: { textAlign: 'center', color: 'rgba(255, 255, 255, 0.8)', fontSize: drawerFontSize } }}
-                    minDate={moment.max([(endDate || moment(topic.endDate)), moment()])}
+                    minDate={endDate && moment(endDate)}
                     onAccept={() => clearErrors()}
                 />
             </Grid>

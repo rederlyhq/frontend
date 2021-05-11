@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 
 export enum NamedBreadcrumbs {
     COURSE = 'COURSE',
@@ -25,7 +25,7 @@ export const useBreadcrumbLookupContext = () => React.useContext(BreadcrumbConte
 export const BreadcrumbLookupProvider: React.FC<Props>  = ({ children }) => {
     const [breadcrumbLookup, updateBreadcrumbLookup] = useState<BreadcrumbState>({});
 
-    const updateBreadcrumbLookupWrapper = (state: BreadcrumbState) => updateBreadcrumbLookup(oldstate => ({...oldstate, ...state}));
+    const updateBreadcrumbLookupWrapper = useCallback((state: BreadcrumbState) => updateBreadcrumbLookup(oldstate => ({...oldstate, ...state})), []);
 
     return (
         <BreadcrumbContext.Provider value={{

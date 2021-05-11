@@ -6,6 +6,8 @@ import ChipInput from 'material-ui-chip-input';
 import { ErrorMessage } from '@hookform/error-message';
 import { Constants } from '../../Utilities/Constants';
 import QuillControlledEditor from '../../Components/Quill/QuillControlledEditor';
+import { GenericConfirmAttachmentUploadOptions } from '../../APIInterfaces/BackendAPI/RequestTypes/CourseRequestTypes';
+import AttachmentType from '../../Enums/AttachmentTypeEnum';
 
 /* PROBLEM SETTINGS */
 export const ProblemMaxAttempts: React.FC<{}> = () => {
@@ -294,13 +296,18 @@ export const GenerateSwitchField: React.FC<{fieldName: string, label: string}> =
     );
 };
 
-export const GenerateQuillField: React.FC<{fieldName: string, label: string}> = ({fieldName, label}) => {
+export const GenerateQuillField: React.FC<{
+    fieldName: string, 
+    label: string, 
+    uploadConfirmation?: (params: GenericConfirmAttachmentUploadOptions) => Promise<void>,
+    attachmentType?: AttachmentType
+}> = ({fieldName, label, uploadConfirmation, attachmentType}) => {
     const { control, errors } = useFormContext();
     const name = fieldName;
 
     return (
         <>
-            <FormLabel component="legend">Topic Description</FormLabel>
+            <FormLabel component="legend">{label}</FormLabel>
             <Controller
                 name={name}
                 control={control}
@@ -312,6 +319,9 @@ export const GenerateQuillField: React.FC<{fieldName: string, label: string}> = 
                         onBlur={onBlur}
                         onChange={onChange}
                         value={value}
+                        // Should this be generic?
+                        attachmentType={attachmentType}
+                        uploadConfirmation={uploadConfirmation}
                     />
                 )}
             />

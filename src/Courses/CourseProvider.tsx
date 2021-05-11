@@ -4,8 +4,9 @@ import { useParams } from 'react-router-dom';
 import { getCourse } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import { getUsersForCourse } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../Contexts/BreadcrumbContext';
-import AxiosRequest from '../Hooks/AxiosRequest';
 import { CourseObject, UserObject } from './CourseInterfaces';
+import _ from 'lodash';
+import logger from '../Utilities/Logger';
 
 interface CourseProviderProps {
     children: React.ReactNode
@@ -17,12 +18,14 @@ const CourseContext = React.createContext<{
         error: string | null,
         users: UserObject[],
         setUsers?: React.Dispatch<React.SetStateAction<UserObject[]>>,
+        loading: boolean;
     }>({
         course: new CourseObject(),
         setCourse: undefined,
         error: null,
         users: [],
         setUsers: undefined,
+        loading: true,
     });
 
 export const useCourseContext = () => React.useContext(CourseContext);
@@ -49,14 +52,15 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
                 const [courseResp, userResp] = await Promise.all([courseRespPromise, userRespPromise]);
                 setCourse(new CourseObject(courseResp.data.data));
 
-                const usersArr = [];
-                for (const user of userResp.data.data) {
-                    usersArr.push(new UserObject(user));
-                }
+                const usersArr = _(userResp.data.data)
+                    .map(user => new UserObject(user))
+                    .sortBy(['lastName'], ['desc'])
+                    .value();
 
                 updateBreadcrumbLookup?.({[NamedBreadcrumbs.COURSE]: courseResp.data.data.name ?? 'Unnamed Course'});
                 setUsers(usersArr);
             } catch (e) {
+                logger.error('Failed to get course', e);
                 setError(e.message);
             }
             setLoading(false);
@@ -64,7 +68,7 @@ export const CourseProvider: React.FC<CourseProviderProps> = ({children}) => {
     }, [courseId]);
 
     return (
-        <CourseContext.Provider value={{course, setCourse, error, users, setUsers}}>
+        <CourseContext.Provider value={{course, setCourse, error, users, setUsers, loading}}>
             <Backdrop open={loading}>
                 <CircularProgress/>
             </Backdrop>
