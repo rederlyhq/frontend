@@ -34,6 +34,7 @@ export const Heic = forwardRef<HTMLImageElement, HeicProps>(
                 try {
                     const res = await fetch(url);
 
+                    // In Rederly architecture, HEIC files can be converted to JPEG files.
                     if (res.headers.get('content-type') === 'image/jpeg') {
                         setDataUrl(url);
                         return;
