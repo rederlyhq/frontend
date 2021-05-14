@@ -35,7 +35,6 @@ export const LTIKWrapper: React.FC<LTIKWrapperProps> = ({children}) => {
 
                 if (session.userId) {
                     logger.debug('Returning early because Session already exists.');
-                    setLtik(undefined);
                     return;
                 }
 
@@ -56,6 +55,7 @@ export const LTIKWrapper: React.FC<LTIKWrapperProps> = ({children}) => {
             } catch (e) {
                 setAlert?.({message: e.message, severity: 'error'});
             } finally {
+                console.log('Finally ran and hasPassword is ' + session.hasPassword);
                 if (!session.hasPassword) {
                     setShowSetPassword(true);
                 } else {
