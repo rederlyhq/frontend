@@ -68,9 +68,9 @@ export const LTIKWrapper: React.FC<LTIKWrapperProps> = ({children}) => {
     }, [ltik, setAlert, setLtik, setShowBackdropLoading]);
 
     const onDone = () => {
+        session.hasPassword = true;
         setLtik(undefined);
         setShowSetPassword(false);
-        session.hasPassword = false;
     };
 
     return <>
