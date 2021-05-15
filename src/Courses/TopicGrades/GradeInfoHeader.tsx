@@ -307,9 +307,6 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                             : <strong>{moment(selected.gradeInstance.createdAt).formattedMonthDateTime()}</strong>
                         </>
                         }
-                        {info.workbook && !_.isNil(info.workbook.result) &&
-                        <>
-                        </>}
                     </Grid>
                 </>}
             <Grid item xs={12}>
