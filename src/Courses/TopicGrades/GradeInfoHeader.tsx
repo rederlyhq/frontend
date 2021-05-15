@@ -11,6 +11,7 @@ import { WorkbookSelect } from './WorkbookSelect';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import moment from 'moment';
 import { WorkbookInfoDump } from './GradingPage';
+import { InfoContext } from '../../Components/InfoContext';
 
 interface GradeInfoHeaderProps {
     topic: TopicObject;
@@ -242,18 +243,39 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                         Your professor has not released the grades for this assessment yet.
                     </Alert>
                 </Grid> : <>
-                    <Grid item xs={4}>
+                    <Grid item>
                         <h4>Statistics</h4>
-                        Number of attempts: <strong>{info.attemptsCount}</strong><br />
-                        Best overall score: <strong>{info.overallBestScore?.toPercentString()}</strong><br />
-                        {/* Should check !moment(topic.endDate).isSame(topic.deadDate) for topic and overrides before showing this? */}
-                        System score: <strong>{info.partialCreditBestScore?.toPercentString()}</strong><br />
-                        Score from best exam submission: <strong>{info.legalScore?.toPercentString()}</strong><br />
-                        Average score: <strong>{info.averageScore?.toPercentString()}</strong>
+                        Number of attempts
+                        <InfoContext text='This is the number of attempts on this problem.'/>
+                        : <strong>{info.attemptsCount}</strong><br />
+                        {info.overallBestScore !== info.legalScore &&
+                        <>
+                            Best Recorded Score
+                            <InfoContext text='This is the best score that was received on the question. This score is not subject to past due penalties.'/>
+                            : <strong>{info.overallBestScore?.toPercentString()}</strong><br /></>
+                        }
+                        {info.partialCreditBestScore !== info.legalScore &&
+                        <>
+                            Partial Credit Score
+                            <InfoContext text='This is your final system score. This accounts for extensions but not overrides.'/>
+                            : <strong>{info.partialCreditBestScore?.toPercentString()}</strong>
+                            <br />
+                        </>
+                        }
+                        Full Credit Score
+                        <InfoContext text='This is the score you received before the due date.'/>
+                        : <strong>{info.legalScore?.toPercentString()}</strong><br />
+                        {(info.attemptsCount ?? 0) > 1 &&
+                        <>
+                            Average score
+                            <InfoContext text='Average score across attempts.'/>
+                            : <strong>{info.averageScore?.toPercentString()}</strong>
+                        </>
+                        }
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item>
                         <h4>Grades</h4>
-                        Effective score for grades: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
+                        Effective score<InfoContext text='This is the grade used for grade calculations. This accounts for grade overrides by professor.'/>: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
                         {currentUserRole !== UserRole.STUDENT && <>
                             <Button
                                 variant='outlined'
@@ -273,11 +295,17 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                                 }}
                             /><br />
                         </>}
-                        {info.workbook && !_.isNil(info.workbook.result) &&
-                        <p>
-                            Score on this attempt: <strong>{info.workbook.result.toPercentString()}</strong><br />
-                            Submitted on: <strong>{moment(info.workbook.time).formattedMonthDateTime()}</strong>
-                        </p>
+                        {info.workbook && !_.isNil(info.workbook.result) && <>
+                            Score on this attempt<InfoContext text='The score for the attempt selected in the dropdown below.'/>: <strong>{info.workbook.result.toPercentString()}</strong><br />
+                            Submitted on<InfoContext text={`When the attempt was submitted. ${topic.topicTypeId === TopicTypeId.EXAM ? 'For exam submissions the attempts shown are based on changes.' : ''}`}/>: <strong>{moment(info.workbook.time).formattedMonthDateTime()}</strong>
+                            <br />
+                        </>}
+                        {topic.topicTypeId === TopicTypeId.EXAM && _.isSomething(selected.gradeInstance) &&
+                        <>
+                            Exam start
+                            <InfoContext text='The time when the selected version was started.' />
+                            : <strong>{moment(selected.gradeInstance.createdAt).formattedMonthDateTime()}</strong>
+                        </>
                         }
                     </Grid>
                 </>}
