@@ -321,6 +321,7 @@ export interface StudentGradeInstance {
     bestIndividualAttemptId: number;
     bestVersionAttemptId: number;
     problemAttachments?: ProblemAttachments[];
+    createdAt: Date;
 }
 
 export interface StudentGradeDict {
