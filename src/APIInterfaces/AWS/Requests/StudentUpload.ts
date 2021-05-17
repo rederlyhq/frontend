@@ -37,7 +37,7 @@ export const putUploadWork = ({
     try {
         return attachmentsAxios.put(presignedUrl.toString(), file, {
             headers: {
-                'Content-Type': file.type,
+                'Content-Type': (file.type === '' && file.name.toLowerCase().endsWith('.heic')) ? 'image/heic' : file.type,
             },
             onUploadProgress: onUploadProgress
         });
