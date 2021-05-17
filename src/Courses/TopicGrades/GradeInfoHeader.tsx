@@ -245,29 +245,38 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                 </Grid> : <>
                     <Grid item>
                         <h4>Statistics</h4>
-                        Number of attempts
-                        <InfoContext text='This is the number of attempts on this problem.'/>
+                        Number of Attempts
+                        <InfoContext text='Number of times the submission changed on a problem.'/>
                         : <strong>{info.attemptsCount}</strong><br />
                         {info.overallBestScore !== info.legalScore &&
                         <>
                             Best Recorded Score
-                            <InfoContext text='This is the best score that was received on the question. This score is not subject to past due penalties.'/>
+                            <InfoContext text={`Best score received ${topic.topicTypeId === TopicTypeId.EXAM ? 'on any submission.' : 'without penalties. Penalties include due dates and number of attempts. If solutions are available or "show me another" has been used we do not track the attempts.'}`}/>
                             : <strong>{info.overallBestScore?.toPercentString()}</strong><br /></>
                         }
                         {info.partialCreditBestScore !== info.legalScore &&
                         <>
                             Partial Credit Score
-                            <InfoContext text='This is your final system score. This accounts for extensions but not overrides.'/>
+                            <InfoContext text='System score during partial credit window, accounting for partial credit.'/>
                             : <strong>{info.partialCreditBestScore?.toPercentString()}</strong>
                             <br />
                         </>
                         }
-                        Full Credit Score
-                        <InfoContext text='This is the score you received before the due date.'/>
-                        : <strong>{info.legalScore?.toPercentString()}</strong><br />
+                        {topic.topicTypeId === TopicTypeId.EXAM ?
+                            <>
+                                Score on Best Exam Submission
+                                <InfoContext text='System score on the best overall exam submission.'/>
+                                : <strong>{info.legalScore?.toPercentString()}</strong><br />
+                            </> :
+                            <>
+                                Full Credit Score
+                                <InfoContext text='System score during the full credit window (submission before due date).'/>
+                                : <strong>{info.legalScore?.toPercentString()}</strong><br />
+                            </>
+                        }
                         {(info.attemptsCount ?? 0) > 1 &&
                         <>
-                            Average score
+                            Average Score
                             <InfoContext text='Average score across attempts.'/>
                             : <strong>{info.averageScore?.toPercentString()}</strong>
                         </>
@@ -275,7 +284,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                     </Grid>
                     <Grid item>
                         <h4>Grades</h4>
-                        Effective score<InfoContext text='This is the grade used for grade calculations. This accounts for grade overrides by professor.'/>: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
+                        Effective Score<InfoContext text='Score used for grade calculations – this score includes overrides provided by instructor.'/>: <strong>{info.effectiveScore?.toPercentString()}</strong><br />
                         {currentUserRole !== UserRole.STUDENT && <>
                             <Button
                                 variant='outlined'
@@ -296,14 +305,14 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                             /><br />
                         </>}
                         {info.workbook && !_.isNil(info.workbook.result) && <>
-                            Score on this attempt<InfoContext text='The score for the attempt selected in the dropdown below.'/>: <strong>{info.workbook.result.toPercentString()}</strong><br />
-                            Submitted on<InfoContext text={`When the attempt was submitted. ${topic.topicTypeId === TopicTypeId.EXAM ? 'For exam submissions the attempts shown are based on changes.' : ''}`}/>: <strong>{moment(info.workbook.time).formattedMonthDateTime()}</strong>
+                            Score on this Attempt<InfoContext text='Score for the selected attempt.'/>: <strong>{info.workbook.result.toPercentString()}</strong><br />
+                            Submitted<InfoContext text={`When the selected attempt was submitted. ${topic.topicTypeId === TopicTypeId.EXAM ? 'For exam submissions the attempts shown are based on changes.' : ''}`}/>: <strong>{moment(info.workbook.time).formattedMonthDateTime()}</strong>
                             <br />
                         </>}
                         {topic.topicTypeId === TopicTypeId.EXAM && _.isSomething(selected.gradeInstance) &&
                         <>
-                            Exam start
-                            <InfoContext text='The time when the selected version was started.' />
+                            Exam Start
+                            <InfoContext text='When the selected version was started.' />
                             : <strong>{moment(selected.gradeInstance.createdAt).formattedMonthDateTime()}</strong>
                         </>
                         }
