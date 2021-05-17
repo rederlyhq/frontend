@@ -251,7 +251,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                         {info.overallBestScore !== info.legalScore &&
                         <>
                             Best Recorded Score
-                            <InfoContext text={`Best score received ${topic.topicTypeId === TopicTypeId.EXAM ? 'on any submission.' : 'without penalties. Penalties include due dates and number of attempts. If solutions are available or show me another has been used we do not track the attempts.'}`}/>
+                            <InfoContext text={`Best score received ${topic.topicTypeId === TopicTypeId.EXAM ? 'on any submission.' : 'without penalties. Penalties include due dates and number of attempts. If solutions are available or "show me another" has been used we do not track the attempts.'}`}/>
                             : <strong>{info.overallBestScore?.toPercentString()}</strong><br /></>
                         }
                         {info.partialCreditBestScore !== info.legalScore &&
