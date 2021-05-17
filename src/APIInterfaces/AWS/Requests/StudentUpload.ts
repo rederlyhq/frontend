@@ -6,6 +6,7 @@ import AttachmentType from '../../../Enums/AttachmentTypeEnum';
 import { GetUploadURLResponse } from '../../BackendAPI/ResponseTypes/CourseResponseTypes';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import { COURSE_ATTACHMENTS_GET_UPLOAD_PATH } from '../../BackendAPI/Requests/CourseRequests';
+import mime from 'mime-types';
 
 const attachmentsAxios = axios.create({
     timeout: 300000 // 300000 millis = 5 minutes
@@ -37,7 +38,7 @@ export const putUploadWork = ({
     try {
         return attachmentsAxios.put(presignedUrl.toString(), file, {
             headers: {
-                'Content-Type': file.type,
+                'Content-Type': file.type ? file.type : mime.lookup(file.name),
             },
             onUploadProgress: onUploadProgress
         });
