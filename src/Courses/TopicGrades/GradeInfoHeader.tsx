@@ -251,7 +251,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                         {info.overallBestScore !== info.legalScore &&
                         <>
                             Best Recorded Score
-                            <InfoContext text={`Best score received ${topic.topicTypeId === TopicTypeId.EXAM ? 'on any submission.' : 'without penalties. Penalties include due dates and number of attempts. If solutions are available or "show me another" has been used we do not track the attempts.'}`}/>
+                            <InfoContext text={`Best system score received ${topic.topicTypeId === TopicTypeId.EXAM ? 'on any submission.' : 'without penalties. Penalties include due dates and number of attempts. If solutions are available or "show me another" has been used we do not track the attempts.'}`}/>
                             : <strong>{info.overallBestScore?.toPercentString()}</strong><br /></>
                         }
                         {info.partialCreditBestScore !== info.legalScore &&
@@ -277,7 +277,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                         {(info.attemptsCount ?? 0) > 1 &&
                         <>
                             Average Score
-                            <InfoContext text='Average score across attempts.'/>
+                            <InfoContext text='Average system score across attempts.'/>
                             : <strong>{info.averageScore?.toPercentString()}</strong>
                         </>
                         }
@@ -305,7 +305,7 @@ export const GradeInfoHeader: React.FC<GradeInfoHeaderProps> = ({
                             /><br />
                         </>}
                         {info.workbook && !_.isNil(info.workbook.result) && <>
-                            Score on this Attempt<InfoContext text='Score for the selected attempt.'/>: <strong>{info.workbook.result.toPercentString()}</strong><br />
+                            Score on this Attempt<InfoContext text='System score for the selected attempt.'/>: <strong>{info.workbook.result.toPercentString()}</strong><br />
                             Submitted<InfoContext text={`When the selected attempt was submitted. ${topic.topicTypeId === TopicTypeId.EXAM ? 'For exam submissions the attempts shown are based on changes.' : ''}`}/>: <strong>{moment(info.workbook.time).formattedMonthDateTime()}</strong>
                             <br />
                         </>}
