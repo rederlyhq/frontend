@@ -288,10 +288,10 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     const confirmEndVersion = (actualAttemptsRemaining?: number | 'unlimited') => {
         logger.info('SimpleProblemPage: confirming current version end');
         actualAttemptsRemaining = actualAttemptsRemaining ?? attemptsRemaining;
-        let message = 'You have successfully completed this exam.';
+        let message: JSX.Element | string = 'You have successfully completed this exam.';
         if (actualAttemptsRemaining > 0 || actualAttemptsRemaining === 'unlimited') {
             const nit = (actualAttemptsRemaining === 1) ? 'attempt' : 'attempts';
-            message = `You still have ${actualAttemptsRemaining} graded ${nit} remaining. If you end the exam now, you will no longer be able to improve your score on this version. Are you sure you want to end this exam?`;
+            message = <><strong>This will end your exam without submitting.</strong> You still have {actualAttemptsRemaining} graded {nit} remaining. If you end the exam now, you will no longer be able to improve your score on this version. Are you sure you want to end this exam?</>;
         }
         if (_.isNil(versionId)) {
             logger.error('This should never happen - ending a version without versionId set.');
@@ -299,7 +299,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             setConfirmationParameters({
                 show: true,
                 headerContent: <h5>End this exam</h5>,
-                bodyContent: `${message}`,
+                bodyContent: message,
                 onConfirm: async () => await endCurrentVersion(versionId),
                 onHide: clearModal,
             });
