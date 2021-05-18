@@ -9,7 +9,7 @@ import { useBackdropContext } from '../Contexts/BackdropContext';
 import logger from '../Utilities/Logger';
 import { Modal } from 'react-bootstrap';
 import LTISetPassword from './LTISetPassword';
-const { general, session } = localPreferences;
+const { session } = localPreferences;
 
 interface LTIKWrapperProps {
 
@@ -55,7 +55,6 @@ export const LTIKWrapper: React.FC<LTIKWrapperProps> = ({children}) => {
             } catch (e) {
                 setAlert?.({message: e.message, severity: 'error'});
             } finally {
-                console.log('Finally ran and hasPassword is ' + session.hasPassword);
                 if (!session.hasPassword) {
                     setShowSetPassword(true);
                 } else {

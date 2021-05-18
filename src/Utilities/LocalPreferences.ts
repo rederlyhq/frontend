@@ -208,7 +208,6 @@ const localPreferences = {
             setItem(SESSION_USER_HAS_PASSWORD, value?.toString() ?? null);
         },
         nullifySession: (): void => {
-            console.warn('Nullifying Session.');
             const { session } = localPreferences;
             session.userType = null;
             session.actualUserType = null;
