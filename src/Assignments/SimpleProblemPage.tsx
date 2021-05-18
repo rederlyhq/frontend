@@ -291,7 +291,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
         let message = 'You have successfully completed this exam.';
         if (actualAttemptsRemaining > 0 || actualAttemptsRemaining === 'unlimited') {
             const nit = (actualAttemptsRemaining === 1) ? 'attempt' : 'attempts';
-            message = `You still have ${actualAttemptsRemaining} graded ${nit} remaining. If you end the exam now, you will no longer be able to improve your score on this version. Are you sure you want to end this exam?`;
+            message = `This will end your exam without submitting. You still have ${actualAttemptsRemaining} graded ${nit} remaining. If you end the exam now, you will no longer be able to improve your score on this version. Are you sure you want to end this exam?`;
         }
         if (_.isNil(versionId)) {
             logger.error('This should never happen - ending a version without versionId set.');
