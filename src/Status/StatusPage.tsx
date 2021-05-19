@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import AxiosRequest from '../Hooks/AxiosRequest';
 import axios from 'axios';
 import './StatusPage.css';
+import { version as packageJSONVersion } from '../../package.json';
 
 interface StatusPageProps {
 
@@ -43,7 +44,8 @@ export const StatusPage: React.FC<StatusPageProps> = () => {
     return <div style={{padding:'5em'}}>
         <div style={{padding:'10px'}}>
             <h2>Frontend Version</h2>
-            <div>{version}</div>
+            <div><strong>From package.json:</strong> {packageJSONVersion}</div>
+            <div><strong>From version.txt:</strong> {version}</div>
         </div>
         <div style={{padding:'10px'}}>
             <h2>Status</h2>
