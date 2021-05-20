@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ProblemObject, TopicObject } from '../Courses/CourseInterfaces';
+import { ProblemObject, TopicObject, StudentGrade, StudentGradeInstance } from '../Courses/CourseInterfaces';
 import { Row, Col, Container, Nav, NavLink, Button, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import ProblemIframe from './ProblemIframe';
@@ -241,12 +241,48 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     // This should always be used on the selectedProblem.
-    const setProblemStudentGrade = (id: number, val: any) => {
+    const setProblemStudentGrade = (id: number, val: Partial<StudentGrade> | Partial<StudentGradeInstance>) => {
         logger.info('SimpleProblemPage: setting student grade on current problem');
         resetAlert();
         if (_.isEmpty(problems) || problems === null || _.isNil(problems[id])) return;
-        problems[id].grades = [val];
-        setProblems({ ...problems });
+        setProblems(problems => {
+            if (_.isNil(problems)) return problems;
+
+            const prob = new ProblemObject(problems[id]);
+            prob.grades = [new StudentGrade(val)];
+            problems[id] = prob;
+            return {...problems };
+        });
+    };
+
+    // This should always be used on the selectedProblem.
+    const setProblemStudentGradeInstance = (id: number, gradeId: number, instance: Partial<StudentGradeInstance>) => {
+        logger.info('setProblemStudentGradeInstance: setting student grade on current problem');
+        resetAlert();
+        if (_.isEmpty(problems) || problems === null || _.isNil(problems[id])) return;
+        setProblems(problems => {
+            if (_.isNil(problems)) return problems;
+
+            const prob = new ProblemObject(problems[id]);
+            prob.grades = prob.grades?.map(x => {
+                const grade = new StudentGrade(x);
+                if (grade.id === gradeId) {
+                    if (grade.gradeInstances?.first !== instance.id) {
+                        logger.error('The first grade instance does not match the update we got.');
+                        return grade;
+                    }
+                    if (_.isNil(grade.gradeInstances)) {
+                        logger.error('Grade instance was nil during saving update.');
+                        return grade;
+                    }
+                    grade.gradeInstances[0] = {...grade.gradeInstances[0], ...instance};
+                } 
+                return grade;
+            });
+            problems[id] = prob;
+                
+            return {...problems };
+        });
     };
 
     const clearModal = () => {
@@ -693,6 +729,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                                         <ProblemIframe
                                             problem={problems[selectedProblemId]}
                                             setProblemStudentGrade={setProblemStudentGrade}
+                                            setProblemStudentGradeInstance={setProblemStudentGradeInstance}
                                         />
                                     </motion.div>
                                 </AnimatePresence>

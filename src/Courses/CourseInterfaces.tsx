@@ -366,7 +366,7 @@ export class StudentGrade {
     // for tracking saved inputs
     hasBeenSaved?: boolean;
 
-    public constructor(init?:Partial<ProblemObject>) {
+    public constructor(init?:Partial<StudentGrade>) {
         Object.assign(this, init);
     }
 }
