@@ -268,6 +268,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                         data: reqBody
                     });
                     const resultObject = result.data.data.updatesResult.updatedRecords[0];
+                    resultObject.hasBeenSaved = true;
                     if (result.data.data.updatesCount > 0) {
                         setProblemStudentGrade(problem.id, resultObject);
                         setLastSavedAt?.(moment());

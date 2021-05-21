@@ -241,7 +241,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
     };
 
     // This should always be used on the selectedProblem.
-    const setProblemStudentGrade = (id: number, val: Partial<StudentGrade> | Partial<StudentGradeInstance>) => {
+    const setProblemStudentGrade = (id: number, val: Partial<StudentGrade>) => {
         logger.info('SimpleProblemPage: setting student grade on current problem');
         resetAlert();
         if (_.isEmpty(problems) || problems === null || _.isNil(problems[id])) return;
@@ -267,8 +267,8 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
             prob.grades = prob.grades?.map(x => {
                 const grade = new StudentGrade(x);
                 if (grade.id === gradeId) {
-                    if (grade.gradeInstances?.first !== instance.id) {
-                        logger.error('The first grade instance does not match the update we got.');
+                    if (grade.gradeInstances?.first?.id !== instance.id) {
+                        logger.error('The first grade instance does not match the update we got.', grade.gradeInstances?.first , instance.id);
                         return grade;
                     }
                     if (_.isNil(grade.gradeInstances)) {
@@ -276,6 +276,7 @@ export const SimpleProblemPage: React.FC<SimpleProblemPageProps> = () => {
                         return grade;
                     }
                     grade.gradeInstances[0] = {...grade.gradeInstances[0], ...instance};
+                    grade.hasBeenSaved = true;
                 } 
                 return grade;
             });
