@@ -104,13 +104,14 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
     };
 
     const wrappedOnChange = () => {
-        setDisabled(false);
         if (isQuillEmpty()) {
             onChange?.(null);
-            return;
+        } else {
+            const delta = quill.current?.getEditor().getContents();
+            onChange?.(delta);
         }
-        const delta = quill.current?.getEditor().getContents();
-        onChange?.(delta);
+
+        setDisabled(false);
     };
 
     const onDrop: DropzoneOptions['onDrop'] = (files) => {
@@ -195,7 +196,7 @@ export const QuillControlledEditor: React.FC<QuillControlledEditorProps> = ({onS
                     padding: '0% 1%',
                 }}
                 ref={r => quill.current = r}
-                theme={'snow'} 
+                // theme={'snow'} 
                 modules={{
                     formula: true,
                     toolbar: [

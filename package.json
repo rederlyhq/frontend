@@ -1,6 +1,6 @@
 {
   "name": "webwork-react-ts",
-  "version": "1.11.2",
+  "version": "1.11.8",
   "author": "Rederly",
   "license": "GPL-3.0-or-later",
   "private": true,
@@ -47,6 +47,7 @@
     "material-table": "1.68.1",
     "material-ui-chip-input": "^1.1.0",
     "mathquill4quill": "^2.2.0",
+    "mime-types": "^2.1.30",
     "moment": "^2.29.1",
     "pdfjs-dist": "^2.6.347",
     "popper.js": "^1.16.1",
@@ -114,6 +115,7 @@
     "@hookform/devtools": "^2.2.1",
     "@types/file-saver": "^2.0.1",
     "@types/json2csv": "^5.0.1",
+    "@types/mime-types": "^2.1.0",
     "@types/react-virtualized-auto-sizer": "^1.0.0",
     "@types/react-window": "^1.8.2",
     "@types/url-join": "^4.0.0",

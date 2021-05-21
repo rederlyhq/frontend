@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
-import { ProblemObject } from '../Courses/CourseInterfaces';
+import { ProblemObject, StudentGrade, StudentGradeInstance } from '../Courses/CourseInterfaces';
 import _ from 'lodash';
 import { Alert } from 'react-bootstrap';
 import { postQuestionSubmission, putQuestionGrade, putQuestionGradeInstance, postPreviewQuestion, getQuestion } from '../APIInterfaces/BackendAPI/Requests/CourseRequests';
@@ -14,7 +14,8 @@ import { Constants } from '../Utilities/Constants';
 
 interface ProblemIframeProps {
     problem: ProblemObject;
-    setProblemStudentGrade?: (id: number, val: any) => void;
+    setProblemStudentGrade?: (id: number, val: Partial<StudentGrade>) => void;
+    setProblemStudentGradeInstance?: (id: number, gradeId: number, instance: Partial<StudentGradeInstance>) => void;
     previewPath?: string;
     previewSeed?: number;
     previewProblemSource?: string;
@@ -50,6 +51,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
     previewShowHints,
     previewShowSolutions,
     setProblemStudentGrade = Constants.React.defaultStates.NOOP_FUNCTION,
+    setProblemStudentGradeInstance = Constants.React.defaultStates.NOOP_FUNCTION,
     workbookId,
     readonly = false,
     userId,
@@ -106,7 +108,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
 
             setLoading(false);
         }
-    }, [previewPath, previewProblemSource, previewSeed, previewShowHints, previewShowSolutions, problem.id, readonly, setAlert, studentTopicAssessmentInfoId, userId, workbookId]);
+    }, [previewPath, previewProblemSource, previewSeed, previewShowHints, previewShowSolutions, problem.id, readonly, setAlert, showCorrectAnswers, studentTopicAssessmentInfoId, userId, workbookId]);
 
     const fetchHTML = useCallback(async () => {
         if (pendingReq.current !== null) {
@@ -260,20 +262,32 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
             };
 
             try {
-                const result = (_.isNil(problem.grades[0].gradeInstances) || problem.grades[0].gradeInstances.length === 0) ?
-                    await putQuestionGrade({
+                if (_.isNil(problem.grades[0].gradeInstances) || problem.grades[0].gradeInstances.length === 0) {
+                    const result = await putQuestionGrade({
                         id: problem.grades[0].id,
                         data: reqBody
-                    }) :
-                    await putQuestionGradeInstance({
+                    });
+                    const resultObject = result.data.data.updatesResult.updatedRecords[0];
+                    resultObject.hasBeenSaved = true;
+                    if (result.data.data.updatesCount > 0) {
+                        setProblemStudentGrade(problem.id, resultObject);
+                        setLastSavedAt?.(moment());
+                    }
+                } else {
+                    const result = await putQuestionGradeInstance({
                         id: problem.grades[0].gradeInstances[0].id,
                         data: reqBody
                     });
-
-                if (result.data.data.updatesCount > 0) {
-                    setProblemStudentGrade(problem.id, {...problem.grades[0], hasBeenSaved: true});
-                    setLastSavedAt?.(moment());
+                    const resultObject = result.data.data.updatesResult.updatedRecords[0];
+                    if (result.data.data.updatesCount > 0) {
+                        if (problem.grades[0].id !== resultObject.studentGradeId) {
+                            logger.error(`An update was recieved for a grade instance ${resultObject.id} with grade ${resultObject.studentGradeId}, but the first grade in state is ${problem.grades[0].id}`);
+                        }
+                        setProblemStudentGradeInstance(problem.id, resultObject.studentGradeId ?? problem.grades[0].id, resultObject);
+                        setLastSavedAt?.(moment());
+                    }
                 }
+
             } catch (e) {
                 setAlert({
                     variant: 'danger',
@@ -282,7 +296,7 @@ export const ProblemIframe: React.FC<ProblemIframeProps> = ({
                 return;
             }
         }
-    }, [previewPath, previewProblemSource, previewSeed, previewShowHints, previewShowSolutions, problem.grades, problem.id, setAlert, setLastSavedAt, setLastSubmittedAt, setProblemStudentGrade]);
+    }, [previewPath, previewProblemSource, previewSeed, previewShowHints, previewShowSolutions, problem, setAlert, setLastSavedAt, setLastSubmittedAt, setProblemStudentGrade, setProblemStudentGradeInstance]);
 
     const debouncedSaveHandler = useMemo(() => _.debounce(prepareAndSubmit, 2000, { leading: false, trailing: true }), [prepareAndSubmit]);
     const debouncedSubmitHandler = useMemo(() => _.debounce(prepareAndSubmit, 300, { leading: false, trailing: true }), [prepareAndSubmit]);

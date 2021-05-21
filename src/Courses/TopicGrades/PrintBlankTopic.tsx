@@ -71,7 +71,7 @@ export const PrintBlankTopic: React.FC<PrintBlankTopicProps> = () => {
         <>
             <h1>{gradeData.name} Worksheet</h1>
             <Alert severity='info' className='dont-print'>Printing will begin after all problems and attachments have finished loading. If the print dialog does not appear after the page has finished loading, you can <button onClick={()=>window.print()} className='link-button'>click here</button>.</Alert>
-            <Alert severity='warning' className='dont-print'>Some browsers have trouble printing embedded images, even if they render on-screen. If the print preview does not include images, try using <Link to='https://www.google.com/chrome/'>Google Chrome</Link>.</Alert>
+            <Alert severity='warning' className='dont-print'>Some browsers have trouble printing embedded images, even if they render on-screen. If the print preview does not include images, try using <a href='https://www.google.com/chrome/' target='_blank' rel='noreferrer'>Google Chrome</a>.</Alert>
             <br/>
             {gradeData.questions.map((problem)=>{
                 const problemPath = problem.webworkQuestionPath;

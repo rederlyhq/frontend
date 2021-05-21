@@ -138,9 +138,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
             break;
         case StatisticsViewFilter.PROBLEMS_FILTERED:
         case StatisticsView.ATTEMPTS:
-            url = `/users/${userId}?includeGrades=WITH_ATTEMPTS&`;
-            // TODO: RED-345 This should be removed when a similar call as the others is supported.
-            idFilterLocal = null;
+            url = `${url}/workbooks?`;
+            filterParam = 'courseTopicQuestionId';
             break;
         default:
             logger.error('You should not have a view that is not the views or filtered views');
@@ -153,7 +152,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
         const queryString = qs.stringify(_({
             courseId: course.id,
             [filterParam]: idFilterLocal,
-            userId: (view !== StatisticsView.ATTEMPTS && view !== StatisticsViewFilter.PROBLEMS_FILTERED) ? userId : null,
+            userId: userId,
             topicTypeFilter: hasTopicTypeFilter ? topicTypeFilter : null,
         }).omitBy(_.isNil).value() as any).toString();
 
@@ -172,24 +171,18 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                 };
 
                 if (view === StatisticsView.ATTEMPTS || view === StatisticsViewFilter.PROBLEMS_FILTERED) {
-                    const grades = data.grades.filter((grade: any) => {
-                        const hasAttempts = grade.numAttempts > 0;
-                        const satisfiesIdFilter = idFilter ? grade.courseWWTopicQuestionId === idFilter : true;
-                        return hasAttempts && satisfiesIdFilter;
-                    });
                     logger.debug('Stats tab: [useEffect] setting grade.');
-                    setGrade(grades.first);
-                    setTitleGrade((_.isNil(grades.first) || _.isNil(grades.first.effectiveScore)) ? null : {effectiveScore: grades.first.effectiveScore, systemScore: grades.first.partialCreditBestScore, bestScore: grades.first.bestScore});
-                    data = grades.map((grade: any) => (
-                        grade.workbooks.map((attempt: any) => ({
-                            id: attempt.id,
-                            submitted: attempt.submitted,
-                            result: attempt.result.toPercentString(),
-                            time: attempt.time,
-                            problemId: grade.courseWWTopicQuestionId
-                        }))
-                    ));
-                    data = _.flatten(data);
+                    setGrade(data.grade);
+                    setTitleGrade(data.grade ? {
+                        effectiveScore: data.grade.effectiveScore,
+                        systemScore: data.grade.partialCreditBestScore,
+                        bestScore: data.grade.overallBestScore,
+                    }: null);
+                    data = data.data.map((d: any) => ({
+                        ...d,
+                        problemId: d.courseWWTopicQuestionId,
+                        result: d.result.toPercentString()
+                    }));
                     data = data.sort((a: any, b: any) => moment(b.time).diff(moment(a.time)));
                 } else {
                     logger.debug('Stats tab: [useEffect] setting gradesstate and grade');
@@ -539,7 +532,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course, userId }) 
                     (key !== StatisticsView.ATTEMPTS || userId !== undefined) &&
                     <Col key={`global-${key}`} className="p-0" >
                         <Nav.Item>
-                            <Nav.Link eventKey={key} >
+                            <Nav.Link eventKey={key} disabled={key === StatisticsView.ATTEMPTS || key === StatisticsView.PROBLEMS}>
                                 {_.capitalize(key)}
                             </Nav.Link>
                         </Nav.Item>
