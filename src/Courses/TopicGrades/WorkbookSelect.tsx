@@ -50,7 +50,7 @@ export const WorkbookSelect: React.FC<WorkbookSelectProps> = ({grade, onChange, 
             return [current];
         }
 
-        const attempts = (vMap[versionKey] ?? []).sort().map((id, index) => ({ label: `Attempt #${index + 1}`, value: id })).reverse();
+        const attempts = (vMap[versionKey] ?? []).sort((a, b) => a - b).map((id, index) => ({ label: `Attempt #${index + 1}`, value: id })).reverse();
         
         attempts.unshift(current);
     
