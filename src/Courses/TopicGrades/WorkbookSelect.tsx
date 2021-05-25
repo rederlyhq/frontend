@@ -34,7 +34,7 @@ export const WorkbookSelect: React.FC<WorkbookSelectProps> = ({grade, onChange, 
     const classes = useStyles();
 
     const versionList = (vMap: Record<number, Array<number> | undefined>): WorkbookOption[] => {
-        return _(vMap).keys().map(v => parseInt(v, 10)).sort().map((key, i) =>  ({label: `Version #${i+1}`, value: key})).value().reverse();
+        return _(vMap).keys().map(v => parseInt(v, 10)).sort((a, b) => a - b).map((key, i) =>  ({label: `Version #${i+1}`, value: key})).value().reverse();
     };
 
     // This could also be called the Attempt List.
