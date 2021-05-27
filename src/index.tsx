@@ -11,6 +11,7 @@ import { MuiPickersUtilsProvider} from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 import { ConfigProvider } from './Contexts/ConfigProvider';
 import { GlobalSnackbarProvider } from './Contexts/GlobalSnackbar';
+import { VersionProvider } from './Contexts/VersionContext';
 
 if (process.env.NODE_ENV !== 'production' && process.env.REACT_APP_ENABLE_AXE === 'true') {
     const axe = require('react-axe');
@@ -21,13 +22,13 @@ ReactDOM.render(
     <React.StrictMode>
         <GlobalErrorBoundaryState>
             <ConfigProvider>
-                <VersionCheck>
+                <VersionProvider>
                     <MuiPickersUtilsProvider utils={MomentUtils}>
                         <GlobalSnackbarProvider>
                             <Router />
                         </GlobalSnackbarProvider>
                     </MuiPickersUtilsProvider>
-                </VersionCheck>
+                </VersionProvider>
             </ConfigProvider>
         </GlobalErrorBoundaryState>
     </React.StrictMode>,

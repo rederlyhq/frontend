@@ -31,6 +31,7 @@ import localPreferences from '../Utilities/LocalPreferences';
 import { impersonate, logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { BreadcrumbLookupProvider } from '../Contexts/BreadcrumbContext';
 import PrintBlankTopic from '../Courses/TopicGrades/PrintBlankTopic';
+import { VersionCheck } from '../Utilities/VersionCheck';
 const { session } = localPreferences;
 
 
@@ -246,7 +247,7 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                             // So width 100% has 16px padding leading but trailing it has 31px
                             width: '100vw'
                         }}>
-                            <Col>You&apos;re using v{version} of Rederly!</Col>
+                            <Col><VersionCheck /></Col>
                             <Col style={{float: 'right', textAlign: 'right'}}>User Role: {localPreferences.session.userType}</Col>
                         </Row>
                     </Navbar>
