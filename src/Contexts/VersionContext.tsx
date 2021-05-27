@@ -22,10 +22,10 @@ const versionRefresh = async () => {
     // To test in development make a version.txt in the public folder with a value that matches or does not match package.json (i.e. "1.5.5")
     // Then comment out this check
     // version.txt in production is generated in post build
-    // if (process.env.NODE_ENV !== 'production') {
-    //     logger.debug('Version Check: No cache buster in development');
-    //     return;
-    // }
+    if (process.env.NODE_ENV !== 'production') {
+        logger.debug('Version Check: No cache buster in development');
+        return;
+    }
     try {
         const versionAxiosResponse = await getVersionFile();
         const versionResponse = versionAxiosResponse.data;
