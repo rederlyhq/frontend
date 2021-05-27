@@ -77,8 +77,8 @@ export const VersionProvider: React.FC<{}>  = ({ children }) => {
     }, [setServerFrontendVersionInfo]);
 
     useEffect(()=>{
-        (function setVersionInterval() {
-            getVersionInfo();
+        (async function setVersionInterval() {
+            await getVersionInfo();
             setTimeout(setVersionInterval, 1200000);
         })();
     }, [getVersionInfo]);
