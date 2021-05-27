@@ -6,7 +6,6 @@ import * as serviceWorker from './serviceWorker';
 import { Router } from './Router';
 import './Extensions';
 import GlobalErrorBoundaryState from './Utilities/ErrorBoundaries/GlobalErrorBoundary';
-import { VersionCheck } from './Utilities/VersionCheck';
 import { MuiPickersUtilsProvider} from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 import { ConfigProvider } from './Contexts/ConfigProvider';

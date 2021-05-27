@@ -1,13 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import logger from './Logger';
+import React, {  } from 'react';
 import { version as packageVersion } from '../../package.json';
-import moment from 'moment';
 import _ from 'lodash';
-import localPreferences from '../Utilities/LocalPreferences';
 import { useVersionContext } from '../Contexts/VersionContext';
+import { Chip } from '@material-ui/core';
+import { Refresh } from '@material-ui/icons';
 
-const { versionCheck } = localPreferences;
 
 interface VersionCheckProps {
 }
@@ -22,20 +19,15 @@ export const VersionCheck: React.FC<VersionCheckProps> = () => {
     return <>
         You&apos;re using v{packageVersion} of Rederly! 
         {versionInfo.serverFrontend !== packageVersion && 
-            <button
-                tabIndex={0}
-                onClick={() => window.location.reload()}
-                style={{
-                    background: 'transparent',
-                    border: 'none',
-                    padding: '0px 0px 0px 3px',
-                    color: '#0EF',
-                    textDecoration: 'underline',
-                    cursor: 'pointer',
-                }}
-            >
-                v{versionInfo.serverFrontend} is now available!
-            </button>
+            <Chip
+                label={`Update now! (v${versionInfo.serverFrontend})`}
+                clickable
+                color='secondary'
+                onClick={()=>window.location.reload}
+                onDelete={()=>window.location.reload}
+                deleteIcon={<Refresh />}
+                style={{marginLeft: '5px'}}
+            />
         }
     </>;
 };

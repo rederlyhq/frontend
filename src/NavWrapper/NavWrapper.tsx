@@ -17,7 +17,6 @@ import AccountWrapper from '../Account/AccountWrapper';
 import { CookieEnum } from '../Enums/CookieEnum';
 import URLBreadcrumb from './URLBreadcrumb';
 import ExtensionsPage from '../Courses/Extensions/ExtensionsPage';
-import { version } from '../../package.json';
 import CourseProvider from '../Courses/CourseProvider';
 import TopicSettingsPage from '../Courses/TopicSettings/TopicSettingsPage';
 import logger from '../Utilities/Logger';
