@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Spinner, Col, Row, Alert } from 'react-bootstrap';
+import { Spinner, Col, Row, Alert, Button } from 'react-bootstrap';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { CourseObject } from '../CourseInterfaces';
 import ActiveTopics from '../CourseDetailsTabs/ActiveTopics';
@@ -8,12 +8,14 @@ import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { nameof } from '../../Utilities/TypescriptUtils';
 import { EditableCourseDetailsForm } from '../CourseCreation/EditableCourseDetailsForm';
-import { putCourse } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { exportCourse, putCourse } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import { Link } from 'react-router-dom';
 import * as qs from 'querystring';
 import useQuerystringHelper, { QueryStringMode } from '../../Hooks/useQuerystringHelper';
+import { saveAs } from 'file-saver';
+import { FaArchive } from 'react-icons/fa';
 
 interface CourseDetailsTabProps {
     course?: CourseObject;
@@ -113,14 +115,32 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
                 {userType !== UserRole.STUDENT &&
                     <div
                         style={{
-                            marginLeft: 'auto'
+                            marginLeft: 'auto',
+                            display: 'flex',
                         }}
                     >
+                        { inEditMode &&
+                        <>
+                            <span style={{
+                                padding: '2px'
+                            }}>
+                                <Button
+                                    variant='outline-secondary'
+                                    tabIndex={0}
+                                    onClick={async () => {
+                                        const resp = await exportCourse({ courseId: course.id });
+                                        saveAs(resp.data, `${course.name}.tgz`);
+                                    }}
+                                >
+                                    <FaArchive /> Export Archive
+                                </Button>
+                            </span>
+                        </>}
                         <EditToggleButton
                             selectedState={inEditMode}
                             onClick={() => {setInEditModeWrapper(!inEditMode); }}
                             style={{
-                                marginLeft: 'auto',
+                                marginLeft: '1em',
                                 padding: '2px'
                             }}
                         />
