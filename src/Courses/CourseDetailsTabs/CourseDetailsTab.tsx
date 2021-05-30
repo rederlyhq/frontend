@@ -8,7 +8,7 @@ import { EditToggleButton } from '../../Components/EditToggleButton';
 import { UserRole, getUserRole } from '../../Enums/UserRole';
 import { nameof } from '../../Utilities/TypescriptUtils';
 import { EditableCourseDetailsForm } from '../CourseCreation/EditableCourseDetailsForm';
-import { exportCourse, putCourse } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { exportCourseArchive, putCourse } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
 import logger from '../../Utilities/Logger';
 import { Alert as MUIAlert } from '@material-ui/lab';
 import { Link } from 'react-router-dom';
@@ -128,8 +128,13 @@ export const CourseDetailsTab: React.FC<CourseDetailsTabProps> = ({ course, load
                                     variant='outline-secondary'
                                     tabIndex={0}
                                     onClick={async () => {
-                                        const resp = await exportCourse({ courseId: course.id });
-                                        saveAs(resp.data, `${course.name}.tgz`);
+                                        try {
+                                            const resp = await exportCourseArchive({ courseId: course.id });
+                                            saveAs(resp.data, `${course.name}.tgz`);    
+                                        } catch (e) {
+                                            logger.error('Failed to create a course archive', e);
+                                            setUpdateError('Failed to fetch archive');
+                                        }
                                     }}
                                 >
                                     <FaArchive /> Export Archive
