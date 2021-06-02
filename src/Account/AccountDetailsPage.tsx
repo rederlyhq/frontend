@@ -19,10 +19,6 @@ export const AccountDetailsPage: React.FC<AccountDetailsPageProps> = () => {
 
     useEffect(() => {
         (async () => {
-            if (_.isNil(config)) {
-                logger.error('Cannot get Payment URL because config was not defined.');
-            }
-
             try {
                 const res = await AxiosRequest.get('/users/status');
                 const data = res.data.data as { userPaidUntil: Date, universityPaidUntil: Date };

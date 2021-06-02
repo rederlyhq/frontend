@@ -3,6 +3,7 @@ import { useHistory } from 'react-router-dom';
 import logger from '../Utilities/Logger';
 import { getUserIdNoRedirect, getUserRoleNoRedirect } from '../Enums/UserRole';
 import { useConfigContext } from '../Contexts/ConfigProvider';
+import { version as packageVersion } from '../../package.json';
 
 declare global {
     interface Window {
@@ -55,11 +56,16 @@ export const useTracking = (
                 // We don't change the title with each request.
                 page_title: location.pathname,
                 page_path: location.pathname,
-                user_id:  getUserIdNoRedirect(),
-                Role: getUserRoleNoRedirect(),
+                user_id: getUserIdNoRedirect(),
+                version: packageVersion,
                 cookie_domain: config?.domain,
                 cookie_flags: 'SameSite=None;Secure',
                 // debug_mode: true
+            });
+
+            window.gtag('set', 'user_properties', {
+                user_id: getUserIdNoRedirect(),
+                role: getUserRoleNoRedirect(),
             });
         });
 
