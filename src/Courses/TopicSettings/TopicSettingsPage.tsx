@@ -13,7 +13,7 @@ import { useDropzone } from 'react-dropzone';
 import logger from '../../Utilities/Logger';
 import { useQuery } from '../../Hooks/UseQuery';
 import { NamedBreadcrumbs, useBreadcrumbLookupContext } from '../../Contexts/BreadcrumbContext';
-import WebWorkDef from '@rederly/webwork-def-parser';
+import WebWorkDef from '@rederly/rederly-utils/lib/webwork-def-parser';
 import { readFileAsText } from '../../Utilities/FileHelper';
 import { ConfirmationModal } from '../../Components/ConfirmationModal';
 import { getTopicSettingsFromDefFile, DefFileTopicAssessmentInfo } from '@rederly/rederly-utils';
