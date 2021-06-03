@@ -7,11 +7,12 @@ import { Router } from './Router';
 import './Extensions';
 import GlobalErrorBoundaryState from './Utilities/ErrorBoundaries/GlobalErrorBoundary';
 import { VersionCheck } from './Utilities/VersionCheck';
-import { MuiPickersUtilsProvider} from '@material-ui/pickers';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 import { ConfigProvider } from './Contexts/ConfigProvider';
 import { GlobalSnackbarProvider } from './Contexts/GlobalSnackbar';
 import BackdropProvider from './Contexts/BackdropContext';
+import NotificationWrapper from './Utilities/Notifications/NotificationWrapper';
 
 if (process.env.NODE_ENV !== 'production' && process.env.REACT_APP_ENABLE_AXE === 'true') {
     const axe = require('react-axe');
@@ -26,7 +27,9 @@ ReactDOM.render(
                     <MuiPickersUtilsProvider utils={MomentUtils}>
                         <BackdropProvider>
                             <GlobalSnackbarProvider>
-                                <Router />
+                                <NotificationWrapper>
+                                    <Router />
+                                </NotificationWrapper>
                             </GlobalSnackbarProvider>
                         </BackdropProvider>
                     </MuiPickersUtilsProvider>

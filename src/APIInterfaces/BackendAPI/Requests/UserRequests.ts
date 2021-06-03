@@ -1,5 +1,5 @@
 import { PostForgotPasswordOptions, PutUpdatePasswordOptions, PutUpdateForgottonPasswordOptions, PostLoginOptions, PostResendVerificationOptions, GetUsersOptions, RegisterUserOptions, GetVerificationOptions, PutUpdateNilPasswordOptions } from '../RequestTypes/UserRequestTypes';
-import { PostForgotPasswordResponse, PutUpdatePasswordResponse, PutUpdateForgottonPasswordResponse, PostLoginResponse, PostResendVerificationResponse, GetUserResponse, RegisterUserResponse, GetVerificationResponse } from '../ResponseTypes/UserResponseTypes';
+import { PostForgotPasswordResponse, PutUpdatePasswordResponse, PutUpdateForgottonPasswordResponse, PostLoginResponse, PostResendVerificationResponse, GetUserResponse, RegisterUserResponse, GetVerificationResponse, GetJWTResponse } from '../ResponseTypes/UserResponseTypes';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import url from 'url';
@@ -50,6 +50,11 @@ const USER_LOGOUT_PATH = url.resolve(
 const USER_IMPERSONATE_PATH = urlJoin(
     USER_PATH,
     'impersonate'
+);
+
+const USER_JWT_PATH = urlJoin(
+    USER_PATH,
+    'jwt'
 );
 
 export const postForgotPassword = async ({
@@ -213,6 +218,20 @@ export const impersonate = async ({
     try {
         return await AxiosRequest.post(USER_IMPERSONATE_PATH, {
             role: role
+        });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getJWT = async ({
+    scopes
+}: {
+    scopes: any
+}): Promise<GetJWTResponse> => {
+    try {
+        return await AxiosRequest.post(USER_JWT_PATH, {
+            scopes: scopes
         });
     } catch (e) {
         throw new BackendAPIError(e);

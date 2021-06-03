@@ -26,3 +26,5 @@ export type RegisterUserResponse = AxiosResponse<BackendAPIResponse<RegisterUser
 
 type GetVerification = unknown;
 export type GetVerificationResponse = AxiosResponse<BackendAPIResponse<GetVerification>>;
+
+export type GetJWTResponse = AxiosResponse<BackendAPIResponse<string>>;
