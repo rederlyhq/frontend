@@ -16,6 +16,7 @@ const COURSE_PATH = '/courses/';
 const COURSE_ID = (courseId: number): string => urlJoin(COURSE_PATH, courseId.toString());
 const COURSE_IMPORT_ARCHIVE = (courseId: number): string => urlJoin(COURSE_ID(courseId), '/import-archive/');
 const COURSE_TOPIC_GRADES = (courseId: number): string => urlJoin(COURSE_ID(courseId), '/topic-grades/');
+const COURSE_EXPORT = (courseId: number): string => urlJoin(COURSE_ID(courseId), '/export-archive/');
 const COURSE_UNIT_PATH = url.resolve(COURSE_PATH, 'unit/');
 const COURSE_TOPIC_PATH = url.resolve(COURSE_PATH, 'topic/');
 const COURSE_QUESTION_PATH = url.resolve(COURSE_PATH, 'question/');
@@ -1057,6 +1058,23 @@ export const getTopicGradesForCourse = async ({
 }): Promise<AxiosResponse<GetTopicGradesForCourseResponse>> => {
     try {
         return await AxiosRequest.get(COURSE_TOPIC_GRADES(courseId));
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const exportCourseArchive = async ({
+    courseId
+}: {
+    courseId: number;
+}): Promise<AxiosResponse<Blob>> => {
+    try {
+        return await AxiosRequest.post(COURSE_EXPORT(courseId), null, {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            responseType: 'blob'
+        });
     } catch (e) {
         throw new BackendAPIError(e);
     }

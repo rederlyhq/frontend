@@ -7,6 +7,7 @@ import ForgotPasswordLandingPage from './Login/ForgotPasswordLandingPage';
 import { AuthorizationWrapper } from './NavWrapper/AuthorizationWrapper';
 import useTracking from './Hooks/useTracking';
 import { QueryParamProvider } from 'use-query-params';
+import { StatusPage } from './Status/StatusPage';
 
 interface RouterProps {
 
@@ -34,6 +35,9 @@ export const Router: React.FC<RouterProps> = () => {
                                     {/* All authenticated routing happens in this component. */}
                                 </NavWrapper>
                             </AuthorizationWrapper>
+                        </Route>
+                        <Route path="/status">
+                            <StatusPage />
                         </Route>
                         <Route path="/verify/:uid">
                             <VerificationLandingPage />

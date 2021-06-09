@@ -17,7 +17,7 @@ export class CourseObject {
     start: Date = new Date();
     end: Date = new Date();
     sectionCode: string = '';
-    semesterCode: string = 'SPRING';
+    semesterCode: string = 'SUMMER';
     semesterCodeYear: number = 2021;
     id: number = 0;
     units: Array<UnitObject> = [];

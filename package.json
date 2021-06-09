@@ -1,5 +1,6 @@
 {
-  "name": "webwork-react-ts",
+  "name": "rederly-frontend",
+  "description": "The frontend of the Rederly platform.",
   "version": "1.11.10",
   "author": "Rederly",
   "license": "GPL-3.0-or-later",
@@ -11,8 +12,7 @@
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",
     "@material-ui/pickers": "^3.2.10",
-    "@rederly/rederly-utils": "https://github.com/rederlyhq/rederly-utils/releases/download/v0.0.3/rederly-rederly-utils-0.0.3.tgz",
-    "@rederly/webwork-def-parser": "https://github.com/rederlyhq/def-parser/releases/download/v1.0.2/rederly-webwork-def-parser-1.0.2.tgz",
+    "@rederly/rederly-utils": "https://github.com/rederlyhq/rederly-utils/releases/download/v0.1.0/rederly-rederly-utils-0.1.0.tgz",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
