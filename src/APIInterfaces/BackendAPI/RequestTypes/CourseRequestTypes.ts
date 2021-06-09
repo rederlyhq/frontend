@@ -166,9 +166,17 @@ export interface EnrollByCodeOptions {
     enrollCode: string;
 }
 
-export interface EnrollStudentOptions {
-    studentEmail: string;
+export interface EnrollStudentsOptions {
+    userEmails: string[];
     courseId: number;
+}
+
+export interface GetPendingEnrollmentOptions {
+    courseId: number;
+}
+
+export interface DeletePendingEnrollmentOptions {
+    pendingEnrollmentId: number;
 }
 
 export interface DeleteEnrollmentOptions {

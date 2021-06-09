@@ -1,9 +1,9 @@
-import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, getAssessmentProblemsWithWorkbooksOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions, ListAttachmentOptions, ReadQuestionOptions, SaveQuestionOptions, GetGradesOptions, EnrollByCodeOptions, GetRawQuestionOptions, QuestionGradeResponse, GetQuestionGradeOptions, AskForHelpOptions, PostImportCourseArchiveOptions, ShowMeAnotherOptions, GetBrowseProblemsCourseListOptions, GetBrowseProblemsUnitListOptions, GetBrowseProblemsTopicListOptions, GetProblemSearchResultsOptions, EnrollStudentOptions, PostFeedbackOptions, PostGenericConfirmAttachmentUploadOptions, PostTopicFeedbackOptions, GetTopicFeedbackOptions, GetStudentGradesOptions } from '../RequestTypes/CourseRequestTypes';
+import { CreateCourseOptions, PutCourseUnitOptions, PutCourseTopicOptions, PutCourseTopicQuestionOptions, PostCourseTopicQuestionOptions, PostDefFileOptions, DeleteCourseTopicQuestionOptions, DeleteCourseTopicOptions, DeleteCourseUnitOptions, PostCourseUnitOptions, PostCourseTopicOptions, PutCourseOptions, GetQuestionsOptions, PutQuestionGradeOptions, DeleteEnrollmentOptions, PostQuestionSubmissionOptions, ExtendCourseTopicForUser, GetCourseTopicOptions, GetQuestionOptions, ExtendCourseTopicQuestionsForUser, GenerateNewVersionOptions, SubmitVersionOptions, PutQuestionGradeInstanceOptions, EndVersionOptions, PreviewQuestionOptions, getAssessmentProblemsWithWorkbooksOptions, PostConfirmAttachmentUploadOptions, PostEmailProfOptions, ListAttachmentOptions, ReadQuestionOptions, SaveQuestionOptions, GetGradesOptions, EnrollByCodeOptions, GetRawQuestionOptions, QuestionGradeResponse, GetQuestionGradeOptions, AskForHelpOptions, PostImportCourseArchiveOptions, ShowMeAnotherOptions, GetBrowseProblemsCourseListOptions, GetBrowseProblemsUnitListOptions, GetBrowseProblemsTopicListOptions, GetProblemSearchResultsOptions, EnrollStudentsOptions, PostFeedbackOptions, PostGenericConfirmAttachmentUploadOptions, PostTopicFeedbackOptions, GetTopicFeedbackOptions, GetStudentGradesOptions, GetPendingEnrollmentOptions, DeletePendingEnrollmentOptions } from '../RequestTypes/CourseRequestTypes';
 import * as qs from 'querystring';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
 import { AxiosResponse } from 'axios';
-import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse, ListAttachmentsResponse, ReadQuestionResponse, SaveQuestionResponse, CatalogResponse, GradesResponse, EnrollByCodeResponse, PostImportCourseArchiveResponse, GetBrowseProblemsUnitListResponse, GetBrowseProblemsTopicListResponse, GetBrowseProblemsCourseListResponse, GetProblemSearchResultsResponse, EnrollManuallyResponse, GetTopicGradesForCourseResponse, GetAllVersionDataResponse, GetStudentGradesResponse } from '../ResponseTypes/CourseResponseTypes';
+import { CreateCourseResponse, PutCourseUnitUpdatesResponse, PutCourseTopicUpdatesResponse, PutCourseTopicQuestionUpdatesResponse, CreateQuestionResponse, PostDefFileResponse, PostUnitResponse, PostTopicResponse, PutCourseUpdatesResponse, GetQuestionsResponse, PutQuestionGradeResponse, PostQuestionSubmissionResponse, GetTopicResponse, GetQuestionResponse, PutQuestionGradeInstanceResponse, GetUploadURLResponse, PostEmailProfResponse, ListAttachmentsResponse, ReadQuestionResponse, SaveQuestionResponse, CatalogResponse, GradesResponse, EnrollByCodeResponse, PostImportCourseArchiveResponse, GetBrowseProblemsUnitListResponse, GetBrowseProblemsTopicListResponse, GetBrowseProblemsCourseListResponse, GetProblemSearchResultsResponse, EnrollManuallyResponse, GetTopicGradesForCourseResponse, GetAllVersionDataResponse, GetStudentGradesResponse, GetPendingEnrollmentsResponse, DeletePendingEnrollmentsResponse } from '../ResponseTypes/CourseResponseTypes';
 import url from 'url';
 import { BackendAPIResponse } from '../BackendAPIResponse';
 import _ from 'lodash';
@@ -25,6 +25,8 @@ const COURSE_QUESTION_INSTANCE_PATH = url.resolve(COURSE_QUESTION_GRADE_PATH, 'i
 const COURSE_QUESTIONS_PATH = url.resolve(COURSE_PATH, 'questions/');
 const COURSE_DEF_PATH = url.resolve(COURSE_PATH, 'def/');
 const COURSE_ENROLL_PATH = url.resolve(COURSE_PATH, 'enroll/');
+const COURSE_BULK_ENROLL_PATH = url.resolve(COURSE_ENROLL_PATH, 'bulk/');
+const COURSE_PENDING_ENROLL_PATH = url.resolve(COURSE_ENROLL_PATH, 'pending/');
 const COURSE_ASSESS_PATH = url.resolve(COURSE_PATH, 'assessment/');
 const COURSE_ATTACHMENTS_PATH = url.resolve(COURSE_PATH, 'attachments/');
 export const COURSE_ATTACHMENTS_GET_UPLOAD_PATH = url.resolve(COURSE_ATTACHMENTS_PATH, 'upload-url/');
@@ -607,16 +609,50 @@ export const enrollByCode = async({
     }
 };
 
-export const enrollStudent = async({
-    studentEmail,
+export const enrollStudents = async({
+    userEmails,
     courseId
-}: EnrollStudentOptions): Promise<AxiosResponse<EnrollManuallyResponse>> => {
+}: EnrollStudentsOptions): Promise<AxiosResponse<EnrollManuallyResponse>> => {
     try {
         return await AxiosRequest.post(
-            COURSE_ENROLL_PATH,
+            COURSE_BULK_ENROLL_PATH,
             {
-                studentEmail: studentEmail,
+                userEmails: userEmails,
                 courseId: courseId
+            }
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const getPendingEnrollments = async({
+    courseId
+}: GetPendingEnrollmentOptions): Promise<AxiosResponse<GetPendingEnrollmentsResponse>> => {
+    try {
+        return await AxiosRequest.get(
+            COURSE_PENDING_ENROLL_PATH,
+            {
+                params: {
+                    courseId: courseId
+                }
+            }
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const deletePendingEnrollment = async({
+    pendingEnrollmentId
+}: DeletePendingEnrollmentOptions): Promise<AxiosResponse<DeletePendingEnrollmentsResponse>> => {
+    try {
+        return await AxiosRequest.delete(
+            COURSE_PENDING_ENROLL_PATH,
+            {
+                data: {
+                    id: pendingEnrollmentId
+                }
             }
         );
     } catch (e) {

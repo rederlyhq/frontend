@@ -3,12 +3,13 @@ import { useCallback } from 'react';
 import { Modal, ModalTitle, ModalBody, Form, Button, ModalFooter, Alert } from 'react-bootstrap';
 import ModalHeader from 'react-bootstrap/ModalHeader';
 import BackendAPIError from '../../APIInterfaces/BackendAPI/BackendAPIError';
-import { enrollStudent } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { enrollStudents } from '../../APIInterfaces/BackendAPI/Requests/CourseRequests';
+import { InfoContext } from '../../Components/InfoContext';
 import { SimpleFormRow } from '../../Components/SimpleFormRow';
 import useAlertState from '../../Hooks/useAlertState';
 import logger from '../../Utilities/Logger';
 import { UserObject } from '../CourseInterfaces';
-
+import { BulkEnrollButton } from './BulkEnrollButton';
 interface AddEnrollmentModalProps {
     show: boolean;
     onClose: () => void;
@@ -39,16 +40,41 @@ export const AddEnrollmentModal: React.FC<AddEnrollmentModalProps> = ({
         setLoading(false);
     }, [onCloseProp]);
 
-    const onSubmit = async () => {
+    const enroll = async (emails: string[]) => {
         setAlert({message: '', variant: 'info'});
         try {
             setLoading(true);
-            const results = await enrollStudent({
-                studentEmail: email,
+            const results = await enrollStudents({
+                userEmails: emails,
                 courseId: courseId
             });
-            onEnrollment(results.data.data.user);
-            setAlert({message: 'Success', variant: 'success'});
+
+            const {
+                enrollments,
+                pendingEnrollments,
+                newlyEnrolledUsers
+            } = results.data.data;
+            newlyEnrolledUsers.map(user => onEnrollment(user));
+
+            let variant = 'success';
+            let pendingEnrollmentMessage = null;
+            let enrollmentsMessage = null;
+            if (pendingEnrollments.length > 0) {
+                variant = 'warning';
+                pendingEnrollmentMessage = <p><strong>{pendingEnrollments.length}</strong> of the students you enrolled have not registered with rederly yet. Upon registration they will be auto enrolled. You can see this list under pending enrollments.</p>;
+            }
+
+            if (enrollments.length > 0) {
+                enrollmentsMessage = <p><strong>{enrollments.length}</strong> of the students have been successfully enrolled (or had already been enrolled).</p>;
+            }
+
+            let message = <>{pendingEnrollmentMessage}{enrollmentsMessage}</>;
+            if (enrollmentsMessage === null && pendingEnrollmentMessage === null) {
+                variant = 'error';
+                message = <p>There were no users to enroll</p>;
+            }
+
+            setAlert({message: message, variant: variant});
             setTimeout(() => {
                 onClose();
             }, 3000);
@@ -60,6 +86,9 @@ export const AddEnrollmentModal: React.FC<AddEnrollmentModalProps> = ({
             setLoading(false);
             setAlert({message: msg, variant: 'danger'});
         }
+    };
+    const onSubmit = () => {
+        enroll([email]).catch(err => logger.error('TSNH: AddEnrollmentModal.onSubmit: enroll is wrapped in try catch', err));
     };
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -98,10 +127,13 @@ export const AddEnrollmentModal: React.FC<AddEnrollmentModalProps> = ({
                     />
                 </ModalBody>
                 <ModalFooter>
+                    <BulkEnrollButton onCSVProcessed={enroll} disabled={loading} />
+                    <InfoContext text='This csv is only looking for the `email` column (no spaces or capitals).' />
                     <Button
                         variant="primary"
                         disabled={loading}
                         type='submit'
+                        style={{marginLeft:'auto'}}
                     >
                             Enroll Student
                     </Button>

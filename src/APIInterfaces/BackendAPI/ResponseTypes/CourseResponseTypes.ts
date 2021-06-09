@@ -252,10 +252,22 @@ type EnrollByCode = {
 export type EnrollByCodeResponse = BackendAPIResponse<EnrollByCode>;
 
 type EnrollManually = {
-    user: UserObject;
-    enrollment: unknown;
+    enrollments: {}[];
+    pendingEnrollments: {}[];
+    newlyEnrolledUsers: UserObject[];
+    // user: UserObject;
+    // enrollment: unknown;
 };
 export type EnrollManuallyResponse = BackendAPIResponse<EnrollManually>;
+
+type GetPendingEnrollments = {
+    id: number;
+    email: string;
+}[];
+export type GetPendingEnrollmentsResponse = BackendAPIResponse<GetPendingEnrollments>;
+
+type DeletePendingEnrollments = unknown;
+export type DeletePendingEnrollmentsResponse = BackendAPIResponse<DeletePendingEnrollments>;
 
 /* *************** *************** */
 /* ****** Problem  Browsing ****** */
