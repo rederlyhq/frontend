@@ -1,7 +1,7 @@
 {
   "name": "rederly-frontend",
   "description": "The frontend of the Rederly platform.",
-  "version": "1.11.8",
+  "version": "1.11.10",
   "author": "Rederly",
   "license": "GPL-3.0-or-later",
   "private": true,
