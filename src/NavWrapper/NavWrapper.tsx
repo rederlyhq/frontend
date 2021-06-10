@@ -31,6 +31,7 @@ import localPreferences from '../Utilities/LocalPreferences';
 import { impersonate, logout } from '../APIInterfaces/BackendAPI/Requests/UserRequests';
 import { BreadcrumbLookupProvider } from '../Contexts/BreadcrumbContext';
 import PrintBlankTopic from '../Courses/TopicGrades/PrintBlankTopic';
+import QuickSuperDashboard from '../SuperAdmin/QuickSuperDashboard';
 const { session } = localPreferences;
 
 
@@ -167,6 +168,14 @@ export const NavWrapper: React.FC<NavWrapperProps> = () => {
                         <AnimatePresence initial={false}>
                             <URLBreadcrumb key='URLBreadcrumb' />
                             <Switch>
+                                {getUserRole() === UserRole.SUPERADMIN && [{
+                                    path: `${path}/superadmin`,
+                                    child: <QuickSuperDashboard />
+                                }].map(obj =>
+                                    <Route exact path={obj.path} key={obj.path}>
+                                        {obj.child}
+                                    </Route>)
+                                }
                                 {getUserRole() !== UserRole.STUDENT && [{
                                     path: `${path}/editor`,
                                     child: <ProblemEditor />
