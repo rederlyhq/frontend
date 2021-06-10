@@ -4,7 +4,7 @@ import { superAdminUpdate } from '../APIInterfaces/BackendAPI/Requests/UserReque
 import logger from '../Utilities/Logger';
 import { useGlobalSnackbarContext } from '../Contexts/GlobalSnackbar';
 
-export const ForceVerifyUserForm: React.FC<any> = ({}) => {
+export const ForceVerifyUserForm: React.FC<any> = () => {
     const { register, handleSubmit } = useForm<{forceVerifyEmail: string}>();
     const setAlert = useGlobalSnackbarContext();
 

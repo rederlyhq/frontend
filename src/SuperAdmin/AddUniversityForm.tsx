@@ -5,7 +5,7 @@ import { useGlobalSnackbarContext } from '../Contexts/GlobalSnackbar';
 import { UniversityCreationType } from '../APIInterfaces/BackendAPI/RequestTypes/UniversityRequestTypes';
 import { createUniversity } from '../APIInterfaces/BackendAPI/Requests/UniversityRequests';
 
-export const AddUniversityForm: React.FC<any> = ({}) => {
+export const AddUniversityForm: React.FC<any> = () => {
     const { register, handleSubmit } = useForm<UniversityCreationType>();
     const setAlert = useGlobalSnackbarContext();
 

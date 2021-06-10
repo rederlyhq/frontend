@@ -4,7 +4,7 @@ import { superAdminUpdate } from '../APIInterfaces/BackendAPI/Requests/UserReque
 import logger from '../Utilities/Logger';
 import { useGlobalSnackbarContext } from '../Contexts/GlobalSnackbar';
 
-export const ForcePaidUntilForm: React.FC<any> = ({}) => {
+export const ForcePaidUntilForm: React.FC<any> = () => {
     const { register, handleSubmit } = useForm<{forcePaidUntilEmail: string, paidUntilDate: Date}>();
     const setAlert = useGlobalSnackbarContext();
 
