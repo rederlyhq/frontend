@@ -10,11 +10,11 @@ export const ForceVerifyUserForm: React.FC<any> = () => {
 
     const submit = async (data: {forceVerifyEmail: string}) => {
         try {
-            await superAdminUpdate({email: data.forceVerifyEmail});
+            await superAdminUpdate({email: data.forceVerifyEmail, verified: true});
             setAlert?.({severity: 'success', message: `Updated ${data.forceVerifyEmail}`});
         } catch(e) {
-            logger.error(e);
-            setAlert?.({severity: 'error', message: 'Failed to force verify. Check logs.'});
+            logger.error('Force verify', e);
+            setAlert?.({severity: 'error', message: e.message});
         }
     };
 

@@ -13,8 +13,8 @@ export const ForcePaidUntilForm: React.FC<any> = () => {
             await superAdminUpdate({email: data.forcePaidUntilEmail, paidUntil: data.paidUntilDate});
             setAlert?.({severity: 'success', message: `Updated ${data.forcePaidUntilEmail}`});
         } catch(e) {
-            logger.error(e);
-            setAlert?.({severity: 'error', message: 'Failed to force verify. Check logs.'});
+            logger.error('ForcePaidUntilForm', e);
+            setAlert?.({severity: 'error', message: e.message});
         }
     };
 

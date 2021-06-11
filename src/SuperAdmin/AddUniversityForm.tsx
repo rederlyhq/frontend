@@ -20,7 +20,7 @@ export const AddUniversityForm: React.FC<any> = () => {
             });
             setAlert?.({severity: 'success', message: 'Created university'});
         } catch(e) {
-            logger.error(e);
+            logger.error('AddUniversityForm', e);
             setAlert?.({severity: 'error', message: 'Failed to create university. Check logs.'});
         }
     };

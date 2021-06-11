@@ -54,7 +54,7 @@ const USER_IMPERSONATE_PATH = urlJoin(
 
 const USER_SUPERADMINUPDATE_PATH = urlJoin(
     USER_PATH,
-    'adminUpdate'
+    'super-admin-update'
 );
 
 export const postForgotPassword = async ({
@@ -209,15 +209,24 @@ export const impersonate = async ({
 
 export const superAdminUpdate = async ({
     email,
-    paidUntil
+    paidUntil,
+    verified,
+    firstName,
+    lastName,
 }: {
-    email: string,
-    paidUntil?: Date
+    email: string;
+    paidUntil?: Date;
+    verified?: boolean;
+    firstName?: string;
+    lastName?: string;
 }): Promise<BackendAPIResponse> => {
     try {
         return await AxiosRequest.post(USER_SUPERADMINUPDATE_PATH, {
             email,
-            paidUntil
+            paidUntil,
+            verified,
+            firstName,
+            lastName,
         });
     } catch (e) {
         throw new BackendAPIError(e);
