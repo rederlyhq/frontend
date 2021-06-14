@@ -6,7 +6,8 @@ const { general, session } = localPreferences;
 export enum UserRole {
     STUDENT   = 'STUDENT',
     PROFESSOR = 'PROFESSOR',
-    ADMIN     = 'ADMIN'
+    ADMIN     = 'ADMIN',
+    SUPERADMIN = 'SUPERADMIN',
 }
 
 export const unauthorizedRedirect = (doRedirect: boolean = true) => {
@@ -26,6 +27,8 @@ export const getUserRoleFromServer = (roleFromServer: number): UserRole => {
         return UserRole.PROFESSOR;
     case 2:
         return UserRole.ADMIN;
+    case 3:
+        return UserRole.SUPERADMIN;
     case 0:
     default:
         return UserRole.STUDENT;
@@ -44,6 +47,8 @@ export const getUserRole = (): UserRole => {
     }
 
     switch (roleFromCookie.toLocaleUpperCase()) {
+    case UserRole.SUPERADMIN:
+        return UserRole.SUPERADMIN;
     case UserRole.ADMIN:
         return UserRole.ADMIN;
     case UserRole.PROFESSOR:
