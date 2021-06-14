@@ -15,7 +15,6 @@ export const CheckUserInfoForm: React.FC<any> = () => {
     const submit = async (data: {checkUserEmail: string}) => {
         try {
             const res = await superAdminGetUser({email: data.checkUserEmail});
-            console.log(res.data, res.data.data);
             setUser(res.data.data);
             setAlert?.({severity: 'success', message: `Got ${data.checkUserEmail}`});
         } catch(e) {
