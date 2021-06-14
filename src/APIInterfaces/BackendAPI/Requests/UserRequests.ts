@@ -52,6 +52,12 @@ const USER_IMPERSONATE_PATH = urlJoin(
     'impersonate'
 );
 
+const USER_SUPERADMIN_GET_USER_PATH = (email: string) => urlJoin(
+    USER_PATH,
+    'email/',
+    email
+);
+
 const USER_SUPERADMINUPDATE_PATH = urlJoin(
     USER_PATH,
     'super-admin-update'
@@ -202,6 +208,16 @@ export const impersonate = async ({
         return await AxiosRequest.post(USER_IMPERSONATE_PATH, {
             role: role
         });
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const superAdminGetUser = async ({
+    email
+}: {email: string}): Promise<BackendAPIResponse> => {
+    try {
+        return await AxiosRequest.get(USER_SUPERADMIN_GET_USER_PATH(email));
     } catch (e) {
         throw new BackendAPIError(e);
     }
