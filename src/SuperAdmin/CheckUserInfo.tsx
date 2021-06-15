@@ -39,7 +39,7 @@ export const CheckUserInfoForm: React.FC<any> = () => {
                             {key}
                         </td>
                         <td style={{border: '1px solid black'}}>
-                            {key === 'paidUntil' || key === 'updatedAt' ? 
+                            {(key === 'paidUntil' || key === 'updatedAt') ? 
                                 `${moment(_.get(user, key))} (${moment(_.get(user, key)).calendar()})` :
                                 _.get(user, key).toString()}
                         </td>
