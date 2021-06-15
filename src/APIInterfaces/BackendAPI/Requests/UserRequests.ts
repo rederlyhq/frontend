@@ -229,12 +229,14 @@ export const superAdminUpdate = async ({
     verified,
     firstName,
     lastName,
+    roleId,
 }: {
     email: string;
     paidUntil?: Date;
     verified?: boolean;
     firstName?: string;
     lastName?: string;
+    roleId?: 0 | 1;
 }): Promise<BackendAPIResponse> => {
     try {
         return await AxiosRequest.post(USER_SUPERADMINUPDATE_PATH, {
@@ -243,6 +245,7 @@ export const superAdminUpdate = async ({
             verified,
             firstName,
             lastName,
+            roleId,
         });
     } catch (e) {
         throw new BackendAPIError(e);
