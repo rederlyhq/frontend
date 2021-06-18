@@ -32,11 +32,11 @@ export const AddUniversityForm: React.FC<any> = () => {
             required: true,
         })} /><br/>
         <label htmlFor='professorDomain'>Professor Domain:</label>
-        <input name='professorDomain' type='email' ref={register({
+        <input name='professorDomain' type='text' ref={register({
             required: true,
         })} /><br/>
         <label htmlFor='studentDomain'>Student Domain:</label>
-        <input name='studentDomain' type='email' ref={register({
+        <input name='studentDomain' type='text' ref={register({
             required: true,
         })} /><br/>
         <label htmlFor='autoVerify'>autoVerify:</label>
