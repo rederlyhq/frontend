@@ -8,23 +8,35 @@ const childProcess = require('child_process');
 const { spawn } = childProcess;
 
 const runId = (flag) => new Promise((resolve) => {
-    const idProcess = spawn('id', [flag]);
-    let stdout = '';
-    let errout = '';
-    idProcess.stdout.on('data', (data) => {
-        stdout += data;
-    });
-    idProcess.stderr.on('data', (data) => {
-        errout += data;
-    });
-    
-    idProcess.on('close', (code) => {
-        resolve({
-            code: code,
-            stdout: stdout,
-            errout: errout,
+    try {
+        const idProcess = spawn('id', [flag]);
+        let stdout = '';
+        let errout = '';
+        idProcess.stdout.on('data', (data) => {
+            stdout += data;
         });
-    });
+        idProcess.stderr.on('data', (data) => {
+            errout += data;
+        });
+        
+        idProcess.on('error', function(err) {
+            errout = err;
+        });
+
+        idProcess.on('close', (code) => {
+            resolve({
+                code: code,
+                stdout: stdout,
+                errout: errout,
+            });
+        });    
+    } catch (e) {
+        resolve({
+            code: null,
+            stdout: null,
+            errout: e.message,
+        });
+    }
 });
 
 (async () => {
@@ -34,6 +46,6 @@ const runId = (flag) => new Promise((resolve) => {
 
     const groupIdResult = await runId('-g')
     let groupId = parseInt(groupIdResult.stdout, 10);
-    groupId = Number.isNaN(groupId) ? 1000 : groupId;
+    groupId = Number.isNaN(groupId) ? 1001 : groupId;
     console.log(`${userId}:${groupId}`);
 })();
