@@ -94,6 +94,7 @@
     "modernizr": "modernizr -c modernizr-config.json -d public/modernizr.min.js",
     "package": "node ./utility-scripts/package.js",
     "build:package": "npm run build && npm run package",
+    "build:docker": "node ./utility-scripts/prep-docker.js && docker run --user \"$(node ./utility-scripts/id.js)\" -v $(node ./utility-scripts/pwd.js)/docker-output:/docker-output --rm -it $(docker build -q -f ./build.Dockerfile .) ./utility-scripts/post-docker.sh",
     "clean": "node ./utility-scripts/clean.js"
   },
   "eslintConfig": {
