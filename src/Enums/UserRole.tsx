@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie';
 import { CookieEnum } from './CookieEnum';
 import localPreferences from '../Utilities/LocalPreferences';
+import logger from '../Utilities/Logger';
 const { general, session } = localPreferences;
 
 export enum UserRole {
@@ -11,7 +12,10 @@ export enum UserRole {
 
 export const unauthorizedRedirect = (doRedirect: boolean = true) => {
     // TODO: Generic redirect to handle clearing cookies.
+    logger.debug('Unauthorized redirect.');
     general.loginRedirectURL = `${window.location.pathname}${window.location.search}`;
+    
+    logger.debug('Removing session', Cookies.get(CookieEnum.SESSION));
     Cookies.remove(CookieEnum.SESSION);
     session.nullifySession();
 

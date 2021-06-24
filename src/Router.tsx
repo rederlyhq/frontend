@@ -7,6 +7,7 @@ import ForgotPasswordLandingPage from './Login/ForgotPasswordLandingPage';
 import { AuthorizationWrapper } from './NavWrapper/AuthorizationWrapper';
 import useTracking from './Hooks/useTracking';
 import { QueryParamProvider } from 'use-query-params';
+import LTIKWrapper from './Components/LTIKWrapper';
 
 interface RouterProps {
 
@@ -24,27 +25,29 @@ export const Router: React.FC<RouterProps> = () => {
         <BrowserRouter>
             <QueryParamProvider ReactRouterRoute={Route}>
                 <TrackingWrapper>
-                    <Switch>
-                        <Route exact path="/">
-                            <HomePage/>
-                        </Route>
-                        <Route path="/common">
-                            <AuthorizationWrapper>
-                                <NavWrapper>
-                                    {/* All authenticated routing happens in this component. */}
-                                </NavWrapper>
-                            </AuthorizationWrapper>
-                        </Route>
-                        <Route path="/verify/:uid">
-                            <VerificationLandingPage />
-                        </Route>
-                        <Route path="/forgot-password/:uid">
-                            <ForgotPasswordLandingPage />
-                        </Route>
-                        <Route path="/">
-                            <NoPage/>
-                        </Route>
-                    </Switch>
+                    <LTIKWrapper>
+                        <Switch>
+                            <Route exact path="/">
+                                <HomePage/>
+                            </Route>
+                            <Route path="/common">
+                                <AuthorizationWrapper>
+                                    <NavWrapper>
+                                        {/* All authenticated routing happens in this component. */}
+                                    </NavWrapper>
+                                </AuthorizationWrapper>
+                            </Route>
+                            <Route path="/verify/:uid">
+                                <VerificationLandingPage />
+                            </Route>
+                            <Route path="/forgot-password/:uid">
+                                <ForgotPasswordLandingPage />
+                            </Route>
+                            <Route path="/">
+                                <NoPage/>
+                            </Route>
+                        </Switch>
+                    </LTIKWrapper>
                 </TrackingWrapper>
             </QueryParamProvider>
         </BrowserRouter>

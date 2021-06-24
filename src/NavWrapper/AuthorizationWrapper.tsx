@@ -21,6 +21,7 @@ interface ParsedSessionCookie {
 }
 const parseSessionCookie = (): ParsedSessionCookie => {
     const sessionCookie = Cookies.get(CookieEnum.SESSION);
+    logger.debug('Authorization wrapper got session cookie: ', sessionCookie);
     if (_.isNil(sessionCookie)) {
         return {
             uuid: undefined,

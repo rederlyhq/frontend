@@ -1,4 +1,4 @@
-import { PostForgotPasswordOptions, PutUpdatePasswordOptions, PutUpdateForgottonPasswordOptions, PostLoginOptions, PostResendVerificationOptions, GetUsersOptions, RegisterUserOptions, GetVerificationOptions } from '../RequestTypes/UserRequestTypes';
+import { PostForgotPasswordOptions, PutUpdatePasswordOptions, PutUpdateForgottonPasswordOptions, PostLoginOptions, PostResendVerificationOptions, GetUsersOptions, RegisterUserOptions, GetVerificationOptions, PutUpdateNilPasswordOptions } from '../RequestTypes/UserRequestTypes';
 import { PostForgotPasswordResponse, PutUpdatePasswordResponse, PutUpdateForgottonPasswordResponse, PostLoginResponse, PostResendVerificationResponse, GetUserResponse, RegisterUserResponse, GetVerificationResponse } from '../ResponseTypes/UserResponseTypes';
 import AxiosRequest from '../../../Hooks/AxiosRequest';
 import BackendAPIError from '../BackendAPIError';
@@ -77,6 +77,23 @@ export const putUpdatePassword = async ({
             {
                 newPassword,
                 oldPassword            
+            }
+        );
+    } catch (e) {
+        throw new BackendAPIError(e);
+    }
+};
+
+export const putUpdateNilPassword = async ({
+    newPassword,
+    ltik
+}: PutUpdateNilPasswordOptions): Promise<PutUpdatePasswordResponse> => {
+    try {
+        return await AxiosRequest.put(
+            '/lti/update-nil-password',
+            {
+                newPassword,
+                ltik
             }
         );
     } catch (e) {
