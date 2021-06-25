@@ -6,11 +6,22 @@
 const OUTPUT_DIRECTORY='docker-output';
 const fs = require('fs');
 
-(async () => {
+const prepDocker = async () => {
     if (fs.existsSync(OUTPUT_DIRECTORY)) {
         await fs.promises.rmdir(OUTPUT_DIRECTORY, {
             recursive: true
         });
     }
     await fs.promises.mkdir(OUTPUT_DIRECTORY);
-})();
+};
+
+module.exports = {
+    prepDocker: prepDocker
+};
+
+if (require.main === module) {
+    // file was run directly
+    (async () => {
+        await prepDocker();
+    })();
+}

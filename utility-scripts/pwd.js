@@ -3,4 +3,13 @@
 /**
  * Cross platform pwd (currently used for docker volume of relative directory)
  */
-console.log(process.env.PWD);
+const pwd = () => process.env.PWD;
+
+module.exports = {
+    pwd: pwd
+}
+
+if (require.main === module) {
+    // file was run directly
+    console.log(pwd());
+}

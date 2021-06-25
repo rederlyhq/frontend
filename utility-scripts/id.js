@@ -39,7 +39,8 @@ const runId = (flag) => new Promise((resolve) => {
     }
 });
 
-(async () => {
+
+const getUserForDocker = async () => {
     const userIdResult = await runId('-u')
     let userId = parseInt(userIdResult.stdout, 10);
     userId = Number.isNaN(userId) ? 1000 : userId;
@@ -47,5 +48,16 @@ const runId = (flag) => new Promise((resolve) => {
     const groupIdResult = await runId('-g')
     let groupId = parseInt(groupIdResult.stdout, 10);
     groupId = Number.isNaN(groupId) ? 1001 : groupId;
-    console.log(`${userId}:${groupId}`);
-})();
+    return `${userId}:${groupId}`;
+};
+
+module.exports = {
+    getUserForDocker: getUserForDocker
+}
+
+if (require.main === module) {
+    // file was run directly
+    (async () => {
+        console.log(await getUserForDocker());
+    })();
+}
