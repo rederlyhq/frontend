@@ -32,29 +32,6 @@ const getDockerRunCommand = async (containerId) => {
     return `docker run --user "${user}" -v "${currentDirectory}/docker-output:/docker-output" --rm "${containerId.trim()}" ./utility-scripts/post-docker.sh`;
 };
 
-
-// const runBuildDocker = async () => {
-//     await prepDocker();
-//     return new Promise(async (resolve, reject) => {
-//         const dockerProcess = childProcess.exec(await getBuildDockerCommand());
-//         dockerProcess.stdout.on('data', (data) => {
-//             console.log(`dockerProcess stdout: ${data}`);
-//         });
-//         dockerProcess.stderr.on('data', (data) => {
-//             console.log(`dockerProcess stderr: ${data}`);
-//         });
-        
-//         dockerProcess.on('error', function(err) {
-//             reject(err);
-//         });
-
-//         dockerProcess.on('close', (code) => {
-//             console.log()
-//             resolve();
-//         });
-//     });
-// }
-
 const runCommand = (command) => new Promise((resolve, reject) => {
     const process = childProcess.exec(command);
     const result = {

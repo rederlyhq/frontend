@@ -31,3 +31,31 @@ The frontend uses environment variables to configure some runtime settings. Curr
 | --- | --- | --- |
 | REACT_APP_ENABLE_WDYR | REACT_APP_ENABLE_WDYR=true | This enables [WhyDidYouRender](https://github.com/welldone-software/why-did-you-render) functionality. This is useful for optimization debugging, or finding problems caused by unnecessary rerenders. |
 | REACT_APP_ENABLE_AXE | REACT_APP_ENABLE_AXE=true | This enables [React Axe](https://github.com/dequelabs/react-axe) functionality. This is useful for accessibility (a11y) auditing. |
+
+# Building / Running
+```bash
+npm install
+
+# Build react app
+npm run build
+
+# Build react app and compress to zip file and tarball - mainly for use within github actions
+npm run build:package
+
+# Build react app in a docker container and output the files to docker-output
+npm run build:docker
+```
+
+## Windows docker disclaimer
+### Git config
+If running on windows line endings will ruin your day... I recommend:
+```bash
+git config --global core.autocrlf false
+git config --global core.eol lf
+```
+
+### Convert existing line items
+[dos2unix](https://www.npmjs.com/package/dos2unix) on npm is a great tool and you can use the below command in git bash to convert all existing files on windows (obviously beware that this will change the files on you, should not cause harm but could mess up your source)
+```bash
+find . -type f -exec npx dos2unix {} ';'
+```
